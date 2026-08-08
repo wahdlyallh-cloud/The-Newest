@@ -918,43 +918,83 @@ function localizeHabit(habit: Habit, isAr: boolean): Habit {
 export default function App() {
   // --- Persistent State Hooks ---
   const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = localStorage.getItem('yawmiyati_settings');
-    const parsed: AppSettings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-    const directLang = localStorage.getItem('app_language') as AppLanguage;
-    if (directLang && ['ar', 'en', 'de', 'fr', 'es', 'it', 'tr', 'ur', 'hi', 'id'].includes(directLang)) {
-      parsed.appLanguage = directLang;
+    try {
+      const saved = localStorage.getItem('yawmiyati_settings');
+      const parsed: AppSettings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+      const directLang = localStorage.getItem('app_language') as AppLanguage;
+      if (directLang && ['ar', 'en', 'de', 'fr', 'es', 'it', 'tr', 'ur', 'hi', 'id'].includes(directLang)) {
+        parsed.appLanguage = directLang;
+      }
+      const savedCredId = localStorage.getItem('yawmiyati_biometric_cred_id');
+      if (savedCredId && !parsed.biometricCredentialId) {
+        parsed.biometricCredentialId = savedCredId;
+      }
+      return parsed || DEFAULT_SETTINGS;
+    } catch (e) {
+      console.error('Error loading saved settings:', e);
+      return DEFAULT_SETTINGS;
     }
-    const savedCredId = localStorage.getItem('yawmiyati_biometric_cred_id');
-    if (savedCredId && !parsed.biometricCredentialId) {
-      parsed.biometricCredentialId = savedCredId;
-    }
-    return parsed;
   });
 
-  const langInfo = getLanguageInfo(settings.appLanguage);
-  const isAr = settings.appLanguage === 'ar';
-  const isEn = settings.appLanguage === 'en';
-  const isRtl = langInfo.dir === 'rtl';
-  const t = getTranslation(settings.appLanguage);
+  const langInfo = getLanguageInfo(settings?.appLanguage || 'ar');
+  const isAr = (settings?.appLanguage || 'ar') === 'ar';
+  const isEn = (settings?.appLanguage || 'ar') === 'en';
+  const isRtl = (langInfo?.dir || 'rtl') === 'rtl';
+  const t = getTranslation(settings?.appLanguage || 'ar');
 
   const [diaries, setDiaries] = useState<DiaryEntry[]>(() => {
-    const saved = localStorage.getItem('yawmiyati_diaries');
-    return saved ? JSON.parse(saved) : getInitialDiaries(settings.appLanguage || 'ar');
+    try {
+      const saved = localStorage.getItem('yawmiyati_diaries');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Error loading saved diaries:', e);
+    }
+    return getInitialDiaries(settings?.appLanguage || 'ar');
   });
 
   const [habits, setHabits] = useState<Habit[]>(() => {
-    const saved = localStorage.getItem('yawmiyati_habits');
-    return saved ? JSON.parse(saved) : getInitialHabits(settings.appLanguage || 'ar');
+    try {
+      const saved = localStorage.getItem('yawmiyati_habits');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Error loading saved habits:', e);
+    }
+    return getInitialHabits(settings?.appLanguage || 'ar');
   });
 
   const [gratitudeCards, setGratitudeCards] = useState<GratitudeCard[]>(() => {
-    const saved = localStorage.getItem('yawmiyati_gratitude_cards');
-    return saved ? JSON.parse(saved) : getInitialGratitudeCards(settings.appLanguage || 'ar');
+    try {
+      const saved = localStorage.getItem('yawmiyati_gratitude_cards');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Error loading saved gratitude cards:', e);
+    }
+    return getInitialGratitudeCards(settings?.appLanguage || 'ar');
   });
 
-  const displayedDiaries = useMemo(() => diaries.map(d => localizeDiaryEntry(d, isAr)), [diaries, isAr]);
-  const displayedHabits = useMemo(() => habits.map(h => localizeHabit(h, isAr)), [habits, isAr]);
-  const displayedGratitudeCards = useMemo(() => gratitudeCards.map(c => localizeGratitudeCard(c, isAr)), [gratitudeCards, isAr]);
+  const displayedDiaries = useMemo(() => {
+    if (!Array.isArray(diaries)) return [];
+    return diaries.map(d => localizeDiaryEntry(d, isAr));
+  }, [diaries, isAr]);
+
+  const displayedHabits = useMemo(() => {
+    if (!Array.isArray(habits)) return [];
+    return habits.map(h => localizeHabit(h, isAr));
+  }, [habits, isAr]);
+
+  const displayedGratitudeCards = useMemo(() => {
+    if (!Array.isArray(gratitudeCards)) return [];
+    return gratitudeCards.map(c => localizeGratitudeCard(c, isAr));
+  }, [gratitudeCards, isAr]);
 
   const [activeDiariesSubTab, setActiveDiariesSubTab] = useState<'journal' | 'gratitude' | 'cbt' | 'tasks'>('journal');
   const [analyticsSubTab, setAnalyticsSubTab] = useState<'report' | 'charts' | 'pros_cons'>('report');
@@ -1300,7 +1340,12 @@ export default function App() {
         habits: forceData?.habits || habits,
         settings: forceData?.settings || settings,
         gratitudeCards: forceData?.gratitudeCards || gratitudeCards,
-        chatMessages: JSON.parse(localStorage.getItem('yawmiyati_chat_messages') || '[]'),
+        chatMessages: (() => {
+          try {
+            const raw = localStorage.getItem('yawmiyati_chat_messages');
+            return raw ? JSON.parse(raw) : [];
+          } catch { return []; }
+        })(),
         activeTab: localStorage.getItem('yawmiyati_active_tab') || 'dashboard',
         syncTime: new Date().toISOString()
       };
@@ -1438,7 +1483,15 @@ export default function App() {
         const res = await response.json();
         if (res.success && res.data) {
           const localDiaries = localStorage.getItem('yawmiyati_diaries');
-          if (!localDiaries || JSON.parse(localDiaries).length === 0) {
+          let hasLocal = false;
+          try {
+            if (localDiaries) {
+              const parsed = JSON.parse(localDiaries);
+              if (Array.isArray(parsed) && parsed.length > 0) hasLocal = true;
+            }
+          } catch (e) {}
+
+          if (!hasLocal) {
             console.log("No local diaries, auto-restoring from server cloud backup...");
             if (res.data.diaries) setDiaries(res.data.diaries);
             if (res.data.habits) setHabits(res.data.habits);
@@ -3827,7 +3880,12 @@ export default function App() {
           habits,
           settings,
           gratitudeCards,
-          chatMessages: JSON.parse(localStorage.getItem('yawmiyati_chat_messages') || '[]'),
+          chatMessages: (() => {
+            try {
+              const raw = localStorage.getItem('yawmiyati_chat_messages');
+              return raw ? JSON.parse(raw) : [];
+            } catch { return []; }
+          })(),
           syncTime: new Date().toISOString()
         }
       };

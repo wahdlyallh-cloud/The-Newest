@@ -404,38 +404,46 @@ export function LanguageProvider({
     setCurrentLanguageState(validLang);
   };
 
-  const isRTL = getLanguageInfo(currentLanguage).dir === 'rtl';
+  const isRTL = (getLanguageInfo(currentLanguage)?.dir || 'rtl') === 'rtl';
 
   const t = (key: string): string => {
-    // Check key in flat dictionary
-    const dict = getTranslation(currentLanguage);
-    if (dict && dict[key] !== undefined) {
-      return String(dict[key]);
-    }
-
-    // Check nested section key (e.g. "common.appName" or "analytics.balanceIndex")
-    if (key.includes('.')) {
-      const [section, subkey] = key.split('.');
-      const langKey = (currentLanguage === 'en' ? 'en' : 'ar') as 'ar' | 'en';
-      const secObj = (BASELINE_DICTIONARIES[langKey] as any)?.[section];
-      if (secObj && secObj[subkey] !== undefined) {
-        return String(secObj[subkey]);
+    if (!key || typeof key !== 'string') return '';
+    try {
+      const dict = getTranslation(currentLanguage);
+      if (dict && typeof dict[key] === 'string') {
+        return dict[key];
       }
-    }
 
-    // Fallback to English dictionary
-    const enDict = getTranslation('en');
-    if (enDict && enDict[key] !== undefined) {
-      return String(enDict[key]);
-    }
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        const langKey = (currentLanguage === 'en' ? 'en' : 'ar') as 'ar' | 'en';
+        let curr: any = BASELINE_DICTIONARIES[langKey] || BASELINE_DICTIONARIES['ar'];
+        for (const p of parts) {
+          if (curr && typeof curr === 'object' && p in curr) {
+            curr = curr[p];
+          } else {
+            curr = undefined;
+            break;
+          }
+        }
+        if (typeof curr === 'string') return curr;
+      }
 
-    // Fallback to Arabic dictionary
-    const arDict = getTranslation('ar');
-    if (arDict && arDict[key] !== undefined) {
-      return String(arDict[key]);
-    }
+      const enDict = getTranslation('en');
+      if (enDict && typeof enDict[key] === 'string') {
+        return enDict[key];
+      }
 
-    return key;
+      const arDict = getTranslation('ar');
+      if (arDict && typeof arDict[key] === 'string') {
+        return arDict[key];
+      }
+
+      return key;
+    } catch (e) {
+      console.error('Safe t() lookup fallback for key:', key, e);
+      return String(key || '');
+    }
   };
 
   return React.createElement(
@@ -561,8 +569,10 @@ export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
   },
 ];
 
-export function getLanguageInfo(code: AppLanguage): LanguageInfo {
-  return SUPPORTED_LANGUAGES.find((l) => l.code === code) || SUPPORTED_LANGUAGES[0];
+export function getLanguageInfo(code?: AppLanguage | string | null): LanguageInfo {
+  if (!code) return SUPPORTED_LANGUAGES[0];
+  const found = SUPPORTED_LANGUAGES.find((l) => l.code === code);
+  return found || SUPPORTED_LANGUAGES[0];
 }
 
 export interface TranslationSet {

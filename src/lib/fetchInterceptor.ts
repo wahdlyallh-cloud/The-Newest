@@ -23,7 +23,7 @@ function safeFormatDate(d: any): string {
 
 // Helper to enforce user's selected language output in Gemini REST calls
 function getLanguageInstruction(langCode?: string): string {
-  const code = (langCode || 'en').toLowerCase();
+  const code = (langCode || 'ar').toLowerCase();
   const langNames: Record<string, string> = {
     ar: "Arabic",
     en: "English",
@@ -36,8 +36,8 @@ function getLanguageInstruction(langCode?: string): string {
     hi: "Hindi",
     id: "Indonesian"
   };
-  const targetName = langNames[code] || "English";
-  return `\n\nCRITICAL LANGUAGE MANDATE: Always respond, analyze, and output purely in the requested language: ${targetName}. Translate all mood tags, insights, and recommendations completely to ${targetName}.`;
+  const targetName = langNames[code] || "Arabic";
+  return `\n\nCRITICAL LANGUAGE MANDATE: You must generate all clinical analyses, chat responses, and CBT feedback strictly in ${targetName}. Translate all mood tags, insights, and recommendations completely to ${targetName}.`;
 }
 
 // Client-side fetch interceptor to support production deployment on Vercel
@@ -170,9 +170,9 @@ try {
 async function handleClientSideFallback(url: string, init?: RequestInit): Promise<Response> {
   // Extract custom API Key
   let keyToUse = '';
+  const reqHeaders = init?.headers ? new Headers(init.headers) : new Headers();
   if (init?.headers) {
-    const headers = new Headers(init.headers);
-    keyToUse = headers.get('x-gemini-key') || '';
+    keyToUse = reqHeaders.get('x-gemini-key') || '';
   }
 
   if (!keyToUse) {
@@ -185,7 +185,14 @@ async function handleClientSideFallback(url: string, init?: RequestInit): Promis
     } catch (e) {}
   }
 
-  const requestBody = init?.body ? JSON.parse(init.body as string) : {};
+  let requestBody: any = {};
+  if (init?.body && typeof init.body === 'string') {
+    try {
+      requestBody = JSON.parse(init.body);
+    } catch (e) {
+      requestBody = {};
+    }
+  }
 
   // Endpoint Router
   if (url.includes('/api/gemini/verify-key')) {
@@ -417,6 +424,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
 }
 
   if (url.includes('/api/gemini/smart-advisor')) {
+    const reqLang = reqHeaders.get('x-app-language') || requestBody.appLanguage || requestBody.langCode || 'ar';
     const { diaries, query, reportType, gratitudeCards, habits, books } = requestBody;
     const fallbackAnswer = getDynamicSmartAdvisorFallback(query, reportType, diaries, books, gratitudeCards, habits);
 
@@ -471,7 +479,7 @@ ${cbtStr}
    - لا تعطِ قوائم بحث جافة أو أكواد، بل قدم صياغة تحليلية ذكية تظهر فهمك المباشر لما مر به ورؤيتك النفسية الداعمة.
 3. إذا كان السؤال عاماً أو خارجياً (مثل: أسئلة في الصحة النفسية، الاسترخاء، الثقافة، العلوم، التخطيط الشخصي، الحياة، الفلسفة، أو أي موضوع آخر):
    - أجب باستفاضة، وضوح، وذكاء كمرشد وخبير حكيم دون أي تقييد!
-4. صغ إجاباتك دائماً بتنسيق Markdown جميل مع عناوين فرعية منسقة وتباعد مريح، وبطريقة محفزة ومريحة للأعصاب.`;
+4. صغ إجاباتك دائماً بتنسيق Markdown جميل مع عناوين فرعية منسقة وتباعد مريح، وبطريقة محفزة ومريحة للأعصاب.` + getLanguageInstruction(reqLang);
 
       let userPrompt = "";
 

@@ -57,13 +57,16 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-gemini-key': userApiKey || ''
+          'x-gemini-key': userApiKey || '',
+          'x-app-language': appLanguage
         },
         body: JSON.stringify({
           diaries: filteredDiaries,
           startDate,
           endDate,
-          reportType: 'therapist'
+          reportType: 'therapist',
+          appLanguage: appLanguage,
+          langCode: appLanguage
         })
       });
       const data = await response.json();
