@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { 
@@ -14,35 +14,35 @@ import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habi
 import StaticNotification from './components/StaticNotification';
 import FloatingBall from './components/FloatingBall';
 import DrawingCanvas from './components/DrawingCanvas';
-import TherapistReportModal from './components/TherapistReportModal';
-import RatingModal from './components/RatingModal';
-import ContactOwnerModal from './components/ContactOwnerModal';
-import GeminiKeyModal from './components/GeminiKeyModal';
-import BackupSyncModal from './components/BackupSyncModal';
-import LanguagesModal from './components/LanguagesModal';
-import TypographySettingsSection from './components/TypographySettingsSection';
+const TherapistReportModal = lazy(() => import('./components/TherapistReportModal'));
+const RatingModal = lazy(() => import('./components/RatingModal'));
+const ContactOwnerModal = lazy(() => import('./components/ContactOwnerModal'));
+const GeminiKeyModal = lazy(() => import('./components/GeminiKeyModal'));
+const BackupSyncModal = lazy(() => import('./components/BackupSyncModal'));
+const LanguagesModal = lazy(() => import('./components/LanguagesModal'));
+const TypographySettingsSection = lazy(() => import('./components/TypographySettingsSection'));
 import { getFontCss, getLineHeightCss } from './lib/fonts';
-import WriteDiaryImporter from './components/WriteDiaryImporter';
-import SmartAdvisor from './components/SmartAdvisor';
-import GratitudeJournal from './components/GratitudeJournal';
-import LifeMap from './components/LifeMap';
-import PINLock from './components/PINLock';
+const WriteDiaryImporter = lazy(() => import('./components/WriteDiaryImporter'));
+const SmartAdvisor = lazy(() => import('./components/SmartAdvisor'));
+const GratitudeJournal = lazy(() => import('./components/GratitudeJournal'));
+const LifeMap = lazy(() => import('./components/LifeMap'));
+const PINLock = lazy(() => import('./components/PINLock'));
 import { registerBiometrics } from './lib/biometrics';
-import { TasksChecklistSection } from './components/TasksChecklistSection';
-import { CBTExercisesSection } from './components/CBTExercisesSection';
+const TasksChecklistSection = lazy(() => import('./components/TasksChecklistSection'));
+const CBTExercisesSection = lazy(() => import('./components/CBTExercisesSection'));
 import { MULTI_TRANSLATIONS, SUPPORTED_LANGUAGES, getLanguageInfo, getTranslation } from './lib/languages';
-import IntegratedTherapyReport from './components/IntegratedTherapyReport';
-import WeeklyHabitsMoodChart from './components/WeeklyHabitsMoodChart';
-import SleepMoodCorrelationChart from './components/SleepMoodCorrelationChart';
-import SmartRemindersModal from './components/SmartRemindersModal';
-import { AuthModal } from './components/AuthModal';
-import DailyProsConsModal from './components/DailyProsConsModal';
-import ProsConsHistoryLog from './components/ProsConsHistoryLog';
-import DhikrCounter from './components/DhikrCounter';
-import PsychologicalGrowthTree from './components/PsychologicalGrowthTree';
-import ShareableGratitudeCardModal, { CardExportData } from './components/ShareableGratitudeCardModal';
-import BehavioralCorrelationCard from './components/BehavioralCorrelationCard';
-import OfflineSyncBanner from './components/OfflineSyncBanner';
+const IntegratedTherapyReport = lazy(() => import('./components/IntegratedTherapyReport'));
+const WeeklyHabitsMoodChart = lazy(() => import('./components/WeeklyHabitsMoodChart'));
+const SleepMoodCorrelationChart = lazy(() => import('./components/SleepMoodCorrelationChart'));
+const SmartRemindersModal = lazy(() => import('./components/SmartRemindersModal'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const DailyProsConsModal = lazy(() => import('./components/DailyProsConsModal'));
+const ProsConsHistoryLog = lazy(() => import('./components/ProsConsHistoryLog'));
+const DhikrCounter = lazy(() => import('./components/DhikrCounter'));
+const PsychologicalGrowthTree = lazy(() => import('./components/PsychologicalGrowthTree'));
+const ShareableGratitudeCardModal = lazy(() => import('./components/ShareableGratitudeCardModal'));
+const BehavioralCorrelationCard = lazy(() => import('./components/BehavioralCorrelationCard'));
+const OfflineSyncBanner = lazy(() => import('./components/OfflineSyncBanner'));
 
 // Recharts components for gorgeous analytics
 import { 
@@ -158,6 +158,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   lockScreenWidgetEnabled: true,
   fullscreenModeEnabled: false,
   autoHideHeaderOnScroll: true,
+  focusModeEnabled: false,
   appLanguage: 'ar',
   appFont: 'cairo',
   appLineHeight: 'relaxed',
@@ -1587,10 +1588,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (settings.lockScreenWidgetEnabled !== false && settings.notificationsEnabled) {
+    if (settings.lockScreenWidgetEnabled !== false && settings.notificationsEnabled && !settings.focusModeEnabled) {
       triggerLockScreenNotification();
     }
-  }, [settings.lockScreenWidgetEnabled, settings.notificationsEnabled, triggerLockScreenNotification]);
+  }, [settings.lockScreenWidgetEnabled, settings.notificationsEnabled, settings.focusModeEnabled, triggerLockScreenNotification]);
 
   // --- Smart Reminders Logic ---
   const [showSmartRemindersModal, setShowSmartRemindersModal] = useState(false);
@@ -1599,7 +1600,7 @@ export default function App() {
 
   useEffect(() => {
     const checkSmartReminders = () => {
-      if (!settings.notificationsEnabled) return;
+      if (!settings.notificationsEnabled || settings.focusModeEnabled) return;
       const reminders = settings.reminders || [];
       if (reminders.length === 0) return;
 
@@ -4729,10 +4730,12 @@ export default function App() {
       <main className="max-w-4xl mx-auto px-4 pt-6 pb-28 md:pb-12 space-y-6">
         
         {/* Offline & Cloud Background Sync Status Banner */}
-        <OfflineSyncBanner appLanguage={settings.appLanguage} />
+        {!settings.focusModeEnabled && (
+          <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>\n            <OfflineSyncBanner appLanguage={settings.appLanguage} />\n          </Suspense>
+        )}
 
         {/* Mock Android Notification Widget at the top of the Home Dashboard for simulation */}
-        {activeTab === 'dashboard' && (
+        {activeTab === 'dashboard' && !settings.focusModeEnabled && (
           <StaticNotification onAction={handleQuickAction} appLanguage={settings.appLanguage} />
         )}
 
@@ -5050,7 +5053,9 @@ export default function App() {
 
             {/* 📿 Spiritual Dhikr & Salawat Counter Widget */}
             <div id="dhikr-counter">
-              <DhikrCounter className="shadow-sm" appLanguage={settings.appLanguage} />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>
+                <DhikrCounter className="shadow-sm" appLanguage={settings.appLanguage} />
+              </Suspense>
             </div>
 
             {/* 🎯 Interactive Rapid Mood, Water & Symptoms Tracker Grid */}
@@ -8872,6 +8877,28 @@ export default function App() {
                 </button>
               </div>
 
+              {/* FOCUS MODE TOGGLE */}
+              <div className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between transition-all hover:border-[#8B9D83]/30">
+                <div className="flex items-center gap-4">
+                  <div className="p-3.5 bg-indigo-50 text-indigo-600 rounded-2xl">
+                    <Compass className="w-5 h-5 text-indigo-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#2B3E50] text-sm">وضع التركيز 🎯</h4>
+                    <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">إخفاء العناصر المشتتة أثناء الكتابة أو التأمل لزيادة الإنتاجية</p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setSettings(prev => ({ ...prev, focusModeEnabled: !prev.focusModeEnabled }))}
+                  className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none flex items-center cursor-pointer ${
+                    settings.focusModeEnabled ? 'bg-[#3F5449] justify-end' : 'bg-gray-200 justify-start'
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-white shadow-md" />
+                </button>
+              </div>
+
               {/* CARD FOR SMART REMINDERS */}
               <div 
                 onClick={() => setShowSmartRemindersModal(true)}
@@ -9092,13 +9119,15 @@ export default function App() {
               </div>
 
               {/* CARD 12: TYPOGRAPHY & FONT CUSTOMIZATION */}
-              <TypographySettingsSection
-                appFont={settings.appFont || 'cairo'}
-                appLineHeight={settings.appLineHeight || 'relaxed'}
-                appLanguage={settings.appLanguage}
-                onChangeFont={(font) => setSettings(prev => ({ ...prev, appFont: font }))}
-                onChangeLineHeight={(lh) => setSettings(prev => ({ ...prev, appLineHeight: lh }))}
-              />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>
+                <TypographySettingsSection
+                  appFont={settings.appFont || 'cairo'}
+                  appLineHeight={settings.appLineHeight || 'relaxed'}
+                  appLanguage={settings.appLanguage}
+                  onChangeFont={(font) => setSettings(prev => ({ ...prev, appFont: font }))}
+                  onChangeLineHeight={(lh) => setSettings(prev => ({ ...prev, appLineHeight: lh }))}
+                />
+              </Suspense>
 
               {/* CARD 13: RATE US */}
               <div 
@@ -9155,7 +9184,7 @@ export default function App() {
       </main>
 
       {/* Floating radial assistant ball for quick navigation */}
-      {settings.floatingBallEnabled && (
+      {settings.floatingBallEnabled && !settings.focusModeEnabled && (
         <FloatingBall 
           onAction={handleQuickAction} 
           isCollapsed={isBottomNavCollapsedOnMobile}
@@ -9164,7 +9193,7 @@ export default function App() {
       )}
 
       {/* Mobile Draggable Floating Button for Bottom Nav (Appears when bottom nav auto-collapses on mobile) */}
-      {isBottomNavCollapsedOnMobile && (
+      {isBottomNavCollapsedOnMobile && !settings.focusModeEnabled && (
         <motion.div
           drag="x"
           dragMomentum={false}
@@ -9285,34 +9314,41 @@ export default function App() {
       </nav>
 
       {/* 🎓 Therapist Report Modal Window */}
-      <TherapistReportModal
-        isOpen={showTherapistModal}
-        onClose={() => setShowTherapistModal(false)}
-        diaries={diaries}
-        userApiKey={settings.userApiKey}
-        appLanguage={settings.appLanguage}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>
+        <TherapistReportModal
+          isOpen={showTherapistModal}
+          onClose={() => setShowTherapistModal(false)}
+          diaries={diaries}
+          userApiKey={settings.userApiKey}
+          appLanguage={settings.appLanguage}
+        />
+      </Suspense>
 
       {/* ⭐ Rating Modal Window */}
-      <RatingModal
-        isOpen={showRatingModal}
-        onClose={() => setShowRatingModal(false)}
-        appLanguage={settings.appLanguage}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          appLanguage={settings.appLanguage}
+        />
+      </Suspense>
 
       {/* ✉️ Contact Owner Modal Window */}
-      <ContactOwnerModal
-        isOpen={showContactModal}
-        onClose={() => setShowContactModal(false)}
-        appLanguage={settings.appLanguage}
-      />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>
+        <ContactOwnerModal
+          isOpen={showContactModal}
+          onClose={() => setShowContactModal(false)}
+          appLanguage={settings.appLanguage}
+        />
+      </Suspense>
 
       {/* 🔑 Gemini API Key Modal Window */}
-      <GeminiKeyModal
-        isOpen={showGeminiKeyModal}
-        onClose={() => setShowGeminiKeyModal(false)}
-        apiKey={settings.userApiKey || ''}
-        onSave={(key) => setSettings(prev => ({ ...prev, userApiKey: key }))}
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>
+        <GeminiKeyModal
+          isOpen={showGeminiKeyModal}
+          onClose={() => setShowGeminiKeyModal(false)}
+          apiKey={settings.userApiKey || ''}
+          onSave={(key) => setSettings(prev => ({ ...prev, userApiKey: key }))}
         onClear={() => setSettings(prev => ({ ...prev, userApiKey: '' }))}
         appLanguage={settings.appLanguage}
       />
