@@ -437,3 +437,5 @@ export default function ProsConsHistoryLog({
     </div>
   );
 }
+
+export default ProsConsHistoryLog;

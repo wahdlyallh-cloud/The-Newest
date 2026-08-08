@@ -278,3 +278,5 @@ export default function LanguagesModal({
     </div>
   );
 }
+
+export default LanguagesModal;

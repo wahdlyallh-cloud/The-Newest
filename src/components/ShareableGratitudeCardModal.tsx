@@ -406,3 +406,5 @@ export default function ShareableGratitudeCardModal({
     </div>
   );
 }
+
+export default ShareableGratitudeCardModal;

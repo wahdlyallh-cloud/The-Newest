@@ -536,3 +536,5 @@ export default function PsychologicalGrowthTree({
     </div>
   );
 }
+
+export default PsychologicalGrowthTree;

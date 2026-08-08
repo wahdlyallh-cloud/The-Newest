@@ -102,3 +102,5 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
     </div>
   );
 }
+
+export default ContactOwnerModal;
