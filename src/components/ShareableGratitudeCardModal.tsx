@@ -407,4 +407,3 @@ export default function ShareableGratitudeCardModal({
   );
 }
 
-export default ShareableGratitudeCardModal;

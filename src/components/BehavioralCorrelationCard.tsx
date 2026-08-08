@@ -174,4 +174,3 @@ export default function BehavioralCorrelationCard({
   );
 }
 
-export default BehavioralCorrelationCard;

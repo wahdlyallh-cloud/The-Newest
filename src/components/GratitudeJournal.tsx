@@ -1398,4 +1398,3 @@ export default function GratitudeJournal({
   );
 }
 
-export default GratitudeJournal;

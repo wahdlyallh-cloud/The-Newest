@@ -374,4 +374,3 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
   );
 }
 
-export default LifeMap;

@@ -279,4 +279,3 @@ export default function LanguagesModal({
   );
 }
 
-export default LanguagesModal;

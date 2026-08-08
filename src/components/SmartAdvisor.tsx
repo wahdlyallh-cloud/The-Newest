@@ -1108,4 +1108,3 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   );
 }
 
-export default SmartAdvisor;

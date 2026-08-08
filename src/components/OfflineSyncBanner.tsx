@@ -121,4 +121,3 @@ export default function OfflineSyncBanner({
   );
 }
 
-export default OfflineSyncBanner;
