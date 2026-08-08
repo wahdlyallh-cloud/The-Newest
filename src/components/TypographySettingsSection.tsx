@@ -37,16 +37,13 @@ export default function TypographySettingsSection({
           </div>
           <div>
             <h3 className="font-extrabold text-[#2B3E50] text-base sm:text-lg flex items-center gap-2">
-              <span>{isArabic ? 'تخصيص الخطوط وراحة القراءة' : 'Custom Typography & Reading Comfort'}</span>
+              <span>{t.typographyTitle}</span>
               <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full font-black">
-                {isArabic ? 'شامل للتطبيق' : 'App-wide'}
+                {t.appWideBadge}
               </span>
             </h3>
             <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-              {isArabic 
-                ? 'اختر نوع الخط المفضل وضبط التباعد بين الأسطر لراحة العين أثناء قراءة اليوميات الطويلة'
-                : 'Choose your preferred font family and line spacing for optimal reading comfort'
-              }
+              {t.typographyDesc}
             </p>
           </div>
         </div>
@@ -56,12 +53,19 @@ export default function TypographySettingsSection({
       <div className="space-y-3">
         <label className="text-xs font-black text-gray-700 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[#8B9D83]" />
-          <span>{isArabic ? 'اختر خط التطبيق الرئيسي (Arabic & International Fonts):' : 'Select Main App Font Family:'}</span>
+          <span>{t.selectMainFontLabel}</span>
         </label>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {APP_FONTS.map((fontItem) => {
             const isSelected = appFont === fontItem.id;
+            const fontNameKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Name`;
+            const fontCatKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Category`;
+            const fontSampleKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Sample`;
+            const fontName = t[fontNameKey] || (isArabic ? fontItem.nameAr : fontItem.nameEn);
+            const fontCat = t[fontCatKey] || (isArabic ? fontItem.categoryAr : fontItem.categoryEn);
+            const fontSample = t[fontSampleKey] || (isArabic ? fontItem.sampleTextAr : fontItem.sampleTextEn);
+
             return (
               <button
                 key={fontItem.id}
@@ -76,7 +80,7 @@ export default function TypographySettingsSection({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-black text-sm text-[#2B3E50] flex items-center gap-1.5">
-                      <span>{isArabic ? fontItem.nameAr : fontItem.nameEn}</span>
+                      <span>{fontName}</span>
                       {fontItem.badge && (
                         <span className="text-[9px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-black">
                           {fontItem.badge}
@@ -92,7 +96,7 @@ export default function TypographySettingsSection({
                   </div>
 
                   <span className="text-[10px] text-gray-500 block font-bold mb-3">
-                    {isArabic ? fontItem.categoryAr : fontItem.categoryEn}
+                    {fontCat}
                   </span>
                 </div>
 
@@ -101,7 +105,7 @@ export default function TypographySettingsSection({
                   className="p-3 bg-white/90 border border-[#E2DCC8]/60 rounded-xl text-xs text-gray-800 shadow-2xs font-bold leading-relaxed overflow-hidden"
                   style={{ fontFamily: fontItem.fontFamilyCss }}
                 >
-                  {isArabic ? fontItem.sampleTextAr : fontItem.sampleTextEn}
+                  {fontSample}
                 </div>
               </button>
             );
@@ -113,12 +117,17 @@ export default function TypographySettingsSection({
       <div className="space-y-3 pt-3 border-t border-[#E2DCC8]">
         <label className="text-xs font-black text-gray-700 flex items-center gap-2">
           <AlignLeft className="w-4 h-4 text-[#D4A373]" />
-          <span>{isArabic ? 'التباعد بين الأسطر (راحة العين في المذكرات والقراءة):' : 'Line Height / Line Spacing (Eye Comfort):'}</span>
+          <span>{t.lineSpacingLabel}</span>
         </label>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {LINE_HEIGHT_OPTIONS.map((lhItem) => {
             const isSelected = appLineHeight === lhItem.id;
+            const lhNameKey = `lineHeight${lhItem.id.charAt(0).toUpperCase() + lhItem.id.slice(1)}Name`;
+            const lhDescKey = `lineHeight${lhItem.id.charAt(0).toUpperCase() + lhItem.id.slice(1)}Desc`;
+            const lhName = t[lhNameKey] || (isArabic ? lhItem.nameAr : lhItem.nameEn);
+            const lhDesc = t[lhDescKey] || (isArabic ? lhItem.descAr : lhItem.descEn);
+
             return (
               <button
                 key={lhItem.id}
@@ -133,12 +142,12 @@ export default function TypographySettingsSection({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-extrabold text-xs">
-                      {isArabic ? lhItem.nameAr : lhItem.nameEn}
+                      {lhName}
                     </span>
                     {isSelected && <Check className="w-4 h-4 text-amber-300 stroke-[3]" />}
                   </div>
                   <p className={`text-[10px] font-medium ${isSelected ? 'text-amber-100' : 'text-gray-500'}`}>
-                    {isArabic ? lhItem.descAr : lhItem.descEn}
+                    {lhDesc}
                   </p>
                 </div>
               </button>
@@ -152,7 +161,7 @@ export default function TypographySettingsSection({
         <div className="flex items-center justify-between text-xs font-black text-[#5A5A40]">
           <span className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-[#8B9D83]" />
-            <span>{isArabic ? 'معاينة القراءة المباشرة لصفحة اليوميات:' : 'Live Reading Comfort Preview:'}</span>
+            <span>{t.livePreviewTitle}</span>
           </span>
           <span className="text-[10px] bg-white border border-amber-200 px-2 py-0.5 rounded-lg text-gray-600 font-bold">
             {currentFontObj.nameEn} | {currentLhObj.val}x
@@ -166,15 +175,7 @@ export default function TypographySettingsSection({
             lineHeight: currentLhObj.val 
           }}
         >
-          {isArabic ? (
-            <p>
-              «هذا النص يمثّل تجربة واقعية لتدوين مذكراتك وطريقة ظهورها في التطبيق. عندما تدوّن أفكارك اليومية وتأملاتك، يمنحك خط <strong>{currentFontObj.nameAr}</strong> مع تباعد الأسطر <strong>{currentLhObj.nameAr}</strong> راحة بصرية فائقة ويساعدك على التركيز والتعمق في ذكرياتك دون إجهاد للعين.»
-            </p>
-          ) : (
-            <p>
-              "This live preview demonstrates how your diary entries and long notes will render across the app. Using <strong>{currentFontObj.nameEn}</strong> paired with a <strong>{currentLhObj.nameEn}</strong> line spacing ensures maximum legibility and effortless reading during long reflection sessions."
-            </p>
-          )}
+          <p>{t.samplePreviewParagraph}</p>
         </div>
       </div>
 

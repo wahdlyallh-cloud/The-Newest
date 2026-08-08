@@ -8273,21 +8273,21 @@ export default function App() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-[#2B3E50] text-sm">الحساب الشخصي والتسجيل</h4>
+                      <h4 className="font-bold text-[#2B3E50] text-sm">{t.accountTitle}</h4>
                       {currentUser ? (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                           {currentUser.name}
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                          زائر (غير مسجل)
+                          {t.guestUserLabel}
                         </span>
                       )}
                     </div>
                     <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">
                       {currentUser 
-                        ? `مسجل بالبريد: ${currentUser.email} • افتح مذكراتك من أي جهاز بنفس الحساب` 
-                        : 'سجل دخولك بحسابك الشخصي لمزامنة معلوماتك والوصول إليها من كل أجهزتك'}
+                        ? (t('userEmailSynced', { email: currentUser.email }) || `Logged in: ${currentUser.email}`) 
+                        : t.guestUserDesc}
                     </p>
                   </div>
                 </div>
@@ -8341,10 +8341,10 @@ export default function App() {
                   <div className="p-5 border-t border-[#E2DCC8]/60 bg-[#FAF8F5]/40 space-y-4">
                     <div className="space-y-1">
                       <h5 className="font-black text-[#5A5A40] text-xs flex items-center gap-2">
-                        <span>🔐 قفل الشاشة والبيانات (PIN، بصمة الإصبع، وبصمة الوجه):</span>
+                        <span>{t.appLockDetailsTitle}</span>
                       </h5>
                       <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
-                        عند تفعيل قفل التطبيق، سيتم طلب التحقق الأمني (بصمة الإصبع/الوجه أو رمز الـ PIN) فور مغادرة الموقع أو قفل الشاشة لحماية مذكراتك.
+                        {t.appLockDetailsDesc}
                       </p>
                     </div>
 
@@ -8358,13 +8358,13 @@ export default function App() {
                           const val = e.target.value.replace(/\D/g, '');
                           setSettings(prev => ({ ...prev, appPinCode: val }));
                         }}
-                        placeholder={isEn ? "Current (Default 1234)" : "الرمز الحالي (1234)"}
+                        placeholder={t.pinPlaceholder}
                         className="w-28 bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl px-3 py-2 text-xs text-[#2B3E50] font-mono text-center focus:outline-none focus:ring-1 focus:ring-[#8B9D83] font-black"
                       />
                       <div className="text-[10px] text-gray-500 font-bold leading-tight">
-                        <span>رمز الـ PIN السري (4 أرقام)</span>
+                        <span>{t.pinCodeLabel}</span>
                         <br />
-                        <span className="text-[#8B9D83]">الرمز الافتراضي: 1234</span>
+                        <span className="text-[#8B9D83]">{t.defaultPinHint}</span>
                       </div>
                     </div>
 
@@ -8373,21 +8373,21 @@ export default function App() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Fingerprint className="w-5 h-5 text-amber-600" />
-                          <h6 className="text-xs font-black text-[#2B3E50]">ربط بصمة الإصبع وبصمة الوجه (Passkey):</h6>
+                          <h6 className="text-xs font-black text-[#2B3E50]">{t.linkBiometricsTitle}</h6>
                         </div>
                         {settings.biometricCredentialId ? (
                           <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-lg">
-                            ✅ مفعلة ومربوطة
+                            {t.biometricActiveBadge}
                           </span>
                         ) : (
                           <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-1 rounded-lg">
-                            ⚠️ غير مربوطة
+                            {t.biometricNotActiveBadge}
                           </span>
                         )}
                       </div>
 
                       <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
-                        قم بربط بصمة جهازك الرسمية (مستشعر الاصبع أو كاميرا الوجه) لفتح التطبيق أو إنجاز الاختصارات بلمسة واحدة.
+                        {t.biometricDesc}
                       </p>
 
                       <button
@@ -8403,24 +8403,24 @@ export default function App() {
                             try {
                               localStorage.setItem('yawmiyati_biometric_cred_id', res.credentialId);
                             } catch (e) { console.warn(e); }
-                            alert('✅ تم تسجيل وتوثيق بصمة جهازك بنجاح! يمكنك الآن فتح التطبيق ببصمة الاصبع أو الوجه.');
+                            alert('✅ ' + (t('biometricSuccess') || 'Biometrics registered successfully!'));
                           } else {
-                            alert(`❌ ${res.error || 'فشلت عملية تسجيل البصمة.'}`);
+                            alert(`❌ ${res.error || 'Biometrics registration failed.'}`);
                           }
                         }}
                         className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 active:scale-98 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <Fingerprint className="w-4 h-4 text-white" />
-                        <span>{settings.biometricCredentialId ? 'تحديث أو إعادة ربط بصمة الجهاز 👆👤' : 'ربط وتفعيل بصمة الجهاز / الوجه الآن 👆👤'}</span>
+                        <span>{settings.biometricCredentialId ? t.biometricUpdateBtn : t.biometricLinkBtn}</span>
                       </button>
                     </div>
 
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 text-xs font-bold leading-relaxed flex items-start gap-2">
                       <span className="text-base shrink-0">💡</span>
                       <div>
-                        <strong>تنبيه هائم للحماية المطلقة:</strong>
+                        <strong>{t.biometricAlertTitle}</strong>
                         <p className="mt-0.5 text-[11px] text-amber-800 font-medium">
-                          عند الضغط على "ربط وتفعيل بصمة الجهاز"، سيطلب منك نظام التشغيل (أندرويد أو iOS) مسح الإصبع أو الوجه. بعدها لن يتم فتح التطبيق بالبصمة إلا إذا استخدمت الإصبع أو الوجه الصحيح المسجل بهاتفك.
+                          {t.biometricAlertDesc}
                         </p>
                       </div>
                     </div>
@@ -8472,7 +8472,7 @@ export default function App() {
                     <div className="space-y-2">
                       {(!settings.reminders || settings.reminders.length === 0) ? (
                         <p className="text-xs text-gray-400 text-center py-2 font-medium">
-                          {isEn ? "No custom alarms added." : "لا توجد أي منبهات نشطة حالياً."}
+                          {t.noActiveAlarms}
                         </p>
                       ) : (
                         settings.reminders.map((rem) => (
@@ -8511,7 +8511,7 @@ export default function App() {
                                     }));
                                   }}
                                   className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
-                                  title={isEn ? "Delete Alarm" : "حذف المنبه"}
+                                  title={t.deleteAlarmTitle}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -8524,14 +8524,14 @@ export default function App() {
 
                     {/* Add Custom Alarm Form */}
                     <div className="bg-[#8B9D83]/5 border border-[#8B9D83]/15 p-4 rounded-xl space-y-3">
-                      <span className="text-xs font-black text-[#5A5A40] block">⚡ {isEn ? "Add Custom Reminder Alarm:" : "إضافة منبه/تذكير سلوكي جديد:"}</span>
+                      <span className="text-xs font-black text-[#5A5A40] block">⚡ {t.addNewAlarmTitle}</span>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
                           value={newAlarmTitle}
                           onChange={(e) => setNewAlarmTitle(e.target.value)}
-                          placeholder={isEn ? "e.g. Meditate or Drink Water" : "مثل: جلسة كتابة حرة، استراحة شرب ماء..."}
+                          placeholder={t.alarmTitlePlaceholder}
                           className="bg-white border border-[#E2DCC8] text-xs px-3 py-2 rounded-lg text-[#2B3E50] focus:outline-none placeholder-gray-400 font-bold"
                         />
                         <div className="flex gap-2">
@@ -8560,7 +8560,7 @@ export default function App() {
                             }}
                             className="bg-[#3F5449] hover:bg-[#2C3E50] text-white text-xs px-4 py-2 rounded-lg font-black transition-all cursor-pointer"
                           >
-                            {isEn ? "Add" : "+ إضافة"}
+                            {t.addAlarmBtn}
                           </button>
                         </div>
                       </div>
@@ -8588,7 +8588,7 @@ export default function App() {
                 </div>
 
                 {expandedSettingsCard === 'archive' && (
-                  <div className="p-5 border-t border-[#E2DCC8]/60 bg-[#FAF8F5]/60 space-y-4" dir="rtl">
+                  <div className="p-5 border-t border-[#E2DCC8]/60 bg-[#FAF8F5]/60 space-y-4" dir={langInfo.dir}>
                     {/* Filter and Search Bar inside Archive */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                       {/* Search Input */}
@@ -8597,15 +8597,15 @@ export default function App() {
                           type="text"
                           value={archivedSearchQuery}
                           onChange={(e) => setArchivedSearchQuery(e.target.value)}
-                          placeholder="ابحث في اليوميات والخواطر المؤرشفة..."
-                          className="w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:outline-none rounded-2xl py-2 pr-9 pl-3 text-xs text-[#3A3A3A] shadow-3xs"
+                          placeholder={t.archiveSearchPlaceholder}
+                          className="w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:outline-none rounded-2xl py-2 px-9 text-xs text-[#3A3A3A] shadow-3xs"
                         />
-                        <Search className="w-4 h-4 text-gray-400 absolute right-3 top-2.5" />
+                        <Search className="w-4 h-4 text-gray-400 absolute right-3 rtl:right-3 ltr:left-3 top-2.5" />
                         {archivedSearchQuery && (
                           <button 
                             type="button" 
                             onClick={() => setArchivedSearchQuery('')}
-                            className="absolute left-3 top-2 text-xs text-gray-400 hover:text-gray-600 font-bold"
+                            className="absolute left-3 rtl:left-3 ltr:right-3 top-2 text-xs text-gray-400 hover:text-gray-600 font-bold"
                           >
                             ✕
                           </button>
@@ -8613,7 +8613,7 @@ export default function App() {
                       </div>
 
                       {/* Type Filter Pills */}
-                      <div className="flex items-center space-x-1.5 space-x-reverse shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           type="button"
                           onClick={() => setArchivedTypeFilter('all')}
@@ -8623,7 +8623,7 @@ export default function App() {
                               : 'bg-white text-gray-600 border border-[#E2DCC8] hover:bg-gray-50'
                           }`}
                         >
-                          الكل ({diaries.filter(d => d.isArchived && !d.isTrash).length})
+                          {t.filterAll} ({diaries.filter(d => d.isArchived && !d.isTrash).length})
                         </button>
                         <button
                           type="button"
@@ -8634,7 +8634,7 @@ export default function App() {
                               : 'bg-white text-gray-600 border border-[#E2DCC8] hover:bg-gray-50'
                           }`}
                         >
-                          📖 اليوميات ({diaries.filter(d => d.isArchived && !d.isTrash && (d.diaryType || 'diary') === 'diary').length})
+                          📖 {t.filterDiaries} ({diaries.filter(d => d.isArchived && !d.isTrash && (d.diaryType || 'diary') === 'diary').length})
                         </button>
                         <button
                           type="button"
@@ -8645,7 +8645,7 @@ export default function App() {
                               : 'bg-white text-gray-600 border border-[#E2DCC8] hover:bg-gray-50'
                           }`}
                         >
-                          ✍️ الخواطر ({diaries.filter(d => d.isArchived && !d.isTrash && d.diaryType === 'thought').length})
+                          ✍️ {t.filterThoughts} ({diaries.filter(d => d.isArchived && !d.isTrash && d.diaryType === 'thought').length})
                         </button>
                       </div>
                     </div>
@@ -8673,10 +8673,10 @@ export default function App() {
                               📦
                             </div>
                             <p className="text-xs font-bold text-[#3A3A3A]">
-                              {archivedSearchQuery ? 'لا توجد نتائج مطابقة في هذا الأرشيف.' : 'أرشيف المذكرات والخواطر فارغ حالياً.'}
+                              {archivedSearchQuery ? t.archiveEmptySearch : t.archiveEmptyTitle}
                             </p>
                             <p className="text-[11px] text-gray-400 max-w-sm mx-auto leading-relaxed">
-                              يمكنك أرشفة أي يومية أو خاطرة من قسم "اليوميات والفضفضة" بحرية لحفظها هنا برقي وبعيداً عن القائمة الرئيسية.
+                              {t.archiveEmptyDesc}
                             </p>
                             <button
                               type="button"
@@ -8684,9 +8684,9 @@ export default function App() {
                                 setActiveTab('diaries');
                                 setActiveDiariesSubTab('journal');
                               }}
-                              className="inline-flex items-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-black rounded-xl transition-all shadow-3xs cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-black rounded-xl transition-all shadow-3xs cursor-pointer"
                             >
-                              <span>الانتقال لليوميات لأرشفة عنصر ✍️</span>
+                              <span>{t.goToDiariesToArchive}</span>
                             </button>
                           </div>
                         );
@@ -8707,7 +8707,7 @@ export default function App() {
                                       ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]' 
                                       : 'bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8]'
                                   }`}>
-                                    {diary.diaryType === 'thought' ? '✍️ خاطرة' : '📓 يومية'}
+                                    {diary.diaryType === 'thought' ? t.thoughtBadgeShort : t.diaryBadgeShort}
                                   </span>
                                   <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
                                     <span>📅</span>
@@ -8717,12 +8717,12 @@ export default function App() {
 
                                 {/* Title */}
                                 <h5 className="font-extrabold text-[#2B3E50] text-xs line-clamp-1">
-                                  {diary.title || 'بدون عنوان'}
+                                  {diary.title || t.untitledNote}
                                 </h5>
 
                                 {/* Content Preview Snippet */}
                                 <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
-                                  {diary.content || <em className="text-gray-400">مرفقات وسائط وصوتيات فقط</em>}
+                                  {diary.content || <em className="text-gray-400">...</em>}
                                 </p>
                               </div>
 
@@ -8731,25 +8731,25 @@ export default function App() {
                                 <button
                                   type="button"
                                   onClick={() => setViewArchivedDiary(diary)}
-                                  className="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
+                                  className="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1"
                                 >
                                   <Eye className="w-3 h-3 text-indigo-600" />
-                                  <span>معاينة وقراءة</span>
+                                  <span>{t.previewAndRead}</span>
                                 </button>
 
-                                <div className="flex items-center space-x-1 space-x-reverse">
+                                <div className="flex items-center gap-1">
                                   <button
                                     type="button"
-                                    title="استرجاع من الأرشيف"
+                                    title={t.restoreBtn}
                                     onClick={() => toggleArchiveDiary(diary.id)}
-                                    className="px-3 py-1.5 bg-[#8B9D83]/15 hover:bg-[#8B9D83] text-[#556E4F] hover:text-white rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
+                                    className="px-3 py-1.5 bg-[#8B9D83]/15 hover:bg-[#8B9D83] text-[#556E4F] hover:text-white rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center gap-1"
                                   >
                                     <RotateCcw className="w-3 h-3" />
-                                    <span>استرجاع</span>
+                                    <span>{t.restoreBtn}</span>
                                   </button>
                                   <button
                                     type="button"
-                                    title="نقل لسلة المهملات"
+                                    title={t.moveToTrash}
                                     onClick={() => handleDeleteDiary(diary.id)}
                                     className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all cursor-pointer"
                                   >
@@ -8788,19 +8788,19 @@ export default function App() {
                   <div className="p-5 border-t border-[#E2DCC8]/60 bg-[#FAF8F5]/40 space-y-4">
                     {diaries.filter(d => d.isTrash).length === 0 ? (
                       <p className="text-xs text-gray-400 text-center py-4 font-bold">
-                        {isEn ? "Trash can is completely empty." : "سلة المهملات فارغة حالياً 🗑️"}
+                        {t.trashEmpty}
                       </p>
                     ) : (
                       <div className="space-y-3">
                         <div className="flex justify-between items-center pb-2 border-b border-gray-200">
                           <span className="text-[11px] text-gray-500 font-bold">
-                            {diaries.filter(d => d.isTrash).length} {isEn ? "items deleted" : "مذكرات في السلة"}
+                            {diaries.filter(d => d.isTrash).length} {t.itemsInTrash}
                           </span>
                           <button
                             onClick={handleEmptyTrash}
                             className="text-xs text-red-600 hover:text-red-700 font-black cursor-pointer"
                           >
-                            {isEn ? "🗑️ Empty Trash Can" : "🗑️ تفريغ السلة بالكامل"}
+                            {t.emptyTrashBtn}
                           </button>
                         </div>
 
@@ -8808,7 +8808,7 @@ export default function App() {
                           {diaries.filter(d => d.isTrash).map(diary => (
                             <div key={diary.id} className="flex items-center justify-between bg-white border border-[#E2DCC8]/60 p-3.5 rounded-xl">
                               <div className="truncate pr-2">
-                                <span className="text-xs font-black text-[#2B3E50] block truncate">{diary.title || 'بدون عنوان'}</span>
+                                <span className="text-xs font-black text-[#2B3E50] block truncate">{diary.title || t.untitledNote}</span>
                                 <span className="text-[10px] text-gray-400 font-bold">{diary.createdAt.split('T')[0]}</span>
                               </div>
                               
@@ -8816,14 +8816,14 @@ export default function App() {
                                 <button
                                   onClick={() => handleRestoreDiary(diary.id)}
                                   className="px-2.5 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-[#3F5449] hover:text-white rounded-lg text-[10px] font-black transition-all cursor-pointer"
-                                  title={isEn ? "Restore" : "استرجاع"}
+                                  title={t.restoreBtn}
                                 >
-                                  {isEn ? "Restore" : "استرجاع"}
+                                  {t.restoreBtn}
                                 </button>
                                 <button
                                   onClick={() => handlePermanentDeleteDiary(diary.id)}
                                   className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                  title={isEn ? "Delete Permanently" : "حذف نهائي"}
+                                  title={t.deletePermanently}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -8870,17 +8870,17 @@ export default function App() {
                   </div>
                   <div>
                     <h4 className="font-bold text-[#2B3E50] text-sm flex items-center gap-2">
-                      <span>نظام التذكيرات الذكية والتنبيهات</span>
-                      <span className="text-[10px] bg-[#D4A373] text-white px-2 py-0.5 rounded-full font-bold">تكرار وملاحظات</span>
+                      <span>{t.smartRemindersCardTitle}</span>
+                      <span className="text-[10px] bg-[#D4A373] text-white px-2 py-0.5 rounded-full font-bold">{t.smartRemindersBadge}</span>
                     </h4>
                     <p className="text-[10px] text-[#556E4F] mt-1 font-bold leading-normal">
-                      إدارة التذكيرات (يومي، أسبوعي، أيام محددة) مع إضافة عبارات تحفيزية ملهمة
+                      {t.smartRemindersCardDesc}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black text-[#4E685B] bg-white/80 border border-[#DCE4D8] px-2.5 py-1 rounded-xl">
-                    {(settings.reminders || []).length} تذكير
+                    {(settings.reminders || []).length} {t.remindersCountBadge}
                   </span>
                   <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${isEn ? 'rotate-0' : 'rotate-180'}`} />
                 </div>
@@ -8912,17 +8912,17 @@ export default function App() {
                 {/* 📱 Sub-Card: Lock Screen Persistent Widget Notification */}
                 <div className="p-4 bg-gradient-to-br from-[#F5F1E6]/80 via-amber-50/50 to-white rounded-2xl border-2 border-[#D4A373]/40 space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 space-x-reverse">
+                    <div className="flex items-center gap-3">
                       <div className="p-2.5 bg-[#D4A373] text-white rounded-2xl shadow-xs shrink-0">
                         <Smartphone className="w-5 h-5" />
                       </div>
                       <div>
                         <span className="text-xs sm:text-sm font-black text-gray-800 flex items-center gap-1.5">
-                          <span>إشعار ويدجت شاشة القفل المثبت</span>
-                          <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-extrabold">مُوصى به 🔥</span>
+                          <span>{t.lockScreenWidgetTitle}</span>
+                          <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-extrabold">{t.recommendedBadge}</span>
                         </span>
                         <p className="text-[10px] text-gray-500 font-bold mt-0.5">
-                          إظهار لوحة الاختصارات ({isEn ? "Hayat AI" : "حياة AI"}) كإشعار مثبّت على شاشة القفل الخارجية عند ضغط زر الباور للهاتف.
+                          {t.lockScreenWidgetDesc}
                         </p>
                       </div>
                     </div>
@@ -8948,12 +8948,12 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         triggerLockScreenNotification();
-                        alert('تم إرسال وتثبيت الإشعار على شاشة القفل بنجاح! 📌🔔');
+                        alert('📌 ' + (t('lockScreenAlertSuccess') || 'Lock screen widget pinned successfully!'));
                       }}
                       className="px-3.5 py-1.5 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center gap-1.5 active:scale-95"
                     >
                       <BellRing className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
-                      <span>تثبيت / تجربة الإشعار على شاشة القفل الآن 📌</span>
+                      <span>{t.testLockScreenNotificationBtn}</span>
                     </button>
 
                     <button
@@ -8962,7 +8962,7 @@ export default function App() {
                       className="px-3 py-1.5 bg-amber-100/80 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1"
                     >
                       <Info className="w-3.5 h-3.5 text-amber-700" />
-                      <span>كيف تظهر على شاشة القفل؟ ℹ️</span>
+                      <span>{t.howLockScreenWorksBtn}</span>
                     </button>
                   </div>
                 </div>
@@ -8970,17 +8970,17 @@ export default function App() {
                 {/* 🖥️ Sub-Card 2: Fullscreen Mode & Hide Browser Address Bar */}
                 <div className="p-4 bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-white rounded-2xl border-2 border-blue-200/80 space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 space-x-reverse">
+                    <div className="flex items-center gap-3">
                       <div className="p-2.5 bg-blue-600 text-white rounded-2xl shadow-xs shrink-0">
                         <Maximize className="w-5 h-5" />
                       </div>
                       <div>
                         <span className="text-xs sm:text-sm font-black text-gray-800 flex items-center gap-1.5">
-                          <span>وضع الشاشة الكاملة وإخفاء شريط المتصفح العلوي</span>
-                          <span className="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded-full font-extrabold">PWA 🖥️</span>
+                          <span>{t.fullscreenModeTitle}</span>
+                          <span className="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded-full font-extrabold">{t.pwaBadge}</span>
                         </span>
                         <p className="text-[10px] text-gray-500 font-bold mt-0.5">
-                          إخفاء شريط عنوان المتصفح (URL) وعناصر القوائم العلوية للحصول على تجربة تطبيق ملء الشاشة بدون تشتيت.
+                          {t.fullscreenModeDesc}
                         </p>
                       </div>
                     </div>
@@ -9038,18 +9038,18 @@ export default function App() {
                       className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center gap-1.5 active:scale-95"
                     >
                       <Maximize className="w-3.5 h-3.5 text-white animate-pulse" />
-                      <span>تفعيل / تبديل الشاشة الكاملة الآن 🖥️</span>
+                      <span>{t.toggleFullscreenBtn}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => {
-                        alert(`💡 كيف تخفي شريط المتصفح العلوي بشكل دائم وحذفه من الشاشة؟\n\n1. افتح قائمة المتصفح (⋮) في أعلى الصفحة أو زر المشاركة.\n2. اختر 'إضافة إلى الشاشة الرئيسية' (Add to Home Screen).\n3. سيتم تثبيت تطبيق (${t.appName}) كـ PWA مستقل بدون أي شريط عنوان إطلاقاً!`);
+                        alert(`💡 ${t('pwaInstructionTitle') || 'How to hide browser bar permanently?'}\n\n1. ${t('pwaStep1') || 'Open browser menu (⋮) or Share button.'}\n2. ${t('pwaStep2') || "Select 'Add to Home Screen'."}\n3. ${t('pwaStep3') || 'The app will install as a standalone PWA without address bar!'}`);
                       }}
                       className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-900 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1"
                     >
                       <Info className="w-3.5 h-3.5 text-blue-700" />
-                      <span>طريقة الإخفاء الدائم PWA ℹ️</span>
+                      <span>{t.pwaHowToBtn}</span>
                     </button>
                   </div>
                 </div>
@@ -9130,8 +9130,8 @@ export default function App() {
 
             {/* Developer/System credits details */}
             <div className="pt-6 border-t border-[#E2DCC8]/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-gray-400 font-bold leading-relaxed text-center">
-              <span>{isEn ? "✨ Hayat AI — Stable Private Version 1.0.0" : "✨ حياة AI — الإصدار المستقر والخاص 1.0.0"}</span>
-              <span className="max-w-xs">{isEn ? "Developed with 100% privacy protection & smart behavioral support." : "تم التطوير بخصوصية مطلقة وأعلى درجات الحماية المعرفية السلوكية والذكاء الاصطناعي لراحتك النفسية."}</span>
+              <span>{t.appVersionCredits}</span>
+              <span className="max-w-xs">{t.privacyCredits}</span>
             </div>
 
           </div>
