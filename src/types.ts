@@ -162,7 +162,9 @@ export interface HabitSettings {
   autoHideHeaderOnScroll?: boolean; // Auto-hide header on scroll
 }
 
-export type AppLanguage = 'ar' | 'en';
+export type SupportedLanguage = 'ar' | 'en' | 'de' | 'fr' | 'es' | 'it' | 'ru' | 'zh' | 'ja' | 'tr';
+
+export type AppLanguage = SupportedLanguage;
 export type AppFontFamily = 'cairo' | 'tajawal' | 'almarai' | 'amiri' | 'noto_naskh' | 'jakarta' | 'system';
 export type AppLineHeight = 'compact' | 'normal' | 'relaxed' | 'spacious';
 
@@ -172,6 +174,7 @@ export interface AppSettings {
   lockScreenWidgetEnabled?: boolean; // Pinned lock screen widget
   fullscreenModeEnabled?: boolean; // Fullscreen mode
   autoHideHeaderOnScroll?: boolean; // Auto-hide header on scroll
+  focusModeEnabled?: boolean; // Focus Mode to hide distractions
   appLanguage: AppLanguage;
   appFont?: AppFontFamily; // App font family
   appLineHeight?: AppLineHeight; // App line height
@@ -184,6 +187,7 @@ export interface AppSettings {
   userApiKey?: string; // Custom client API Key for standalone / APK usage
   reminders?: AppReminder[]; // Added scheduled reminders
   habitSettings?: HabitSettings;
+  firstLaunch?: boolean; // تتبع أول دخول للتطبيق
 }
 
 export interface HabitHistoryEntry {
