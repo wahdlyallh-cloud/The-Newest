@@ -670,5 +670,3 @@ export default function WriteDiaryImporter({
     </div>
   );
 }
-
-export default WriteDiaryImporter;
