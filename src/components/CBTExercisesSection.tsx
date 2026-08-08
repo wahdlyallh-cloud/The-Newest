@@ -1505,3 +1505,5 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
     </div>
   );
 };
+
+export default CBTExercisesSection;
