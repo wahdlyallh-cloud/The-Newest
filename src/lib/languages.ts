@@ -442,13 +442,33 @@ function resolveKeyInDicts(key: string): string {
   return key;
 }
 
-// Proxy wrapper for dictionary objects so direct property access (e.g. dict.dhikrTitle) resolves safely
-function createSafeTranslationProxy(targetDict: Record<string, any>) {
-  return new Proxy(targetDict, {
-    get(target, prop: string) {
-      if (typeof prop !== 'string') return target[prop];
-      if (prop in target && target[prop] !== undefined) return target[prop];
+// Proxy wrapper that functions both as a callable function (t('key')) AND as property lookup (t.key)
+function createSafeTranslationProxy(targetDict: Record<string, any> = AR_DICT) {
+  const translateFn = (key?: string, replacements?: Record<string, any> | string): any => {
+    if (!key || typeof key !== 'string') return '';
+    let val = resolveKeyInDicts(key);
+
+    if (replacements && typeof replacements === 'object') {
+      Object.keys(replacements).forEach((rKey) => {
+        val = val.replace(new RegExp(`\\{${rKey}\\}|%${rKey}%`, 'g'), String(replacements[rKey]));
+      });
+    }
+    return val;
+  };
+
+  return new Proxy(translateFn as any, {
+    get(target, prop: string | symbol) {
+      if (typeof prop !== 'string') return (target as any)[prop];
+      if (prop in target && (target as any)[prop] !== undefined) {
+        return (target as any)[prop];
+      }
+      if (prop in targetDict && targetDict[prop] !== undefined) {
+        return targetDict[prop];
+      }
       return resolveKeyInDicts(prop);
+    },
+    apply(target, thisArg, argArray) {
+      return translateFn(argArray[0], argArray[1]);
     }
   });
 }
