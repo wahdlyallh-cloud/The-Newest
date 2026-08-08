@@ -4731,7 +4731,8 @@ export default function App() {
         
         {/* Offline & Cloud Background Sync Status Banner */}
         {!settings.focusModeEnabled && (
-          <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}>\n            <OfflineSyncBanner appLanguage={settings.appLanguage} />\n          </Suspense>
+          <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div></div>}><OfflineSyncBanner appLanguage={settings.appLanguage} />
+          </Suspense>
         )}
 
         {/* Mock Android Notification Widget at the top of the Home Dashboard for simulation */}
@@ -9349,9 +9350,10 @@ export default function App() {
           onClose={() => setShowGeminiKeyModal(false)}
           apiKey={settings.userApiKey || ''}
           onSave={(key) => setSettings(prev => ({ ...prev, userApiKey: key }))}
-        onClear={() => setSettings(prev => ({ ...prev, userApiKey: '' }))}
-        appLanguage={settings.appLanguage}
-      />
+          onClear={() => setSettings(prev => ({ ...prev, userApiKey: '' }))}
+          appLanguage={settings.appLanguage}
+        />
+      </Suspense>
 
       {/* ☁️ Backup & Sync Modal Window */}
       <BackupSyncModal
