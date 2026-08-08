@@ -66,3 +66,5 @@ export function LanguageSelectorModal({ isOpen, onClose, onSelectLanguage }: Lan
     </div>
   );
 }
+
+export default LanguageSelectorModal;

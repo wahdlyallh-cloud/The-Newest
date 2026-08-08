@@ -1833,3 +1833,5 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     </div>
   );
 };
+
+export default TasksChecklistSection;

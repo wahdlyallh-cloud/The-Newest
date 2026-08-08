@@ -1,110 +1,54 @@
 ```gitignore
-# Compiled and build artifacts
-*.pyc
-__pycache__/
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
-
 # Dependencies
 node_modules/
-venv/
-.venv/
-.env
-.env.local
-*.env.*
 
-# Build directories
+# Build outputs
 dist/
 build/
 target/
 
-# Python specific
-*.pyc
+# Python
 __pycache__/
+*.pyc
 *.pyo
 *.pyd
-.Python
-*.so
 .Python
 env/
 venv/
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
+.ENV
+.python-version
+
+# Logs
 *.log
-*.tmp
+
+# Environment variables
+.env
+.env.local
+.env.*
+
+# IDE files
+.vscode/
+.idea/
 *.swp
 *.swo
-.DS_Store
-Thumbs.db
+*.tmp
 
-# JavaScript/Node specific
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-node_modules/
-jspm_packages/
-*.js.map
-*.mjs.map
-*.tsbuildinfo
-.nyc_output
+# Coverage reports
 coverage/
-.nyc_output/
-istanbul/
-.mocha.opts
-.travis.yml
-circle.yml
-appveyor.yml
-*.tgz
-.node-gyp/
-npm-shrinkwrap.json
-.npm
-.npmrc
-.eslintcache
-.stylelintcache
-.node-version
-.nvmrc
+htmlcov/
+.coverage
 
-# TypeScript
-*.tsbuildinfo
-*.js.map
-*.jsx.map
-*.ts.map
-*.tsx.map
-
-# React/Next.js
-.next/
-out/
-build/
-public/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# General
-*.tmp
-*.temp
-*.log
-*.swp
-*.swo
+# OS generated files
 .DS_Store
 Thumbs.db
-desktop.ini
-*.un~
-*~
+
+# MyPy cache
+.mypy_cache/
+__pycache__/
+
+# Pytest cache
+.pytest_cache/
 
 # Compressed files
 *.zip
@@ -129,30 +73,4 @@ desktop.ini
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# IDE specific
-.vscode/
-.idea/
-*.iml
-*.iws
-*.db
-*.db-journal
-*~
-.DS_Store
-ehthumbs.db
-Icon?
-Thumbs.db
-*.sublime-workspace
-*.swp
-*.swo
-*~
-.project
-.classpath
-.settings/
-*.tmproj
-nbproject/
-*.nib
-*.emlx
-.DS_Store
-.vs/
 ```
