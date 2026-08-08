@@ -136,4 +136,3 @@ export default function RatingModal({ isOpen, onClose, appLanguage = 'ar' }: Rat
   );
 }
 
-export default RatingModal;

@@ -1473,4 +1473,3 @@ ${isAr ? 'تم التوليد بواسطة تطبيق حياة AI 🌿' : 'Gener
   );
 }
 
-export default DailyProsConsModal;

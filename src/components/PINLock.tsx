@@ -559,4 +559,3 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
   );
 }
 
-export default PINLock;

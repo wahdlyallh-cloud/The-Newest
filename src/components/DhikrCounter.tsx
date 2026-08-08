@@ -206,4 +206,3 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
   );
 }
 
-export default DhikrCounter;

@@ -189,5 +189,3 @@ export default function GeminiKeyModal({ isOpen, onClose, apiKey, onSave, onClea
     </div>
   );
 }
-
-export default GeminiKeyModal;

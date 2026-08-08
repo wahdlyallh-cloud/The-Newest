@@ -183,4 +183,3 @@ export default function TypographySettingsSection({
   );
 }
 
-export default TypographySettingsSection;

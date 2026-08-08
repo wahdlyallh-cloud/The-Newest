@@ -292,4 +292,3 @@ export default function BackupSyncModal({
   );
 }
 
-export default BackupSyncModal;
