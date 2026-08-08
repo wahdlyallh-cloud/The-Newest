@@ -489,4 +489,309 @@ const COMMON_ES = {
   'journal.save_btn': 'Guardar Entrada',
   'nav.home': 'Inicio',
   'nav.diaries': 'Diario',
-  'nav.advisor': 'Asesor AI'
+  'nav.advisor': 'Asesor AI',
+  'nav.progress': 'Análisis y Progreso',
+  'nav.settings': 'Ajustes',
+  'home.safe_space': 'Tu espacio seguro y totalmente encriptado',
+  'home.greeting_morning': 'Buenos Días y Mente Tranquila',
+  'home.greeting_afternoon': 'Buenas Tardes y Serenidad',
+  'home.greeting_evening': 'Noche Tranquila y Buen Descanso',
+  common: {
+    appName: "Hayat AI",
+    yes: "Sí",
+    no: "No",
+    closeBtn: "Cerrar",
+    retryBtn: "Reintentar",
+    homeTab: "Inicio",
+    diariesTab: "Diario",
+    advisorTab: "Asesor",
+    analyticsTab: "Análisis",
+    settingsTab: "Ajustes",
+  },
+  settings: {
+    settingsTitle: "Ajustes Generales",
+    settingsSubtitle: "Personalizar asesor AI, candado de seguridad e idioma",
+    apiKeyTitle: "Tu Clave API 🔑",
+    languagesTitle: "Idiomas de la App 🌐",
+    darkModeTitle: "Modo Oscuro ☀️/🌙",
+  },
+};
+
+const COMMON_FR = {
+  ...COMMON_EN,
+  'journal.subtab_journal': 'Journal Intime et Expression',
+  'journal.subtab_tasks': 'Tâches Quotidiennes',
+  'journal.subtab_gratitude': 'Mur de Gratitude',
+  'journal.subtab_cbt': 'Exercices TCC',
+  'journal.write_new': 'Écrire une Nouvelle Note',
+  'nav.home': 'Accueil',
+  'nav.diaries': 'Journal',
+  'nav.advisor': 'Conseiller AI',
+  'nav.progress': 'Statistiques',
+  'nav.settings': 'Paramètres',
+  'home.safe_space': 'Votre espace sécurisé et chiffré',
+  common: {
+    appName: "Hayat AI",
+    yes: "Oui",
+    no: "Non",
+    closeBtn: "Fermer",
+    retryBtn: "Réessayer",
+    homeTab: "Accueil",
+    diariesTab: "Journal",
+    advisorTab: "Conseiller",
+    analyticsTab: "Analyse",
+    settingsTab: "Paramètres",
+  },
+};
+
+const COMMON_DE = {
+  ...COMMON_EN,
+  'journal.subtab_journal': 'Tagebuch & Gedanken',
+  'journal.subtab_tasks': 'Tägliche Aufgaben',
+  'journal.subtab_gratitude': 'Dankbarkeitswand',
+  'journal.subtab_cbt': 'KVT Übungen',
+  'journal.write_new': 'Neuen Eintrag Schreiben',
+  'nav.home': 'Startseite',
+  'nav.diaries': 'Tagebuch',
+  'nav.advisor': 'AI Berater',
+  'nav.progress': 'Fortschritt',
+  'nav.settings': 'Einstellungen',
+  'home.safe_space': 'Ihr sicherer und verschlüsselter Bereich',
+  common: {
+    appName: "Hayat AI",
+    yes: "Ja",
+    no: "Nein",
+    closeBtn: "Schließen",
+    retryBtn: "Wiederholen",
+    homeTab: "Startseite",
+    diariesTab: "Tagebuch",
+    advisorTab: "Berater",
+    analyticsTab: "Analyse",
+    settingsTab: "Einstellungen",
+  },
+};
+
+export const BASELINE_DICTIONARIES: Record<string, any> = {
+  ar: COMMON_AR,
+  en: COMMON_EN,
+  es: COMMON_ES,
+  fr: COMMON_FR,
+  de: COMMON_DE,
+  tr: COMMON_EN,
+  ur: COMMON_AR,
+  ru: COMMON_EN,
+  zh: COMMON_EN,
+  ja: COMMON_EN,
+};
+
+export interface LanguageContextType {
+  currentLanguage: AppLanguage;
+  setLanguage: (lang: AppLanguage | string) => void;
+  t: (key: string) => string;
+  isRTL: boolean;
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export function getTranslation(lang: string | AppLanguage): any {
+  const code = (lang || 'ar') as string;
+  return BASELINE_DICTIONARIES[code] || BASELINE_DICTIONARIES['en'] || BASELINE_DICTIONARIES['ar'];
+}
+
+export function LanguageProvider({
+  children,
+  initialLanguage = 'ar',
+}: {
+  children: ReactNode;
+  initialLanguage?: AppLanguage;
+}) {
+  const [currentLanguage, setCurrentLanguageState] = useState<AppLanguage>(initialLanguage);
+
+  const setLanguage = (lang: string) => {
+    const validLang = (SUPPORTED_LANGUAGES.some((l) => l.code === lang) ? lang : 'ar') as AppLanguage;
+    setCurrentLanguageState(validLang);
+  };
+
+  const isRTL = (getLanguageInfo(currentLanguage)?.dir || 'rtl') === 'rtl';
+
+  const t = (key: string): string => {
+    if (!key || typeof key !== 'string') return '';
+    try {
+      const targetDict = getTranslation(currentLanguage);
+
+      if (targetDict && typeof targetDict[key] === 'string') {
+        return targetDict[key];
+      }
+
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        let curr: any = targetDict;
+        for (const p of parts) {
+          if (curr && typeof curr === 'object' && p in curr) {
+            curr = curr[p];
+          } else {
+            curr = undefined;
+            break;
+          }
+        }
+        if (typeof curr === 'string') return curr;
+      }
+
+      const enDict = getTranslation('en');
+      if (enDict && typeof enDict[key] === 'string') {
+        return enDict[key];
+      }
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        let curr: any = enDict;
+        for (const p of parts) {
+          if (curr && typeof curr === 'object' && p in curr) {
+            curr = curr[p];
+          } else {
+            curr = undefined;
+            break;
+          }
+        }
+        if (typeof curr === 'string') return curr;
+      }
+
+      if (currentLanguage === 'ar') {
+        const arDict = getTranslation('ar');
+        if (arDict && typeof arDict[key] === 'string') {
+          return arDict[key];
+        }
+      }
+
+      return key;
+    } catch (e) {
+      console.error('Safe t() lookup fallback for key:', key, e);
+      return String(key || '');
+    }
+  };
+
+  return React.createElement(
+    LanguageContext.Provider,
+    { value: { currentLanguage, setLanguage, t, isRTL } },
+    children
+  );
+}
+
+export function useLanguage(): LanguageContextType {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    return {
+      currentLanguage: 'ar',
+      setLanguage: () => {},
+      t: (key: string) => key,
+      isRTL: true,
+    };
+  }
+  return context;
+}
+
+export interface LanguageInfo {
+  code: AppLanguage;
+  name: string;
+  nativeName: string;
+  flag: string;
+  dir: 'rtl' | 'ltr';
+  speechLang: string;
+  aiPromptLang: string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
+  {
+    code: 'ar',
+    name: 'Arabic',
+    nativeName: 'العربية',
+    flag: '🇸🇦',
+    dir: 'rtl',
+    speechLang: 'ar-SA',
+    aiPromptLang: 'Arabic (العربية)',
+  },
+  {
+    code: 'en',
+    name: 'English',
+    nativeName: 'English',
+    flag: '🇺🇸',
+    dir: 'ltr',
+    speechLang: 'en-US',
+    aiPromptLang: 'English',
+  },
+  {
+    code: 'fr',
+    name: 'French',
+    nativeName: 'Français',
+    flag: '🇫🇷',
+    dir: 'ltr',
+    speechLang: 'fr-FR',
+    aiPromptLang: 'French (Français)',
+  },
+  {
+    code: 'de',
+    name: 'German',
+    nativeName: 'Deutsch',
+    flag: '🇩🇪',
+    dir: 'ltr',
+    speechLang: 'de-DE',
+    aiPromptLang: 'German (Deutsch)',
+  },
+  {
+    code: 'es',
+    name: 'Spanish',
+    nativeName: 'Español',
+    flag: '🇪🇸',
+    dir: 'ltr',
+    speechLang: 'es-ES',
+    aiPromptLang: 'Spanish (Español)',
+  },
+  {
+    code: 'tr',
+    name: 'Turkish',
+    nativeName: 'Türkçe',
+    flag: '🇹🇷',
+    dir: 'ltr',
+    speechLang: 'tr-TR',
+    aiPromptLang: 'Turkish (Türkçe)',
+  },
+  {
+    code: 'ur',
+    name: 'Urdu',
+    nativeName: 'اردو',
+    flag: '🇵🇰',
+    dir: 'rtl',
+    speechLang: 'ur-PK',
+    aiPromptLang: 'Urdu (اردو)',
+  },
+  {
+    code: 'ru',
+    name: 'Russian',
+    nativeName: 'Русский',
+    flag: '🇷🇺',
+    dir: 'ltr',
+    speechLang: 'ru-RU',
+    aiPromptLang: 'Russian (Русский)',
+  },
+  {
+    code: 'zh',
+    name: 'Chinese',
+    nativeName: '中文',
+    flag: '🇨🇳',
+    dir: 'ltr',
+    speechLang: 'zh-CN',
+    aiPromptLang: 'Chinese (中文)',
+  },
+  {
+    code: 'ja',
+    name: 'Japanese',
+    nativeName: '日本語',
+    flag: '🇯🇵',
+    dir: 'ltr',
+    speechLang: 'ja-JP',
+    aiPromptLang: 'Japanese (日本語)',
+  },
+];
+
+export function getLanguageInfo(lang: string | AppLanguage): LanguageInfo | undefined {
+  return SUPPORTED_LANGUAGES.find((l) => l.code === lang);
+}
