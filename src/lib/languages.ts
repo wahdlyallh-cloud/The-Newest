@@ -403,31 +403,620 @@ const AR_DICT: Record<string, any> = {
   }
 };
 
-// All language codes route to the Arabic single source of truth dictionary
-export const BASELINE_DICTIONARIES: Record<string, any> = {
-  ar: AR_DICT,
-  en: AR_DICT,
-  fr: AR_DICT,
-  de: AR_DICT,
-  es: AR_DICT,
-  tr: AR_DICT,
-  ur: AR_DICT,
-  ru: AR_DICT,
-  zh: AR_DICT,
-  ja: AR_DICT
+// English translation dictionary
+const EN_DICT: Record<string, any> = {
+  'nav.home': 'Home',
+  'nav.diaries': 'Diaries',
+  'nav.advisor': 'AI Advisor',
+  'nav.progress': 'Progress & Data',
+  'nav.settings': 'Settings',
+  'nav.hayat_ai': 'Hayat AI',
+  'nav.active_now': 'Active Now',
+  'nav.fullscreen': 'Fullscreen',
+  'nav.account_title': 'Your Profile',
+  'nav.lock_app': 'Lock App',
+  'nav.switch_language': 'Language',
+  'nav.dhikr': 'Dhikr & Rest',
+  'nav.dhikr_title': 'Dhikr & Peace Counter',
+  'nav.daily_tasks': 'Daily Tasks',
+  'nav.gratitude': 'Gratitude Wall',
+  'nav.my_thoughts': 'Reflections',
+  'nav.journal_records': 'Journal Records',
+  'nav.therapy_session': 'Support Session',
+  'nav.back_btn': 'Back',
+  'nav.back_title': 'Back',
+  'nav.back_mobile_title': 'Back',
+  'nav.auto_saved': 'Auto-saved',
+  'nav.saving': 'Saving...',
+  'nav.current_page': 'Current Page',
+  'nav.subtitle': 'Your Personal Safe Space',
+  'nav.tasks': 'Daily Tasks',
+  'nav.edit_diary': 'Edit Note',
+  'nav.sign_in': 'Sign In',
+  'nav.reveal_header_pill': 'Show Header',
+
+  appName: 'Hayat AI',
+  homeTab: 'Home',
+  diariesTab: 'Diaries',
+  advisorTab: 'Advisor',
+  analyticsTab: 'Analytics',
+  settingsTab: 'Settings',
+  yes: 'Yes',
+  no: 'No',
+  closeBtn: 'Close',
+  retryBtn: 'Retry',
+  cancelBtn: 'Cancel',
+  save_btn: 'Save Note',
+  saveAndCloseBtn: 'Save & Close',
+  sendBtn: 'Send',
+  clearBtn: 'Clear',
+  back_btn: 'Back',
+  understoodBtn: 'Understood',
+  confirmImportBtn: 'Confirm Import',
+  deleteKeyBtn: 'Delete Key',
+  saveKeyBtn: 'Save Key',
+
+  photo: 'Photo 📸',
+  video: 'Video 🎥',
+  audio: 'Audio 🎙️',
+  document: 'Document 📄',
+  task: 'Task 📋',
+  advisor: 'Advisor 🤖',
+  mood: 'Mood 🌿',
+  voiceRecord: 'Voice Recording 🎙️',
+  write: 'Write ✍️',
+  attachPhoto: 'Photo & Note 📸',
+  attachPhotoSub: 'Document moment with photo memory',
+  phoneVideo: 'Phone Video 🎥',
+  phoneVideoSub: 'Analyze emotions in video clip',
+  audioFile: 'Voice Note 🎙️',
+  audioFileSub: 'Transcribe & analyze your voice',
+  bookDoc: 'Book or Doc 📖',
+  bookDocSub: 'Extract key wisdom & benefits',
+  freeWrite: 'Mind Dump ✍️',
+  freeWriteSub: 'Unfiltered thought release without limits',
+  aiAdvisor: 'Smart Advisor 🤖',
+  aiAdvisorSub: 'Instant psychological guidance',
+  aiPsychAdvisor: 'Smart Psych Advisor 🧠',
+
+  dhikrTitle: 'Dhikr & Peace Counter 📿',
+  dhikrSub: 'In the remembrance of Allah do hearts find rest - Relax & Reflect',
+  dhikrMainQuote: 'Unquestionably, in the remembrance of Allah do hearts find rest 🌿',
+  dhikrBlessing: 'May Allah make us among those who remember Him much ✨',
+  dhikrCounterBtn: 'Tap to Count 📿',
+  dhikrCountLabel: 'Total Count',
+  dhikrFooter: 'Glory be to Allah and Praise Him',
+
+  notificationActiveNow: 'Notifications Active 🔔',
+  notificationHowAreYou: 'How is your mind feeling today? 🌿',
+  notificationTapShortcut: 'Tap to open app and express your thoughts freely',
+  notificationsTitle: 'Notifications & Alerts 🔔',
+  notificationsSub: 'Enable check-in, water, and exercise reminders',
+  remindersTitle: 'Smart Reminders ⏰',
+  remindersSub: 'Schedule daily journaling reminders',
+  reminderTime: 'Reminder Time',
+
+  faceIdBtn: 'Face ID Unlock 👤',
+  fingerprintBtn: 'Fingerprint Unlock 👆',
+  biometricScanTitle: 'Device Biometric Verification 🔐',
+  biometricScanInstruction: 'Scan face or fingerprint to verify identity',
+  biometricSuccessTitle: 'Verified Successfully! 🎉',
+  biometricFailedTitle: 'Verification Failed ❌',
+  biometricNotLinkedTitle: 'Biometric Not Registered',
+  biometricNotLinkedDesc: 'Register biometric first in security settings',
+  biometricAlreadyRegistered: 'Biometric already registered 🔐',
+  biometricNotSupported: 'Device unsupported or permission denied',
+  biometricUserCanceled: 'Canceled by user',
+  pinCodeBtn: 'Custom PIN Code 🔑',
+  usePinInsteadBtn: 'Use PIN Code Instead',
+  lockscreenBtn: 'Lockscreen Shortcut 📌',
+  lockscreenHint: 'Pin quick action widget in lockscreen notifications',
+  lockscreenSecured: 'Lockscreen Protected 🔐',
+  appLockTitle: 'App PIN Lock 🔐',
+  appLockSub: 'Protect your diaries with a private password',
+
+  welcomeSafeSpace: 'Your Completely Safe & Private Space 🌿',
+  safeSpaceDesc: 'Write your thoughts freely, encrypted & accompanied by a smart assistant.',
+  greetingDesc: 'Wishing you a day filled with peace & inner tranquility.',
+  streakTitle: 'Streak',
+  dayStreak: 'consecutive days',
+  longestStreak: 'Longest Streak',
+  streakEncouragement: 'Keep daily journaling to maintain mental balance!',
+  aiInspirationBtn: 'Writing Inspiration 💡',
+  quickPromptSuggestionsTitle: 'Quick prompts to start:',
+  askAiWriterHeader: 'Ask your psych advisor or request motivational text:',
+  expressMindPlaceholder: 'Express what is on your mind freely, and your assistant will provide warm rational guidance...',
+
+  'journal.subtab_journal': 'Journal & Thoughts',
+  'journal.subtab_tasks': 'Daily Tasks',
+  'journal.subtab_gratitude': 'Gratitude Wall',
+  'journal.subtab_cbt': 'CBT Exercises',
+  'journal.subtab_proscons': 'Pros & Cons Log',
+  'journal.write_new': 'New Note',
+  'journal.import_btn': 'Import Journal',
+  'journal.search_placeholder': 'Search journals and thoughts...',
+  'journal.filter_all': 'All Entries',
+  'journal.filter_diaries': 'Diaries',
+  'journal.filter_thoughts': 'Reflections',
+  'journal.filter_archived': 'Archive',
+  'journal.filter_trash': 'Trash',
+  'journal.editor_title_new': 'New Note',
+  'journal.editor_title_edit': 'Edit Note',
+  'journal.title_placeholder': 'Note Title...',
+  'journal.content_placeholder': 'Write your thoughts freely here...',
+  'journal.mood_label': 'How are you feeling right now?',
+  'journal.save_btn': 'Save Note',
+  'journal.save_success': 'Note saved successfully! 🎉',
+  dailyJournalSubtab: 'Journal & Thoughts',
+  dailyTasksSubtabLabel: 'Daily Tasks',
+  gratitudeSubtab: 'Gratitude Wall',
+  cbtSubtabLabel: 'CBT Exercises',
+  allFilterTab: 'All Entries',
+  diariesFilterTab: 'Diaries',
+  thoughtsFilterTab: 'Reflections',
+  writeNewNoteBtn: 'New Note ✍️',
+  searchDiariesPlaceholder: 'Search notes & thoughts...',
+  noMatchingDiariesNow: 'No matching notes found.',
+  deleteDiaryPermanently: 'Delete Note Permanently',
+  subNoteDefaultTitle: 'Sub-note',
+  subNoteSingular: 'Sub-note',
+  subNotePlural: 'Sub-notes',
+  clickWriteNewNotePrompt: 'Click to write a new entry',
+  createNewDiaryWithText: 'Create new note from this text',
+
+  'gratitude.title': 'Gratitude Wall',
+  shareableGratitudeTitle: 'Shareable Gratitude Card 🌸',
+  shareableGratitudeSub: 'Share positivity and gratitude with loved ones',
+
+  cbtExercisesTab: 'CBT Exercises',
+  cbtWorksheets: 'Thought Reframing Sheets',
+  thoughtRecord: 'Automatic Thoughts Record',
+  extractCognitiveErrorsBtn: 'Extract Cognitive Distortions via AI 🧠',
+  rationalAlternative: 'Rational Alternative',
+  postSessionMood: 'Greatly Improved',
+  reviewProsConsTitle: 'Pros & Cons Review',
+  prosConsBtnLabel: 'Pros & Cons ⚖️',
+
+  behavioralCorrelationsTitle: 'Behavioral Analytics Engine',
+  behavioralCorrelationsSub: 'Discover connections between habits & mood',
+  sleepWaterAnxietyTitle: 'Effect of Sleep & Water on Anxiety',
+  sleepWaterAnxietyDesc: 'On days with 8 cups of water and 7+ hours of sleep, your anxiety drops by {percent}%.',
+  exerciseMoodBoostTitle: 'Effect of Exercise & Activity',
+  exerciseMoodBoostDesc: 'Exercising 20+ minutes correlates with a {percent}% boost in positive mood.',
+  cbtEffectivenessTitle: 'Effectiveness of CBT Exercises',
+  cbtEffectivenessDesc: 'Reframing negative automatic thoughts reduces distress by {percent}%.',
+  balanceIndex: 'Balance Index',
+  sleepQuality: 'Sleep Quality',
+  exerciseActivity: 'Physical Activity',
+  waterTrackerTitle: 'Water Tracker 💧',
+  waterTrackerDesc: 'Staying hydrated reduces headaches and stress.',
+  symptomsTitle: 'Physical Symptoms 🩺',
+  symptomsDesc: 'Track physical symptoms to observe their effect on mood.',
+
+  voiceCompanionTitle: 'Continuous Voice Companion 🎙️',
+  voiceStatusListening: 'Listening attentively...',
+  voiceStatusAnalyzing: 'Thinking & formulating support...',
+  voiceStatusSpeaking: 'Speaking now...',
+  voiceStatusIdle: 'Ready to start',
+  voiceLiveTranscript: 'Live Transcript:',
+  voiceInterruptAndSpeak: 'Interrupt & Speak ⏹️',
+  voiceStartSpeaking: 'Start Listening & Speaking 🎙️',
+  voiceEndSession: 'End Call 📞',
+
+  settingsTitle: 'General Settings',
+  settingsSubtitle: 'Customize AI assistant, security & language',
+  apiKeyTitle: 'Your API Key 🔑',
+  apiKeySub: 'Enter Gemini API key for continuous AI capabilities',
+  languagesTitle: 'App Languages 🌐',
+  languagesSub: 'Change user interface language',
+  selectLanguageTitle: 'Choose App Language 🌐',
+  selectLanguageSubtitle: 'Hayat AI supports multiple global languages',
+  typographyTabTitle: 'Font & Spacing',
+  typographyTabSub: 'Select font style and line height for comfortable reading',
+  fontStyleIcon: 'Fonts',
+  fontSizeLabel: 'Font Size',
+  darkModeTitle: 'Dark Mode ☀️/🌙',
+  darkModeSub: 'Switch between light and dark theme',
+  backupTitle: 'Backup & Sync ☁️',
+  backupSub: 'Export and restore your data safely',
+  contactTitle: 'Contact Developer 📬',
+  contactSub: 'Feedback and inquiries to improve the app',
+  rateTitle: 'Rate App ⭐',
+  rateSub: 'Your opinion helps improve Hayat AI',
+  favoritesTitle: 'Favorites ❤️',
+  favoritesSub: 'Highlighted notes & reflections',
+  archiveTitle: 'Archive 📦',
+  archiveSub: 'Archived entries',
+  trashTitle: 'Trash 🗑️',
+  trashSub: 'Temporarily deleted notes',
+
+  personalAccountTitle: 'Personal Account 👤',
+  guestUser: 'Guest User 👤',
+  registeredUser: 'Verified User 👤',
+  accountSubGuest: 'Safe local account on this device',
+  accountSubUser: 'Active & cloud synced',
+  geminiKeyTitle: 'Gemini API Key Setup 🔑',
+  geminiKeyDesc: 'Enter your Gemini API key to power smart assistant and analytics.',
+  geminiKeyNotice: 'Security note: Key is saved locally encrypted on your device only.',
+  geminiKeyPlaceholder: 'Enter API Key here (AIzaSy...)',
+  welcomeModalTitle: 'Welcome to Hayat AI 👋',
+  rateModalTitle: '⭐ Rate App',
+  rateModalThanks: 'Thank you for rating! ❤️',
+  contactOwnerTitle: 'Contact Developer 📬',
+
+  quickOneClickActions: 'Quick One-Click Actions ⚡',
+  suggestAnotherTopic: 'Suggest Another Topic 💡',
+  summarizeEntryBtn: 'Summarize Note with AI 🧠',
+  practicalPlanTomorrowBtn: 'Action Steps for Tomorrow 📋',
+  writeDiaryImporterTitle: 'Import Journals 📥',
+  writeDiaryImporterSub: 'Import diaries from other apps',
+  importFromOtherApps: 'Import from Other Apps 📲',
+  importFromOtherAppsTitle: 'Import Entries & Diaries',
+  importFromOtherAppsDesc: 'Supports JSON, CSV, and TXT files',
+  importerSuccessMsg: 'Data imported successfully! 🎉',
+
+  generalTag: 'General 📌',
+  diaryBadge: 'Diary 📔',
+  thoughtBadge: 'Thought 💭',
+  editedBadge: 'Edited ✍️',
+  liveInteractionBadge: 'Live Interaction ⚡',
+  readyToInsertBadge: 'Ready to Insert 📥',
+  filterTagsLabel: 'Categories & Tags:',
+  checkSpellingOrFilter: 'Please check search term or filter.',
+
+  symptomHeadache: 'Headache 🤕',
+  symptomFatigue: 'Mild Fatigue 😴',
+  symptomBackTension: 'Back/Shoulder Tension 🧘',
+  symptomPoorSleep: 'Insomnia / Poor Sleep 🌙',
+  symptomRapidHeart: 'Rapid Heartbeat 💓',
+  symptomShortnessBreath: 'Mild Breathlessness 🫁',
+  symptomStomach: 'Stomach Discomfort 🤢',
+  symptomTremors: 'Tremor / Anxiety 🫨',
+  waterConsumed: 'Consumed:',
+  waterRemaining: 'Remaining:',
+
+  psychologicalGrowthTreeTitle: 'Psychological Growth Tree 🌳',
+  treeStage1: 'Seedling of Hope 🌱',
+  treeStage2: 'Bud of Resilience 🌿',
+  treeStage3: 'Tree of Expression 🪴',
+  treeStage4: 'Tree of Serenity 🌳',
+  treeStage5: 'Tree of Wisdom 🍎',
+  treeDesc1: 'Beginning of self-care and emotional discovery.',
+  treeDesc2: 'Daily journaling builds your mental resilience.',
+  treeDesc3: 'Your thoughts find a safe outlet and grow deeply.',
+  treeDesc4: 'Emotional stability and inner peace fill your day.',
+  treeDesc5: 'Complete mental balance and wise self-reflection.',
+
+  rateAppModalTitle: '⭐ Rate Hayat AI',
+  rateAppQuestion: 'How is your experience with Hayat AI?',
+  rateAppPlaceholder: 'Write your feedback or suggestions...',
+  rateAppFeedbackLabel: 'Feedback & Suggestions:',
+  rateAppSubmit: 'Submit Rating ⭐',
+  rateAppThankYou: 'Thank you so much for rating! ❤️',
+  rateAppThankYouDesc: 'Your feedback helps us make the app better for everyone.',
+  contactOwnerModalTitle: 'Contact Developer 📬',
+  contactOwnerModalDesc: 'We love receiving direct feedback to develop the app',
+  contactOwnerMessage: 'Your message or feedback:',
+  copyEmail: 'Copy Email 📋',
+  backupSyncTitle: 'Backup & Sync ☁️',
+  backupSyncDesc: 'Save backup or restore data anytime',
+  restoreDataBtn: 'Restore Data from JSON File 📥',
+  howToExportTitle: 'How to export & restore data:',
+  howToStep1: '1. Click export to get an encrypted JSON file containing your journals.',
+  howToStep2: '2. Save the file in a safe place on your device or cloud.',
+  howToStep3: '3. To restore on another device, select file and click restore.',
+  pinPadSub: 'Enter 4-digit PIN code to unlock app',
+  pinHint: 'PIN code protects your notes with total privacy',
+  incorrectPin: 'Incorrect PIN code, try again ❌',
+
+  common: { appName: 'Hayat AI', yes: 'Yes', no: 'No', closeBtn: 'Close', retryBtn: 'Retry', homeTab: 'Home', diariesTab: 'Diaries', advisorTab: 'Advisor', analyticsTab: 'Analytics', settingsTab: 'Settings' },
+  auth: { personalAccountTitle: 'Personal Account 👤', guestUser: 'Guest User 👤', registeredUser: 'Verified User 👤', accountSubGuest: 'Safe local account', accountSubUser: 'Active & cloud synced' },
+  cbt: { cbtExercisesTab: 'CBT Exercises', cbtWorksheets: 'Thought Reframing', thoughtRecord: 'Automatic Thoughts' },
+  analytics: { behavioralCorrelationsTitle: 'Behavioral Analytics', behavioralCorrelationsSub: 'Habits & Mood Connections', balanceIndex: 'Balance Index', sleepQuality: 'Sleep Quality', exerciseActivity: 'Physical Activity' },
+  modals: { rateModalTitle: '⭐ Rate App', rateModalThanks: 'Thank you for rating! ❤️', contactOwnerTitle: 'Contact Developer 📬', welcomeModalTitle: 'Welcome to Hayat AI 👋' },
+  settings: { settingsTitle: 'General Settings', settingsSubtitle: 'Customize AI assistant & security', apiKeyTitle: 'Your API Key 🔑', languagesTitle: 'App Languages 🌐', darkModeTitle: 'Dark Mode ☀️/🌙' }
 };
 
-// Key lookup helper searching in AR_DICT with safe fallback
-function resolveKeyInDicts(key: string): string {
+// French dictionary
+const FR_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': 'Accueil',
+  'nav.diaries': 'Journaux',
+  'nav.advisor': 'Conseiller IA',
+  'nav.progress': 'Progrès & Données',
+  'nav.settings': 'Paramètres',
+  'nav.active_now': 'Actif maintenant',
+  'nav.dhikr': 'Dhikr & Repos',
+  'nav.dhikr_title': 'Rappel & Sérénité',
+  'nav.daily_tasks': 'Tâches quotidiennes',
+  'nav.gratitude': 'Mur de gratitude',
+  'nav.my_thoughts': 'Mes pensées',
+  'nav.back_btn': 'Retour',
+  appName: 'Hayat AI',
+  homeTab: 'Accueil',
+  diariesTab: 'Journaux',
+  advisorTab: 'Conseiller',
+  analyticsTab: 'Progrès',
+  settingsTab: 'Paramètres',
+  yes: 'Oui',
+  no: 'Non',
+  closeBtn: 'Fermer',
+  retryBtn: 'Réessayer',
+  cancelBtn: 'Annuler',
+  save_btn: 'Enregistrer la note',
+  welcomeSafeSpace: 'Votre espace privé et sécurisé 🌿',
+  settingsTitle: 'Paramètres généraux',
+  selectLanguageTitle: 'Choisir la langue 🌐',
+  darkModeTitle: 'Mode sombre ☀️/🌙',
+  backupTitle: 'Sauvegarde & Synchro ☁️'
+};
+
+// German dictionary
+const DE_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': 'Startseite',
+  'nav.diaries': 'Tagebücher',
+  'nav.advisor': 'KI-Berater',
+  'nav.progress': 'Fortschritt & Daten',
+  'nav.settings': 'Einstellungen',
+  'nav.active_now': 'Jetzt aktiv',
+  'nav.dhikr': 'Dhikr & Ruhe',
+  'nav.dhikr_title': 'Erinnerung & Seelenruhe',
+  'nav.daily_tasks': 'Tägliche Aufgaben',
+  'nav.gratitude': 'Dankbarkeitswand',
+  'nav.my_thoughts': 'Meine Gedanken',
+  'nav.back_btn': 'Zurück',
+  appName: 'Hayat AI',
+  homeTab: 'Startseite',
+  diariesTab: 'Tagebuch',
+  advisorTab: 'Berater',
+  analyticsTab: 'Fortschritt',
+  settingsTab: 'Einstellungen',
+  yes: 'Ja',
+  no: 'Nein',
+  closeBtn: 'Schließen',
+  retryBtn: 'Wiederholen',
+  cancelBtn: 'Abbrechen',
+  save_btn: 'Notiz speichern',
+  welcomeSafeSpace: 'Ihr geschützter persönlicher Raum 🌿',
+  settingsTitle: 'Allgemeine Einstellungen',
+  selectLanguageTitle: 'Sprache wählen 🌐',
+  darkModeTitle: 'Dunkelmodus ☀️/🌙',
+  backupTitle: 'Sicherung & Synchro ☁️'
+};
+
+// Spanish dictionary
+const ES_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': 'Inicio',
+  'nav.diaries': 'Diarios',
+  'nav.advisor': 'Asesor IA',
+  'nav.progress': 'Progreso y Datos',
+  'nav.settings': 'Configuración',
+  'nav.active_now': 'Activo ahora',
+  'nav.dhikr': 'Dhikr y Paz',
+  'nav.dhikr_title': 'Recordatorio y Calma',
+  'nav.daily_tasks': 'Tareas diarias',
+  'nav.gratitude': 'Muro de gratitud',
+  'nav.my_thoughts': 'Mis reflexiones',
+  'nav.back_btn': 'Atrás',
+  appName: 'Hayat AI',
+  homeTab: 'Inicio',
+  diariesTab: 'Diarios',
+  advisorTab: 'Asesor',
+  analyticsTab: 'Progreso',
+  settingsTab: 'Ajustes',
+  yes: 'Sí',
+  no: 'No',
+  closeBtn: 'Cerrar',
+  retryBtn: 'Reintentar',
+  cancelBtn: 'Cancelar',
+  save_btn: 'Guardar nota',
+  welcomeSafeSpace: 'Tu espacio personal y seguro 🌿',
+  settingsTitle: 'Configuración general',
+  selectLanguageTitle: 'Elegir idioma 🌐',
+  darkModeTitle: 'Modo oscuro ☀️/🌙',
+  backupTitle: 'Copia de seguridad ☁️'
+};
+
+// Turkish dictionary
+const TR_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': 'Ana Sayfa',
+  'nav.diaries': 'Günlükler',
+  'nav.advisor': 'Yapay Zeka Danışmanı',
+  'nav.progress': 'İlerleme ve Veriler',
+  'nav.settings': 'Ayarlar',
+  'nav.active_now': 'Şimdi Aktif',
+  'nav.dhikr': 'Zikir ve Huzur',
+  'nav.dhikr_title': 'Zikir ve Ruhsal Dinlenme',
+  'nav.daily_tasks': 'Günlük Görevler',
+  'nav.gratitude': 'Şükür Duvarı',
+  'nav.my_thoughts': 'Düşüncelerim',
+  'nav.back_btn': 'Geri',
+  appName: 'Hayat AI',
+  homeTab: 'Ana Sayfa',
+  diariesTab: 'Günlükler',
+  advisorTab: 'Danışman',
+  analyticsTab: 'İlerleme',
+  settingsTab: 'Ayarlar',
+  yes: 'Evet',
+  no: 'Hayır',
+  closeBtn: 'Kapat',
+  retryBtn: 'Tekrar Dene',
+  cancelBtn: 'İptal',
+  save_btn: 'Notu Kaydet',
+  welcomeSafeSpace: 'Güvenli ve Özel Alanınız 🌿',
+  settingsTitle: 'Genel Ayarlar',
+  selectLanguageTitle: 'Uygulama Dilini Seçin 🌐',
+  darkModeTitle: 'Karanlık Mod ☀️/🌙',
+  backupTitle: 'Yedekleme ve Senkronizasyon ☁️'
+};
+
+// Urdu dictionary (RTL)
+const UR_DICT: Record<string, any> = {
+  ...AR_DICT,
+  'nav.home': 'صفحہ اول',
+  'nav.diaries': 'ڈائری',
+  'nav.advisor': 'اے آئی مشیر',
+  'nav.progress': 'پیش رفت اور ڈیٹا',
+  'nav.settings': 'ترتیبات',
+  'nav.active_now': 'ابھی فعال',
+  'nav.dhikr': 'اذکار اور سکون',
+  'nav.dhikr_title': 'اذکار اور ذہنی سکون',
+  'nav.daily_tasks': 'روزانہ کے کام',
+  'nav.gratitude': 'شکر گزاری کی دیوار',
+  'nav.my_thoughts': 'میرے خیالات',
+  'nav.back_btn': 'واپس',
+  appName: 'حیات AI',
+  homeTab: 'صفحہ اول',
+  diariesTab: 'ڈائری',
+  advisorTab: 'مشیر',
+  analyticsTab: 'پیش رفت',
+  settingsTab: 'ترتیبات',
+  yes: 'ہاں',
+  no: 'نہیں',
+  closeBtn: 'بند کریں',
+  retryBtn: 'دوبارہ کوشش کریں',
+  cancelBtn: 'منسوخ کریں',
+  save_btn: 'نوٹ محفوظ کریں',
+  welcomeSafeSpace: 'آپ کی مکمل محفوظ اور ذاتی جگہ 🌿',
+  settingsTitle: 'عام ترتیبات',
+  selectLanguageTitle: 'زبان منتخب کریں 🌐',
+  darkModeTitle: 'ڈارک موڈ ☀️/🌙',
+  backupTitle: 'بیک اپ اور سنک ☁️'
+};
+
+// Russian dictionary
+const RU_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': 'Главная',
+  'nav.diaries': 'Дневники',
+  'nav.advisor': 'ИИ-Консультант',
+  'nav.progress': 'Прогресс и Данные',
+  'nav.settings': 'Настройки',
+  'nav.active_now': 'Активен',
+  'nav.dhikr': 'Зикр и Покой',
+  'nav.dhikr_title': 'Счетчик зикров и покой',
+  'nav.daily_tasks': 'Ежедневные задачи',
+  'nav.gratitude': 'Стена благодарности',
+  'nav.my_thoughts': 'Мои мысли',
+  'nav.back_btn': 'Назад',
+  appName: 'Hayat AI',
+  homeTab: 'Главная',
+  diariesTab: 'Дневники',
+  advisorTab: 'Консультант',
+  analyticsTab: 'Прогресс',
+  settingsTab: 'Настройки',
+  yes: 'Да',
+  no: 'Нет',
+  closeBtn: 'Закрыть',
+  retryBtn: 'Повторить',
+  cancelBtn: 'Отмена',
+  save_btn: 'Сохранить заметку',
+  welcomeSafeSpace: 'Ваше личное безопасное пространство 🌿',
+  settingsTitle: 'Общие настройки',
+  selectLanguageTitle: 'Выберите язык 🌐',
+  darkModeTitle: 'Темная тема ☀️/🌙',
+  backupTitle: 'Резервное копирование ☁️'
+};
+
+// Chinese dictionary
+const ZH_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': '首页',
+  'nav.diaries': '日记',
+  'nav.advisor': 'AI 顾问',
+  'nav.progress': '进度与数据',
+  'nav.settings': '设置',
+  'nav.active_now': '当前活跃',
+  'nav.dhikr': '祈祷与平静',
+  'nav.dhikr_title': '心灵平静计数器',
+  'nav.daily_tasks': '每日任务',
+  'nav.gratitude': '感恩墙',
+  'nav.my_thoughts': '我的感悟',
+  'nav.back_btn': '返回',
+  appName: 'Hayat AI',
+  homeTab: '首页',
+  diariesTab: '日记',
+  advisorTab: '顾问',
+  analyticsTab: '进度',
+  settingsTab: '设置',
+  yes: '是',
+  no: '否',
+  closeBtn: '关闭',
+  retryBtn: '重试',
+  cancelBtn: '取消',
+  save_btn: '保存笔记',
+  welcomeSafeSpace: '您的专属心灵私密空间 🌿',
+  settingsTitle: '通用设置',
+  selectLanguageTitle: '选择应用语言 🌐',
+  darkModeTitle: '暗黑模式 ☀️/🌙',
+  backupTitle: '备份与同步 ☁️'
+};
+
+// Japanese dictionary
+const JA_DICT: Record<string, any> = {
+  ...EN_DICT,
+  'nav.home': 'ホーム',
+  'nav.diaries': '日記',
+  'nav.advisor': 'AI アドバイザー',
+  'nav.progress': '進捗とデータ',
+  'nav.settings': '設定',
+  'nav.active_now': 'アクティブ',
+  'nav.dhikr': '祈りと安らぎ',
+  'nav.dhikr_title': '心の安らぎカウンター',
+  'nav.daily_tasks': '毎日のタスク',
+  'nav.gratitude': '感謝の壁',
+  'nav.my_thoughts': '私のつぶやき',
+  'nav.back_btn': '戻る',
+  appName: 'Hayat AI',
+  homeTab: 'ホーム',
+  diariesTab: '日記',
+  advisorTab: 'アドバイザー',
+  analyticsTab: '進捗',
+  settingsTab: '設定',
+  yes: 'はい',
+  no: 'いいえ',
+  closeBtn: '閉じる',
+  retryBtn: '再試行',
+  cancelBtn: 'キャンセル',
+  save_btn: 'ノートを保存',
+  welcomeSafeSpace: 'あなた専用の安全でプライベートな空間 🌿',
+  settingsTitle: '一般設定',
+  selectLanguageTitle: '言語を選択 🌐',
+  darkModeTitle: 'ダークモード ☀️/🌙',
+  backupTitle: 'バックアップと同期 ☁️'
+};
+
+// All 10 language dictionaries mapped
+export const BASELINE_DICTIONARIES: Record<string, any> = {
+  ar: AR_DICT,
+  en: EN_DICT,
+  fr: FR_DICT,
+  de: DE_DICT,
+  es: ES_DICT,
+  tr: TR_DICT,
+  ur: UR_DICT,
+  ru: RU_DICT,
+  zh: ZH_DICT,
+  ja: JA_DICT
+};
+
+// Key lookup helper searching in target dictionary with fallbacks
+function resolveKeyInDicts(key: string, lang: string = 'ar'): string {
   if (!key || typeof key !== 'string') return '';
 
-  if (AR_DICT[key] !== undefined && typeof AR_DICT[key] === 'string') {
-    return AR_DICT[key];
+  const targetDict = BASELINE_DICTIONARIES[lang] || BASELINE_DICTIONARIES.ar;
+
+  if (targetDict && targetDict[key] !== undefined && typeof targetDict[key] === 'string') {
+    return targetDict[key];
   }
 
+  // Nested property lookup
   if (key.includes('.')) {
     const parts = key.split('.');
-    let curr: any = AR_DICT;
+    let curr: any = targetDict;
     for (const p of parts) {
       if (curr && typeof curr === 'object' && p in curr) {
         curr = curr[p];
@@ -439,14 +1028,26 @@ function resolveKeyInDicts(key: string): string {
     if (typeof curr === 'string') return curr;
   }
 
+  // Fallback to English dictionary
+  if (EN_DICT[key] !== undefined && typeof EN_DICT[key] === 'string') {
+    return EN_DICT[key];
+  }
+
+  // Fallback to Arabic dictionary
+  if (AR_DICT[key] !== undefined && typeof AR_DICT[key] === 'string') {
+    return AR_DICT[key];
+  }
+
   return key;
 }
 
 // Proxy wrapper that functions both as a callable function (t('key')) AND as property lookup (t.key)
-function createSafeTranslationProxy(targetDict: Record<string, any> = AR_DICT) {
+function createSafeTranslationProxy(langCode: string = 'ar') {
+  const targetDict = BASELINE_DICTIONARIES[langCode] || BASELINE_DICTIONARIES.ar;
+
   const translateFn = (key?: string, replacements?: Record<string, any> | string): any => {
     if (!key || typeof key !== 'string') return '';
-    let val = resolveKeyInDicts(key);
+    let val = resolveKeyInDicts(key, langCode);
 
     if (replacements && typeof replacements === 'object') {
       Object.keys(replacements).forEach((rKey) => {
@@ -465,7 +1066,7 @@ function createSafeTranslationProxy(targetDict: Record<string, any> = AR_DICT) {
       if (prop in targetDict && targetDict[prop] !== undefined) {
         return targetDict[prop];
       }
-      return resolveKeyInDicts(prop);
+      return resolveKeyInDicts(prop, langCode);
     },
     apply(target, thisArg, argArray) {
       return translateFn(argArray[0], argArray[1]);
@@ -474,13 +1075,13 @@ function createSafeTranslationProxy(targetDict: Record<string, any> = AR_DICT) {
 }
 
 export const MULTI_TRANSLATIONS: Record<string, any> = new Proxy(BASELINE_DICTIONARIES, {
-  get(target) {
-    return createSafeTranslationProxy(AR_DICT);
+  get(target, prop: string) {
+    return createSafeTranslationProxy(prop);
   }
 });
 
 export function getTranslation(lang?: string | AppLanguage | null): any {
-  return createSafeTranslationProxy(AR_DICT);
+  return createSafeTranslationProxy(lang || 'ar');
 }
 
 export interface LanguageContextType {
@@ -500,19 +1101,9 @@ export function LanguageProvider({ children, initialLanguage = 'ar' }: { childre
     setCurrentLanguageState(validLang);
   };
 
-  const isRTL = true; // Arabic is RTL
+  const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
 
-  const translateFn = (key: string): string => {
-    return resolveKeyInDicts(key);
-  };
-
-  // Attach proxy onto translation function so t.key and t('key') work interchangeably
-  const t = new Proxy(translateFn, {
-    get(target, prop: string) {
-      if (prop in target) return (target as any)[prop];
-      return resolveKeyInDicts(prop);
-    }
-  });
+  const t = createSafeTranslationProxy(currentLanguage);
 
   return React.createElement(LanguageContext.Provider, { value: { currentLanguage, setLanguage, t, isRTL } }, children);
 }
@@ -521,16 +1112,10 @@ export function useLanguage(): LanguageContextType {
   const context = useContext(LanguageContext);
   if (context) return context;
 
-  const defaultT = new Proxy(((key: string) => resolveKeyInDicts(key)) as any, {
-    get(target, prop: string) {
-      return resolveKeyInDicts(prop);
-    }
-  });
-
   return {
     currentLanguage: 'ar',
     setLanguage: () => {},
-    t: defaultT,
+    t: createSafeTranslationProxy('ar'),
     isRTL: true
   };
 }
