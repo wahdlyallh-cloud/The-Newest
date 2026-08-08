@@ -11,7 +11,7 @@ interface DhikrCounterProps {
 export default function DhikrCounter({ compact = false, className = '', appLanguage = 'ar' }: DhikrCounterProps) {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isEn = appLanguage !== 'ar' && appLanguage !== 'ur';
+  const isEn = appLanguage === 'en';
   // Read count from localStorage or default to 0
   const [count, setCount] = useState<number>(() => {
     try {

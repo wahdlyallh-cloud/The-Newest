@@ -922,7 +922,7 @@ export default function App() {
       const saved = localStorage.getItem('yawmiyati_settings');
       const parsed: AppSettings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
       const directLang = localStorage.getItem('app_language') as AppLanguage;
-      if (directLang && ['ar', 'en', 'de', 'fr', 'es', 'it', 'tr', 'ur', 'hi', 'id'].includes(directLang)) {
+      if (directLang && ['ar', 'en'].includes(directLang)) {
         parsed.appLanguage = directLang;
       }
       const savedCredId = localStorage.getItem('yawmiyati_biometric_cred_id');
@@ -2565,7 +2565,7 @@ export default function App() {
 
   const getArabicGreetingHeader = () => {
     const hour = new Date().getHours();
-    if (settings.appLanguage !== 'ar' && settings.appLanguage !== 'ur') {
+    if (settings.appLanguage !== 'ar') {
       if (hour < 12) return 'Good Morning & Peaceful Mind';
       if (hour < 17) return 'Welcome & Have a Wonderful Day';
       return 'Good Evening & Inner Tranquility';

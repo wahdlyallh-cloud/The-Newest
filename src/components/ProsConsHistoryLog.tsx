@@ -28,7 +28,7 @@ export default function ProsConsHistoryLog({
   userApiKey,
   appLanguage = "ar"
 }: ProsConsHistoryLogProps) {
-  const isAr = appLanguage === "ar" || appLanguage === "ur";
+  const isAr = appLanguage === "ar";
   const t = getTranslation(appLanguage);
   const [records, setRecords] = useState<DailyProsConsEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

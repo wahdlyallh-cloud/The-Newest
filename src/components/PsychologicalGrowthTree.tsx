@@ -23,7 +23,7 @@ export default function PsychologicalGrowthTree({
   onQuickAction,
 }: PsychologicalGrowthTreeProps) {
   const t = getTranslation(appLanguage);
-  const isRtl = appLanguage === 'ar' || appLanguage === 'ur';
+  const isRtl = appLanguage === 'ar';
 
   // Test mode to preview 365 days Ancient Wisdom Tree
   const [test365Mode, setTest365Mode] = useState(false);

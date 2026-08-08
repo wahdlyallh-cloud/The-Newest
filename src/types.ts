@@ -162,7 +162,7 @@ export interface HabitSettings {
   autoHideHeaderOnScroll?: boolean; // Auto-hide header on scroll
 }
 
-export type AppLanguage = 'ar' | 'en' | 'fr' | 'de' | 'es' | 'tr' | 'ur' | 'ru' | 'zh' | 'ja';
+export type AppLanguage = 'ar' | 'en';
 export type AppFontFamily = 'cairo' | 'tajawal' | 'almarai' | 'amiri' | 'noto_naskh' | 'jakarta' | 'system';
 export type AppLineHeight = 'compact' | 'normal' | 'relaxed' | 'spacious';
 

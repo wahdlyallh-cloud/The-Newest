@@ -28,7 +28,7 @@ export default function ShareableGratitudeCardModal({
   initialData,
 }: ShareableGratitudeCardModalProps) {
   const t = getTranslation(appLanguage);
-  const isRtl = appLanguage === 'ar' || appLanguage === 'ur';
+  const isRtl = appLanguage === 'ar';
 
   const cardRef = useRef<HTMLDivElement>(null);
 

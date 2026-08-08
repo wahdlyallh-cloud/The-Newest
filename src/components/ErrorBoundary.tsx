@@ -47,11 +47,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
       try {
         const savedLang = (typeof window !== 'undefined' ? localStorage.getItem('app_language') : null) || 'ar';
-        const langCode = (['ar', 'en', 'fr', 'de', 'es', 'tr', 'ur', 'ru', 'zh', 'ja'].includes(savedLang) ? savedLang : 'ar') as AppLanguage;
+        const langCode = (['ar', 'en'].includes(savedLang) ? savedLang : 'ar') as AppLanguage;
         const langInfo = getLanguageInfo(langCode);
         isRtl = langInfo?.dir === 'rtl';
 
-        const isAr = langCode === 'ar' || langCode === 'ur';
+        const isAr = langCode === 'ar';
         if (isAr) {
           title = "استعادة الواجهة والأمان 🛡️";
           desc = "حدث تنبيه غير متوقع أثناء التشغيل. تم الحفاظ على بياناتك، يمكنك إعادة التحميل أو مسح التخزين المؤقت لاستعادة التطبيق فوراً.";

@@ -17,7 +17,7 @@ export default function BehavioralCorrelationCard({
   className = '',
 }: BehavioralCorrelationCardProps) {
   const t = getTranslation(appLanguage);
-  const isRtl = appLanguage === 'ar' || appLanguage === 'ur';
+  const isRtl = appLanguage === 'ar';
 
   const [expandedId, setExpandedId] = useState<string | null>('sleep_water_anxiety');
 

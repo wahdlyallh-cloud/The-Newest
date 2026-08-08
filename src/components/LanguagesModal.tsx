@@ -35,7 +35,7 @@ export default function LanguagesModal({
 
   const currentInfo = getLanguageInfo(appLanguage);
   const t = MULTI_TRANSLATIONS[appLanguage] || MULTI_TRANSLATIONS.ar;
-  const isArabic = appLanguage === 'ar' || appLanguage === 'ur';
+  const isArabic = appLanguage === 'ar';
 
   const filteredLanguages = SUPPORTED_LANGUAGES.filter((lang) =>
     lang.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

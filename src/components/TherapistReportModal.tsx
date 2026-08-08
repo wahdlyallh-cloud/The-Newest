@@ -11,7 +11,7 @@ interface TherapistReportModalProps {
 }
 
 export default function TherapistReportModal({ isOpen, onClose, diaries, userApiKey, appLanguage = 'ar' }: TherapistReportModalProps) {
-  const isEn = appLanguage !== 'ar' && appLanguage !== 'ur';
+  const isEn = appLanguage === 'en';
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 14); // default 2 weeks ago

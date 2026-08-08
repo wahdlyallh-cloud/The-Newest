@@ -21,7 +21,7 @@ export default function TypographySettingsSection({
 }: TypographySettingsSectionProps) {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isArabic = appLanguage === 'ar' || appLanguage === 'ur';
+  const isArabic = appLanguage === 'ar';
 
   const currentFontObj = APP_FONTS.find(f => f.id === appFont) || APP_FONTS[0];
   const currentLhObj = LINE_HEIGHT_OPTIONS.find(l => l.id === appLineHeight) || LINE_HEIGHT_OPTIONS[2];

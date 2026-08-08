@@ -32,7 +32,7 @@ const DEFAULT_ADVISOR_PERMISSIONS: AdvisorPermissions = {
 };
 
 const getPermissionsConfig = (lang: AppLanguage) => {
-  const isArabic = lang === 'ar' || lang === 'ur';
+  const isArabic = lang === 'ar';
   return [
     { key: 'diaries' as const, title: isArabic ? 'اليوميات والمذكرات الشخصية' : 'Diaries & Personal Notes', desc: isArabic ? 'قراءة المذكرات والملاحظات المكتوبة' : 'Read personal diary entries', icon: '📖' },
     { key: 'moodLogs' as const, title: isArabic ? 'سجل المزاج والانفعالات اليومية' : 'Daily Mood & Emotion Logs', desc: isArabic ? 'قراءة وتقييم درجات المزاج اليومي' : 'Assess daily mood scores', icon: '📊' },
@@ -68,7 +68,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const permissionsConfig = getPermissionsConfig(appLanguage);
-  const isAr = appLanguage === 'ar' || appLanguage === 'ur';
+  const isAr = appLanguage === 'ar';
 
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('yawmiyati_chat_messages');
@@ -893,7 +893,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       {/* 🎙️ Interactive Hands-free Voice Chat Overlay Modal */}
       {showVoiceModal && (
         <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6 text-center relative animate-fade-in font-sans" dir={appLanguage === 'ar' || appLanguage === 'ur' ? 'rtl' : 'ltr'}>
+          <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6 text-center relative animate-fade-in font-sans" dir={appLanguage === 'ar' ? 'rtl' : 'ltr'}>
             
             {/* Close Button */}
             <button
@@ -903,7 +903,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 setShowVoiceModal(false);
                 setVoiceStatus('idle');
               }}
-              className={`absolute top-4 ${appLanguage === 'ar' || appLanguage === 'ur' ? 'left-4' : 'right-4'} p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-sm font-bold`}
+              className={`absolute top-4 ${appLanguage === 'ar' ? 'left-4' : 'right-4'} p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-sm font-bold`}
             >
               ×
             </button>
@@ -954,7 +954,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             <div className="bg-[#F0EDE4]/45 p-4 rounded-2xl border border-[#E2DCC8]/50 max-h-40 overflow-y-auto">
               <p className="text-xs text-gray-500 font-medium mb-1">{t.voiceLiveTranscript || 'النسخ التلقائي للمحادثة:'}</p>
               <p className="text-sm text-[#3A3A3A] font-medium leading-relaxed">
-                {voiceTranscript || (appLanguage === 'ar' || appLanguage === 'ur' ? 'تكلم بطلاقة، وسيقوم المساعد بقراءة تدويناتك وتحليلها والرد عليك فوراً بالصوت...' : 'Speak freely, the assistant will process your entries and speak back to you...')}
+                {voiceTranscript || (appLanguage === 'ar' ? 'تكلم بطلاقة، وسيقوم المساعد بقراءة تدويناتك وتحليلها والرد عليك فوراً بالصوت...' : 'Speak freely, the assistant will process your entries and speak back to you...')}
               </p>
             </div>
 

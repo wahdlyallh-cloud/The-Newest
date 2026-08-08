@@ -17,7 +17,7 @@ export default function OfflineSyncBanner({
 }: OfflineSyncBannerProps) {
   const { isOnline, pendingCount } = useOfflineStatus();
   const t = getTranslation(appLanguage);
-  const isRtl = appLanguage === 'ar' || appLanguage === 'ur';
+  const isRtl = appLanguage === 'ar';
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccessMsg, setSyncSuccessMsg] = useState(false);

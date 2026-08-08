@@ -11,7 +11,7 @@ interface LifeMapProps {
 
 export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: LifeMapProps) {
   const t = getTranslation(appLanguage);
-  const isEn = appLanguage !== 'ar' && appLanguage !== 'ur';
+  const isEn = appLanguage === 'en';
 
   // Find diary entry for the selected date
   const diaryToday = diaries.find(d => d.createdAt && (typeof d.createdAt === 'string' ? d.createdAt.split('T')[0] : new Date(d.createdAt).toISOString().split('T')[0]) === selectedDate);

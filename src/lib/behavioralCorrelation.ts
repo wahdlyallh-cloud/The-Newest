@@ -77,13 +77,6 @@ export function computeBehavioralCorrelations(
 
   const isAr = appLanguage === 'ar';
   const isEn = appLanguage === 'en';
-  const isFr = appLanguage === 'fr';
-  const isDe = appLanguage === 'de';
-  const isEs = appLanguage === 'es';
-  const isTr = appLanguage === 'tr';
-  const isRu = appLanguage === 'ru';
-  const isZh = appLanguage === 'zh';
-  const isJa = appLanguage === 'ja';
 
   const trans = getTranslation(appLanguage);
 
@@ -115,27 +108,6 @@ export function computeBehavioralCorrelations(
   if (isEn) {
     title1 = trans.sleepWaterAnxietyTitle || 'Sleep & Water Impact on Anxiety';
     desc1 = `On days when you drink 8 cups (2L) of water and sleep >7h, your anxiety score drops by ${anxietyDropPercent}% and emotional stability increases.`;
-  } else if (isFr) {
-    title1 = 'Impact du sommeil et de l\'eau sur l\'anxiété';
-    desc1 = `Les jours où vous buvez 2L d'eau et dormez >7h, votre score d'anxiété chute de ${anxietyDropPercent}% et votre stabilité augmente.`;
-  } else if (isDe) {
-    title1 = 'Einfluss von Schlaf & Wasser auf Angstzustände';
-    desc1 = `An Tagen, an denen Sie 2L Wasser trinken und >7h schlafen, sinkt Ihr Angstwert um ${anxietyDropPercent}% und die emotionale Stabilität steigt.`;
-  } else if (isEs) {
-    title1 = 'Impacto del sueño y agua en la ansiedad';
-    desc1 = `En los días que bebes 2L de agua y duermes >7h, tu nivel de ansiedad disminuye un ${anxietyDropPercent}% y aumenta la estabilidad emocional.`;
-  } else if (isTr) {
-    title1 = 'Uyku ve Suyun Kaygı Üzerindeki Etkisi';
-    desc1 = `2L su içtiğiniz ve >7 saat uyuduğunuz günlerde kaygı seviyeniz %${anxietyDropPercent} düşer ve duygusal dengeniz artar.`;
-  } else if (isRu) {
-    title1 = 'Влияние сна и воды на тревожность';
-    desc1 = `В дни, когда вы пьете 2 л воды и спите >7 ч, уровень тревожности снижается на ${anxietyDropPercent}%, а эмоциональный баланс растет.`;
-  } else if (isZh) {
-    title1 = '睡眠与饮水量对焦虑感的影响';
-    desc1 = `在饮水2升且睡眠超过7小时的日子里，您的焦虑评分降低了${anxietyDropPercent}%，情绪稳定性显著提高。`;
-  } else if (isJa) {
-    title1 = '睡眠と水分補給が不安感に与える影響';
-    desc1 = `2Lの水分を補給し7時間以上睡眠をとった日は、不安スコアが${anxietyDropPercent}%低下し、情緒が安定します。`;
   }
 
   insights.push({
@@ -170,27 +142,6 @@ export function computeBehavioralCorrelations(
   if (isEn) {
     title2 = trans.exerciseMoodBoostTitle || 'Physical Exercise & Energy Impact';
     desc2 = `Exercising for 20+ minutes correlates with a ${boostPercent}% boost in positive mood and reduced mental exhaustion.`;
-  } else if (isFr) {
-    title2 = 'Impact de l\'exercice physique sur l\'énergie';
-    desc2 = `Faire de l'exercice pendant 20+ min augmente l'humeur positive de ${boostPercent}% et réduit la fatigue mentale.`;
-  } else if (isDe) {
-    title2 = 'Einfluss von Sport und Bewegung';
-    desc2 = `20+ Minuten Bewegung korrelieren mit einer ${boostPercent}%igen Steigerung der positiven Stimmung und weniger Erschöpfung.`;
-  } else if (isEs) {
-    title2 = 'Impacto del ejercicio físico en el ánimo';
-    desc2 = `Hacer ejercicio durante 20+ minutos se relaciona con un aumento del ${boostPercent}% en el estado de ánimo positivo.`;
-  } else if (isTr) {
-    title2 = 'Egzersiz ve Enerji Etkisi';
-    desc2 = `20+ dakika egzersiz yapmak, pozitif ruh halinde %${boostPercent} artış ve zihinsel yorgunlukta azalma ile ilişkilidir.`;
-  } else if (isRu) {
-    title2 = 'Влияние физической активности на энергию';
-    desc2 = `20+ минут упражнений коррелируют с ростом позитивного настроения на ${boostPercent}% и снижением усталости.`;
-  } else if (isZh) {
-    title2 = '体育锻炼对情绪与精力的提升';
-    desc2 = `进行20分钟以上的运动与积极情绪提升${boostPercent}%及精神疲劳减少密切相关。`;
-  } else if (isJa) {
-    title2 = '運動が気分と精力に与える効果';
-    desc2 = `20分以上の運動は、ポジティブな気分の${boostPercent}%向上および精神的疲労の軽減と相関しています。`;
   }
 
   insights.push({
@@ -225,27 +176,6 @@ export function computeBehavioralCorrelations(
   if (isEn) {
     title3 = trans.cbtEffectivenessTitle || 'Effectiveness of CBT Exercises';
     desc3 = `Deconstructing negative automatic thoughts reduces emotional distress by an average of ${cbtAnxietyDrop}%.`;
-  } else if (isFr) {
-    title3 = 'Efficacité des exercices TCC';
-    desc3 = `La déconstruction des pensées négatives réduit la détresse émotionnelle de ${cbtAnxietyDrop}% en moyenne.`;
-  } else if (isDe) {
-    title3 = 'Effektivität von KBT-Übungen';
-    desc3 = `Das Hinterfragen negativer Gedanken reduziert emotionale Belastung um durchschnittlich ${cbtAnxietyDrop}%.`;
-  } else if (isEs) {
-    title3 = 'Efectividad de los ejercicios TCC';
-    desc3 = `Desmontar los pensamientos automáticos negativos reduce el malestar emocional en un promedio del ${cbtAnxietyDrop}%.`;
-  } else if (isTr) {
-    title3 = 'Bilişsel Davranışçı Terapi (BDT) Etkinliği';
-    desc3 = `Olumsuz otomatik düşünceleri ayrıştırmak, duygusal sıkıntıyı ortalama %${cbtAnxietyDrop} oranında azaltır.`;
-  } else if (isRu) {
-    title3 = 'Эффективность упражнений КПТ';
-    desc3 = `Деконструкция негативных мыслей снижает эмоциональный дискомфорт в среднем на ${cbtAnxietyDrop}%.`;
-  } else if (isZh) {
-    title3 = '认知行为疗法（CBT）练习效果';
-    desc3 = `拆解负面自动思维可使情绪困扰平均减少${cbtAnxietyDrop}%。`;
-  } else if (isJa) {
-    title3 = '認知行動療法（CBT）セッションの効果';
-    desc3 = `ネガティブな自動思考を再構成することで、精神的ストレスが平均${cbtAnxietyDrop}%軽減されます。`;
   }
 
   insights.push({
