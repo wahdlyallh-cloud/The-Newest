@@ -5657,7 +5657,7 @@ export default function App() {
                 {/* Editor Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-[#E2DCC8]/55 flex-wrap gap-2">
                   <h3 className="font-bold text-[#3A3A3A] text-base">
-                    {isNewEntry ? '✍️ تدوين مذكرات يومية جديدة' : '✏️ تعديل مذكرتك الشخصية'}
+                    {isNewEntry ? t.newJournalHeader : t.editJournalHeader}
                   </h3>
                   <div className="flex items-center space-x-2 space-x-reverse">
                     {!isNewEntry && (
@@ -5674,7 +5674,7 @@ export default function App() {
                         className="text-xs font-black text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
                       >
                         <Archive className="w-3.5 h-3.5 text-amber-700" />
-                        <span>{editingDiary.isArchived ? 'استرجاع من الأرشيف' : 'أرشفة هذه المذكرة 📥'}</span>
+                        <span>{editingDiary.isArchived ? t.restoreAction : t.archiveAction}</span>
                       </button>
                     )}
                     <button
@@ -5685,7 +5685,7 @@ export default function App() {
                       }}
                       className="text-xs font-semibold text-[#5A5A40] hover:text-[#3A3A3A] bg-[#F0EDE4] px-3 py-1.5 rounded-lg cursor-pointer"
                     >
-                      إلغاء وحفظ المسودة
+                      {t.cancelAndSaveDraft}
                     </button>
                   </div>
                 </div>
@@ -5693,17 +5693,17 @@ export default function App() {
                 {/* Title & Star Rating Input */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">عنوان المذكرة:</label>
+                    <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.journalTitleLabel}</label>
                     <input
                       type="text"
                       value={editingDiary.title}
                       onChange={(e) => setEditingDiary(prev => prev ? { ...prev, title: e.target.value } : null)}
-                      placeholder="عنوان معبر عن يومك..."
+                      placeholder={t.journalTitlePlaceholder}
                       className="w-full bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-xl px-4 py-2 text-sm text-[#3A3A3A] transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">تقييم الأهمية والعمق الذاتي:</label>
+                    <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.starRatingLabel}</label>
                     <div className="flex items-center space-x-1.5 space-x-reverse h-9">
                       {[1, 2, 3, 4, 5].map((stars) => (
                         <button
@@ -5719,14 +5719,14 @@ export default function App() {
                           />
                         </button>
                       ))}
-                      <span className="text-xs text-gray-400 mr-2">({editingDiary.importance} من 5 نجوم)</span>
+                      <span className="text-xs text-gray-400 mr-2">({editingDiary.importance} {t.outOfFiveStars})</span>
                     </div>
                   </div>
                 </div>
 
                 {/* تصنيف التدوينة الأساسي (يومياتي vs خواطري) */}
                 <div>
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-2">تصنيف التدوينة الأساسي:</label>
+                  <label className="block text-xs font-bold text-[#5A5A40] mb-2">{t.entryClassificationLabel}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -5738,7 +5738,7 @@ export default function App() {
                       }`}
                     >
                       <span>📝</span>
-                      <span>يومياتي العادية والفضفضة العامة</span>
+                      <span>{t.myNormalDiariesChoice}</span>
                     </button>
                     <button
                       type="button"
@@ -5750,16 +5750,29 @@ export default function App() {
                       }`}
                     >
                       <span>✍️</span>
-                      <span>خواطري وأفكاري الخاصة</span>
+                      <span>{t.myPrivateThoughtsChoice}</span>
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">كيف كان مزاجك السلوكي اليوم؟ (اختر متعدد):</label>
+                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.behavioralMoodLabel}</label>
                   <div className="flex flex-wrap gap-2">
                     {['سعيد', 'متحمس', 'مرتاح', 'طبيعي', 'حزين', 'مكتئب', 'قلق', 'غاضب', 'مرهق', 'ممتن'].map((m) => {
                       const isSelected = editingDiary.moods.includes(m);
+                      const moodTranslationMap: Record<string, string> = {
+                        'سعيد': t.moodHappy,
+                        'متحمس': t.moodExcited,
+                        'مرتاح': t.moodRelaxed,
+                        'طبيعي': t.moodNormal,
+                        'حزين': t.moodSad,
+                        'مكتئب': t.moodDepressed,
+                        'قلق': t.moodAnxious,
+                        'غاضب': t.moodAngry,
+                        'مرهق': t.moodExhausted,
+                        'ممتن': t.moodGrateful,
+                      };
+                      const displayMood = moodTranslationMap[m] || m;
                       return (
                         <button
                           key={m}
@@ -5781,7 +5794,7 @@ export default function App() {
                               : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4]'
                           }`}
                         >
-                          {m}
+                          {displayMood}
                         </button>
                       );
                     })}
@@ -5792,7 +5805,7 @@ export default function App() {
                   <div className="bg-purple-50/50 border border-purple-100 rounded-2xl p-4 space-y-2">
                     <span className="block text-xs font-black text-purple-950 flex items-center space-x-1.5 space-x-reverse">
                       <span>🧠</span>
-                      <span>تحليل المزاج التلقائي بالذكاء الاصطناعي (Gemini Smart Analysis):</span>
+                      <span>{t.autoAiMoodAnalysisTitle}</span>
                     </span>
                     <div className="flex flex-wrap gap-2 pt-1">
                       {editingDiary.aiMoodAnalysis.map((analysis, idx) => {
@@ -5810,7 +5823,7 @@ export default function App() {
                       })}
                     </div>
                     <p className="text-[10px] text-purple-600/80 font-bold leading-relaxed">
-                      * يتم تحديث هذا التحليل تلقائياً بدقة فور نقرك على زر "حفظ المذكرة بنجاح ✓" بناءً على الكلمات والفضفضة المكتوبة.
+                      {t.aiMoodAnalysisUpdateNotice}
                     </p>
                   </div>
                 )}
@@ -5818,7 +5831,7 @@ export default function App() {
                 {/* Content text area with Rich Editor Toolbar */}
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <label className="block text-xs font-bold text-[#5A5A40]">{isEn ? "Write your feelings and thoughts:" : "اكتب فضفضتك ومشاعرك بالتفصيل (بدون قيود):"}</label>
+                    <label className="block text-xs font-bold text-[#5A5A40]">{t.writeFeelingsLabel}</label>
                     {gratitudeCards.length > 0 && (
                       <button
                         type="button"
@@ -5826,18 +5839,18 @@ export default function App() {
                           const todayStr = new Date().toISOString().split('T')[0];
                           const todaysCards = gratitudeCards.filter(c => c.createdAt.startsWith(todayStr));
                           if (todaysCards.length > 0) {
-                            const formatted = "\n\n🌸 لقطات امتناني اليوم:\n" + todaysCards.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
+                            const formatted = `\n\n🌸 ${t.importGratitudeTitle || "Gratitude Moments"}:\n` + todaysCards.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
                             setEditingDiary(prev => prev ? { ...prev, content: prev.content + formatted } : null);
                           } else {
                             const lastThree = gratitudeCards.slice(0, 3);
-                            const formatted = "\n\n🌸 من مذكرات امتناني الأخيرة:\n" + lastThree.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
+                            const formatted = `\n\n🌸 ${t.importGratitudeTitle || "Gratitude Moments"}:\n` + lastThree.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
                             setEditingDiary(prev => prev ? { ...prev, content: prev.content + formatted } : null);
                           }
                         }}
                         className="text-[10px] text-[#8B9D83] hover:text-[#5A5A40] font-extrabold flex items-center space-x-1 space-x-reverse cursor-pointer bg-[#8B9D83]/8 px-2.5 py-1 rounded-lg transition-colors border border-[#8B9D83]/20 animate-pulse"
                       >
                         <span>🌸</span>
-                        <span>{isEn ? "Import Gratitude Moments" : "استيراد لقطات الامتنان السعيدة"}</span>
+                        <span>{t.importGratitudeBtn}</span>
                       </button>
                     )}
                   </div>
@@ -5846,7 +5859,7 @@ export default function App() {
                   <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 flex flex-wrap items-center gap-1.5 text-xs">
                     <button
                       type="button"
-                      title="تراجع (Undo)"
+                      title={t.undoTooltip}
                       onClick={handleUndo}
                       className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs"
                     >
@@ -5854,7 +5867,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title="إعادة (Redo)"
+                      title={t.redoTooltip}
                       onClick={handleRedo}
                       className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs"
                     >
@@ -5865,7 +5878,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      title="عريض (Bold)"
+                      title={t.boldTooltip || "Bold"}
                       onClick={() => insertFormatting('**', '**')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer"
                     >
@@ -5873,7 +5886,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title="مائل (Italic)"
+                      title={t.italicTooltip || "Italic"}
                       onClick={() => insertFormatting('*', '*')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer"
                     >
@@ -5881,7 +5894,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title="تحته خط (Underline)"
+                      title={t.underlineTooltip || "Underline"}
                       onClick={() => insertFormatting('<u>', '</u>')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer"
                     >
@@ -5889,7 +5902,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title="يتوسطه خط (Strikethrough)"
+                      title={t.strikethroughTooltip || "Strikethrough"}
                       onClick={() => insertFormatting('~~', '~~')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer"
                     >
@@ -5900,7 +5913,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      title="عنوان رئيسي"
+                      title={t.h1Tooltip || "Heading 1"}
                       onClick={() => insertFormatting('\n# ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer"
                     >
@@ -5908,7 +5921,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title="عنوان فرعي"
+                      title={t.h2Tooltip || "Heading 2"}
                       onClick={() => insertFormatting('\n## ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer"
                     >
@@ -5917,7 +5930,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      title="اقتباس"
+                      title={t.quoteTooltip || "Quote"}
                       onClick={() => insertFormatting('\n> ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer"
                     >
@@ -5925,52 +5938,52 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title="قائمة نقطية"
+                      title={t.bulletListTooltip || "Bullet List"}
                       onClick={() => insertFormatting('\n- ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer"
                     >
-                      • قائمة
+                      • {t.bulletListLabel || "List"}
                     </button>
 
                     <div className="h-4 w-px bg-[#E2DCC8] mx-0.5" />
 
                     <button
                       type="button"
-                      title="تنسيق ألوان الخط"
+                      title={t.fontColorsTooltip || "Font Colors"}
                       onClick={() => setShowColorPalette(!showColorPalette)}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-amber-800 flex items-center space-x-1 space-x-reverse cursor-pointer"
                     >
                       <span>🎨</span>
-                      <span>ألوان الخط</span>
+                      <span>{t.fontColorsBtn || "Font Colors"}</span>
                     </button>
 
                     <button
                       type="button"
-                      title="مزيد من الميزات"
+                      title={t.moreFeaturesBtn}
                       onClick={() => setShowMoreFeaturesSheet(true)}
                       className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#6E8066] text-white rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs"
                     >
                       <span>✨</span>
-                      <span>مزيد من الميزات</span>
+                      <span>{t.moreFeaturesBtn}</span>
                     </button>
 
                     <button
                       type="button"
-                      title="اطلب من الذكاء الاصطناعي أن يكتب ملاحظة"
+                      title={t.aiWriterBtn}
                       onClick={() => setShowAiWriterSheet(true)}
                       className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs text-xs"
                     >
                       <span>✨</span>
-                      <span>كتابة بالذكاء الاصطناعي</span>
+                      <span>{t.aiWriterBtn}</span>
                     </button>
 
                     {showColorPalette && (
                       <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-[#E2DCC8]">
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title="برتقالي" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title="أخضر" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title="أزرق" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title="أحمر" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title="بنفسجي" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title="Orange" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title="Green" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title="Blue" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title="Red" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title="Purple" />
                       </div>
                     )}
                   </div>
@@ -5979,7 +5992,7 @@ export default function App() {
                     ref={editorRef}
                     contentEditable
                     suppressContentEditableWarning
-                    data-placeholder="اكتب هنا كل ما يدور بخلدك من أفكار، مخاوف، آمال، أو أحداث حدثت لك اليوم... (يمكنك تظليل أي كلمة واستخدام الأزرار أعلاه لـ: العريض B، التحته خط U، المائل I، العناوين، والألوان بسهولة!)"
+                    data-placeholder={t.editorTextareaPlaceholder}
                     onInput={(e) => {
                       const html = e.currentTarget.innerHTML;
                       const prevRecorded = lastRecordedHtmlRef.current || '';
@@ -6004,9 +6017,9 @@ export default function App() {
                   <div className="bg-[#EAE5D9] border border-t-0 border-[#E2DCC8] rounded-b-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex flex-wrap items-center gap-1.5">
                       {/* Attach File (Paperclip) */}
-                      <label className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title="إرفاق ملف">
+                      <label className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
                         <span>📎</span>
-                        <span className="hidden sm:inline">إرفاق ملف</span>
+                        <span className="hidden sm:inline">{t.attachFileTitle}</span>
                         <input
                           type="file"
                           accept="*/*"
@@ -6038,10 +6051,10 @@ export default function App() {
                         type="button"
                         onClick={handleToggleRecording}
                         className={`p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse ${isRecording ? 'text-red-600 bg-red-50 border-red-200' : 'text-[#5A5A40]'}`}
-                        title="أضف صوت"
+                        title={t.addAudioTitle}
                       >
                         <span>🎙️</span>
-                        <span className="hidden sm:inline">{isRecording ? `جاري التسجيل (${recordingSeconds}ث)` : 'أضف صوت'}</span>
+                        <span className="hidden sm:inline">{isRecording ? `${t.recordingProgress} (${recordingSeconds}s)` : t.addAudioTitle}</span>
                       </button>
 
                       {/* Draw / Sketch (Pencil) */}
@@ -6049,16 +6062,16 @@ export default function App() {
                         type="button"
                         onClick={() => setShowSketchboard(true)}
                         className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                        title="رسم"
+                        title={t.drawTitle}
                       >
                         <span>✏️</span>
-                        <span className="hidden sm:inline">رسم</span>
+                        <span className="hidden sm:inline">{t.drawTitle}</span>
                       </button>
 
                       {/* Add Image */}
-                      <label className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title="صورة">
+                      <label className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.photoTitle}>
                         <span>🖼️</span>
-                        <span className="hidden sm:inline">صورة</span>
+                        <span className="hidden sm:inline">{t.photoTitle}</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -6073,19 +6086,19 @@ export default function App() {
                           type="button"
                           onClick={() => setShowBgColorPicker(!showBgColorPicker)}
                           className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                          title="لون الخلفية"
+                          title={t.backgroundColorTitle}
                         >
                           <span>🎨</span>
-                          <span className="hidden sm:inline">لون</span>
+                          <span className="hidden sm:inline">{t.colorTitle}</span>
                         </button>
                         {showBgColorPicker && (
                           <div className="absolute right-0 bottom-full mb-1 flex items-center gap-2 p-2 bg-white border border-[#E2DCC8] rounded-2xl shadow-xl z-30 animate-fadeIn">
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title="افتراضي" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="أصفر دافئ" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="أزرق سماوي" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="أخضر ناعم" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="لافندر" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="وردي" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Default" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Warm Yellow" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Sky Blue" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Soft Green" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Lavender" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-6 h-6 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Pink" />
                           </div>
                         )}
                       </div>
@@ -6095,10 +6108,10 @@ export default function App() {
                         type="button"
                         onClick={() => setShowFontDrawer(true)}
                         className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                        title="تأثير الخط"
+                        title={t.fontEffectTitle}
                       >
                         <span className="font-serif">Aa</span>
-                        <span className="hidden sm:inline">خط</span>
+                        <span className="hidden sm:inline">{t.fontTitle}</span>
                       </button>
                     </div>
 
@@ -6109,7 +6122,7 @@ export default function App() {
                       className="px-3 py-1.5 bg-[#8B9D83] text-white hover:bg-[#6E8066] rounded-xl font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs text-xs"
                     >
                       <span>☑️</span>
-                      <span>+ إضافة عنصر (قائمة)</span>
+                      <span>+ {t.addChecklistItemBtn}</span>
                     </button>
                   </div>
                 </div>
@@ -6120,14 +6133,14 @@ export default function App() {
                     <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                       <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                         <span>☑️</span>
-                        <span>عناصر وقائمة المهام داخل المذكرة:</span>
+                        <span>{t.checklistSectionTitle}</span>
                       </span>
                       <button
                         type="button"
                         onClick={handleAddTaskItem}
                         className="text-[11px] text-[#8B9D83] font-black hover:underline cursor-pointer"
                       >
-                        + إضافة عنصر
+                        + {t.addChecklistItemBtn}
                       </button>
                     </div>
                     <div className="space-y-2">
@@ -6161,7 +6174,7 @@ export default function App() {
                                 };
                               });
                             }}
-                            placeholder="أضف المهمة هنا..."
+                            placeholder={t.taskInputPlaceholder}
                             className={`flex-1 text-xs border-b border-transparent focus:border-[#8B9D83] focus:outline-none bg-transparent py-1 ${task.completed ? 'line-through text-gray-400' : 'text-[#3A3A3A] font-medium'}`}
                           />
                           <button
@@ -6190,17 +6203,17 @@ export default function App() {
                   <div className="space-y-3 bg-[#FAEDCD]/20 border border-[#D4A373]/30 rounded-2xl p-4">
                     <span className="block text-xs font-extrabold text-[#D4A373] flex items-center space-x-1.5 space-x-reverse">
                       <span>✍️</span>
-                      <span>إضافة ملحق أو تعديل نصي لاحق (يُعرض مع وقته وتاريخه):</span>
+                      <span>{t.subsequentAdditionsTitle}</span>
                     </span>
                     <textarea
                       rows={3}
                       value={newEditAddition}
                       onChange={(e) => setNewEditAddition(e.target.value)}
-                      placeholder="اكتب هنا الكلمات أو الجمل التي تود إضافتها أسفل النص الأساسي لتدون بلحظتها وتاريخها..."
+                      placeholder={t.subsequentAdditionsPlaceholder}
                       className="w-full bg-white focus:bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#D4A373] focus:border-[#D4A373] focus:outline-none rounded-xl p-3 text-xs text-[#3A3A3A] leading-relaxed transition-all"
                     />
                     <p className="text-[10px] text-gray-400 font-medium leading-relaxed">
-                      * عند الحفظ، سيتم إدراج هذا النص الإضافي أسفل النص الأساسي مع وسم توقيت وتاريخ دقيق، وسيتم تمييز المذكرة من الخارج بـ "تم التعديل".
+                      {t.subsequentAdditionsNotice}
                     </p>
                   </div>
                 )}
@@ -6210,7 +6223,7 @@ export default function App() {
                   <div className="space-y-3">
                     <span className="block text-xs font-extrabold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>📜</span>
-                      <span>سجل الإضافات والتعديلات التاريخية للمذكرة:</span>
+                      <span>{t.historicalEditsTitle}</span>
                     </span>
                     <div className="space-y-3">
                       {editingDiary.edits.map((edit) => (
@@ -6233,7 +6246,7 @@ export default function App() {
                               }}
                               className="text-red-500 hover:text-red-700 cursor-pointer text-[10px] font-bold"
                             >
-                              حذف هذه الإضافة
+                              {t.deleteAdditionBtn}
                             </button>
                           </div>
                           <p className="text-xs text-[#3A3A3A] leading-relaxed font-normal">
