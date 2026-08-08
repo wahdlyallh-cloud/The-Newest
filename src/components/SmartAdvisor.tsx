@@ -68,6 +68,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const permissionsConfig = getPermissionsConfig(appLanguage);
+  const isAr = appLanguage === 'ar' || appLanguage === 'ur';
+
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('yawmiyati_chat_messages');
     if (saved) {
@@ -81,7 +83,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       {
         id: 'welcome',
         sender: 'ai',
-        text: 'أهلاً بك في **المستشار الذكي (حياة AI / Hayat AI)**. أنا صديقك ومستشارك الخاص، ولدي الصلاحية لمساعدتك في ربط الخيوط واكتشاف الأنماط وتحليل مزاجك على مدار الأيام والأسابيع.\n\nيمكنك أن تسألني عما تشاء، مثل:\n• *"ما الذي سبب لي القلق خلال الأسبوع الماضي؟"*\n• *"ماذا حدث لي يوم 15 يوليو؟"*\n• *"متى كانت آخر مرة شعرت فيها بالسعادة؟"*\n• *"قارن بين حالتي النفسية مؤخراً ومقارنتها بالشهر الماضي."*',
+        text: isAr
+          ? 'أهلاً بك في **المستشار الذكي (حياة AI / Hayat AI)**. أنا صديقك ومستشارك الخاص، ولدي الصلاحية لمساعدتك في ربط الخيوط واكتشاف الأنماط وتحليل مزاجك على مدار الأيام والأسابيع.\n\nيمكنك أن تسألني عما تشاء، مثل:\n• *"ما الذي سبب لي القلق خلال الأسبوع الماضي؟"*\n• *"ماذا حدث لي يوم 15 يوليو؟"*\n• *"متى كانت آخر مرة شعرت فيها بالسعادة؟"*\n• *"قارن بين حالتي النفسية مؤخراً ومقارنتها بالشهر الماضي."*'
+          : 'Welcome to **Smart Advisor (Hayat AI)**. I am your personal assistant and advisor, here to help you connect thoughts, discover patterns, and analyze your mood over time.\n\nYou can ask me anything, such as:\n• *"What caused my anxiety over the past week?"*\n• *"What happened to me on July 15th?"*\n• *"When was the last time I felt happy?"*\n• *"Compare my recent mental state with last month."*',
         createdAt: new Date().toISOString()
       }
     ];
@@ -393,12 +397,18 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
   };
 
-  const quickQuestions = [
+  const quickQuestions = isAr ? [
     "ما أكثر مسببات التوتر لدي؟",
     "ماذا حدث لي يوم 15 يوليو؟",
     "متى كانت آخر مرة شعرت فيها بالسعادة؟",
     "قارن بين حالتي هذا الأسبوع والشهر الماضي.",
     "اعرض الملاحظات التي تتحدث عن الدراسة."
+  ] : [
+    "What causes my stress most?",
+    "What happened to me on July 15th?",
+    "When was I last happy?",
+    "Compare my state this week vs last month.",
+    "Show notes about studies."
   ];
 
   const handleSend = async (textToSend: string) => {
@@ -547,12 +557,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   };
 
   const handleClearHistory = () => {
-    if (window.confirm("هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار الذكي؟")) {
+    if (window.confirm(isAr ? "هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار الذكي؟" : "Are you sure you want to clear the AI advisor chat history?")) {
       setMessages([
         {
           id: 'welcome',
           sender: 'ai',
-          text: 'تم مسح سجل المحادثة. كيف يمكنني مساعدتك اليوم في تصفح وتحليل يومياتك؟ 🧠',
+          text: isAr ? 'تم مسح سجل المحادثة. كيف يمكنني مساعدتك اليوم في تصفح وتحليل يومياتك؟ 🧠' : 'Chat history cleared. How can I help you today in reviewing and analyzing your diary? 🧠',
           createdAt: new Date().toISOString()
         }
       ]);
@@ -648,12 +658,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                     {currentlySpeakingId === msg.id ? (
                       <>
                         <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></span>
-                        <span>⏹️ إيقاف الصوت</span>
+                        <span>⏹️ {isAr ? 'إيقاف الصوت' : 'Stop Audio'}</span>
                       </>
                     ) : (
                       <>
                         <span>🔊</span>
-                        <span>استماع بالصوت</span>
+                        <span>{isAr ? 'استماع بالصوت' : 'Listen Audio'}</span>
                       </>
                     )}
                   </button>
@@ -666,7 +676,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         {loading && (
           <div className="flex justify-end">
             <div className="bg-white border border-[#E2DCC8] rounded-2xl rounded-tl-none p-4 shadow-xs flex items-center space-x-2 space-x-reverse">
-              <span className="text-xs text-gray-500">يقوم المستشار بتحليل سجل حياتك...</span>
+              <span className="text-xs text-gray-500">{isAr ? 'يقوم المستشار بتحليل سجل حياتك...' : 'Advisor is analyzing your life log...'}</span>
               <div className="flex space-x-1 space-x-reverse">
                 <span className="w-1.5 h-1.5 bg-[#8B9D83] rounded-full animate-bounce delay-100"></span>
                 <span className="w-1.5 h-1.5 bg-[#8B9D83] rounded-full animate-bounce delay-200"></span>
@@ -683,14 +693,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
           {chatAttachments.links.map((link, idx) => (
             <div key={idx} className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-blue-200 flex items-center space-x-1.5 space-x-reverse">
-              <span>🌐 رابط</span>
+              <span>{isAr ? '🌐 رابط' : '🌐 Link'}</span>
               <span className="truncate max-w-[120px]" dir="ltr">{link}</span>
               <button onClick={() => setChatAttachments(prev => ({ ...prev, links: prev.links.filter((_, i) => i !== idx) }))} className="text-red-500 font-bold hover:text-red-700 cursor-pointer text-xs">×</button>
             </div>
           ))}
           {chatAttachments.videos.map((vid, idx) => (
             <div key={idx} className="bg-purple-50 text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-purple-200 flex items-center space-x-1.5 space-x-reverse">
-              <span>🎥 فيديو</span>
+              <span>{isAr ? '🎥 فيديو' : '🎥 Video'}</span>
               <span className="truncate max-w-[120px]" dir="ltr">{vid}</span>
               <button onClick={() => setChatAttachments(prev => ({ ...prev, videos: prev.videos.filter((_, i) => i !== idx) }))} className="text-red-500 font-bold hover:text-red-700 cursor-pointer text-xs">×</button>
             </div>
@@ -709,7 +719,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         <div className="p-3 bg-[#F0EDE4] border-t border-[#E2DCC8] space-y-2 shrink-0">
           {activeAttachmentType === 'link' && (
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#5A5A40]">أدخل الرابط الإلكتروني المرجعي:</label>
+              <label className="block text-[10px] font-bold text-[#5A5A40]">{isAr ? 'أدخل الرابط الإلكتروني المرجعي:' : 'Enter Reference Web Link:'}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -728,14 +738,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   }}
                   className="bg-[#8B9D83] text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
                 >
-                  إضافة الرابط
+                  {isAr ? 'إضافة الرابط' : 'Add Link'}
                 </button>
               </div>
             </div>
           )}
           {activeAttachmentType === 'video' && (
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#5A5A40]">أدخل رابط الفيديو (يوتيوب أو فيديو مباشر):</label>
+              <label className="block text-[10px] font-bold text-[#5A5A40]">{isAr ? 'أدخل رابط الفيديو (يوتيوب أو فيديو مباشر):' : 'Enter Video URL (YouTube or Direct):'}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -752,29 +762,29 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                       setActiveAttachmentType('none');
                     }
                   }}
-                  className="bg-[#8B9D83] text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
+                  className="bg-[#8B9D83] text-[#FAF8F5] font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
                 >
-                  إضافة الفيديو
+                  {isAr ? 'إضافة الفيديو' : 'Add Video'}
                 </button>
               </div>
             </div>
           )}
           {activeAttachmentType === 'pdf' && (
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#5A5A40]">أدخل معلومات مستند الـ PDF المرفق:</label>
+              <label className="block text-[10px] font-bold text-[#5A5A40]">{isAr ? 'أدخل معلومات مستند الـ PDF المرفق:' : 'Enter Attached PDF Info:'}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={tempPdfName}
                   onChange={(e) => setTempPdfName(e.target.value)}
-                  placeholder="اسم الملف (مثال: تقرير_نفسي.pdf)"
+                  placeholder={isAr ? 'اسم الملف (مثال: تقرير_نفسي.pdf)' : 'File name (e.g. report.pdf)'}
                   className="w-1/3 bg-white border border-[#E2DCC8] rounded-lg px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
                 />
                 <input
                   type="text"
                   value={tempPdfUrl}
                   onChange={(e) => setTempPdfUrl(e.target.value)}
-                  placeholder="رابط التحميل أو المشاهدة..."
+                  placeholder={isAr ? 'رابط التحميل أو المشاهدة...' : 'URL or View Link...'}
                   className="w-2/3 bg-white border border-[#E2DCC8] rounded-lg px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
                 />
                 <button
@@ -788,7 +798,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   }}
                   className="bg-[#8B9D83] text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
                 >
-                  إضافة PDF
+                  {isAr ? 'إضافة PDF' : 'Add PDF'}
                 </button>
               </div>
             </div>
@@ -813,14 +823,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0">
         {/* Fast toggle buttons for attachment types */}
         <div className="flex items-center space-x-2 space-x-reverse text-xs">
-          <span className="text-[10px] text-gray-400">إرفاق بالشات:</span>
+          <span className="text-[10px] text-gray-400">{isAr ? 'إرفاق بالشات:' : 'Attach to Chat:'}</span>
           <button
             onClick={() => setActiveAttachmentType(activeAttachmentType === 'link' ? 'none' : 'link')}
             className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
               activeAttachmentType === 'link' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50/50'
             }`}
           >
-            🌐 رابط ويب
+            {isAr ? '🌐 رابط ويب' : '🌐 Web Link'}
           </button>
           <button
             onClick={() => setActiveAttachmentType(activeAttachmentType === 'video' ? 'none' : 'video')}
@@ -828,7 +838,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               activeAttachmentType === 'video' ? 'bg-purple-500 text-white border-purple-500' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50/50'
             }`}
           >
-            🎥 فيديو مرجعي
+            {isAr ? '🎥 فيديو مرجعي' : '🎥 Video'}
           </button>
           <button
             onClick={() => setActiveAttachmentType(activeAttachmentType === 'pdf' ? 'none' : 'pdf')}
@@ -836,7 +846,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               activeAttachmentType === 'pdf' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50/50'
             }`}
           >
-            📄 ملف PDF
+            {isAr ? '📄 ملف PDF' : '📄 PDF File'}
           </button>
         </div>
 
@@ -844,7 +854,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           <button
             onClick={handleClearHistory}
             className="p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0"
-            title="مسح سجل المحادثة"
+            title={isAr ? "مسح سجل المحادثة" : "Clear Chat History"}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -856,7 +866,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 ? 'bg-[#D4A373] text-white animate-pulse ring-4 ring-[#D4A373]/20'
                 : 'bg-[#F0EDE4] text-[#3A3A3A] hover:bg-[#E2DCC8]'
             }`}
-            title={isRecording ? 'اضغط لإنهاء الإملاء' : 'إملاء صوتي ذكي للرسالة'}
+            title={isRecording ? (isAr ? 'اضغط لإنهاء الإملاء' : 'Click to stop dictation') : (isAr ? 'إملاء صوتي ذكي للرسالة' : 'Smart Voice Dictation')}
           >
             <Mic className="w-4.5 h-4.5" />
           </button>
@@ -866,7 +876,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
-            placeholder={isRecording ? 'جاري الاستماع لصوتك...' : 'اسأل المستشار عن يومياتك وحالتك النفسية...'}
+            placeholder={isRecording ? (isAr ? 'جاري الاستماع لصوتك...' : 'Listening to your voice...') : (isAr ? 'اسأل المستشار عن يومياتك وحالتك النفسية...' : 'Ask advisor about your diary and mental state...')}
             disabled={isRecording}
             className="flex-grow bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8]/60 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] rounded-xl px-3.5 py-2.5 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none transition-colors"
           />
@@ -990,7 +1000,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* 🛡️ Advisor Access Permissions Modal */}
       {showPermissionsModal && (
-        <div className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" dir="rtl">
+        <div className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" dir={langInfo.dir}>
           <div className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl p-6 max-w-xl w-full text-right shadow-2xl space-y-4 max-h-[90vh] flex flex-col animate-in zoom-in-95">
             
             {/* Header */}
@@ -1000,8 +1010,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   <ShieldCheck className="w-6 h-6 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-[#2B3E50]">صلاحية وصول المستشار الذكي 🛡️</h3>
-                  <p className="text-xs text-gray-500 font-bold">تحديد الأماكن والبيانات المسموح للمستشار بتحليلها وقراءتها</p>
+                  <h3 className="text-base font-black text-[#2B3E50]">{isAr ? 'صلاحية وصول المستشار الذكي 🛡️' : 'Smart Advisor Access Permissions 🛡️'}</h3>
+                  <p className="text-xs text-gray-500 font-bold">{isAr ? 'تحديد الأماكن والبيانات المسموح للمستشار بتحليلها وقراءتها' : 'Select data areas the advisor is allowed to analyze and read'}</p>
                 </div>
               </div>
               <button
@@ -1018,8 +1028,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <div className="flex items-center gap-3">
                 <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
                 <div>
-                  <span className="text-xs font-black text-amber-950 block">تفعيل الوصول للكل (Enable All Access)</span>
-                  <span className="text-[11px] text-amber-800 font-bold">عند التفعيل، يستطيع المستشار تقديم تحليلات وشاملة لكافة الأنشطة</span>
+                  <span className="text-xs font-black text-amber-950 block">{isAr ? 'تفعيل الوصول للكل (Enable All Access)' : 'Enable All Access'}</span>
+                  <span className="text-[11px] text-amber-800 font-bold">{isAr ? 'عند التفعيل، يستطيع المستشار تقديم تحليلات وشاملة لكافة الأنشطة' : 'When enabled, advisor can provide comprehensive insights across all activities'}</span>
                 </div>
               </div>
 
@@ -1080,14 +1090,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             {/* Footer */}
             <div className="pt-3 border-t border-[#E2DCC8] flex items-center justify-between shrink-0">
               <span className="text-[10px] text-gray-500 font-bold">
-                🔒 يتم حفظ تفضيلاتك محلياً وتُطبق فورياً على ردود المستشار الذكي.
+                {isAr ? '🔒 يتم حفظ تفضيلاتك محلياً وتُطبق فورياً على ردود المستشار الذكي.' : '🔒 Preferences saved locally & applied instantly to AI responses.'}
               </span>
               <button
                 type="button"
                 onClick={() => setShowPermissionsModal(false)}
                 className="px-5 py-2.5 bg-[#8B9D83] hover:bg-[#7A8C72] text-white text-xs font-black rounded-xl shadow-md transition-all cursor-pointer"
               >
-                حفظ وتطبيق 💾
+                {isAr ? 'حفظ وتطبيق 💾' : 'Save & Apply 💾'}
               </button>
             </div>
 

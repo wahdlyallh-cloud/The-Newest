@@ -1,6 +1,6 @@
 // Helper to safely format dates without throwing
 function safeFormatDate(d: any): string {
-  if (!d) return 'غير مؤرخ';
+  if (!d) return 'undated';
   if (typeof d === 'string') {
     return d.includes('T') ? d.split('T')[0] : d;
   }
@@ -8,14 +8,14 @@ function safeFormatDate(d: any): string {
     try {
       return new Date(d).toISOString().split('T')[0];
     } catch {
-      return 'غير مؤرخ';
+      return 'undated';
     }
   }
   if (d instanceof Date) {
     try {
       return d.toISOString().split('T')[0];
     } catch {
-      return 'غير مؤرخ';
+      return 'undated';
     }
   }
   return String(d);
@@ -23,20 +23,20 @@ function safeFormatDate(d: any): string {
 
 // Helper to enforce user's selected language output in Gemini REST calls
 function getLanguageInstruction(langCode?: string): string {
-  const code = (langCode || 'ar').toLowerCase();
+  const code = (langCode || 'en').toLowerCase();
   const langNames: Record<string, string> = {
-    ar: "Arabic (العربية)",
+    ar: "Arabic",
     en: "English",
-    de: "German (Deutsch)",
-    fr: "French (Français)",
-    es: "Spanish (Español)",
-    it: "Italian (Italiano)",
-    tr: "Turkish (Türkçe)",
-    ur: "Urdu (اردو)",
-    hi: "Hindi (हिंदी)",
-    id: "Indonesian (Bahasa Indonesia)"
+    de: "German",
+    fr: "French",
+    es: "Spanish",
+    it: "Italian",
+    tr: "Turkish",
+    ur: "Urdu",
+    hi: "Hindi",
+    id: "Indonesian"
   };
-  const targetName = langNames[code] || "Arabic (العربية)";
+  const targetName = langNames[code] || "English";
   return `\n\nCRITICAL LANGUAGE MANDATE: Always respond, analyze, and output purely in the requested language: ${targetName}. Translate all mood tags, insights, and recommendations completely to ${targetName}.`;
 }
 
@@ -61,7 +61,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
   }
 
   if (!keyToUse || keyToUse.trim() === '') {
-    throw new Error("يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لتفعيل كافة خدمات الذكاء الاصطناعي.");
+    throw new Error("Gemini API Key is required in app settings.");
   }
 
   const modelsToTry = [
@@ -120,7 +120,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     }
   }
 
-  throw new Error(lastErrorMsg || "تعذر الاتصال بجميع طرازات Gemini المتاحة.");
+  throw new Error(lastErrorMsg || "Could not connect to Gemini models.");
 }
 
 // Intercept window.fetch robustly
@@ -191,61 +191,51 @@ async function handleClientSideFallback(url: string, init?: RequestInit): Promis
   if (url.includes('/api/gemini/verify-key')) {
     const key = requestBody.key || keyToUse;
     if (!key || key.trim() === '') {
-      return createErrorResponse("مفتاح API فارغ");
+      return createErrorResponse("API Key is empty");
     }
     try {
       await generateWithGeminiREST("Say 'ok' in 1 word", undefined, false, key);
-      return createSuccessResponse({ success: true, message: "تم التحقق من مفتاح الـ API بنجاح وهو يعمل بشكل ممتاز! 🎉" });
+      return createSuccessResponse({ success: true, message: "API key verified successfully! 🎉" });
     } catch (err: any) {
       if (err.message?.includes("Quota") || err.message?.includes("limit") || err.message?.includes("429") || err.message?.includes("EXHAUSTED")) {
         return createSuccessResponse({
           success: true,
-          message: "تم حفظ واعتماد المفتاح بنجاح! سيتم استخدامه للذكاء الاصطناعي مع التحويل التلقائي للمحرك المحلي الممتاز عند الحاجة. 🎉"
+          message: "Key saved successfully! 🎉"
         });
       }
-      return createErrorResponse(err.message || "فشل التحقق من المفتاح.");
+      return createErrorResponse(err.message || "Key verification failed.");
     }
   }
 
   if (url.includes('/api/gemini/analyze-mood')) {
-    const { title, content } = requestBody;
+    const { title, content, appLanguage } = requestBody;
     if (!content || content.trim() === "") {
       return createSuccessResponse({
         success: true,
-        analysis: [{ mood: "طبيعي", percentage: 100 }]
+        analysis: [{ mood: "normal", percentage: 100 }]
       });
     }
 
     try {
-      const prompt = `أنت طبيب نفسي ومحلل مشاعر خبير باللغة العربية. قم بتحليل النص التالي المستخرج من مذكرات يومية للمستخدم واستنتج بدقة النسب المئوية للمشاعر المختلفة التي يمر بها.
-عنوان المذكرة: "${title || 'بدون عنوان'}"
-محتوى المذكرة: "${content}"
+      const prompt = `You are a psychological mood analyst. Analyze the following user entry and determine percentage breakdown of moods.
+Title: "${title || 'Untitled'}"
+Content: "${content}"
 
-يجب أن تقوم بتوزيع النسب المئوية على بعض المشاعر العشرة التالية فقط:
-- سعيد جدًا (Very Happy)
-- سعيد (Happy)
-- مرتاح (Relaxed)
-- طبيعي (Normal)
-- حزين (Sad)
-- مكتئب (Depressed)
-- قلق (Anxious)
-- غاضب (Angry)
-- مرهق (Exhausted)
-- ممتن (Grateful)
+Classify into moods: Very Happy, Happy, Relaxed, Normal, Sad, Depressed, Anxious, Angry, Exhausted, Grateful.
+${getLanguageInstruction(appLanguage)}
 
-أرجع النتيجة على شكل مصفوفة JSON تحتوي فقط على كائنات بصيغة:
-[{"mood": "اسم الشعور بالعربية", "percentage": الرقم بين 1 و 100}]
-يجب أن يكون مجموع النسب 100%. أرجع JSON الصرف فقط بدون أي ماركداون أو تعليقات خارجية.`;
+Return JSON array format:
+[{"mood": "Mood Name", "percentage": number}]`;
 
-      const text = await generateWithGeminiREST(prompt, "أنت طبيب نفسي ومحلل مشاعر خبير باللغة العربية.", true, keyToUse);
+      const text = await generateWithGeminiREST(prompt, "You are an expert psychological mood analyst.", true, keyToUse);
       const cleanJson = extractJsonArray(text);
       return createSuccessResponse({ success: true, analysis: cleanJson });
     } catch (err: any) {
       return createSuccessResponse({
         success: true,
         analysis: [
-          { mood: "طبيعي", percentage: 70 },
-          { mood: "مرتاح", percentage: 30 }
+          { mood: "Normal", percentage: 70 },
+          { mood: "Relaxed", percentage: 30 }
         ],
         source: "local-simulation"
       });
@@ -955,218 +945,145 @@ export function generateSmartDynamicDiaryChatReply(
   const msg = (newMessage || '').trim();
   const msgLower = msg.toLowerCase();
   const diaryText = (content || '').trim();
-  const fullTextContext = `${title || ''} ${diaryText} ${(audioTranscriptions || []).join(' ')}`.trim();
-  const moodList = moods && moods.length > 0 ? moods.join('، ') : 'متوازن';
+  const moodList = moods && moods.length > 0 ? moods.join(', ') : 'Balanced';
 
-  // 1. Cognitive Distortions / CBT Analysis ("استخرج الأخطاء المعرفية", "تشوهات فكرية", "أفكار سلبية", "موازنتها")
+  // 1. Cognitive Distortions / CBT Analysis
   if (
-    msgLower.includes('تشوه') ||
-    msgLower.includes('أخطاء معرفية') ||
-    msgLower.includes('خطأ معرفي') ||
-    msgLower.includes('استخرج') ||
-    msgLower.includes('تحليل فكري') ||
-    msgLower.includes('أفكار سلبية') ||
-    msgLower.includes('موازنتها') ||
-    msgLower.includes('تشوهات') ||
-    msgLower.includes('cbt')
+    msgLower.includes('distortion') ||
+    msgLower.includes('cbt') ||
+    msgLower.includes('cognitive') ||
+    msgLower.includes('negative') ||
+    msgLower.includes('reframe') ||
+    msgLower.includes('analyze')
   ) {
-    const detectedDistortions = [];
+    return `💡 **Cognitive Distortions & CBT Analysis:**
 
-    if (fullTextContext.includes('دائماً') || fullTextContext.includes('أبداً') || fullTextContext.includes('مستحيل') || fullTextContext.includes('كل') || fullTextContext.includes('لا أحد')) {
-      detectedDistortions.push({
-        name: 'التفكير بأسلوب (الكل أو لا شيء) / All-or-Nothing Thinking',
-        quote: 'استخدام عبارات جازمة ومطلقة في التقييم مثل (دائماً، مستحيل، لا أحد، كلياً)',
-        reframe: 'إعادة التأطير العقلاني: الحياة والظروف الإنسانية تتسم بالتدرج والتعقد. يفضل استبدال الأحكام المطلقة بعبارات أكثر مرونة مثل "في أغلب الأحيان" أو "في بعض الظروف" لإعطاء عقلك مساحة للتفكير المرن.'
-      });
-    }
+Hello! Based on your journal entry ("${title || 'Today'}"), here is a psychological reframing analysis:
 
-    if (fullTextContext.includes('خوف') || fullTextContext.includes('قلق') || fullTextContext.includes('مستقبل') || fullTextContext.includes('كارثة') || fullTextContext.includes('فشل') || fullTextContext.includes('امتحان') || fullTextContext.includes('أرق')) {
-      detectedDistortions.push({
-        name: 'التهويل والتفكير الكارثي / Catastrophizing',
-        quote: 'التماشي مع أسوأ السيناريوهات المحتملة واعتبارها حقيقة جازمة وقادمة لا محالة',
-        reframe: 'إعادة التأطير العقلاني: اسأل نفسك بوضوح وصراحة: ما هي نسبة احتمال وقوع هذا السيناريو السيئ فعلياً؟ وما هي السيناريوهات الإيجابية أو الأكثر واقعية التي قد تحدث بدلاً منه؟'
-      });
-    }
+1️⃣ **All-or-Nothing Thinking / Catastrophizing**:
+• 📌 **Observation**: Tendency to use absolute statements or fear worst-case scenarios.
+• ⚖️ **Rational Alternative**: Focus on flexible outcomes. Human experiences exist on a continuum rather than black-or-white extremes.
 
-    if (fullTextContext.includes('يشعرون') || fullTextContext.includes('يظنون') || fullTextContext.includes('يعتقدون') || fullTextContext.includes('نظرة') || fullTextContext.includes('الناس')) {
-      detectedDistortions.push({
-        name: 'قراءة الأفكار والافتراضات / Mind Reading',
-        quote: 'الجزم بمعرفة ما يدور في أذهان الآخرين وتقييمهم لنواياهم تجاهك دون حجة أو دليل صريح',
-        reframe: 'إعادة التأطير العقلاني: تذكر دائماً أنك لا تملك قدرة قراءة العقول؛ معظم الناس مشغولون بتحدياتهم الخاصة، والتواصل الصريح والمباشر هو الطريق الوحيد لتبديد الظنون.'
-      });
-    }
-
-    if (fullTextContext.includes('ذنبي') || fullTextContext.includes('سببي') || fullTextContext.includes('أنا السبب') || fullTextContext.includes('خطئي')) {
-      detectedDistortions.push({
-        name: 'الشخصنة وتحمل المسؤولية الكاملة / Personalization',
-        quote: 'ربط الأحداث الخارجية والتعثرات بذاتك واعتبار أنك المتسبب الأول والوحيد فيها',
-        reframe: 'إعادة التأطير العقلاني: افصل بوضوح بين أفعالك وقراراتك المباشرة وبين الظروف الخارجية وسلوكيات الآخرين التي تقع خارج نطاق سيطرتك.'
-      });
-    }
-
-    if (detectedDistortions.length === 0) {
-      detectedDistortions.push({
-        name: 'الترشيح السلبي وتضخيم العوائق / Negative Filtering',
-        quote: 'التركيز على نقاط القلق والإرهاق اليومية وتجاهل جوانب الصمود والفرص المتاحة في تدوينتك',
-        reframe: 'إعادة التأطير العقلاني: وجه انتباهك نحو النقاط المشرقة والموارد والإنجازات البسيطة التي حققتها بالرغم من صعوبة الموقف.'
-      });
-    }
-
-    return `💡 **استخراج الأخطاء المعرفية والتشوهات الفكرية (CBT Analysis):**
-
-أهلاً بك يا صديقي. بعد قراءة وتأمل ما دونه في مذكرتك بتمعن، إليك تفكيك التشوهات الفكرية والأخطاء المعرفية المرصودة وكيفية موازنتها عقلانياً:
-
-${detectedDistortions.map((d, index) => `${index + 1}️⃣ **${d.name}**:
-• 📌 **الرصد والتوصيف**: ${d.quote}.
-• ⚖️ **البديل والموازنة العقلانية**: ${d.reframe}`).join('\n\n')}
-
-🌱 **تمرين الموازنة الذهنية والتطبيق العملي لليوم:**
-احضر ورقة وقلم، واقسمها إلى نصفين:
-• **في النصف الأول**: اكتب الفكرة السلبية المزعجة كما هي.
-• **في النصف الثاني**: اكتب الدليل الحقيقي الملموس المعاكس لهذه الفكرة بمرونة وموضوعية.
-تذكر دائماً: *الأفكار هي وجهات نظر وليست حقائق قاطعة!* ✨`;
+🌱 **Mindful Practice for Today:**
+Write down the bothersome thought, then write down 2 objective facts that challenge it. *Remember: Thoughts are perspectives, not absolute facts!* ✨`;
   }
 
-  // 2. Summarization Request ("لخص", "تلخيص", "موجز", "إيجاز")
+  // 2. Summarization Request
   if (
-    msgLower.includes('لخص') ||
-    msgLower.includes('تلخيص') ||
-    msgLower.includes('موجز') ||
-    msgLower.includes('ملخص') ||
-    msgLower.includes('إيجاز')
+    msgLower.includes('summarize') ||
+    msgLower.includes('summary') ||
+    msgLower.includes('overview')
   ) {
     const summaryCore = diaryText
-      ? `تتناول تدوينتك الموضوع التالي: "${diaryText.length > 200 ? diaryText.slice(0, 200) + '...' : diaryText}"`
-      : `تتطرق المذكرة إلى عنوان "${title || 'أفكار اليوم'}" والمشاعر المرافقة لها بـ (${moodList}).`;
+      ? `Your entry discusses: "${diaryText.length > 200 ? diaryText.slice(0, 200) + '...' : diaryText}"`
+      : `Entry titled "${title || 'Today\'s Notes'}" with recorded moods: (${moodList}).`;
 
-    return `📝 **ملخص التدوينة والتحليل النفسي الوجداني:**
+    return `📝 **Journal Summary & Emotional Analysis:**
 
-📌 **الملخص الإنساني للمضمون:**
+📌 **Content Overview:**
 ${summaryCore}
 
-🧠 **تحليل النبرة والمشاعر المرتبطة (Emotional Insight):**
-• **الحالة المزاجية المرصودة**: ${moodList}.
-• **البُعد النفسي**: يظهر من أسلوب كتابتك رغبة واعية في التفريغ والتأمل الذاتي لاستعادة الوضوح والسكينة والسيطرة على الأفكار.
-
-💡 **التوصية النفسية والخطوة العملية التالية:**
-• خذ بضع دقائق للاسترخاء والتنفس العميق بعد الانتهاء من الكتابة.
-• قدر جهودك وشجاعتك في توثيق مشاعرك وتحليلها. ✨`;
+🧠 **Emotional Insight:**
+• **Recorded Moods**: ${moodList}.
+• **Psychological Perspective**: Demonstrates self-awareness and a proactive desire for clarity and balance. ✨`;
   }
 
-  // 3. Greetings & How are you ("كيف حالك", "مرحبا", "من أنت", "أهلا")
+  // 3. Greetings & How are you
   if (
-    msgLower.includes('كيف حالك') ||
-    msgLower.includes('من أنت') ||
-    msgLower.includes('مرحبا') ||
-    msgLower.includes('مرحباً') ||
-    msgLower.includes('أهلا') ||
-    msgLower.includes('أهلاً') ||
-    msgLower.includes('السلام عليكم') ||
-    msgLower.includes('صباح الخير') ||
-    msgLower.includes('مساء الخير')
+    msgLower.includes('hello') ||
+    msgLower.includes('hi') ||
+    msgLower.includes('hey') ||
+    msgLower.includes('who are you') ||
+    msgLower.includes('how are you')
   ) {
-    return `أهلاً وسهلاً بك يا صديقي العزيز! 🌿
+    return `Hello! 🌿
 
-أنا مستشارك النفسي ورفيقك الذكي بـ **مساحة الفضفضة والتحليل 🧠✨**. أنا بخير وجاهز تماماً للإنصات إليك والتحاور معك حول كل ما دونه في مذكرتك اليومية!
+I am your Smart AI Psychological Counselor in your **Reflection & Analysis Space 🧠✨**. I am ready to listen and assist you with your journal entries!
 
-يمكنني مساعدتك في:
-1. 💡 **استخراج الأخطاء المعرفية والتشوهات الفكرية** وتفكيك الأفكار السلبية بأسلوب العلاج السلوكي المعرفي (CBT).
-2. 📝 **تلخيص مذكراتك وتسجيلاتك الصوتية** المرفقة واستخلاص المشاعر الأساسية.
-3. 🧘‍♂️ **تقديم نصائح وتدريبات استرخاء مخصصة** لمواجهة القلق أو التوتر أو الأرق.
+I can help you:
+1. 💡 **Identify Cognitive Distortions** and reframe negative thoughts using CBT.
+2. 📝 **Summarize your entries** and analyze emotional tone.
+3. 🧘‍♂️ **Provide tailored relaxation and coping techniques**.
 
-كيف تشعر الآن؟ وتفضل بطرح أي سؤال أو طلب بخصوص مذكرتك الحالية ("${title || 'تدوينة اليوم'}")! ✨`;
+How are you feeling today? Feel free to ask anything about your entry ("${title || 'Today'}")! ✨`;
   }
 
   // 4. Emotional support / Advice / Coping questions
   if (
-    msgLower.includes('نصيح') ||
-    msgLower.includes('كيف أتعامل') ||
-    msgLower.includes('حل') ||
-    msgLower.includes('ماذا أفعل') ||
-    msgLower.includes('ساعدني') ||
-    msgLower.includes('خائف') ||
-    msgLower.includes('قلق') ||
-    msgLower.includes('حزين') ||
-    msgLower.includes('تعب') ||
-    msgLower.includes('أرق') ||
-    msgLower.includes('توتر')
+    msgLower.includes('advice') ||
+    msgLower.includes('help') ||
+    msgLower.includes('solution') ||
+    msgLower.includes('afraid') ||
+    msgLower.includes('anxious') ||
+    msgLower.includes('sad') ||
+    msgLower.includes('tired') ||
+    msgLower.includes('insomnia') ||
+    msgLower.includes('stress')
   ) {
-    return `🤝 **التوجيه والإنصات النفسي المخصص:**
+    return `🤝 **Tailored Psychological Guidance:**
 
-أهلاً بك. استفسارك بخصوص: *"${msg}"* هو استفسار هام ومحوري. 
+Regarding your query: *"${msg}"*:
 
-إليك 3 خطوات علاجية عمليّة مستندة للعلاج المعرفي السلوكي (CBT) واليقظة الذهنية تساعدك فوراً:
+1️⃣ **Mindful Acceptance:** Allow yourself to experience current emotions without judgment.
+2️⃣ **Journal Dump:** Use your journal ("${title || 'My Notes'}") to dump thoughts and ease cognitive load.
+3️⃣ **4-7-8 Calming Breathing:**
+• Inhale through nose for 4s.
+• Hold breath for 7s.
+• Exhale slowly through mouth for 8s.
 
-1️⃣ **التقبل الواعي بدون إطلاق أحكام (Mindful Acceptance):**
-اسمح لمشاعرك وأفكارك الحالية بالمرور دون مقاطعة أو جلد للذات. المشاعر هي استجابات طبيعية وليست عيوباً شخصية.
-
-2️⃣ **التفريغ الكتابي وتشتيت التوتر (Brain Dump):**
-استغل مذكرتك الحالية ("${title || 'مذكرتي'}") لدعم التفريغ الكامل. كتابة الأفكار تسهم فوراً في تخفيف النشاط المفرط في لوزة المخ (Amygdala).
-
-3️⃣ **تمرين التنفس المهدئ للجهاز العصبي (4-7-8 Breathing):**
-• شهيق هادئ من الأنف في 4 ثوانٍ.
-• حبس النفس في 7 ثوانٍ.
-• زفير بطيء من الفم في 8 ثوانٍ.
-(كرر 4 مرات لتهدئة الجهاز العصبي اللابرسمثاوي).
-
-تفضل بطرح أي تفاصيل إضافية يهمك مناقشتها! 🌸`;
+Feel free to share any details you would like to discuss further! 🌸`;
   }
 
   // 5. Topic-Specific & General Custom Queries
-  if (msgLower.includes('عمل') || msgLower.includes('وظيفة') || msgLower.includes('مدير') || msgLower.includes('شركة') || msgLower.includes('مشروع')) {
-    return `💼 **تحليل وتوجيه نفسي حول العمل والإنتاجية:**
+  if (msgLower.includes('work') || msgLower.includes('job') || msgLower.includes('manager') || msgLower.includes('company') || msgLower.includes('project')) {
+    return `💼 **Work & Productivity Guidance:**
 
-بخصوص تساؤلك عن العمل والضغط المهني: *"${msg}"*:
+Regarding your workplace query: *"${msg}"*:
 
-1️⃣ **وضع الحدود النفسية في بيئة العمل**: فكك الضغوط إلى ما تملك السيطرة عليه وما يقع خارج نطاق حكمك.
-2️⃣ **تقنية الإنجاز المتدرج**: اختر مهمة واحدة صغيرة وابدأ بها لتنشيط الدافعية ومنع الشعور بالإرهاق.
-3️⃣ **الربط بمذكرتك**: تعبيرك بـ (${moodList}) يعكس رغبة حقيقية في ترتيب الأولويات واستعادة التوازن الوظيفي. ✨`;
+1️⃣ **Set Psychological Boundaries**: Distinguish between factors you control and external variables.
+2️⃣ **Incremental Progress**: Break large tasks into small manageable micro-goals.
+3️⃣ **Reflect**: Your entry reflects a genuine drive to regain balance and clarity. ✨`;
   }
 
-  if (msgLower.includes('نوم') || msgLower.includes('أرق') || msgLower.includes('سهر') || msgLower.includes('إرهاق')) {
-    return `🌙 **إرشاد نفسي وصحة النوم (Sleep Hygiene):**
+  if (msgLower.includes('sleep') || msgLower.includes('insomnia') || msgLower.includes('rest') || msgLower.includes('fatigue')) {
+    return `🌙 **Sleep Hygiene & Recovery Guidance:**
 
-بخصوص استفسارك حول النوم والراحة: *"${msg}"*:
+Regarding your sleep query: *"${msg}"*:
 
-1️⃣ **تهدئة الجهاز العصبي**: تجنب الشاشات قبل النوم بـ 45 دقيقة لتخفيض هرمون الكورتيزول وتحفيز الملايتونين.
-2️⃣ **تفريغ القلق قبل النوم**: اكتب كل ما يشغل بالك في هذه المذكرة تحت بند "أفكار تُؤجل لليوم التالي".
-3️⃣ **التنفس الإيقاعي**: مارس التنفس البطني في السرير لمساعدة جسدك على الاسترخاء والتهيئة للنوم العميق. 💤`;
+1️⃣ **Nervous System Wind-Down**: Avoid screens 45 minutes before sleep to support melatonin production.
+2️⃣ **Pre-Bed Brain Dump**: Write down pending worries under "Postponed for Tomorrow".
+3️⃣ **Rhythmic Breathing**: Practice deep diaphragmatic breathing in bed. 💤`;
   }
 
-  if (msgLower.includes('علاقة') || msgLower.includes('صديق') || msgLower.includes('شخص') || msgLower.includes('عائلة') || msgLower.includes('أهل') || msgLower.includes('حب')) {
-    return `🌱 **تحليل ودعم العلاقات والتواصل الإنساني:**
+  if (msgLower.includes('relationship') || msgLower.includes('friend') || msgLower.includes('family') || msgLower.includes('love')) {
+    return `🌱 **Interpersonal Relationship Support:**
 
-بخصوص تساؤلك عن العلاقات والتواصل: *"${msg}"*:
+Regarding your query: *"${msg}"*:
 
-1️⃣ **التواصل التعبيري الصريح**: عبر عن احتياجاتك بأسلوب (رسائل "أنا") بدلاً من إطلاق الأحكام (مثال: "أنا أشعر بالضغط عندما..." بدلاً من "أنت دائماً...").
-2️⃣ **الحدود الوجدانية الصحية**: حماية مساحتك النفسية لا تعني الجفاء بل تعني التوازن والاحتفاظ بالاحترام المتبادل.
-3️⃣ **التأمل في مذكرتك**: تدوينك يساعدك على رؤية الموقف بوضوح وموضوعية بعيداً عن الانفعال اللحظي. ✨`;
+1️⃣ **Clear Expressive Communication**: Use "I" statements to share feelings objectively.
+2️⃣ **Healthy Emotional Boundaries**: Protecting your energy promotes long-term balance and mutual respect.
+3️⃣ **Reflection**: Journaling helps you observe relationships with clarity and perspective. ✨`;
   }
 
-  if (msgLower.includes('تسويف') || msgLower.includes('تأجيل') || msgLower.includes('تركيز') || msgLower.includes('تشتت') || msgLower.includes('وقت')) {
-    return `🎯 **استراتيجية تجاوز التسويف والشتات الذهني:**
+  if (msgLower.includes('procrastination') || msgLower.includes('focus') || msgLower.includes('distraction') || msgLower.includes('time')) {
+    return `🎯 **Overcoming Procrastination & Enhancing Focus:**
 
-بخصوص تساؤلك حول التركيز والتنظيم: *"${msg}"*:
+Regarding your productivity query: *"${msg}"*:
 
-1️⃣ **قاعدة الـ 5 دقائق**: ألزم نفسك بالعمل على المهمة لمدة 5 دقائق فقط. غالباً ما يزول الحاجز النفسي بمجرد البداية.
-2️⃣ **تقسيم المهام**: حول الهدف الكبير إلى خطوات صغيرة جداً لا تسبب خوفاً أو إرباكاً للمخ.
-3️⃣ **بيئة خالية من المشتتات**: ابعد الهاتف وأغلق التبويبات الزائدة لزيادة تدفق التركيز (Flow State). 💡`;
+1️⃣ **The 5-Minute Rule**: Commit to working on a task for just 5 minutes to overcome initial friction.
+2️⃣ **Task Chunking**: Break large objectives into frictionless micro-steps.
+3️⃣ **Environment Setup**: Eliminate notifications to foster flow state. 💡`;
   }
 
-  // General Detailed Response directly answering the prompt
-  return `💬 **تأمل وإجابة المستشار النفسي التفصيلية:**
+  // General Detailed Response
+  return `💬 **Psychological Counselor Guidance:**
 
-أهلاً بك يا صديقي. أحييك على طرح هذا السؤال الهام: *"${msg}"*.
+Thank you for your question: *"${msg}"*.
 
-إليك التحليل النفسي والتوجيه المخصص بناءً على سياق تدوينتك الحالية ("${title || 'أفكار اليوم'}") وحالتك المزاجية (${moodList}):
+Based on your entry ("${title || 'Today'}") and mood context (${moodList}):
 
-1️⃣ **الفهم والتحليل النفسي**:
-طرحك لهذا الموضوع يدل على وعي ذاتي ورغبة صادقة في الفهم والتحسين. التفكير في هذه التساؤلات هو الخطوة الأولى نحو صنع فارق حقيقي.
+1️⃣ **Awareness & Reflection**: Exploring these questions demonstrates valuable self-awareness.
+2️⃣ **Action Steps**: Focus on tangible, immediate steps you can control today while giving yourself grace.
 
-2️⃣ **الرؤية والحلول المقترحة**:
-• **الخطوة الأولى**: ركز على الحقائق الملموسة والخطوات الواقعية المتاحة في يومك، وافصل بين الأفكار الانفعالية والواقع.
-• **الخطوة الثانية**: امنح نفسك مساحة متدرجة للتطبيق بدون اشتراط الكمال فوراً.
-• **الخطوة الثالثة**: استمر في استخدام الفضفضة والتأمل الكتابي لتنقية الذهن وترتيب الخيارات.
-
-أنا هنا دائماً للإنصات والتعمق في أي جانب إضافي ترغب في مناقشته! ✨`;
+I am always here to support your self-reflection journey! ✨`;
 }

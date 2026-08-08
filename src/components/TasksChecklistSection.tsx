@@ -35,6 +35,7 @@ import {
   X
 } from 'lucide-react';
 import { DiaryEntry, TaskItem, Habit, HabitSettings, AppLanguage } from '../types';
+import { getLanguageInfo, getTranslation } from '../lib/languages';
 import WeeklyHabitsMoodChart from './WeeklyHabitsMoodChart';
 import { HabitFormModal } from './HabitFormModal';
 import { HabitsMatrixGrid } from './HabitsMatrixGrid';

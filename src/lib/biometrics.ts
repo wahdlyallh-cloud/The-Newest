@@ -1,5 +1,7 @@
 // Helper utility for WebAuthn Biometric registration & verification (Fingerprint / Face ID)
 
+import { AppLanguage, getTranslation } from './languages';
+
 export async function isBiometricsSupported(): Promise<boolean> {
   if (typeof window === 'undefined' || !window.PublicKeyCredential) {
     return false;
@@ -41,10 +43,11 @@ function base64ToBuffer(base64: string): ArrayBuffer {
 /**
  * Register device biometrics (Fingerprint / Face ID) via WebAuthn
  */
-export async function registerBiometrics(): Promise<{ success: boolean; credentialId?: string; error?: string }> {
+export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promise<{ success: boolean; credentialId?: string; error?: string }> {
+  const t = getTranslation(appLanguage);
   try {
     if (!window.PublicKeyCredential) {
-      return { success: false, error: 'ميزّة البصمة غيّر مدعومة في هذا المتصفح/الجهاز.' };
+      return { success: false, error: t.biometricNotSupported || 'Biometrics not supported on this device' };
     }
 
     const challenge = new Uint8Array(32);
@@ -57,13 +60,13 @@ export async function registerBiometrics(): Promise<{ success: boolean; credenti
       publicKey: {
         challenge,
         rp: {
-          name: 'تطبيق حياة AI Pro',
+          name: t.appName || 'Hayat AI Pro',
           id: window.location.hostname
         },
         user: {
           id: userId,
           name: 'user@hayatai.app',
-          displayName: 'مستخدم حياة AI'
+          displayName: t.guestUser || 'Hayat AI User'
         },
         pubKeyCredParams: [
           { alg: -7, type: 'public-key' },  // ES256
@@ -79,7 +82,7 @@ export async function registerBiometrics(): Promise<{ success: boolean; credenti
     })) as PublicKeyCredential | null;
 
     if (!credential) {
-      return { success: false, error: 'تم إغلاق أو إلغاء عملية تسجيل البصمة.' };
+      return { success: false, error: t.biometricCanceled || 'Biometrics enrollment canceled' };
     }
 
     const credIdBase64 = bufferToBase64(credential.rawId);
@@ -87,22 +90,23 @@ export async function registerBiometrics(): Promise<{ success: boolean; credenti
   } catch (err: any) {
     console.error('WebAuthn register error:', err);
     if (err.name === 'NotAllowedError') {
-      return { success: false, error: 'تم إلغاء عملية البصمة أو فشل التحقق من هوية الوجه/الإصبع.' };
+      return { success: false, error: t.biometricUserCanceled || 'Biometrics process canceled or verification failed' };
     }
     if (err.name === 'InvalidStateError') {
-      return { success: false, error: 'البصمة مسجلة بالفعل لهذا الجهاز.' };
+      return { success: false, error: t.biometricAlreadyRegistered || 'Biometrics already registered for this device' };
     }
-    return { success: false, error: err.message || 'فشل الاتصال بمستشعر البصمة في الجهاز.' };
+    return { success: false, error: err.message || t.biometricFailed || 'Failed to connect to device biometric sensor' };
   }
 }
 
 /**
  * Verify registered device biometrics (Fingerprint / Face ID)
  */
-export async function verifyBiometrics(credentialId?: string): Promise<{ success: boolean; error?: string }> {
+export async function verifyBiometrics(credentialId?: string, appLanguage: AppLanguage = 'ar'): Promise<{ success: boolean; error?: string }> {
+  const t = getTranslation(appLanguage);
   try {
     if (!window.PublicKeyCredential) {
-      return { success: false, error: 'البصمة غير مدعومة على هذا الجهاز.' };
+      return { success: false, error: t.biometricNotSupported || 'Biometrics not supported on this device' };
     }
 
     const challenge = new Uint8Array(32);
@@ -131,13 +135,13 @@ export async function verifyBiometrics(credentialId?: string): Promise<{ success
     if (assertion) {
       return { success: true };
     } else {
-      return { success: false, error: 'لم يتم إرجاع أي تأكيد للبصمة.' };
+      return { success: false, error: t.biometricCanceled || 'No biometric assertion returned' };
     }
   } catch (err: any) {
     console.error('WebAuthn verify error:', err);
     if (err.name === 'NotAllowedError') {
-      return { success: false, error: 'تم إلغاء طلب البصمة أو لم تتعرف الكاميرا/الحساس على الوجه/الإصبع.' };
+      return { success: false, error: t.biometricUserCanceled || 'Biometric request canceled or unverified' };
     }
-    return { success: false, error: err.message || 'فشلت عملية التحقق الأمني من البصمة.' };
+    return { success: false, error: err.message || t.biometricFailed || 'Biometric security verification failed' };
   }
 }

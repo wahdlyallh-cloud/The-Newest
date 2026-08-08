@@ -12,8 +12,8 @@ export interface AudioRecording {
   duration: number; // in seconds
   transcription?: string;
   speechEmotion?: {
-    primaryEmotion: 'فرح' | 'قلق' | 'حزن' | 'غضب' | 'هدوء' | 'طبيعي' | string;
-    intensity: 'عالية' | 'متوسطة' | 'منخفضة' | string;
+    primaryEmotion: 'joy' | 'anxiety' | 'sadness' | 'anger' | 'calm' | 'normal' | string;
+    intensity: 'high' | 'medium' | 'low' | string;
     intensityScore: number; // 0 - 100%
     vocalToneDetails?: string;
     recommendedColor?: 'amber' | 'emerald' | 'blue' | 'red' | 'teal' | 'stone' | string;
@@ -80,7 +80,7 @@ export interface DiaryEntry {
   // Dynamic life-map elements logged with this diary
   medications?: MedicationTrack[];
   sportsDuration?: number; // Minutes spent on exercise
-  sportsType?: string; // Type of workout (e.g., 'مشي', 'تمارين قوة', 'يوجا واستطالة', etc.)
+  sportsType?: string; // Type of workout (e.g., walking, strength, yoga)
   sportsIntensity?: 'light' | 'medium' | 'high'; // Workout intensity
   sportsCalories?: number; // Estimated calories burned
   sportsEnergyBefore?: number; // Energy level before exercise (1-5)
@@ -101,19 +101,19 @@ export interface DiaryEntry {
 export interface CBTWorksheet {
   id: string;
   createdAt: string; // ISO string
-  triggerEvent: string; // الحدث المثبت/المثير
-  negativeThoughts: string; // الأفكار التلقائية السلبية
-  cognitiveDistortion: string; // التشوه المعرفي المكتشف
-  rationalAlternative: string; // البديل الأكثر عقلانية
+  triggerEvent: string; // Event or trigger
+  negativeThoughts: string; // Automatic negative thoughts
+  cognitiveDistortion: string; // Discovered cognitive distortion
+  rationalAlternative: string; // Rational alternative thought
   emotionBefore: number; // 1-10
   emotionAfter: number; // 1-10
   exerciseType?: 'thought_record' | 'downward_arrow' | 'worry_box' | 'exposure_ladder' | 'coping_card' | 'grounding';
-  evidenceFor?: string; // الأدلة المؤيدة للفكرة
-  evidenceAgainst?: string; // الأدلة المعارضة للفكرة
-  coreBelief?: string; // المعتقد الأساسي المكتشف
-  healthierBelief?: string; // المعتقد البديل الصحي
-  worryCategory?: 'actionable' | 'uncontrollable'; // نوع القلق
-  actionSteps?: string[]; // خطوات العمل للمخاوف القابلة للحل
+  evidenceFor?: string; // Evidence supporting thought
+  evidenceAgainst?: string; // Evidence against thought
+  coreBelief?: string; // Discovered core belief
+  healthierBelief?: string; // Healthier alternative belief
+  worryCategory?: 'actionable' | 'uncontrollable'; // Category of worry
+  actionSteps?: string[]; // Action steps for actionable worries
   exposureSteps?: { id: string; stepNumber: number; situation: string; expectedAnxiety: number; actualAnxiety?: number; completed?: boolean }[];
   copingCardCategory?: 'anxiety' | 'panic' | 'depression' | 'ocd' | 'general';
 }
@@ -147,19 +147,19 @@ export interface AppReminder {
 }
 
 export interface HabitSettings {
-  singleTapToggle: boolean; // تبديل وضعية العادة بضغطة قصيرة
-  extendDayPastMidnight: boolean; // تمديد اليوم بضع ساعات بعد منتصف الليل (3:00 ص)
-  enableSkipDays: boolean; // تمكين أيام التخطي
-  showMissingDataMark: boolean; // إظهار علامات الاستفهام للبيانات المفقودة
-  reverseDayOrder: boolean; // ترتيب عكسي للأيام
-  pureBlackDarkMode: boolean; // استخدام أسود نقي في الوضع الليلي
+  singleTapToggle: boolean; // Toggle habit with single tap
+  extendDayPastMidnight: boolean; // Extend day past midnight
+  enableSkipDays: boolean; // Enable skip days
+  showMissingDataMark: boolean; // Show missing data mark
+  reverseDayOrder: boolean; // Reverse day order
+  pureBlackDarkMode: boolean; // Pure black dark mode
   disableAnimations: boolean; // Disable confetti/animations
-  widgetOpacity: number; // شفافية اختصار الشاشة الرئيسية (0.1 - 1.0)
-  firstDayOfWeek: 'saturday' | 'sunday' | 'monday'; // اليوم الأول من الأسبوع
-  persistentNotifications: boolean; // جعل الإشعارات ثابتة
-  lockScreenWidgetEnabled?: boolean; // إشعار ويدجت شاشة القفل المثبت
-  fullscreenModeEnabled?: boolean; // وضع الشاشة الكاملة وإخفاء شريط المتصفح
-  autoHideHeaderOnScroll?: boolean; // إخفاء الشريط العلوي والسفلي تلقائياً عند التمرير
+  widgetOpacity: number; // Widget opacity (0.1 - 1.0)
+  firstDayOfWeek: 'saturday' | 'sunday' | 'monday'; // First day of week
+  persistentNotifications: boolean; // Persistent notifications
+  lockScreenWidgetEnabled?: boolean; // Pinned lock screen widget
+  fullscreenModeEnabled?: boolean; // Fullscreen mode
+  autoHideHeaderOnScroll?: boolean; // Auto-hide header on scroll
 }
 
 export type AppLanguage = 'ar' | 'en' | 'fr' | 'de' | 'es' | 'tr' | 'ur' | 'ru' | 'zh' | 'ja';
@@ -169,12 +169,12 @@ export type AppLineHeight = 'compact' | 'normal' | 'relaxed' | 'spacious';
 export interface AppSettings {
   isDarkMode: boolean;
   notificationsEnabled: boolean;
-  lockScreenWidgetEnabled?: boolean; // إشعار شاشة القفل المثبت
-  fullscreenModeEnabled?: boolean; // وضع الشاشة الكاملة
-  autoHideHeaderOnScroll?: boolean; // إخفاء الشريطين تلقائياً عند التمرير
+  lockScreenWidgetEnabled?: boolean; // Pinned lock screen widget
+  fullscreenModeEnabled?: boolean; // Fullscreen mode
+  autoHideHeaderOnScroll?: boolean; // Auto-hide header on scroll
   appLanguage: AppLanguage;
-  appFont?: AppFontFamily; // تخصيص خط التطبيق بالكامل
-  appLineHeight?: AppLineHeight; // تباعد الأسطر وراحة القراءة
+  appFont?: AppFontFamily; // App font family
+  appLineHeight?: AppLineHeight; // App line height
   floatingBallEnabled: boolean;
   appPinCode?: string; // Screen Lock PIN
   isAppLocked: boolean;
@@ -195,14 +195,14 @@ export interface HabitHistoryEntry {
 export interface Habit {
   id: string;
   name: string;
-  icon?: string; // Expressive custom icon chosen by user (e.g. 🎯, 🏃, 💧, 📚, 🧘, 🏋️, 🥦, 🧠, 🎨, ✍️, 💰, 💤, ⚡, 🔥, 🏆)
+  icon?: string; // Expressive custom icon chosen by user
   category: 'health' | 'mind' | 'sport' | 'culture' | 'custom';
-  habitType?: 'boolean' | 'measurable'; // 'boolean' (نعم/لا) or 'measurable' (قابل للقياس)
-  question?: string; // e.g. "هل استيقظت باكراً اليوم؟" / "كم ميلاً ركضت اليوم؟"
-  color?: string; // e.g. "#3b82f6", "#10b981", "#ef4444", "#f59e0b", etc.
-  unit?: string; // e.g. "كيلومترات", "صفحة", "أكواب"
-  targetValue?: number; // e.g. 15
-  targetType?: 'at_least' | 'at_most' | 'exactly'; // 'على الأقل', 'على الأكثر', 'بالضبط'
+  habitType?: 'boolean' | 'measurable'; // 'boolean' or 'measurable'
+  question?: string; // Habit prompt
+  color?: string; // Habit accent color
+  unit?: string; // Habit measurement unit
+  targetValue?: number; // Target numeric value
+  targetType?: 'at_least' | 'at_most' | 'exactly'; // Target comparator type
   frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semi_annually' | 'annually' | 'custom';
   customStartDate?: string; // "YYYY-MM-DD"
   customEndDate?: string; // "YYYY-MM-DD"

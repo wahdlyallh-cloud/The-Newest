@@ -30,11 +30,9 @@ export class ErrorBoundary extends Component<Props, State> {
       const langInfo = getLanguageInfo(langCode);
       const isRtl = langInfo.dir === 'rtl';
 
-      const title = t['errorBoundaryTitle'] || (isRtl ? "استعادة الواجهة بسلاسة" : "Smooth Interface Recovery");
-      const desc = t['errorBoundaryDesc'] || (isRtl 
-        ? "حدث تنبيه غير متوقع أثناء المعالجة. تم حفظ بياناتك بأمان. انقر الزر أدناه لإكمال العمل."
-        : "An unexpected notice occurred during processing. Your data is stored safely. Click the button below to resume.");
-      const reloadBtn = t['errorBoundaryReloadBtn'] || (isRtl ? "إعادة تحميل الصفحة 🔄" : "Reload Page 🔄");
+      const title = t['errorBoundaryTitle'] || "Interface Recovery";
+      const desc = t['errorBoundaryDesc'] || "An unexpected notice occurred. Your data is stored safely. Click the button below to resume.";
+      const reloadBtn = t['errorBoundaryReloadBtn'] || "Reload Page 🔄";
 
       return (
         <div className={`min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-6 text-center text-[#3A3A3A] font-sans ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>

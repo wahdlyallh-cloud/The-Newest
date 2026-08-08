@@ -121,7 +121,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
           <button
             onClick={toggleSound}
             className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-emerald-200 transition-colors cursor-pointer"
-            title={soundEnabled ? (isEn ? 'Mute click sound' : 'إيقاف صوت النقر') : (isEn ? 'Enable click sound' : 'تشغيل صوت النقر')}
+            title={soundEnabled ? (t.muteClickSound || 'Mute click sound') : (t.enableClickSound || 'Enable click sound')}
           >
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5 text-rose-300" />}
           </button>
@@ -130,24 +130,24 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
             <button
               onClick={(e) => { e.stopPropagation(); setShowResetConfirm(true); }}
               className="p-1.5 rounded-full bg-white/10 hover:bg-rose-500/20 text-emerald-200 hover:text-rose-200 transition-colors cursor-pointer"
-              title={isEn ? 'Reset counter' : 'تصفير العداد'}
+              title={t.resetCounter || 'Reset counter'}
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
           ) : (
             <div className="flex items-center gap-1 bg-black/40 backdrop-blur-xs px-2 py-0.5 rounded-full border border-rose-400/30 text-[10px]">
-              <span className="text-rose-200 font-bold">{isEn ? 'Reset?' : 'تصفير؟'}</span>
+              <span className="text-rose-200 font-bold">{t.resetConfirm || 'Reset?'}</span>
               <button
                 onClick={handleReset}
                 className="px-1.5 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded-md font-black cursor-pointer"
               >
-                {isEn ? 'Yes' : 'نعم'}
+                {t.yes || 'Yes'}
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowResetConfirm(false); }}
                 className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-bold cursor-pointer"
               >
-                {isEn ? 'No' : 'لا'}
+                {t.no || 'No'}
               </button>
             </div>
           )}
@@ -157,7 +157,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
       {/* Main Spiritual Phrase Card */}
       <div className="text-center space-y-2 my-2">
         <h3 className="text-lg sm:text-xl font-black text-amber-300 tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] font-serif">
-          {isEn ? 'Spiritual Reflection & Mindfulness' : 'والباقيات الصالحات خير'}
+          {t.dhikrMainQuote || 'Spiritual Reflection & Mindfulness'}
         </h3>
 
         <p className="text-xs sm:text-sm font-extrabold text-emerald-100/95 leading-relaxed bg-white/10 py-1.5 px-3 rounded-2xl border border-emerald-300/20 inline-block shadow-inner">
@@ -166,7 +166,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
 
         <p className="text-sm sm:text-base font-black text-amber-200/90 flex items-center justify-center gap-1.5 drop-shadow-xs">
           <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-pulse" />
-          <span>{isEn ? 'Peace, Gratitude & Serenity' : 'صلِّ على سيدك النبي'}</span>
+          <span>{t.dhikrBlessing || 'Peace, Gratitude & Serenity'}</span>
           <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-pulse" />
         </p>
       </div>

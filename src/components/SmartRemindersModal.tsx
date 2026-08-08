@@ -229,40 +229,42 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <h3 className="font-extrabold text-sm text-[#3A3A3A] flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#D4A373]" />
-                  <span>{editingId ? 'تعديل التذكير الذكي' : 'إضافة تذكير ذكي جديد'}</span>
+                  <span>{editingId ? (isEn ? 'Edit Smart Reminder' : 'تعديل التذكير الذكي') : (isEn ? 'Add New Smart Reminder' : 'إضافة تذكير ذكي جديد')}</span>
                 </h3>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
                   className="text-xs text-gray-400 hover:text-gray-600 font-bold"
                 >
-                  إلغاء
+                  {isEn ? 'Cancel' : 'إلغاء'}
                 </button>
               </div>
 
               {/* Title & Icon Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div className="sm:col-span-3 space-y-1">
-                  <label className="text-xs font-bold text-[#5A5A40] block">عنوان التذكير أو الهدف</label>
+                  <label className="text-xs font-bold text-[#5A5A40] block">{isEn ? 'Reminder Title or Goal' : 'عنوان التذكير أو الهدف'}</label>
                   <input
                     type="text"
                     required
                     value={title}
                     onChange={e => setTitle(e.target.value)}
-                    placeholder="مثلاً: تدوين الامتنان اليومي، شرب الماء، جلسة استرخاء..."
+                    placeholder={isEn ? "e.g., Daily Gratitude Journal, Drink Water, Meditation Session..." : "مثلاً: تدوين الامتنان اليومي، شرب الماء، جلسة استرخاء..."}
                     className="w-full px-3.5 py-2.5 border border-[#DCE4D8] rounded-xl text-xs font-bold focus:outline-none focus:border-[#4E685B] bg-[#F9F8F5]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#5A5A40] block">الأيقونة</label>
+                  <label className="text-xs font-bold text-[#5A5A40] block">{isEn ? 'Icon' : 'الأيقونة'}</label>
                   <select
                     value={categoryIcon}
                     onChange={e => setCategoryIcon(e.target.value)}
                     className="w-full px-3 py-2.5 border border-[#DCE4D8] rounded-xl text-xs font-bold focus:outline-none focus:border-[#4E685B] bg-[#F9F8F5]"
                   >
                     {CATEGORY_ICONS.map(ic => (
-                      <option key={ic.id} value={ic.id}>{ic.id} {ic.label}</option>
+                      <option key={ic.id} value={ic.id}>
+                        {ic.id} {isEn ? (ic.id === '🔔' ? 'General' : ic.id === '✍️' ? 'Journal' : ic.id === '🧘‍♀️' ? 'Meditation' : ic.id === '🏃‍♂️' ? 'Fitness' : ic.id === '💧' ? 'Water' : ic.id === '💊' ? 'Care' : ic.id === '📚' ? 'Reading' : 'Motivation') : ic.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -273,7 +275,7 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-[#5A5A40] flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-[#4E685B]" />
-                    <span>وقت التنبيه</span>
+                    <span>{isEn ? 'Alert Time' : 'وقت التنبيه'}</span>
                   </label>
                   <input
                     type="time"
@@ -287,16 +289,16 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-[#5A5A40] flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-[#4E685B]" />
-                    <span>تكرار التنبيه</span>
+                    <span>{isEn ? 'Frequency' : 'تكرار التنبيه'}</span>
                   </label>
                   <select
                     value={frequency}
                     onChange={e => setFrequency(e.target.value as 'daily' | 'weekly' | 'custom_days')}
                     className="w-full px-3.5 py-2 border border-[#DCE4D8] rounded-xl text-xs font-bold focus:outline-none focus:border-[#4E685B] bg-[#F9F8F5]"
                   >
-                    <option value="daily">يومياً (كل يوم)</option>
-                    <option value="weekly">أسبوعياً (مرة كل أسبوع)</option>
-                    <option value="custom_days">أيام محددة في الأسبوع</option>
+                    <option value="daily">{isEn ? 'Daily (Every day)' : 'يومياً (كل يوم)'}</option>
+                    <option value="weekly">{isEn ? 'Weekly (Once a week)' : 'أسبوعياً (مرة كل أسبوع)'}</option>
+                    <option value="custom_days">{isEn ? 'Specific Days of Week' : 'أيام محددة في الأسبوع'}</option>
                   </select>
                 </div>
               </div>
@@ -304,7 +306,7 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
               {/* Custom Days Picker if frequency is custom_days */}
               {frequency === 'custom_days' && (
                 <div className="p-3 bg-[#EEF1EB]/50 border border-[#DCE4D8] rounded-xl space-y-2 animate-fadeIn">
-                  <span className="text-[11px] font-bold text-[#556E4F] block">اختر الأيام التي ترغب بالتذكير فيها:</span>
+                  <span className="text-[11px] font-bold text-[#556E4F] block">{isEn ? 'Select days to be reminded on:' : 'اختر الأيام التي ترغب بالتذكير فيها:'}</span>
                   <div className="flex flex-wrap gap-1.5 justify-between">
                     {ARABIC_DAYS.map(day => {
                       const isSelected = selectedDays.includes(day.id);
@@ -319,7 +321,7 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                               : 'bg-white border border-[#DCE4D8] text-gray-500 hover:bg-[#F2F5F0]'
                           }`}
                         >
-                          {day.short}
+                          {isEn ? day.shortEn : day.short}
                         </button>
                       );
                     })}
@@ -332,21 +334,21 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-[#5A5A40] flex items-center gap-1">
                     <Heart className="w-3.5 h-3.5 text-[#D4A373]" />
-                    <span>ملاحظة تحفيزية ملهمة (تظهر مع التنبيه)</span>
+                    <span>{isEn ? 'Inspiring Motivational Note (Shown with alert)' : 'ملاحظة تحفيزية ملهمة (تظهر مع التنبيه)'}</span>
                   </label>
-                  <span className="text-[10px] text-[#A67E2E] font-bold">اختياري</span>
+                  <span className="text-[10px] text-[#A67E2E] font-bold">{isEn ? 'Optional' : 'اختياري'}</span>
                 </div>
                 <textarea
                   rows={2}
                   value={motivationalNote}
                   onChange={e => setMotivationalNote(e.target.value)}
-                  placeholder="أدخل عبارة تحفيزية ترفع معنوياتك عند وصول التذكير..."
+                  placeholder={isEn ? "Enter a motivational quote to uplift you when alert fires..." : "أدخل عبارة تحفيزية ترفع معنوياتك عند وصول التذكير..."}
                   className="w-full px-3.5 py-2 border border-[#DCE4D8] rounded-xl text-xs font-bold focus:outline-none focus:border-[#4E685B] bg-[#F9F8F5] resize-none"
                 />
 
                 {/* Preset Suggestions Pills */}
                 <div className="space-y-1">
-                  <span className="text-[10px] text-gray-400 font-bold block">نماذج تحفيزية جاهزة (اضغط للاختيار):</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{isEn ? 'Preset motivational samples (click to pick):' : 'نماذج تحفيزية جاهزة (اضغط للاختيار):'}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {PRESET_MOTIVATIONAL_NOTES.map((note, idx) => (
                       <button
@@ -369,14 +371,14 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                   onClick={() => setShowForm(false)}
                   className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
                 >
-                  إلغاء
+                  {isEn ? 'Cancel' : 'إلغاء'}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
-                  <span>{editingId ? 'حفظ التعديلات' : 'إضافة التذكير'}</span>
+                  <span>{editingId ? (isEn ? 'Save Changes' : 'حفظ التعديلات') : (isEn ? 'Add Reminder' : 'إضافة التذكير')}</span>
                 </button>
               </div>
             </form>
@@ -387,11 +389,11 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                 className="w-full sm:w-auto px-5 py-2.5 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-2xl text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>إضافة تذكير ذكي جديد</span>
+                <span>{isEn ? 'Add New Smart Reminder' : 'إضافة تذكير ذكي جديد'}</span>
               </button>
 
               <span className="text-xs text-gray-500 font-bold hidden sm:inline">
-                إجمالي التذكيرات: <strong className="text-[#4E685B]">{reminders.length}</strong>
+                {isEn ? 'Total Reminders:' : 'إجمالي التذكيرات:'} <strong className="text-[#4E685B]">{reminders.length}</strong>
               </span>
             </div>
           )}
@@ -400,7 +402,7 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
           <div className="space-y-3">
             <h3 className="text-xs font-extrabold text-[#5A5A40] flex items-center gap-1.5 border-b border-[#E2DCC8]/60 pb-2">
               <Bell className="w-3.5 h-3.5 text-[#4E685B]" />
-              <span>قائمة التذكيرات المفعلة والمجدولة</span>
+              <span>{isEn ? 'Active & Scheduled Reminders List' : 'قائمة التذكيرات المفعلة والمجدولة'}</span>
             </h3>
 
             {reminders.length === 0 ? (
@@ -408,15 +410,15 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                 <div className="w-12 h-12 bg-[#EEF1EB] text-[#556E4F] rounded-full flex items-center justify-center mx-auto">
                   <Bell className="w-6 h-6" />
                 </div>
-                <h4 className="font-extrabold text-sm text-[#3A3A3A]">لا توجد تذكيرات مجدولة حالياً</h4>
+                <h4 className="font-extrabold text-sm text-[#3A3A3A]">{isEn ? 'No reminders scheduled yet' : 'لا توجد تذكيرات مجدولة حالياً'}</h4>
                 <p className="text-xs text-gray-400 font-bold max-w-sm mx-auto">
-                  قم بإضافة تذكيرات يومية أو أسبوعية لتدوين الخواطر، صُنّاع العادات، أو استراحات التأمل مع ملاحظات تحفيزية.
+                  {isEn ? 'Add daily or weekly reminders for journals, habits, or meditation breaks with inspiring notes.' : 'قم بإضافة تذكيرات يومية أو أسبوعية لتدوين الخواطر، صُنّاع العادات، أو استراحات التأمل مع ملاحظات تحفيزية.'}
                 </p>
                 <button
                   onClick={handleStartAdd}
                   className="mt-2 px-4 py-2 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-bold hover:bg-[#E2E9DF] transition-all cursor-pointer"
                 >
-                  أنشئ أول تذكير الآن
+                  {isEn ? 'Create First Reminder Now' : 'أنشئ أول تذكير الآن'}
                 </button>
               </div>
             ) : (
@@ -441,7 +443,7 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                             <span>{reminder.title}</span>
                             {!reminder.active && (
                               <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md font-bold">
-                                متوقف
+                                {isEn ? 'Disabled' : 'متوقف'}
                               </span>
                             )}
                           </h4>
@@ -483,21 +485,21 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                         }`}
                       >
                         <span className={`w-2 h-2 rounded-full ${reminder.active ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
-                        <span>{reminder.active ? 'مفعّل' : 'معطّل'}</span>
+                        <span>{reminder.active ? (isEn ? 'Active' : 'مفعّل') : (isEn ? 'Disabled' : 'معطّل')}</span>
                       </button>
 
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleStartEdit(reminder)}
                           className="p-2 text-gray-500 hover:text-[#4E685B] bg-gray-100 hover:bg-[#EEF1EB] rounded-xl transition-all cursor-pointer"
-                          title="تعديل"
+                          title={isEn ? "Edit" : "تعديل"}
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(reminder.id)}
                           className="p-2 text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all cursor-pointer"
-                          title="حذف"
+                          title={isEn ? "Delete" : "حذف"}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -514,10 +516,10 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
           <div className="bg-[#EEF1EB] border border-[#DCE4D8] p-4 rounded-2xl space-y-2">
             <h4 className="text-xs font-extrabold text-[#2C3E35] flex items-center gap-1.5">
               <Zap className="w-4 h-4 text-[#D4A373]" />
-              <span>نصيحة العلاج السلوكي المعرفي (CBT):</span>
+              <span>{isEn ? 'Cognitive Behavioral Therapy (CBT) Tip:' : 'نصيحة العلاج السلوكي المعرفي (CBT):'}</span>
             </h4>
             <p className="text-[11px] text-[#4E685B] leading-relaxed font-semibold">
-              التنبيهات المقترنة بعبارات تحفيزية إيجابية تزيد من معدل الاستجابة والالتزام بالروتين اليومي بنسبة 68% مقارنة بالتنبيهات العادية، حيث تعمل كمعزز معنوي فوري يقلل مقاومة العقل للمهام.
+              {isEn ? 'Reminders paired with positive motivational quotes increase adherence and daily routine compliance by 68% compared to standard alerts.' : 'التنبيهات المقترنة بعبارات تحفيزية إيجابية تزيد من معدل الاستجابة والالتزام بالروتين اليومي بنسبة 68% مقارنة بالتنبيهات العادية، حيث تعمل كمعزز معنوي فوري يقلل مقاومة العقل للمهام.'}
             </p>
           </div>
 
@@ -527,13 +529,13 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
         <div className="p-4 bg-[#F5F2E9] border-t border-[#E2DCC8] flex items-center justify-between shrink-0 text-xs">
           <span className="text-gray-500 font-bold text-[11px] flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>يتم حلياً مراقبة التنبيهات تلقائياً عبر التطبيق</span>
+            <span>{isEn ? 'Alerts monitored automatically in-app' : 'يتم حلياً مراقبة التنبيهات تلقائياً عبر التطبيق'}</span>
           </span>
           <button
             onClick={onClose}
             className="px-5 py-2 bg-[#4E685B] text-white font-bold rounded-xl hover:bg-[#3F5449] transition-all cursor-pointer shadow-xs"
           >
-            إغلاق
+            {isEn ? 'Close' : 'إغلاق'}
           </button>
         </div>
 

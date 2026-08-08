@@ -28,7 +28,7 @@ export default function ProsConsHistoryLog({
   userApiKey,
   appLanguage = "ar"
 }: ProsConsHistoryLogProps) {
-  const isAr = appLanguage === "ar";
+  const isAr = appLanguage === "ar" || appLanguage === "ur";
   const t = getTranslation(appLanguage);
   const [records, setRecords] = useState<DailyProsConsEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,7 +170,7 @@ export default function ProsConsHistoryLog({
   };
 
   return (
-    <div className="space-y-6 font-sans text-right" dir="rtl" id="pros-cons-history-panel">
+    <div className="space-y-6 font-sans text-right" dir={isAr ? "rtl" : "ltr"} id="pros-cons-history-panel">
       
       {/* Top Banner & Analytics Summary */}
       <div className="bg-gradient-to-l from-[#2B3E50] via-[#3B5066] to-[#5A5A40] text-white p-6 rounded-3xl shadow-md border border-[#E2DCC8]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">

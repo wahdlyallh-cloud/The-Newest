@@ -1146,22 +1146,22 @@ export default function GratitudeJournal({
                 {isEn ? "All" : "الكل"}
               </button>
 
-              {PASTEL_COLORS.map(col => {
-                const isSelected = selectedColorFilter !== 'all' && col.class.includes(selectedColorFilter);
-                return (
-                  <button
-                    key={col.id}
-                    onClick={() => setSelectedColorFilter(col.class.split(' ')[0])}
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all border cursor-pointer ${col.class.split(' ')[0]} ${
-                      isSelected 
-                        ? 'border-[#8B9D83] ring-2 ring-[#8B9D83]/20 font-extrabold scale-102' 
-                        : 'border-gray-200/40 text-current opacity-80'
-                    }`}
-                  >
-                    {col.name}
-                  </button>
-                );
-              })}
+                  {PASTEL_COLORS.map(col => {
+                    const isSelected = selectedColorFilter !== 'all' && col.class.includes(selectedColorFilter);
+                    return (
+                      <button
+                        key={col.id}
+                        onClick={() => setSelectedColorFilter(col.class.split(' ')[0])}
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all border cursor-pointer ${col.class.split(' ')[0]} ${
+                          isSelected 
+                            ? 'border-[#8B9D83] ring-2 ring-[#8B9D83]/20 font-extrabold scale-102' 
+                            : 'border-gray-200/40 text-current opacity-80'
+                        }`}
+                      >
+                        {isAr ? col.nameAr || col.name : col.nameEn || col.name}
+                      </button>
+                    );
+                  })}
             </div>
           </div>
 

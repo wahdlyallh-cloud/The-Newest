@@ -161,9 +161,9 @@ export default function WriteDiaryImporter({
     
     // Simple header detector
     const headers = lines[0].toLowerCase().split(/,|;/);
-    const dateIndex = headers.findIndex(h => h.includes('date') || h.includes('time') || h.includes('created') || h.includes('تاريخ'));
-    const textIndex = headers.findIndex(h => h.includes('text') || h.includes('content') || h.includes('body') || h.includes('entry') || h.includes('نص') || h.includes('يومية'));
-    const titleIndex = headers.findIndex(h => h.includes('title') || h.includes('subject') || h.includes('heading') || h.includes('عنوان'));
+    const dateIndex = headers.findIndex(h => h.includes('date') || h.includes('time') || h.includes('created') || /[\u0600-\u06FF]/.test(h));
+    const textIndex = headers.findIndex(h => h.includes('text') || h.includes('content') || h.includes('body') || h.includes('entry') || /[\u0600-\u06FF]/.test(h));
+    const titleIndex = headers.findIndex(h => h.includes('title') || h.includes('subject') || h.includes('heading') || /[\u0600-\u06FF]/.test(h));
 
     if (textIndex === -1) {
       throw new Error("Could not find a content or text column in the CSV file");
@@ -220,11 +220,11 @@ export default function WriteDiaryImporter({
         const trimmedLine = line.trim();
         if (!trimmedLine) continue;
         
-        const dateMatch = trimmedLine.match(/(?:Date|التاريخ|يوم|تاريخ)\s*:\s*(.+)/i) || 
+        const dateMatch = trimmedLine.match(/(?:Date|[\u0600-\u06FF]+)\s*:\s*(.+)/i) || 
                           trimmedLine.match(/^(\d{4}[-/]\d{1,2}[-/]\d{1,2})$/) || 
                           trimmedLine.match(/^(\d{1,2}[-/]\d{1,2}[-/]\d{4})$/);
                           
-        const titleMatch = trimmedLine.match(/(?:Title|العنوان|موضوع)\s*:\s*(.+)/i);
+        const titleMatch = trimmedLine.match(/(?:Title|[\u0600-\u06FF]+)\s*:\s*(.+)/i);
         
         if (dateMatch) {
           dateVal = dateMatch[1] || dateMatch[0];
@@ -250,9 +250,18 @@ export default function WriteDiaryImporter({
       if (dateVal) {
         let dateClean = dateVal;
         const arabicMonths: { [key: string]: string } = {
-          'يناير': 'January', 'فبراير': 'February', 'مارس': 'March', 'أبريل': 'April',
-          'مايو': 'May', 'يونيو': 'June', 'يوليو': 'July', 'أغسطس': 'August',
-          'سبتمبر': 'September', 'أكتوبر': 'October', 'نوفمبر': 'November', 'ديسمبر': 'December'
+          '\u064A\u0646\u0627\u064A\u0631': 'January',
+          '\u0641\u0628\u0631\u0627\u064A\u0631': 'February',
+          '\u0645\u0627\u0631\u0633': 'March',
+          '\u0623\u0628\u0631\u064A\u0644': 'April',
+          '\u0645\u0627\u064A\u0648': 'May',
+          '\u064A\u0648\u0646\u064A\u0648': 'June',
+          '\u064A\u0648\u0644\u064A\u0648': 'July',
+          '\u0623\u063A\u0633\u0637\u0633': 'August',
+          '\u0633\u0628\u062A\u0645\u0628\u0631': 'September',
+          '\u0623\u0643\u062A\u0648\u0628\u0631': 'October',
+          '\u0646\u0648\u0641\u0645\u0628\u0631': 'November',
+          '\u062F\u064A\u0633\u0645\u0628\u0631': 'December'
         };
         
         Object.keys(arabicMonths).forEach(arMonth => {
@@ -421,7 +430,7 @@ export default function WriteDiaryImporter({
       audioRecordings: [],
       files: [],
       tasks: [],
-      tags: appLanguage === 'ar' ? ['مستورد', 'يومياتي'] : ['Imported', 'Diaries'],
+      tags: appLanguage === 'ar' ? ['\u0645\u0633\u062A\u0648\u0631\u062F', '\u064A\u0648\u0645\u064A\u0627\u062A\u064A'] : ['Imported', 'Diaries'],
       chatLogs: [],
       isLocked: false,
       diaryType: 'diary'

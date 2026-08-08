@@ -1,5 +1,5 @@
 import { DiaryEntry } from '../types';
-import { AppLanguage } from './languages';
+import { AppLanguage, getTranslation } from './languages';
 
 export interface CorrelationInsight {
   id: string;
@@ -57,8 +57,8 @@ export function computeBehavioralCorrelations(
       moodCount++;
     } else if (e.moods && e.moods.length > 0) {
       let derived = 5;
-      const positiveTags = ['سعيد', 'مبتهج', 'مرتاح', 'فرح', 'happy', 'calm', 'joy', 'excited', 'مستقر'];
-      const negativeTags = ['حزين', 'قلق', 'متوتر', 'غاضب', 'انزعاج', 'sad', 'anxious', 'angry', 'stressed'];
+      const positiveTags = ['happy', 'calm', 'joy', 'excited', 'relaxed', 'grateful', 'peaceful'];
+      const negativeTags = ['sad', 'anxious', 'angry', 'stressed', 'depressed', 'exhausted'];
       e.moods.forEach(m => {
         if (positiveTags.some(p => m.toLowerCase().includes(p))) derived += 1.5;
         if (negativeTags.some(n => m.toLowerCase().includes(n))) derived -= 1.5;
@@ -75,6 +75,7 @@ export function computeBehavioralCorrelations(
 
   const insights: CorrelationInsight[] = [];
 
+  const isAr = appLanguage === 'ar';
   const isEn = appLanguage === 'en';
   const isFr = appLanguage === 'fr';
   const isDe = appLanguage === 'de';
@@ -83,6 +84,8 @@ export function computeBehavioralCorrelations(
   const isRu = appLanguage === 'ru';
   const isZh = appLanguage === 'zh';
   const isJa = appLanguage === 'ja';
+
+  const arTrans = getTranslation('ar');
 
   // 1. Sleep + Water vs Anxiety / Mood Correlation
   const goodSleepWaterDays = validEntries.filter(e => (e.sleepHours || 0) >= 7 && (e.waterCups || 0) >= 6);
@@ -102,8 +105,10 @@ export function computeBehavioralCorrelations(
   const improvementPercent = Math.min(65, Math.max(25, Math.round(((goodMoodAvg - badMoodAvg) / (badMoodAvg || 5)) * 100) || 35));
   const anxietyDropPercent = Math.min(55, Math.max(25, Math.round(improvementPercent * 0.85)));
 
-  let title1 = 'تأثير شرب الماء والنوم على القلق';
-  let desc1 = `في الأيام التي تشرب فيها 8 أكواب ماء (2 لتر) وتنام أكثر من 7 ساعات، ينخفض القلق والتوتر لديك بنسبة ${anxietyDropPercent}% ويرتفع استقرارك المزاجي.`;
+  let title1 = isAr ? (arTrans.sleepWaterAnxietyTitle || 'Sleep & Water Impact on Anxiety') : 'Sleep & Water Impact on Anxiety';
+  let desc1 = isAr 
+    ? (arTrans.sleepWaterAnxietyDesc ? arTrans.sleepWaterAnxietyDesc(anxietyDropPercent) : `On days when you drink 8 cups of water and sleep >7h, anxiety drops by ${anxietyDropPercent}%.`)
+    : `On days when you drink 8 cups (2L) of water and sleep >7h, your anxiety score drops by ${anxietyDropPercent}% and emotional stability increases.`;
 
   if (isEn) {
     title1 = 'Sleep & Water Impact on Anxiety';
@@ -153,8 +158,10 @@ export function computeBehavioralCorrelations(
   const exerciseDays = validEntries.filter(e => (e.sportsDuration || 0) >= 20);
   const boostPercent = 28;
 
-  let title2 = 'تأثير النشاط البدني والرياضة';
-  let desc2 = `ممارسة الرياضة لمدة 20 دقيقة ترتبط بارتفاع المزاج الإيجابي والنشاط بنسبة ${boostPercent}% وانخفاض أعراض الإجهاد النفسي.`;
+  let title2 = isAr ? (arTrans.exerciseMoodBoostTitle || 'Physical Exercise & Energy Impact') : 'Physical Exercise & Energy Impact';
+  let desc2 = isAr
+    ? (arTrans.exerciseMoodBoostDesc ? arTrans.exerciseMoodBoostDesc(boostPercent) : `Exercising for 20+ minutes correlates with a ${boostPercent}% boost in mood.`)
+    : `Exercising for 20+ minutes correlates with a ${boostPercent}% boost in positive mood and reduced mental exhaustion.`;
 
   if (isEn) {
     title2 = 'Physical Exercise & Energy Impact';
@@ -204,8 +211,10 @@ export function computeBehavioralCorrelations(
   const cbtEntries = validEntries.filter(e => e.cbtWorksheets && e.cbtWorksheets.length > 0);
   const cbtAnxietyDrop = 42;
 
-  let title3 = 'فاعلية تمارين العلاج المعرفي السلوكي (CBT)';
-  let desc3 = `استخدام استمارات تفكيك الأفكار السلبية والتحريفات المعرفية يخفض شدة المشاعر السلبية بنسبة متوسطة تصل إلى ${cbtAnxietyDrop}%.`;
+  let title3 = isAr ? (arTrans.cbtEffectivenessTitle || 'Effectiveness of CBT Exercises') : 'Effectiveness of CBT Exercises';
+  let desc3 = isAr
+    ? (arTrans.cbtEffectivenessDesc ? arTrans.cbtEffectivenessDesc(cbtAnxietyDrop) : `Deconstructing negative automatic thoughts reduces emotional distress by ${cbtAnxietyDrop}%.`)
+    : `Deconstructing negative automatic thoughts reduces emotional distress by an average of ${cbtAnxietyDrop}%.`;
 
   if (isEn) {
     title3 = 'Effectiveness of CBT Exercises';

@@ -23,7 +23,8 @@ import {
   EyeOff,
   Globe
 } from 'lucide-react';
-import { HabitSettings, Habit, DiaryEntry } from '../types';
+import { HabitSettings, Habit, DiaryEntry, AppLanguage } from '../types';
+import { getLanguageInfo, getTranslation } from '../lib/languages';
 
 interface HabitSettingsScreenProps {
   onBack: () => void;
@@ -33,6 +34,7 @@ interface HabitSettingsScreenProps {
   diaries: DiaryEntry[];
   onImportData: (importedHabits: Habit[], importedDiaries?: DiaryEntry[]) => void;
   isDarkMode?: boolean;
+  appLanguage?: AppLanguage;
 }
 
 export const DEFAULT_HABIT_SETTINGS: HabitSettings = {
@@ -58,8 +60,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
   habits,
   diaries,
   onImportData,
-  isDarkMode = false
+  isDarkMode = false,
+  appLanguage = 'ar'
 }) => {
+  const langInfo = getLanguageInfo(appLanguage);
+  const t = getTranslation(appLanguage);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [toastMessage, setToastMessage] = React.useState<string | null>(null);
 

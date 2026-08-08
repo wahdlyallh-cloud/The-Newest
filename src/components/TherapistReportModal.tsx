@@ -38,7 +38,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   const totalEntries = filteredDiaries.length;
   const averageSleep = filteredDiaries.length > 0 
     ? (filteredDiaries.reduce((sum, d) => sum + (d.sleepHours || 0), 0) / filteredDiaries.filter(d => d.sleepHours).length || 8).toFixed(1)
-    : "غير متوفر";
+    : (isEn ? "N/A" : "غير متوفر");
   
   const totalSports = filteredDiaries.reduce((sum, d) => sum + (d.sportsDuration || 0), 0);
   
@@ -71,11 +71,11 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
         setReportText(data.answer);
         setReportSource(data.source);
       } else {
-        setReportText("عذراً، حدث خطأ أثناء الاتصال بالمستشار الذكي.");
+        setReportText(isEn ? "Sorry, an error occurred while connecting to the Smart Advisor." : "عذراً، حدث خطأ أثناء الاتصال بالمستشار الذكي.");
       }
     } catch (e) {
       console.error(e);
-      setReportText("عذراً، لم نتمكن من الوصول للمستشار الذكي حالياً.");
+      setReportText(isEn ? "Sorry, unable to connect to the Smart Advisor currently." : "عذراً، لم نتمكن من الوصول للمستشار الذكي حالياً.");
     } finally {
       setLoading(false);
     }
@@ -85,9 +85,9 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     printWindow.document.write(`
-      <html dir="rtl" lang="ar">
+      <html dir="${isEn ? 'ltr' : 'rtl'}" lang="${appLanguage}">
         <head>
-          <title>تقرير جلسة العلاج النفسي - حياة AI</title>
+          <title>${isEn ? 'Therapy Session Report - Hayat AI' : 'تقرير جلسة العلاج النفسي - حياة AI'}</title>
           <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
             h1 { color: #4f46e5; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
@@ -101,29 +101,29 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
           </style>
         </head>
         <body>
-          <h1>🎓 تقرير جاهز لجلسة العلاج النفسي</h1>
+          <h1>🎓 ${isEn ? 'Prepared Therapy Session Report' : 'تقرير جاهز لجلسة العلاج النفسي'}</h1>
           <div class="meta">
-            <strong>الفترة الزمنية للتقرير:</strong> من ${startDate} إلى ${endDate}<br/>
-            <strong>عدد اليوميات المدونة:</strong> ${totalEntries} مذكرة شخصية<br/>
-            <strong>تاريخ وموعد الصدور:</strong> ${new Date().toLocaleString('ar-EG')}
+            <strong>${isEn ? 'Period:' : 'الفترة الزمنية للتقرير:'}</strong> ${isEn ? 'From' : 'من'} ${startDate} ${isEn ? 'to' : 'إلى'} ${endDate}<br/>
+            <strong>${isEn ? 'Logged Entries:' : 'عدد اليوميات المدونة:'}</strong> ${totalEntries} ${isEn ? 'personal entries' : 'مذكرة شخصية'}<br/>
+            <strong>${isEn ? 'Issued Date:' : 'تاريخ وموعد الصدور:'}</strong> ${new Date().toLocaleString(isEn ? 'en-US' : 'ar-EG')}
           </div>
 
           <div class="grid">
             <div class="stat-box">
-              <strong>💤 متوسط ساعات النوم:</strong> ${averageSleep} ساعة / ليلة
+              <strong>💤 ${isEn ? 'Avg Sleep Hours:' : 'متوسط ساعات النوم:'}</strong> ${averageSleep} ${isEn ? 'hours / night' : 'ساعة / ليلة'}
             </div>
             <div class="stat-box">
-              <strong>🏃 إجمالي وقت الرياضة:</strong> ${totalSports} دقيقة
+              <strong>🏃 ${isEn ? 'Total Exercise Time:' : 'إجمالي وقت الرياضة:'}</strong> ${totalSports} ${isEn ? 'minutes' : 'دقيقة'}
             </div>
           </div>
 
-          <h2>📋 التقرير التحليلي للذكاء الاصطناعي (مستشار الصحة النفسية)</h2>
+          <h2>📋 ${isEn ? 'AI Mental Health Advisor Clinical Report' : 'التقرير التحليلي للذكاء الاصطناعي (مستشار الصحة النفسية)'}</h2>
           <div style="font-size: 15px;">
             ${reportText.replace(/\n/g, '<br/>')}
           </div>
 
           <div class="footer">
-            تم توليد هذا التقرير تلقائياً وبسرية تامة بواسطة منصة Hayat AI (حياة AI).
+            ${isEn ? 'Generated automatically and confidentially by Hayat AI.' : 'تم توليد هذا التقرير تلقائياً وبسرية تامة بواسطة منصة Hayat AI (حياة AI).'}
           </div>
           <script>window.print();</script>
         </body>
@@ -134,7 +134,9 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
 
   const handleCopyText = async () => {
     try {
-      const textToCopy = `تقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
+      const textToCopy = isEn
+        ? `Therapy Session Report - Hayat AI\nPeriod: From ${startDate} to ${endDate}\n\nStatistics:\n- Logged Entries: ${totalEntries}\n- Avg Sleep: ${averageSleep} hours\n- Exercise Time: ${totalSports} minutes\n\nAnalytical Report:\n${reportText}`
+        : `تقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 3000);
@@ -144,25 +146,26 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   };
 
   const handleDownloadTxt = () => {
-    // UTF-8 BOM (\uFEFF) ensures proper Arabic rendering in all text viewers
-    const textContent = `\uFEFFتقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
+    const textContent = isEn
+      ? `\uFEFFTherapy Session Report - Hayat AI\nPeriod: From ${startDate} to ${endDate}\n\nStatistics:\n- Logged Entries: ${totalEntries}\n- Avg Sleep: ${averageSleep} hours\n- Exercise Time: ${totalSports} minutes\n\nAnalytical Report:\n${reportText}`
+      : `\uFEFFتقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.txt`;
+    link.download = isEn ? `Therapy_Report_${startDate}_to_${endDate}.txt` : `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.txt`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   const handleDownloadDoc = () => {
     const htmlDocContent = `\uFEFF<!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="${isEn ? 'ltr' : 'rtl'}" lang="${appLanguage}">
 <head>
   <meta charset="UTF-8">
-  <title>تقرير العلاج النفسي</title>
+  <title>${isEn ? 'Therapy Report' : 'تقرير العلاج النفسي'}</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: rtl; text-align: right; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: ${isEn ? 'ltr' : 'rtl'}; text-align: ${isEn ? 'left' : 'right'}; }
     h1 { color: #5A5A40; border-bottom: 2px solid #E2DCC8; padding-bottom: 8px; font-size: 20px; }
     .meta { background-color: #F9F7F2; padding: 12px; border-radius: 8px; border: 1px solid #E2DCC8; margin-bottom: 16px; font-size: 13px; }
     .report-body { font-size: 14px; white-space: pre-wrap; line-height: 1.8; }
@@ -170,28 +173,28 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   </style>
 </head>
 <body>
-  <h1>🎓 تقرير جلسة العلاج النفسي - حياة AI</h1>
+  <h1>🎓 ${isEn ? 'Therapy Session Report - Hayat AI' : 'تقرير جلسة العلاج النفسي - حياة AI'}</h1>
   <div class="meta">
-    <p><strong>الفترة الزمنية:</strong> من ${startDate} إلى ${endDate}</p>
-    <p><strong>إحصائيات المذكرات:</strong> ${totalEntries} | <strong>متوسط ساعات النوم:</strong> ${averageSleep} ساعة | <strong>وقت التمارين:</strong> ${totalSports} دقيقة</p>
+    <p><strong>${isEn ? 'Period:' : 'الفترة الزمنية:'}</strong> ${isEn ? 'From' : 'من'} ${startDate} ${isEn ? 'to' : 'إلى'} ${endDate}</p>
+    <p><strong>${isEn ? 'Diaries:' : 'إحصائيات المذكرات:'}</strong> ${totalEntries} | <strong>${isEn ? 'Avg Sleep:' : 'متوسط ساعات النوم:'}</strong> ${averageSleep} ${isEn ? 'hrs' : 'ساعة'} | <strong>${isEn ? 'Exercise:' : 'وقت التمارين:'}</strong> ${totalSports} ${isEn ? 'mins' : 'دقيقة'}</p>
   </div>
   <div class="report-body">
     ${reportText.replace(/\n/g, '<br/>')}
   </div>
-  <div class="footer">تم إنشاء هذا التقرير تلقائياً وبسرية تامة عبر حياة AI</div>
+  <div class="footer">${isEn ? 'Generated automatically and confidentially via Hayat AI' : 'تم إنشاء هذا التقرير تلقائياً وبسرية تامة عبر حياة AI'}</div>
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.doc`;
+    link.download = isEn ? `Therapy_Report_${startDate}_to_${endDate}.doc` : `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.doc`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir="rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={isEn ? 'ltr' : 'rtl'}>
       <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
