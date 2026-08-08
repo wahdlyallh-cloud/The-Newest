@@ -374,3 +374,5 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
     </div>
   );
 }
+
+export default TherapistReportModal;

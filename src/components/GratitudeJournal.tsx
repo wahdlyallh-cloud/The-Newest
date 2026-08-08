@@ -1397,3 +1397,5 @@ export default function GratitudeJournal({
     </div>
   );
 }
+
+export default GratitudeJournal;

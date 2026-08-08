@@ -1472,3 +1472,5 @@ ${isAr ? 'تم التوليد بواسطة تطبيق حياة AI 🌿' : 'Gener
     </div>
   );
 }
+
+export default DailyProsConsModal;

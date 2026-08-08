@@ -291,3 +291,5 @@ export default function BackupSyncModal({
     </div>
   );
 }
+
+export default BackupSyncModal;

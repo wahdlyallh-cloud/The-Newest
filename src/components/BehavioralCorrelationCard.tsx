@@ -173,3 +173,5 @@ export default function BehavioralCorrelationCard({
     </div>
   );
 }
+
+export default BehavioralCorrelationCard;

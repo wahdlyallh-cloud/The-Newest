@@ -120,3 +120,5 @@ export default function OfflineSyncBanner({
     </AnimatePresence>
   );
 }
+
+export default OfflineSyncBanner;

@@ -839,3 +839,5 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
     </div>
   );
 }
+
+export default IntegratedTherapyReport;
