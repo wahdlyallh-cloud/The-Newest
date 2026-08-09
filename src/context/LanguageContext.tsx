@@ -42,25 +42,28 @@ export interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  // FIXED to Arabic only - i18n architecture preserved for future scalability
   const [language, setLanguageState] = useState<SupportedLanguage>('ar');
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Load language preference from localStorage on mount
-    const savedLang = localStorage.getItem('appLanguage') as SupportedLanguage | null;
-    if (savedLang && SUPPORTED_LANGUAGES.some(l => l.code === savedLang)) {
-      setLanguageState(savedLang);
-    }
+    // Force Arabic as default and only active language (i18n framework preserved)
+    const langInfo = getLanguageInfo('ar');
+    document.documentElement.dir = langInfo.dir;
+    document.documentElement.lang = 'ar';
+    localStorage.setItem('appLanguage', 'ar');
     setIsInitialized(true);
   }, []);
 
+  // Locked to Arabic - function preserved for i18n scalability
   const setLanguage = (lang: SupportedLanguage) => {
-    setLanguageState(lang);
-    localStorage.setItem('appLanguage', lang);
-    // Update document direction
-    const langInfo = getLanguageInfo(lang);
+    // Currently locked to Arabic only - remove this comment to enable multi-language
+    const forcedLang: SupportedLanguage = 'ar';
+    setLanguageState(forcedLang);
+    localStorage.setItem('appLanguage', forcedLang);
+    const langInfo = getLanguageInfo(forcedLang);
     document.documentElement.dir = langInfo.dir;
-    document.documentElement.lang = lang;
+    document.documentElement.lang = forcedLang;
   };
 
   const t = (key: keyof typeof translations.ar): string => {
