@@ -4290,7 +4290,7 @@ export default function App() {
 
   return (
     <div 
-      className={`min-h-screen ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`} 
+      className={`min-h-screen w-full ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`} 
       dir={isRtl ? 'rtl' : 'ltr'}
       style={{
         fontFamily: getFontCss(settings.appFont),
@@ -4505,7 +4505,7 @@ export default function App() {
           drag="x"
           dragConstraints={{ left: -140, right: 140 }}
           dragElastic={0.1}
-          className="fixed top-2 left-1/2 -translate-x-1/2 z-40 sm:hidden flex flex-col items-center animate-in fade-in slide-in-from-top-2 duration-200"
+          className="fixed top-2 left-4 z-40 sm:hidden flex flex-col items-center animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <button
             type="button"
@@ -9218,7 +9218,7 @@ export default function App() {
           drag="x"
           dragMomentum={false}
           dragElastic={0.1}
-          className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 sm:hidden flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-grab active:cursor-grabbing"
+          className="fixed bottom-3 end-4 z-40 sm:hidden flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-grab active:cursor-grabbing"
         >
           <button
             type="button"
@@ -11243,7 +11243,7 @@ export default function App() {
 
       {/* 📥 Archive Action Toast Notification */}
       {archiveToast && (
-        <div className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] sm:w-auto bg-[#2B3E50] text-white p-4 rounded-2xl shadow-2xl border border-[#8B9D83]/40 flex items-center justify-between space-x-3 space-x-reverse animate-slideUp transition-all" dir="rtl">
+        <div className="fixed bottom-20 sm:bottom-8 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-auto bg-[#2B3E50] text-white p-4 rounded-2xl shadow-2xl border border-[#8B9D83]/40 flex items-center justify-between space-x-3 space-x-reverse animate-slideUp transition-all" dir="rtl">
           <div className="flex items-center space-x-3 space-x-reverse min-w-0">
             <div className="p-2 bg-[#8B9D83] text-white rounded-xl text-lg shrink-0">
               {archiveToast.action === 'archived' ? '📥' : '📤'}
