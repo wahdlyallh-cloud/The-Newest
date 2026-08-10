@@ -304,7 +304,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-1.5 space-x-reverse py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex-shrink-0 flex items-center space-x-1.5 space-x-reverse py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive
                   ? 'bg-white text-[#5A5A40] shadow-xs font-extrabold border border-[#E2DCC8]/60'
                   : 'text-gray-600 hover:text-[#5A5A40] hover:bg-white/50'
@@ -377,7 +377,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                         🗓️ {item.diaryDate}
                       </span>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                         {reliefPct > 0 && (
                           <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                             📉 {isAr ? "تراجع التوتر:" : "Anxiety Relief:"} -{reliefPct}%

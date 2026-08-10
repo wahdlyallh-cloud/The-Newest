@@ -85,4 +85,28 @@
   text-underline-offset: 3px;
 }
 
+/* ── Global Layout Utilities ─────────────────────────────────────── */
+
+/* Cross-browser hide scrollbar while keeping scroll functionality */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Safe bottom padding for mobile action bars — respects iOS home-indicator notch */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+
+/* Visually suppress the sticky header when any modal backdrop is active,
+   preventing z-index bleed-through on certain WebKit stacking contexts */
+.header-modal-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.15s ease;
+}
+
+/* Thin scrollbar variant for filter bars */
+.scrollbar-thin::-webkit-scrollbar { height: 3px; width: 3px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #D4A37340; border-radius: 99px; }
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: #D4A37340 transparent; }
 

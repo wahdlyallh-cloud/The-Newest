@@ -17,7 +17,6 @@ export interface AthkarItem {
   isCustom?: boolean;
 }
 
-// ✅ 10 main tabs only (as required)
 export const ALL_CATEGORY_OPTIONS = [
   { key: 'general', label: 'السبحة العامة' },
   { key: 'morning', label: 'أذكار الصباح' },
@@ -28,11 +27,10 @@ export const ALL_CATEGORY_OPTIONS = [
   { key: 'baqiyat', label: 'الباقيات الصالحات' },
   { key: 'younus', label: 'دعاء يونس' },
   { key: 'tawheed', label: 'ذكر التوحيد' },
+  { key: 'post_prayer', label: 'أذكار بعد الصلاة' },
+  { key: 'sleep', label: 'أذكار النوم' },
   { key: 'custom', label: 'أذكاري الخاصة' },
 ];
-
-// The 10 category keys shown in the main tabs bar
-export const MAIN_TAB_KEYS = ['general', 'morning', 'evening', 'salawat', 'istighfar', 'hawqala', 'baqiyat', 'younus', 'tawheed', 'custom'];
 
 export const ATHKAR_CATEGORIES: Record<string, { title: string; items: AthkarItem[] }> = {
   general: {
@@ -827,11 +825,10 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
           </div>
         </div>
 
-        {/* Compact Navigation Category Bar - 10 tabs only */}
+        {/* Compact Navigation Category Bar */}
         <div className="px-2 py-1.5 overflow-x-auto flex items-center gap-1.5 border-b border-amber-500/15 bg-slate-900/90 no-scrollbar shrink-0">
-          {ALL_CATEGORY_OPTIONS.map(({ key, label }) => {
+          {Object.entries(ATHKAR_CATEGORIES).map(([key, cat]) => {
             const isActive = activeTab === key;
-            const isCustom = key === 'custom';
             return (
               <button
                 key={key}
@@ -845,18 +842,30 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     : 'text-zinc-400 hover:text-amber-200 hover:bg-slate-800 border border-transparent'
                 }`}
               >
-                {isCustom
-                  ? <Layers className={`w-3 h-3 ${isActive ? 'text-amber-400' : 'text-zinc-500'}`} />
-                  : <Sparkles className={`w-3 h-3 ${isActive ? 'text-amber-300 animate-pulse' : 'text-zinc-500'}`} />
-                }
-                {isCustom ? `أذكاري الخاصة (${customAthkar.length})` : label}
+                <Sparkles className={`w-3 h-3 ${isActive ? 'text-amber-300 animate-pulse' : 'text-zinc-500'}`} />
+                {cat.title}
               </button>
             );
           })}
+
+          <button
+            onClick={() => {
+              setActiveTab('custom');
+              localStorage.setItem('yawmiyaty_dhikr_active_tab', 'custom');
+            }}
+            className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'custom'
+                ? 'bg-gradient-to-r from-amber-500/30 via-emerald-600/40 to-amber-500/30 text-amber-100 border border-amber-400/60 shadow-md scale-[1.02]'
+                : 'text-zinc-400 hover:text-amber-200 hover:bg-slate-800 border border-transparent'
+            }`}
+          >
+            <Layers className="w-3 h-3 text-amber-400" />
+            أذكاري الخاصة ({customAthkar.length})
+          </button>
         </div>
 
-        {/* Main Immersion Scroll Area - Maximized Area for Reading Text (no bottom bar) */}
-        <div className={`flex-1 overflow-y-auto px-3 sm:px-6 py-3 pb-6 space-y-4 max-w-4xl mx-auto w-full ${
+        {/* Main Immersion Scroll Area - Maximized Area for Reading Text */}
+        <div className={`flex-1 overflow-y-auto px-3 sm:px-6 py-3 pb-8 sm:pb-12 space-y-4 max-w-4xl mx-auto w-full ${
           isDarkMode 
             ? 'bg-gradient-to-b from-slate-950 via-emerald-950/20 to-slate-950' 
             : 'bg-amber-50/40 text-slate-900'
@@ -992,49 +1001,22 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                   )}
 
                   {/* Easy-to-Tap Counter Action Bar */}
-                  <div className="flex flex-col gap-2 pt-1">
-                    {/* Custom number input row */}
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        placeholder="أدخل العدد..."
-                        className="w-32 bg-slate-800/80 border border-amber-500/30 rounded-lg px-2.5 py-1.5 text-xs font-mono text-amber-200 focus:outline-none focus:border-amber-400 placeholder:text-zinc-500 placeholder:font-sans placeholder:text-[11px] text-center"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            const val = parseInt((e.target as HTMLInputElement).value, 10);
-                            if (!isNaN(val) && val >= 0) {
-                              setCounts(prev => ({ ...prev, [item.id]: val }));
-                              (e.target as HTMLInputElement).value = '';
-                            }
-                          }
-                        }}
-                        onBlur={(e) => {
-                          const val = parseInt(e.target.value, 10);
-                          if (!isNaN(val) && val >= 0) {
-                            setCounts(prev => ({ ...prev, [item.id]: val }));
-                            e.target.value = '';
-                          }
-                        }}
-                        title="أدخل عدداً مخصصاً واضغط Enter لتطبيقه"
-                      />
-                      <span className="text-[11px] text-zinc-500 font-sans">اضغط Enter لتطبيق</span>
-                      <button
-                        onClick={() => {
-                          setCounts(prev => ({ ...prev, [item.id]: item.count }));
-                        }}
-                        className="mr-auto text-xs font-sans text-zinc-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
-                        title="إعادة ضبط هذا الذكر"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        إعادة
-                      </button>
-                    </div>
+                  <div className="flex items-center justify-between pt-1 gap-3">
+                    <button
+                      onClick={() => {
+                        setCounts(prev => ({ ...prev, [item.id]: item.count }));
+                      }}
+                      className="text-xs font-sans text-zinc-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
+                      title="إعادة ضبط هذا الذكر"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      إعادة
+                    </button>
 
                     <button
                       onClick={() => handleDecrement(item)}
                       disabled={isCompleted}
-                      className={`w-full px-6 py-3 rounded-xl font-black font-sans text-sm sm:text-base flex items-center justify-center gap-3 shadow-lg transition-all cursor-pointer active:scale-95 ${
+                      className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-black font-sans text-sm sm:text-base flex items-center justify-center gap-3 shadow-lg transition-all cursor-pointer active:scale-95 ${
                         isCompleted
                           ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
                           : 'bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 shadow-amber-500/30 border border-amber-200/50'
@@ -1050,6 +1032,21 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               );
             })
           )}
+        </div>
+
+        {/* Compact Footer Info Bar */}
+        <div className="px-3 py-1.5 border-t border-amber-500/15 bg-slate-950/95 text-[11px] sm:text-xs font-sans text-amber-200/70 flex items-center justify-between shrink-0 h-9">
+          <span className="flex items-center gap-1.5 truncate">
+            <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="truncate">مزامنة حية للذكاء الاصطناعي وحفظ تلقائي</span>
+          </span>
+          <button
+            onClick={handleResetCurrentTab}
+            className="text-amber-400 hover:underline flex items-center gap-1 font-bold shrink-0 text-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            تصفير القسم الحالي
+          </button>
         </div>
 
         {/* Add / Edit Custom Dhikr Modal */}

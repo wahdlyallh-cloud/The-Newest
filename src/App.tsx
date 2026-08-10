@@ -4562,8 +4562,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Quick Action Badges — horizontal row, evenly spaced */}
-          <div className="flex flex-row items-center justify-around gap-2 overflow-x-auto scrollbar-none max-w-full w-full sm:w-auto sm:justify-end pb-1 sm:pb-0">
+          {/* Quick Action Badges matching the requested screenshot EXACTLY 'balmilli' */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none max-w-full w-full sm:w-auto justify-start sm:justify-end pb-1.5 sm:pb-0">
             
             {/* 📿 Direct Athkar Button (أذكار) */}
             <button
@@ -4722,7 +4722,7 @@ export default function App() {
             drag
             dragMomentum={false}
             dragElastic={0.1}
-            className="fixed top-16 left-4 z-40 sm:hidden cursor-grab active:cursor-grabbing"
+            className="fixed top-[72px] left-4 z-40 sm:hidden cursor-grab active:cursor-grabbing"
           >
             <button
               type="button"
@@ -5078,7 +5078,7 @@ export default function App() {
               {/* 7-Day Visual Calendar Tracker */}
               <div className="border-t border-[#E2DCC8]/50 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span className="text-[10px] font-bold text-gray-400">{t.recentWeek || (isEn ? 'Recent Week Progress:' : 'متابعة الأسبوع الأخير:')}</span>
-                <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto">
+                <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto scrollbar-none pb-1">
                   {getWeekDays().map((day, idx) => {
                     // Check if diaries has an entry on this day
                     const isLoggedOnDay = diaries.some(d => d.createdAt.split('T')[0] === day.isoString);
@@ -5970,12 +5970,12 @@ export default function App() {
                   </div>
 
                   {/* Rich Text Editor Toolbar */}
-                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 flex flex-wrap items-center gap-1.5 text-xs">
+                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 flex items-center gap-2 text-xs overflow-x-auto scrollbar-none">
                     <button
                       type="button"
                       title={t.undoTooltip}
                       onClick={handleUndo}
-                      className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs"
+                      className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs flex-shrink-0"
                     >
                       ↩️
                     </button>
@@ -5983,7 +5983,7 @@ export default function App() {
                       type="button"
                       title={t.redoTooltip}
                       onClick={handleRedo}
-                      className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs"
+                      className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs flex-shrink-0"
                     >
                       ↪️
                     </button>
@@ -5994,7 +5994,7 @@ export default function App() {
                       type="button"
                       title={t.boldTooltip || "Bold"}
                       onClick={() => insertFormatting('**', '**')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
                       B
                     </button>
@@ -6002,7 +6002,7 @@ export default function App() {
                       type="button"
                       title={t.italicTooltip || "Italic"}
                       onClick={() => insertFormatting('*', '*')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
                       I
                     </button>
@@ -6010,7 +6010,7 @@ export default function App() {
                       type="button"
                       title={t.underlineTooltip || "Underline"}
                       onClick={() => insertFormatting('<u>', '</u>')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
                       U
                     </button>
@@ -6018,7 +6018,7 @@ export default function App() {
                       type="button"
                       title={t.strikethroughTooltip || "Strikethrough"}
                       onClick={() => insertFormatting('~~', '~~')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
                       S
                     </button>
@@ -6029,7 +6029,7 @@ export default function App() {
                       type="button"
                       title={t.h1Tooltip || "Heading 1"}
                       onClick={() => insertFormatting('\n# ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer flex-shrink-0"
                     >
                       H1
                     </button>
@@ -6037,7 +6037,7 @@ export default function App() {
                       type="button"
                       title={t.h2Tooltip || "Heading 2"}
                       onClick={() => insertFormatting('\n## ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0"
                     >
                       H2
                     </button>
@@ -6046,7 +6046,7 @@ export default function App() {
                       type="button"
                       title={t.quoteTooltip || "Quote"}
                       onClick={() => insertFormatting('\n> ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0"
                     >
                       💬
                     </button>
@@ -6054,7 +6054,7 @@ export default function App() {
                       type="button"
                       title={t.bulletListTooltip || "Bullet List"}
                       onClick={() => insertFormatting('\n- ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0 whitespace-nowrap"
                     >
                       • {t.bulletListLabel || "List"}
                     </button>
@@ -6065,7 +6065,7 @@ export default function App() {
                       type="button"
                       title={t.fontColorsTooltip || "Font Colors"}
                       onClick={() => setShowColorPalette(!showColorPalette)}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-amber-800 flex items-center space-x-1 space-x-reverse cursor-pointer"
+                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-amber-800 flex items-center space-x-1 space-x-reverse cursor-pointer flex-shrink-0 whitespace-nowrap"
                     >
                       <span>🎨</span>
                       <span>{t.fontColorsBtn || "Font Colors"}</span>
@@ -6075,7 +6075,7 @@ export default function App() {
                       type="button"
                       title={t.moreFeaturesBtn}
                       onClick={() => setShowMoreFeaturesSheet(true)}
-                      className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#6E8066] text-white rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs"
+                      className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#6E8066] text-white rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs flex-shrink-0 whitespace-nowrap"
                     >
                       <span>✨</span>
                       <span>{t.moreFeaturesBtn}</span>
@@ -6085,7 +6085,7 @@ export default function App() {
                       type="button"
                       title={t.aiWriterBtn}
                       onClick={() => setShowAiWriterSheet(true)}
-                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs text-xs"
+                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs text-xs flex-shrink-0 whitespace-nowrap"
                     >
                       <span>✨</span>
                       <span>{t.aiWriterBtn}</span>
@@ -7600,7 +7600,7 @@ export default function App() {
                 </div>
 
                 {/* Editor Bottom Actions */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-[#E2DCC8]/55">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 pb-4 border-t border-[#E2DCC8]/55">
                   <button
                     type="button"
                     onClick={() => handleDeleteDiary(editingDiary.id)}
@@ -7681,7 +7681,7 @@ export default function App() {
                    <div className="flex-1 flex bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-3xs overflow-x-auto scrollbar-none" id="diaries-subtab-selector">
                      <button
                        onClick={() => setActiveDiariesSubTab('journal')}
-                       className={`flex-grow flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                          activeDiariesSubTab === 'journal'
                            ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
                            : 'text-gray-500 hover:text-[#5A5A40]'
@@ -7692,7 +7692,7 @@ export default function App() {
                      </button>
                      <button
                        onClick={() => setActiveDiariesSubTab('gratitude')}
-                       className={`flex-grow flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                          activeDiariesSubTab === 'gratitude'
                            ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
                            : 'text-gray-500 hover:text-[#5A5A40]'
@@ -7703,7 +7703,7 @@ export default function App() {
                      </button>
                      <button
                        onClick={() => setActiveDiariesSubTab('cbt')}
-                       className={`flex-grow flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                          activeDiariesSubTab === 'cbt'
                            ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
                            : 'text-gray-500 hover:text-[#5A5A40]'
@@ -7714,7 +7714,7 @@ export default function App() {
                      </button>
                      <button
                        onClick={() => setActiveDiariesSubTab('tasks')}
-                       className={`flex-grow flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                          activeDiariesSubTab === 'tasks'
                            ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
                            : 'text-gray-500 hover:text-[#5A5A40]'
@@ -7841,7 +7841,7 @@ export default function App() {
 
                     {/* Filter Pills of tags if they exist */}
                     {allUniqueTags.length > 0 && (
-                      <div className="flex items-center space-x-2 space-x-reverse overflow-x-auto pb-1 mt-1">
+                      <div className="flex items-center space-x-2 space-x-reverse overflow-x-auto pb-1 mt-1 scrollbar-none">
                         <span className="text-[10px] font-black text-gray-400 whitespace-nowrap shrink-0">{t.filterTagsLabel || (isEn ? "Filter tags:" : "تصفية الوسوم:")}</span>
                         <button
                           onClick={() => setSelectedTagFilter('')}
@@ -8789,7 +8789,7 @@ export default function App() {
                               </div>
 
                               {/* Action Buttons Bar */}
-                              <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                              <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-gray-100 text-xs">
                                 <button
                                   type="button"
                                   onClick={() => setViewArchivedDiary(diary)}

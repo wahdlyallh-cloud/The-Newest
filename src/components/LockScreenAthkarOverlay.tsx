@@ -296,16 +296,16 @@ export default function LockScreenAthkarOverlay({
             </div>
           </div>
 
-          {/* 2. Center Area: Quick Athkar Chips Bar */}
-          <div className="flex-1 my-auto flex flex-col items-center justify-center w-full py-4">
+          {/* 2. Center Area: Quick Athkar Chips Bar & Unlock Controls */}
+          <div className="flex-1 my-auto flex flex-col items-center justify-center space-y-6 w-full py-2">
             
-            {/* Ayah Banner */}
-            <div className="text-center mb-4">
+            {/* Spiritual Reflection Prompt */}
+            <div className="text-center space-y-1.5">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-black font-sans shadow-sm">
                 <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span>أَلا بِذكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</span>
+                <span>أَلا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</span>
               </div>
-              <p className="text-[11px] text-zinc-400 font-sans mt-1.5">
+              <p className="text-xs text-zinc-400 font-sans">
                 انقر على أي قسم للانتقال المباشر بعد فك القفل:
               </p>
             </div>
@@ -338,26 +338,36 @@ export default function LockScreenAthkarOverlay({
                   );
                 })}
               </div>
+            </div>
 
-              {/* PIN & Biometric Unlock Buttons inline */}
-              <div className="flex items-center gap-2 pt-1 flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleGeneralUnlockClick}
-                  className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
-                >
-                  <Key className="w-3.5 h-3.5 text-amber-300" />
-                  <span>إدخال PIN</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleBiometricAuthTrigger('fingerprint')}
-                  className="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-400/50 text-emerald-200 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
-                >
-                  <Fingerprint className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>بصمة</span>
-                </button>
-              </div>
+            {/* Direct Unlock Action Buttons */}
+            <div className="w-full flex items-center justify-center gap-2 sm:gap-3 flex-wrap pt-2">
+              <button
+                type="button"
+                onClick={handleGeneralUnlockClick}
+                className="px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/35 border-2 border-amber-400/50 text-amber-200 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-md"
+              >
+                <Key className="w-4 h-4 text-amber-300" />
+                <span>إدخال رمز PIN</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleBiometricAuthTrigger('fingerprint')}
+                className="px-4 py-2.5 rounded-2xl bg-emerald-600/20 hover:bg-emerald-600/35 border-2 border-emerald-400/50 text-emerald-200 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-md"
+              >
+                <Fingerprint className="w-4 h-4 text-emerald-400" />
+                <span>فتح بالبصمة</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleBiometricAuthTrigger('face')}
+                className="px-4 py-2.5 rounded-2xl bg-sky-600/20 hover:bg-sky-600/35 border-2 border-sky-400/50 text-sky-200 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-md"
+              >
+                <ScanFace className="w-4 h-4 text-sky-300" />
+                <span>بصمة الوجه</span>
+              </button>
             </div>
 
           </div>

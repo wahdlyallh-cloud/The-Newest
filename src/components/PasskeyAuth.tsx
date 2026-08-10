@@ -54,59 +54,35 @@ export default function PasskeyAuth({
     checkSupport();
   }, [biometricCredentialId]);
 
-  // Handle Linking Biometrics — fully wrapped in try/catch with automatic PIN fallback
+  // Handle Linking Biometrics
   const handleLinkBiometrics = async () => {
     setIsLoading(true);
     setFallbackNotice(null);
     setSuccessNotice(null);
 
-    // Defensive wrapper: catches any environment where navigator.credentials is unavailable
-    const _fallbackToPinLock = (reason?: string) => {
-      setFallbackNotice(
-        reason ||
-          '\u0627\u0644\u0628\u0635\u0645\u0629 \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u062d\u0627\u0644\u064a\u0627\u064b \u0639\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0645\u062a\u0635\u0641\u062d/\u0627\u0644\u0628\u064a\u0626\u0629\u060c \u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0642\u0641\u0644 \u0628\u0631\u0645\u0632 \u0627\u0644\u0640 PIN \u0643\u062e\u064a\u0627\u0631 \u0623\u0645\u0627\u0646 \u0631\u0626\u064a\u0633\u064a'
-      );
-      setIsLockEnabled(true);
-      onUpdateSecuritySettings({
-        isAppLockEnabled: true,
-        appPinCode: pinCode || '1234'
-      });
-      setIsLoading(false);
-    };
-
     try {
-      // Guard: check if navigator.credentials is even available
-      if (typeof navigator === 'undefined' || !navigator.credentials) {
-        _fallbackToPinLock();
-        return;
-      }
-
-      // Pre-check biometric support
-      let preCheck: { supported: boolean; reason?: string; isNative?: boolean };
-      try {
-        preCheck = await isBiometricsSupported();
-      } catch {
-        _fallbackToPinLock();
-        return;
-      }
-
+      // Pre-check support first
+      const preCheck = await isBiometricsSupported();
       if (!preCheck.supported) {
-        _fallbackToPinLock(preCheck.reason);
+        setFallbackNotice(
+          preCheck.reason ||
+            'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+        );
+        // Fallback to PIN Lock automatically
+        setIsLockEnabled(true);
+        onUpdateSecuritySettings({
+          isAppLockEnabled: true,
+          appPinCode: pinCode || '1234'
+        });
+        setIsLoading(false);
         return;
       }
 
-      // Execute WebAuthn / Capacitor biometric registration — all navigator.credentials
-      // calls are inside registerBiometrics which has its own try/catch.
-      let res: { success: boolean; credentialId?: string; infoMessage?: string; error?: string };
-      try {
-        res = await registerBiometrics(appLanguage);
-      } catch {
-        _fallbackToPinLock();
-        return;
-      }
+      // Execute WebAuthn / Capacitor biometric registration safely inside Try-Catch
+      const res = await registerBiometrics(appLanguage);
 
       if (res.success && res.credentialId) {
-        setSuccessNotice('\u062a\u0645 \u0631\u0628\u0637 \u0628\u0635\u0645\u0629 \u0627\u0644\u062c\u0647\u0627\u0632 \u0628\u0646\u062c\u0627\u062d! \u064a\u0645\u0643\u0646 \u0627\u0633\u062a\u062e\u062f\u0627\u0645\u0647\u0627 \u0644\u0644\u0648\u0635\u0648\u0644 \u0627\u0644\u0633\u0631\u064a\u0639.');
+        setSuccessNotice('تم ربط بصمة الجهاز بنجاح! يمكن استخدامها للوصول السريع.');
         onUpdateSecuritySettings({
           biometricCredentialId: res.credentialId,
           isBiometricEnabled: true,
@@ -114,12 +90,27 @@ export default function PasskeyAuth({
           appPinCode: pinCode || '1234'
         });
       } else {
-        _fallbackToPinLock(res.infoMessage);
+        // Smooth fallback without popup alert
+        setFallbackNotice(
+          res.infoMessage ||
+            'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+        );
+        setIsLockEnabled(true);
+        onUpdateSecuritySettings({
+          isAppLockEnabled: true,
+          appPinCode: pinCode || '1234'
+        });
       }
     } catch (err: any) {
-      // Final safety net — catches anything that slipped through
       console.warn('Biometric linking error handled gracefully:', err);
-      _fallbackToPinLock();
+      setFallbackNotice(
+        'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+      );
+      setIsLockEnabled(true);
+      onUpdateSecuritySettings({
+        isAppLockEnabled: true,
+        appPinCode: pinCode || '1234'
+      });
     } finally {
       setIsLoading(false);
     }

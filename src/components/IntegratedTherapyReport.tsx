@@ -437,7 +437,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
             </div>
             
             {/* Actions for Report */}
-            <div className="p-3 bg-[#F0EDE4]/60 border-t border-[#E2DCC8] flex flex-wrap items-center justify-end gap-2">
+            <div className="p-3 bg-[#F0EDE4]/60 border-t border-[#E2DCC8] flex flex-wrap items-center justify-end gap-2 overflow-x-auto scrollbar-none">
               <button
                 type="button"
                 onClick={handleCopyText}
