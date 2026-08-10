@@ -1,0 +1,344 @@
+{
+  "diaries": [
+    {
+      "id": "diary-1",
+      "title": "تخطيط للأسبوع الدراسي الجديد وغداء عائلي ومشاعر أمل",
+      "content": "بدأت اليوم ببعض القلق والتوتر بشأن تراكم المواد الدراسية والامتحانات القادمة في الجامعة. جلست مع عائلتي لاحقاً وتناولنا الغداء معاً في جو دافئ، وتحدثنا في مواضيع ممتعة فخفت حدة القلق تماماً وتحول شعوري للامتنان والأمل. أحس أن التحدث مع من نحب هو أفضل علاج سلوكي مهدئ للروح.",
+      "createdAt": "2026-07-15T21:30:00.000Z",
+      "updatedAt": "2026-07-15T21:30:00.000Z",
+      "moods": [
+        "قلق",
+        "ممتن",
+        "سعيد"
+      ],
+      "aiMoodAnalysis": [
+        {
+          "mood": "سعيد",
+          "percentage": 40
+        },
+        {
+          "mood": "قلق",
+          "percentage": 30
+        },
+        {
+          "mood": "ممتن",
+          "percentage": 30
+        }
+      ],
+      "importance": 4,
+      "color": "bg-[#CCD5AE]/15 border-[#CCD5AE]",
+      "images": [],
+      "videos": [],
+      "audioRecordings": [],
+      "files": [],
+      "tasks": [
+        {
+          "id": "t1",
+          "text": "مراجعة أول فصلين في الكيمياء",
+          "completed": true
+        },
+        {
+          "id": "t2",
+          "text": "شراء الدواء الشهري",
+          "completed": true
+        }
+      ],
+      "tags": [
+        "دراسة",
+        "عائلة",
+        "أمل"
+      ],
+      "chatLogs": [],
+      "isLocked": false,
+      "sleepHours": 7.5,
+      "sportsDuration": 30,
+      "medications": [
+        {
+          "id": "m1",
+          "name": "فيتامين D3 جرعة أسبوعية",
+          "time": "10:00 ص",
+          "taken": true
+        }
+      ]
+    },
+    {
+      "id": "diary-2",
+      "title": "نوبة أرق في منتصف الليل وتفكير زائد في المستقبل",
+      "content": "لم أستطع النوم جيداً الليلة الماضية بسبب كثرة التفكير والسيناريوهات الكارثية حول مستقبلي المهني والجامعي. استيقظت في الصباح وأنا أشعر بخمول شديد وإرهاق وضيق في الصدر. قررت في المساء تحدي نفسي والذهاب لممارسة المشي السريع لمدة 45 دقيقة، والحمد لله أحسست ببعض الارتياح والهدوء التدريجي بعد الرياضة.",
+      "createdAt": "2026-07-14T09:45:00.000Z",
+      "updatedAt": "2026-07-14T09:45:00.000Z",
+      "moods": [
+        "مرهق",
+        "قلق",
+        "حزين"
+      ],
+      "aiMoodAnalysis": [
+        {
+          "mood": "قلق",
+          "percentage": 50
+        },
+        {
+          "mood": "مرهق",
+          "percentage": 35
+        },
+        {
+          "mood": "حزين",
+          "percentage": 15
+        }
+      ],
+      "importance": 3,
+      "color": "bg-[#FAEDCD]/30 border-[#E2DCC8]",
+      "images": [],
+      "videos": [],
+      "audioRecordings": [
+        {
+          "id": "rec-1",
+          "name": "فضفضة الأرق وتفريغ الأفكار.mp3",
+          "dataUrl": "#",
+          "duration": 48,
+          "transcription": "أنا أسجل هذا المقطع الصوتي لأني أشعر بخوف شديد ولا أستطيع تهدئة نبضات قلبي بسبب التفكير في الامتحانات القادمة..."
+        }
+      ],
+      "files": [],
+      "tasks": [
+        {
+          "id": "t3",
+          "text": "تمرين تنفس بطني دقيقتين قبل النوم",
+          "completed": false
+        }
+      ],
+      "tags": [
+        "أرق",
+        "قلق",
+        "تحدي"
+      ],
+      "chatLogs": [],
+      "isLocked": false,
+      "sleepHours": 4.5,
+      "sportsDuration": 45,
+      "medications": [
+        {
+          "id": "m1",
+          "name": "فيتامين D3 جرعة أسبوعية",
+          "time": "10:00 ص",
+          "taken": false
+        }
+      ]
+    },
+    {
+      "id": "diary-3",
+      "title": "إنجاز كبير في المشروع وقراءة كتاب رائع قبل النوم",
+      "content": "الحمد لله اليوم كان استثنائياً ومبهجاً جداً! أنجزت العرض التقديمي لمشروع الجامعة وحصلت على ثناء كبير جداً من زملائي والدكتور المشرف. غمرتني طاقة مذهلة من الحماس والفرح والرضا عن نفسي. قبل النوم، أعددت كوب بابونج دافئ وقرأت فصلاً ممتعاً للغاية من كتاب العلاج السلوكي المعرفي للتغلب على القلق النفسي.",
+      "createdAt": "2026-07-12T22:00:00.000Z",
+      "updatedAt": "2026-07-12T22:00:00.000Z",
+      "moods": [
+        "سعيد جدًا",
+        "متحمس",
+        "مرتاح"
+      ],
+      "aiMoodAnalysis": [
+        {
+          "mood": "سعيد جدًا",
+          "percentage": 60
+        },
+        {
+          "mood": "متحمس",
+          "percentage": 30
+        },
+        {
+          "mood": "مرتاح",
+          "percentage": 10
+        }
+      ],
+      "importance": 5,
+      "color": "bg-[#F0EDE4] border-[#E2DCC8]",
+      "images": [],
+      "videos": [],
+      "audioRecordings": [],
+      "files": [],
+      "tasks": [
+        {
+          "id": "t4",
+          "text": "قراءة الفصل الرابع من كتاب CBT",
+          "completed": true
+        }
+      ],
+      "tags": [
+        "نجاح",
+        "قراءة",
+        "سعادة"
+      ],
+      "chatLogs": [],
+      "isLocked": false,
+      "sleepHours": 8,
+      "sportsDuration": 0,
+      "medications": []
+    }
+  ],
+  "habits": [
+    {
+      "id": "habit-1",
+      "name": "شرب 2 لتر ماء دافئ",
+      "category": "health",
+      "frequency": "daily",
+      "reminderTime": "08:00",
+      "reminderEnabled": true,
+      "createdAt": "2026-07-01T00:00:00.000Z",
+      "history": {
+        "2026-07-14": true,
+        "2026-07-15": true,
+        "2026-07-16": true
+      }
+    },
+    {
+      "id": "habit-2",
+      "name": "تأمل واسترخاء العضلات (10 د)",
+      "category": "mind",
+      "frequency": "daily",
+      "reminderTime": "07:30",
+      "reminderEnabled": true,
+      "createdAt": "2026-07-01T00:00:00.000Z",
+      "history": {
+        "2026-07-15": true,
+        "2026-07-16": false
+      }
+    },
+    {
+      "id": "habit-3",
+      "name": "المشي السريع أو تمرين منزلي",
+      "category": "sport",
+      "frequency": "daily",
+      "reminderTime": "17:00",
+      "reminderEnabled": false,
+      "createdAt": "2026-07-01T00:00:00.000Z",
+      "history": {
+        "2026-07-14": true,
+        "2026-07-15": true,
+        "2026-07-16": true
+      }
+    },
+    {
+      "id": "habit-4",
+      "name": "قراءة 10 صفحات في كتاب",
+      "category": "culture",
+      "frequency": "daily",
+      "reminderTime": "21:00",
+      "reminderEnabled": true,
+      "createdAt": "2026-07-01T00:00:00.000Z",
+      "history": {
+        "2026-07-14": true,
+        "2026-07-15": false,
+        "2026-07-16": true
+      }
+    }
+  ],
+  "settings": {
+    "isDarkMode": false,
+    "notificationsEnabled": true,
+    "lockScreenWidgetEnabled": true,
+    "fullscreenModeEnabled": false,
+    "autoHideHeaderOnScroll": true,
+    "appLanguage": "ru",
+    "appFont": "cairo",
+    "appLineHeight": "relaxed",
+    "floatingBallEnabled": true,
+    "appPinCode": "1234",
+    "isAppLocked": false,
+    "backupSettings": {
+      "autoBackup": "daily"
+    },
+    "reminders": [
+      {
+        "id": "rem-1",
+        "title": "منبه كتابة الخواطر واليوميات ✍️",
+        "time": "21:00",
+        "active": true,
+        "type": "diary",
+        "frequency": "daily",
+        "selectedDays": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "motivationalNote": "تدوين خواطرك يفرغ طاقة التوتر ويمنحك السكينة والوضوح الذهني. ✨",
+        "categoryIcon": "✍️"
+      },
+      {
+        "id": "rem-2",
+        "title": "تنبيه العناية بالذات وشرب الماء 💧",
+        "time": "08:00",
+        "active": true,
+        "type": "habit",
+        "frequency": "daily",
+        "selectedDays": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "motivationalNote": "بداية يوم جديدة مليئة بالنشاط! اعتَنِ بجسدك ونفسك أولاً. 💖",
+        "categoryIcon": "💧"
+      },
+      {
+        "id": "rem-3",
+        "title": "جلسة الاسترخاء الذهني والتأمل 🧘‍♂️",
+        "time": "17:30",
+        "active": true,
+        "type": "meditation",
+        "frequency": "custom_days",
+        "selectedDays": [
+          0,
+          2,
+          4
+        ],
+        "motivationalNote": "أنت تقوم بعمل رائع! خذ 3 أنفاس عميقة واسترح الآن.",
+        "categoryIcon": "🧘‍♀️"
+      }
+    ]
+  },
+  "gratitudeCards": [
+    {
+      "id": "grat-1",
+      "text": "رؤية شروق الشمس اليوم والبدء بيوم جديد مليء بالفرص والأمل",
+      "color": "bg-[#FEF9E7]",
+      "createdAt": "2026-08-01T08:00:00.000Z",
+      "likes": 3,
+      "tags": [
+        "امتنان",
+        "صباح"
+      ]
+    },
+    {
+      "id": "grat-2",
+      "text": "شرب فنجان قهوة ساخن وممتع بمشاركة صديق مقرب والحديث الدافئ معه",
+      "color": "bg-[#F4ECF7]",
+      "createdAt": "2026-08-02T16:30:00.000Z",
+      "likes": 5,
+      "tags": [
+        "عائلة",
+        "دفء"
+      ]
+    },
+    {
+      "id": "grat-3",
+      "text": "الوصول لحل مشكلة معقدة في العمل والشعور بالرضا والانجاز",
+      "color": "bg-[#EBF5FB]",
+      "createdAt": "2026-08-03T20:15:00.000Z",
+      "likes": 2,
+      "tags": [
+        "إنجاز",
+        "تطور"
+      ]
+    }
+  ],
+  "chatMessages": [],
+  "activeTab": "settings",
+  "syncTime": "2026-08-08T12:45:14.509Z"
+}
