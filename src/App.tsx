@@ -4290,7 +4290,7 @@ export default function App() {
 
   return (
     <div 
-      className={`min-h-screen w-full ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`} 
+      className={`min-h-screen w-full overflow-x-hidden ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`} 
       dir={isRtl ? 'rtl' : 'ltr'}
       style={{
         fontFamily: getFontCss(settings.appFont),
@@ -5766,7 +5766,7 @@ export default function App() {
             
             {/* Editor Container if editing or creating a diary */}
             {editingDiary ? (
-              <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6">
+              <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6 w-full max-w-full overflow-hidden">
                 
                 {/* Editor Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-[#E2DCC8]/55 flex-wrap gap-2">
