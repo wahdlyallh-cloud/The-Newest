@@ -16,7 +16,8 @@ import {
   Sliders,
   Sparkles
 } from 'lucide-react';
-import { Habit, HabitSettings } from '../types';
+import { Habit, HabitSettings, AppLanguage } from '../types';
+import { getLanguageInfo, getTranslation } from '../lib/languages';
 
 interface HabitsMatrixGridProps {
   habits: Habit[];
@@ -30,6 +31,7 @@ interface HabitsMatrixGridProps {
   habitSettings?: HabitSettings;
   selectedDate: string;
   isDarkMode?: boolean;
+  appLanguage?: AppLanguage;
 }
 
 export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
@@ -43,8 +45,11 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
   onOpenSettings,
   habitSettings,
   selectedDate,
-  isDarkMode = false
+  isDarkMode = false,
+  appLanguage = 'ar'
 }) => {
+  const t = getTranslation(appLanguage);
+  const isRtl = appLanguage === 'ar';
   // Periodicity / Date Range Filter State
   const [rangeMode, setRangeMode] = useState<
     'day' | 'week' | 'month' | 'quarter' | 'semi_annual' | 'year' | 'custom'

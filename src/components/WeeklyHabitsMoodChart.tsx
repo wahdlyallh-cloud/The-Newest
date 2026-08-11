@@ -8,10 +8,13 @@ import { Sparkles, TrendingUp } from 'lucide-react';
 
 interface WeeklyHabitsMoodChartProps {
   habits: Habit[];
+  appLanguage?: AppLanguage;
   diaries: DiaryEntry[];
 }
 
-export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ habits, diaries }) => {
+export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ habits, diaries, appLanguage = 'ar' }) => {
+  const t = getTranslation(appLanguage);
+  const isAr = appLanguage === 'ar';
   const [daysCount, setDaysCount] = React.useState<7 | 14 | 30>(7);
   const [showRangeMenu, setShowRangeMenu] = React.useState(false);
 
