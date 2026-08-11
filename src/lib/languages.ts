@@ -7697,7 +7697,19 @@ function createSafeTranslationProxy(langCode: string = 'ar') {
 }
 
 export const MULTI_TRANSLATIONS: Record<string, any> = new Proxy(BASELINE_DICTIONARIES, {
-  get(target, prop: string) {
+  get(target, prop: string | symbol) {
+    if (
+      typeof prop !== 'string' ||
+      prop === 'then' ||
+      prop === 'catch' ||
+      prop === 'finally' ||
+      prop === 'toJSON' ||
+      prop === '$typeof' ||
+      prop === 'constructor' ||
+      prop === 'prototype'
+    ) {
+      return (target as any)[prop];
+    }
     return createSafeTranslationProxy(prop);
   }
 });
