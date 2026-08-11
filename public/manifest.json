@@ -1,6 +1,6 @@
 {
-  "name": "اسم تطبيقك المفضل",
-  "short_name": "اسم تطبيقك المفضل",
+  "name": "حياة AI",
+  "short_name": "حياة AI",
   "description": "My Personal Assistant and Daily Productivity Tracker",
   "start_url": "/",
   "display": "standalone",
