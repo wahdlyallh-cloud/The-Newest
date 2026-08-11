@@ -33,9 +33,10 @@ const DEFAULT_ADVISOR_PERMISSIONS: AdvisorPermissions = {
 };
 
 const getPermissionsConfig = (lang: AppLanguage) => {
+  const t = getTranslation(lang);
   const isArabic = lang === 'ar';
   return [
-    { key: 'diaries' as const, title: t('onboardingStep1Title'), desc: isArabic ? 'قراءة المذكرات والملاحظات المكتوبة' : 'Read personal diary entries', icon: '📖' },
+    { key: 'diaries' as const, title: t('onboardingStep1Title') || (isArabic ? 'قسم اليوميات والخواطر' : 'Diaries & Reflections'), desc: isArabic ? 'قراءة المذكرات والملاحظات المكتوبة' : 'Read personal diary entries', icon: '📖' },
     { key: 'moodLogs' as const, title: isArabic ? 'سجل المزاج والانفعالات اليومية' : 'Daily Mood & Emotion Logs', desc: isArabic ? 'قراءة وتقييم درجات المزاج اليومي' : 'Assess daily mood scores', icon: '📊' },
     { key: 'habits' as const, title: isArabic ? 'قائمة العادات والالتزام اليومي' : 'Habits & Routines Tracker', desc: isArabic ? 'متابعة نسبة إنجاز وتكرار عاداتك' : 'Track habit completion rates', icon: '🎯' },
     { key: 'tasks' as const, title: isArabic ? 'المهام وقوائم الإنجاز (Tasks)' : 'Tasks & To-Do Checklists', desc: isArabic ? 'الاطلاع على قائمة مهامك اليومية والأسبوعية' : 'Access daily & weekly tasks', icon: '📝' },
