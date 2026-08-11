@@ -927,7 +927,7 @@ export default function App() {
       const saved = localStorage.getItem('yawmiyati_settings');
       const parsed: AppSettings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
       const directLang = localStorage.getItem('app_language') as AppLanguage;
-      if (directLang && ['ar', 'en'].includes(directLang)) {
+      if (directLang && ['ar', 'en', 'fr', 'de', 'es', 'ru', 'zh', 'tr', 'hi', 'it'].includes(directLang)) {
         parsed.appLanguage = directLang;
       }
       const savedCredId = localStorage.getItem('yawmiyati_biometric_cred_id');

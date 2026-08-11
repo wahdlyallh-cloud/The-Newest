@@ -7631,12 +7631,34 @@ function createSafeTranslationProxy(langCode: string = 'ar') {
   return new Proxy(translateFn as any, {
     get(target, prop: string | symbol) {
       if (typeof prop !== 'string') return (target as any)[prop];
+      
+      // Reserved JS/React/Promise/Vite inspect properties MUST NOT resolve to dictionary strings
+      if (
+        prop === 'then' ||
+        prop === 'catch' ||
+        prop === 'finally' ||
+        prop === 'toJSON' ||
+        prop === '$typeof' ||
+        prop === 'nodeType' ||
+        prop === 'displayName' ||
+        prop === 'prototype' ||
+        prop === 'constructor' ||
+        prop === 'length' ||
+        prop === 'name' ||
+        prop === 'toString' ||
+        prop === 'valueOf'
+      ) {
+        return (target as any)[prop];
+      }
+
       if (prop in target && (target as any)[prop] !== undefined) {
         return (target as any)[prop];
       }
+
       if (prop in targetDict && targetDict[prop] !== undefined && typeof targetDict[prop] === 'string' && targetDict[prop].trim() !== '') {
         return targetDict[prop];
       }
+
       return resolveKeyInDicts(prop, langCode);
     },
     apply(target, thisArg, argArray) {
@@ -7646,7 +7668,10 @@ function createSafeTranslationProxy(langCode: string = 'ar') {
 }
 
 export const MULTI_TRANSLATIONS: Record<string, any> = new Proxy(BASELINE_DICTIONARIES, {
-  get(target, prop: string) {
+  get(target, prop: string | symbol) {
+    if (typeof prop !== 'string' || prop === 'then' || prop === 'toJSON' || prop === '$typeof') {
+      return (target as any)[prop];
+    }
     return createSafeTranslationProxy(prop);
   }
 });

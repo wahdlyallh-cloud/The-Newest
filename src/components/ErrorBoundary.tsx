@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       try {
         const savedLang = (typeof window !== 'undefined' ? localStorage.getItem('app_language') : null) || 'ar';
-        const langCode = (['ar', 'en'].includes(savedLang) ? savedLang : 'ar') as AppLanguage;
+        const langCode = (['ar', 'en', 'fr', 'de', 'es', 'ru', 'zh', 'tr', 'hi', 'it'].includes(savedLang) ? savedLang : 'ar') as AppLanguage;
         const langInfo = getLanguageInfo(langCode);
         isRtl = langInfo?.dir === 'rtl';
 
