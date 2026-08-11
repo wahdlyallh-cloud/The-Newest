@@ -60,21 +60,7 @@ interface TasksChecklistSectionProps {
   appLanguage?: AppLanguage;
 }
 
-const CATEGORY_NAMES_AR: Record<string, string> = {
-  health: t('catPhysicalHealth'),
-  mind: t('catMindMeditation'),
-  sport: t('catSportActivity'),
-  culture: t('catCultureReading'),
-  custom: t('customGoals') || (isEn ? 'Other Goals 🎯' : 'أهداف أخرى 🎯')
-};
-
-const CATEGORY_NAMES_EN: Record<string, string> = {
-  health: 'Physical Health 🥦',
-  mind: 'Mindfulness 🧠',
-  sport: 'Sports & Activity 🏃',
-  culture: 'Culture & Reading 📚',
-  custom: 'Other Goals 🎯'
-};
+// Category styling definitions
 
 const CATEGORY_COLORS: Record<string, string> = {
   health: 'bg-emerald-50 text-emerald-700 border-emerald-100',
@@ -100,7 +86,15 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   appLanguage = "ar"
 }) => {
   const isAr = appLanguage === "ar";
-  const CATEGORY_NAMES = isAr ? CATEGORY_NAMES_AR : CATEGORY_NAMES_EN;
+  const isEn = appLanguage === "en";
+  const t = getTranslation(appLanguage);
+  const CATEGORY_NAMES: Record<string, string> = {
+    health: t('catPhysicalHealth'),
+    mind: t('catMindMeditation'),
+    sport: t('catSportActivity'),
+    culture: t('catCultureReading'),
+    custom: t('customGoals') || (isEn ? 'Other Goals 🎯' : 'أهداف أخرى 🎯')
+  };
   // Sub-view inside Tasks & Activities
   const [subView, setSubView] = useState<'daily_checklist' | 'habits_matrix' | 'habit_settings'>('daily_checklist');
 
