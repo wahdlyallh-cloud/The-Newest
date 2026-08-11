@@ -4563,7 +4563,7 @@ export default function App() {
           </div>
 
           {/* Quick Action Badges matching the requested screenshot EXACTLY 'balmilli' */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none max-w-full w-full sm:w-auto justify-start sm:justify-end pb-1.5 sm:pb-0">
+          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto scrollbar-none snap-x max-w-full w-full sm:w-auto justify-start sm:justify-end px-1 sm:px-0 pb-1.5 sm:pb-0">
             
             {/* 📿 Direct Athkar Button (أذكار) */}
             <button
@@ -4571,11 +4571,11 @@ export default function App() {
                 setIsFullAthkarModalOpen(true);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0"
-              title="أذكار المسلم والسبحة الشاملة"
+              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0 snap-start"
+              title={t('nav.dhikr_title')}
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse" />
-              <span>أذكار</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
+              <span>{t('nav.dhikr') || (isEn ? 'Dhikr' : 'أذكار')}</span>
             </button>
 
             {/* 🌐 Language Switcher Button */}
@@ -7572,28 +7572,28 @@ export default function App() {
 
                   {/* Built-in quick psychologist suggestions */}
                   <div className="space-y-1.5 pt-1">
-                    <p className="text-[10px] text-gray-400 font-bold">{t.quickOneClickActions || (isEn ? "Quick actions to analyze current note in one click:" : "إجراءات سريعة لتحليل التدوينة الحالية بنقرة واحدة:")}</p>
+                    <p className="text-[10px] text-gray-400 font-bold">{t('quickOneClickActions')}</p>
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
-                        onClick={() => handleSendDiaryChatMessage(isEn ? '📝 Summarize my current entry concisely and highlight my true emotions' : '📝 لخص تدوينتي الحالية بايجاز والخص مشاعري الحقيقية')}
+                        onClick={() => handleSendDiaryChatMessage(t('promptSummarizeEntry'))}
                         className="px-2.5 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/60 rounded-xl text-[10px] font-bold cursor-pointer transition-all shadow-3xs"
                       >
-                        📝 {t.summarizeEntryBtn || (isEn ? "Summarize entry" : "لخص تدوينتي بايجاز")}
+                        📝 {t('summarizeEntryBtn')}
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleSendDiaryChatMessage(isEn ? '💡 Extract cognitive distortions and thinking errors from my entry and advise how to balance them rationally' : '💡 استخرج الأخطاء المعرفية والتشوهات الفكرية من تدوينتي وانصحني بموازنتها عقلانياً')}
+                        onClick={() => handleSendDiaryChatMessage(t('promptExtractCognitiveErrors'))}
                         className="px-2.5 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/60 rounded-xl text-[10px] font-bold cursor-pointer transition-all shadow-3xs"
                       >
-                        💡 {t.extractCognitiveErrorsBtn || (isEn ? "Cognitive distortions" : "استخرج الأخطاء المعرفية")}
+                        💡 {t('extractCognitiveErrorsBtn')}
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleSendDiaryChatMessage(isEn ? '🎯 Suggest a simplified practical plan for tomorrow to build resilience and boost productivity' : '🎯 اقترح خطة عملية مبسطة ليوم الغد تساهم في بناء مرونتي النفسية وتحسين إنتاجيتي')}
+                        onClick={() => handleSendDiaryChatMessage(t('promptPracticalPlanTomorrow'))}
                         className="px-2.5 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/60 rounded-xl text-[10px] font-bold cursor-pointer transition-all shadow-3xs"
                       >
-                        🎯 {t.practicalPlanTomorrowBtn || (isEn ? "Tomorrow's action plan" : "خطة عملية ليوم الغد")}
+                        🎯 {t('practicalPlanTomorrowBtn')}
                       </button>
                     </div>
                   </div>

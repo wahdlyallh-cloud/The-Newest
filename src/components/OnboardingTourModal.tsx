@@ -14,7 +14,7 @@ import {
   Mic,
   Lock
 } from 'lucide-react';
-import { useLanguage } from '../lib/languages';
+import { useLanguage, getLanguageInfo } from '../lib/languages';
 
 interface OnboardingTourModalProps {
   isOpen: boolean;
@@ -30,8 +30,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
   appLanguage
 }) => {
   const { t, currentLanguage } = useLanguage();
-  const isEn = appLanguage === 'en' || currentLanguage === 'en';
-  const isRtl = !isEn;
+  const activeLang = appLanguage || currentLanguage;
+  const langInfo = getLanguageInfo(activeLang);
+  const isEn = activeLang === 'en';
+  const isRtl = langInfo.dir === 'rtl';
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -67,7 +69,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         ? 'Journal freely with real-time AI mood analysis, voice recordings, attachments, and passcode lock.' 
         : 'سجّل تفاصيل يومك ومواقفك بحرية تامة مع تحليل فوري للمزاج وإرفاق التسجيلات والصور والتشفير.'),
       demoWidget: (
-        <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2 text-right">
+        <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2 text-start">
           <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
             <span className="flex items-center gap-1.5"><Smile className="w-4 h-4 text-emerald-600" /> {isEn ? 'Happy & Rested' : 'مرتاح وسعيد'}</span>
             <span className="text-[10px] bg-emerald-200/60 text-emerald-800 px-2 py-0.5 rounded-full">{isEn ? 'AI Mood Analysis' : 'تحليل المزاج الذكي'}</span>
@@ -90,7 +92,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         ? 'Chat with your AI psychological advisor based on CBT principles for personalized support and clarity.' 
         : 'تحدث مع المستشار الذكي الداعم القائم على العلاج المعرفي السلوكي (CBT) للحصول على نصائح وتفريغ نفسي.'),
       demoWidget: (
-        <div className="bg-purple-50/70 border border-purple-200/80 rounded-2xl p-3.5 space-y-2 text-right">
+        <div className="bg-purple-50/70 border border-purple-200/80 rounded-2xl p-3.5 space-y-2 text-start">
           <div className="flex items-center gap-2 text-xs font-bold text-purple-900">
             <Sparkles className="w-4 h-4 text-purple-600" />
             <span>{isEn ? 'Hayat AI Advisor:' : 'المستشار الذكي (حياة AI):'}</span>
@@ -211,7 +213,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         </div>
 
         {/* Main Content Body */}
-        <div className="p-6 space-y-5 text-right flex-1">
+        <div className="p-6 space-y-5 text-start flex-1">
           {/* Step Icon Badge */}
           <div className="flex items-center gap-3">
             <div className={`p-3 rounded-2xl ${currentStepData.bgColor}`}>

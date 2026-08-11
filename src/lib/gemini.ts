@@ -43,21 +43,21 @@ export function hasValidGeminiKey(customKey?: string): boolean {
 
 export function getLanguageSystemInstruction(activeLanguage?: string): string {
   const lang = (activeLanguage || 'ar').toLowerCase();
-  const langNames: Record<string, string> = {
-    ar: "Arabic",
-    en: "English",
-    de: "German",
-    fr: "French",
-    es: "Spanish",
-    it: "Italian",
-    tr: "Turkish",
-    ur: "Urdu",
-    hi: "Hindi",
-    id: "Indonesian"
+  const langNames: Record<string, { name: string; native: string }> = {
+    ar: { name: "Arabic", native: "العربية" },
+    en: { name: "English", native: "English" },
+    fr: { name: "French", native: "Français" },
+    de: { name: "German", native: "Deutsch" },
+    es: { name: "Spanish", native: "Español" },
+    ru: { name: "Russian", native: "Русский" },
+    zh: { name: "Chinese Simplified", native: "中文" },
+    tr: { name: "Turkish", native: "Türkçe" },
+    hi: { name: "Hindi", native: "हिन्दी" },
+    it: { name: "Italian", native: "Italiano" }
   };
-  const targetLanguage = langNames[lang] || "Arabic";
+  const target = langNames[lang] || { name: "Arabic", native: "العربية" };
 
-  return `You must generate all clinical analyses, chat responses, and CBT feedback strictly in ${targetLanguage}. Translate all mood tags, insights, and recommendations completely to ${targetLanguage}.`;
+  return `CRITICAL REQUIREMENT: You MUST process input and generate your response EXCLUSIVELY in ${target.name} (${target.native}) [Language code: ${lang}]. Do NOT output Arabic or any other language unless explicitly requested by the user. Translate all mood tags, psychological insights, CBT exercises, and clinical recommendations completely into ${target.name}.`;
 }
 
 /**

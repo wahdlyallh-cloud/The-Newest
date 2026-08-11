@@ -398,18 +398,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
   };
 
-  const quickQuestions = isAr ? [
-    "ما أكثر مسببات التوتر لدي؟",
-    "ماذا حدث لي يوم 15 يوليو؟",
-    "متى كانت آخر مرة شعرت فيها بالسعادة؟",
-    "قارن بين حالتي هذا الأسبوع والشهر الماضي.",
-    "اعرض الملاحظات التي تتحدث عن الدراسة."
-  ] : [
-    "What causes my stress most?",
-    "What happened to me on July 15th?",
-    "When was I last happy?",
-    "Compare my state this week vs last month.",
-    "Show notes about studies."
+  const quickQuestions = [
+    t('advisorQuickQ1'),
+    t('advisorQuickQ2'),
+    t('advisorQuickQ3'),
+    t('advisorQuickQ4'),
+    t('advisorQuickQ5')
   ];
 
   const handleSend = async (textToSend: string) => {
