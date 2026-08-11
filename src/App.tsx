@@ -2186,10 +2186,10 @@ export default function App() {
 
   // Update HTML direction and language attributes on change
   useEffect(() => {
-    const info = getLanguageInfo(settings.appLanguage);
+    const info = getLanguageInfo(settings?.appLanguage || 'ar');
     document.documentElement.setAttribute('dir', info.dir);
     document.documentElement.setAttribute('lang', info.code);
-  }, [settings.appLanguage]);
+  }, [settings?.appLanguage || 'ar']);
   const [showLockScreenWidgetInfoModal, setShowLockScreenWidgetInfoModal] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -2613,7 +2613,7 @@ export default function App() {
 
   const getArabicGreetingHeader = () => {
     const hour = new Date().getHours();
-    if (settings.appLanguage !== 'ar') {
+    if ((settings?.appLanguage || 'ar') !== 'ar') {
       if (hour < 12) return 'Good Morning & Peaceful Mind';
       if (hour < 17) return 'Welcome & Have a Wonderful Day';
       return 'Good Evening & Inner Tranquility';
@@ -2639,7 +2639,7 @@ export default function App() {
       const d = new Date();
       d.setDate(today.getDate() - i);
       arr.push({
-        label: d.toLocaleDateString(settings.appLanguage === 'ar' ? 'ar-EG' : settings.appLanguage, { weekday: 'short' }),
+        label: d.toLocaleDateString((settings?.appLanguage || 'ar') === 'ar' ? 'ar-EG' : (settings?.appLanguage || 'ar'), { weekday: 'short' }),
         dayNum: d.getDate(),
         isoString: d.toISOString().split('T')[0]
       });
@@ -4276,7 +4276,7 @@ export default function App() {
       <PINLock 
         correctPin={settings.appPinCode || '1234'} 
         biometricCredentialId={settings.biometricCredentialId}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         onUnlocked={() => setSettings(prev => ({ ...prev, isAppLocked: false }))} 
         onQuickAction={(actionType) => {
           setSettings(prev => ({ ...prev, isAppLocked: false }));
@@ -4780,12 +4780,12 @@ export default function App() {
       <main className={`max-w-4xl mx-auto px-4 pb-28 md:pb-12 space-y-6 transition-all ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
         
         {/* Offline & Cloud Background Sync Status Banner */}
-        <OfflineSyncBanner appLanguage={settings.appLanguage} />
+        <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
 
         {/* Mock Android Notification Widget at the top of the Home Dashboard for simulation */}
         {activeTab === 'dashboard' && (
           <div className={isHeaderCollapsedOnMobile ? 'pt-2' : ''}>
-            <StaticNotification onAction={handleQuickAction} appLanguage={settings.appLanguage} />
+            <StaticNotification onAction={handleQuickAction} appLanguage={settings?.appLanguage || 'ar'} />
           </div>
         )}
 
@@ -4886,7 +4886,7 @@ export default function App() {
 
             {/* 🌱 Psychological Growth Tree (Visual Gamification Component) */}
             <PsychologicalGrowthTree
-              appLanguage={settings.appLanguage}
+              appLanguage={settings?.appLanguage || 'ar'}
               diariesCount={diaries.length}
               cbtCount={diaries.filter(d => (d.cbtWorksheets && d.cbtWorksheets.length > 0)).length}
               gratitudeCount={gratitudeCards.length}
@@ -4908,7 +4908,7 @@ export default function App() {
             />
 
             {/* 🧠 Advanced Behavioral Correlation Engine Card */}
-            <BehavioralCorrelationCard entries={diaries} appLanguage={settings.appLanguage} />
+            <BehavioralCorrelationCard entries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
 
             {/* 📁 شريط التدوين السريع والوصول المباشر للملفات */}
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-3">
@@ -7527,7 +7527,7 @@ export default function App() {
                             {msg.text}
                           </div>
                           <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
-                            {msg.sender === 'user' ? (t.meLabel || (isEn ? "Me" : "أنا")) : (t.aiPsychAdvisor || (isEn ? "AI Counselor" : "مستشارك النفسي AI"))} • {new Date(msg.createdAt).toLocaleTimeString(settings.appLanguage === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                            {msg.sender === 'user' ? (t.meLabel || (isEn ? "Me" : "أنا")) : (t.aiPsychAdvisor || (isEn ? "AI Counselor" : "مستشارك النفسي AI"))} • {new Date(msg.createdAt).toLocaleTimeString((settings?.appLanguage || 'ar') === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                       ))
@@ -8137,7 +8137,7 @@ export default function App() {
                     selectedDate={selectedDate}
                     handleUpdateHabit={handleUpdateHabit}
                     isDarkMode={settings.isDarkMode}
-                    appLanguage={settings.appLanguage}
+                    appLanguage={settings?.appLanguage || 'ar'}
                   />
                 ) : (
                   <TasksChecklistSection
@@ -8161,7 +8161,7 @@ export default function App() {
                     }}
                     isDarkMode={settings.isDarkMode}
                     diaries={displayedDiaries}
-                    appLanguage={settings.appLanguage}
+                    appLanguage={settings?.appLanguage || 'ar'}
                   />
                 )}
 
@@ -8174,7 +8174,7 @@ export default function App() {
         {/* --- TAB VIEW 3: FLAGSHIP SMART ADVISOR --- */}
         {activeTab === 'advisor' && (
           <div className="space-y-6">
-            <SmartAdvisor diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings.appLanguage} />
+            <SmartAdvisor diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings?.appLanguage || 'ar'} />
           </div>
         )}
 
@@ -8222,12 +8222,12 @@ export default function App() {
             {analyticsSubTab === 'report' ? (
               <IntegratedTherapyReport diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} />
             ) : analyticsSubTab === 'pros_cons' ? (
-              <ProsConsHistoryLog diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings.appLanguage} />
+              <ProsConsHistoryLog diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings?.appLanguage || 'ar'} />
             ) : (
               <div className="space-y-6">
                 {/* 🌱 Psychological Growth Tree (Visual Gamification Component) */}
                 <PsychologicalGrowthTree
-                  appLanguage={settings.appLanguage}
+                  appLanguage={settings?.appLanguage || 'ar'}
                   diariesCount={diaries.length}
                   cbtCount={diaries.filter(d => (d.cbtWorksheets && d.cbtWorksheets.length > 0)).length}
                   gratitudeCount={gratitudeCards.length}
@@ -8249,7 +8249,7 @@ export default function App() {
                 />
 
                 {/* 🧠 Behavioral Correlation Analysis Card */}
-                <BehavioralCorrelationCard entries={diaries} appLanguage={settings.appLanguage} />
+                <BehavioralCorrelationCard entries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
 
                 {/* Visual Intro card */}
                 <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-2">
@@ -8467,7 +8467,7 @@ export default function App() {
                 {(expandedSettingsCard === 'pin' || settings.isAppLocked) && (
                   <div className="p-4 border-t border-[#E2DCC8]/60 bg-[#FAF8F5]/40">
                     <PasskeyAuth
-                      appLanguage={settings.appLanguage}
+                      appLanguage={settings?.appLanguage || 'ar'}
                       biometricCredentialId={settings.biometricCredentialId}
                       isAppLockEnabled={settings.isAppLocked}
                       appPinCode={settings.appPinCode}
@@ -9144,7 +9144,7 @@ export default function App() {
               <TypographySettingsSection
                 appFont={settings.appFont || 'cairo'}
                 appLineHeight={settings.appLineHeight || 'relaxed'}
-                appLanguage={settings.appLanguage}
+                appLanguage={settings?.appLanguage || 'ar'}
                 onChangeFont={(font) => setSettings(prev => ({ ...prev, appFont: font }))}
                 onChangeLineHeight={(lh) => setSettings(prev => ({ ...prev, appLineHeight: lh }))}
               />
@@ -9208,7 +9208,7 @@ export default function App() {
         <FloatingBall 
           onAction={handleQuickAction} 
           isCollapsed={isBottomNavCollapsedOnMobile}
-          appLanguage={settings.appLanguage}
+          appLanguage={settings?.appLanguage || 'ar'}
         />
       )}
 
@@ -9339,21 +9339,21 @@ export default function App() {
         onClose={() => setShowTherapistModal(false)}
         diaries={diaries}
         userApiKey={settings.userApiKey}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* ⭐ Rating Modal Window */}
       <RatingModal
         isOpen={showRatingModal}
         onClose={() => setShowRatingModal(false)}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* ✉️ Contact Owner Modal Window */}
       <ContactOwnerModal
         isOpen={showContactModal}
         onClose={() => setShowContactModal(false)}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* 🔑 Gemini API Key Modal Window */}
@@ -9363,14 +9363,14 @@ export default function App() {
         apiKey={settings.userApiKey || ''}
         onSave={(key) => setSettings(prev => ({ ...prev, userApiKey: key }))}
         onClear={() => setSettings(prev => ({ ...prev, userApiKey: '' }))}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* ☁️ Backup & Sync Modal Window */}
       <BackupSyncModal
         isOpen={showBackupSyncModal}
         onClose={() => setShowBackupSyncModal(false)}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         isCloudSyncing={isCloudSyncing}
         cloudSyncMessage={cloudSyncMessage}
         onCloudSync={() => performCloudSync()}
@@ -9400,7 +9400,7 @@ export default function App() {
         isOpen={showPredictiveHealthModal}
         onClose={() => setShowPredictiveHealthModal(false)}
         diaries={diaries}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         apiKey={settings.userApiKey}
       />
 
@@ -9431,7 +9431,7 @@ export default function App() {
           };
           setDiaries(prev => [fullEntry, ...prev]);
         }}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         apiKey={settings.userApiKey}
       />
 
@@ -9442,7 +9442,7 @@ export default function App() {
         onNavigateTab={(tab) => {
           setActiveTab(tab);
         }}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* 👤 User Authentication Modal */}
@@ -9456,14 +9456,14 @@ export default function App() {
         onManualRestore={handleCloudRestore}
         isSyncing={isCloudSyncing}
         syncMessage={cloudSyncMessage}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* 📖 WriteDiary (يومياتي) Importer Modal */}
       <WriteDiaryImporter
         isOpen={showWriteDiaryImporter}
         onClose={() => setShowWriteDiaryImporter(false)}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         onImportCompleted={handleWriteDiaryImportCompleted}
       />
 
@@ -9474,9 +9474,9 @@ export default function App() {
           setShowLanguagesModal(false);
           setIsFirstTimeLangSelect(false);
           localStorage.setItem('yawmiyati_language_chosen', 'true');
-          localStorage.setItem('app_language', settings.appLanguage);
+          localStorage.setItem('app_language', settings?.appLanguage || 'ar');
         }}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         onChangeLanguage={(lang) => {
           setSettings(prev => ({ ...prev, appLanguage: lang }));
           localStorage.setItem('yawmiyati_language_chosen', 'true');
@@ -9493,7 +9493,7 @@ export default function App() {
       <ShareableGratitudeCardModal
         isOpen={showGratitudeShareModal}
         onClose={() => setShowGratitudeShareModal(false)}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         initialData={gratitudeShareData}
       />
 
@@ -9502,7 +9502,7 @@ export default function App() {
         isOpen={showSmartRemindersModal}
         onClose={() => setShowSmartRemindersModal(false)}
         reminders={settings.reminders || []}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
         onSaveReminders={(updatedReminders) => {
           setSettings(prev => ({ ...prev, reminders: updatedReminders }));
         }}
@@ -11377,7 +11377,7 @@ export default function App() {
         allBooks={books}
         allDiaries={diaries}
         userApiKey={settings.userApiKey}
-        appLanguage={settings.appLanguage}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* 📱 Lock Screen Widget Instructions Modal */}

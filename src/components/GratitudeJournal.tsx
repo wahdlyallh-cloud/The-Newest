@@ -111,7 +111,7 @@ export default function GratitudeJournal({
     }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = getLanguageInfo(settings.appLanguage).speechLang;
+    utterance.lang = getLanguageInfo(settings?.appLanguage || 'ar').speechLang;
     utterance.rate = 0.9;
     utterance.onend = () => setSpeakingCardId(null);
     utterance.onerror = () => setSpeakingCardId(null);
