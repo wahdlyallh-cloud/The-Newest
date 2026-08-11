@@ -421,7 +421,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
   // Toggle custom task completion
   const handleToggleTask = (taskId: string) => {
-    const updatedTasks = tasks.map(t => 
+    const updatedTasks = tasks.map(tag => 
       t.id === taskId ? { ...t, completed: !t.completed } : t
     );
     handleUpdateTasks(updatedTasks);

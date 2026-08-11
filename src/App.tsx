@@ -882,7 +882,7 @@ function localizeDiaryEntry(entry: DiaryEntry, isAr: boolean): DiaryEntry {
   return {
     ...entry,
     moods: entry.moods?.map(m => arabicToEnMap[m] || m),
-    tags: entry.tags?.map(t => arabicToEnMap[t] || t)
+    tags: entry.tags?.map(tag => arabicToEnMap[t] || t)
   };
 }
 
@@ -6269,7 +6269,7 @@ export default function App() {
                                 if (!prev) return null;
                                 return {
                                   ...prev,
-                                  tasks: prev.tasks.map(t => t.id === task.id ? { ...t, completed: checked } : t)
+                                  tasks: prev.tasks.map(tag => t.id === task.id ? { ...t, completed: checked } : t)
                                 };
                               });
                             }}
@@ -6284,7 +6284,7 @@ export default function App() {
                                 if (!prev) return null;
                                 return {
                                   ...prev,
-                                  tasks: prev.tasks.map(t => t.id === task.id ? { ...t, text: val } : t)
+                                  tasks: prev.tasks.map(tag => t.id === task.id ? { ...t, text: val } : t)
                                 };
                               });
                             }}
@@ -6376,12 +6376,12 @@ export default function App() {
                 <div>
                   <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">الوسوم والتصنيفات (اضغط مفتاح المسافة أو فاصلة للإضافة):</label>
                   <div className="flex flex-wrap gap-1.5 p-2 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl">
-                    {editingDiary.tags.map((t, idx) => (
+                    {editingDiary.tags.map((tag, idx) => (
                       <span key={idx} className="bg-[#F0EDE4] text-[#5A5A40] text-xs py-1 px-2.5 rounded-lg border border-[#E2DCC8] flex items-center space-x-1 space-x-reverse">
-                        <span>#{t}</span>
+                        <span>#{tag}</span>
                         <button
                           type="button"
-                          onClick={() => setEditingDiary(prev => prev ? { ...prev, tags: prev.tags.filter(x => x !== t) } : null)}
+                          onClick={() => setEditingDiary(prev => prev ? { ...prev, tags: prev.tags.filter(x => x !== tag) } : null)}
                           className="text-[10px] text-[#5A5A40]/70 hover:text-[#3A3A3A] cursor-pointer"
                         >
                           ×
@@ -11043,17 +11043,17 @@ export default function App() {
                                             {/* Tag Chips on Book Card */}
                                             {book.tags && book.tags.length > 0 && (
                                               <div className="flex flex-wrap gap-1 pt-1">
-                                                {book.tags.map(t => (
+                                                 {book.tags.map(tag => (
                                                   <span
-                                                    key={t}
+                                                     key={tag}
                                                     onClick={(e) => {
                                                       e.stopPropagation();
-                                                      setSelectedBookTagFilter(t);
+                                                       setSelectedBookTagFilter(tag);
                                                     }}
                                                     className="text-[9px] font-black bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.2 rounded-md hover:bg-teal-100 transition-colors"
                                                     title="تصفية حسب هذا التصنيف"
                                                   >
-                                                    🏷️ {t}
+                                                     🏷️ {tag}
                                                   </span>
                                                 ))}
                                               </div>
@@ -11319,9 +11319,9 @@ export default function App() {
                     😊 {m}
                   </span>
                 ))}
-                {viewArchivedDiary.tags.map(t => (
-                  <span key={t} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-lg">
-                    #{t}
+                {viewArchivedDiary.tags.map(tag => (
+                  <span key={tag} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                    #{tag}
                   </span>
                 ))}
               </div>
