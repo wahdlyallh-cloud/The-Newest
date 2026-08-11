@@ -4805,8 +4805,8 @@ export default function App() {
                     <Brain className="w-4 h-4 text-amber-300" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{t.predictiveTitle || (isEn ? 'Predictive Health 🔮' : 'استشعار القلق 🔮')}</h4>
-                    <p className="text-[10px] text-blue-100/80 truncate">{isEn ? 'AI early warning' : 'تنبؤ بالذكاء الاصطناعي'}</p>
+                    <h4 className="font-extrabold text-xs truncate">{t('predictiveTitle') || (isEn ? 'Predictive Health 🔮' : 'استشعار القلق 🔮')}</h4>
+                    <p className="text-[10px] text-blue-100/80 truncate">{t('predictiveSub')}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-amber-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -4822,8 +4822,8 @@ export default function App() {
                     <Mic className="w-4 h-4 text-purple-200" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{t.voiceJournalTitle || (isEn ? 'Voice Journaling 🎙️' : 'التدوين الصوتي 🎙️')}</h4>
-                    <p className="text-[10px] text-purple-100/80 truncate">{isEn ? 'Speak freely to write' : 'تكلم وسينظمها الذكاء'}</p>
+                    <h4 className="font-extrabold text-xs truncate">{t('voiceJournalTitle') || (isEn ? 'Voice Journaling 🎙️' : 'التدوين الصوتي 🎙️')}</h4>
+                    <p className="text-[10px] text-purple-100/80 truncate">{t('voiceJournalSub')}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-purple-200 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -4839,8 +4839,8 @@ export default function App() {
                     <Sparkles className="w-4 h-4 text-cyan-300" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{isEn ? 'Interactive Tour 🧭' : 'الدليل التعليمي 🧭'}</h4>
-                    <p className="text-[10px] text-cyan-100/80 truncate">{isEn ? 'How to use app' : 'كيفية الاستخدام بالتفصيل'}</p>
+                    <h4 className="font-extrabold text-xs truncate">{t('interactiveTourTitle')}</h4>
+                    <p className="text-[10px] text-cyan-100/80 truncate">{t('interactiveTourSub')}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-cyan-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -4872,7 +4872,7 @@ export default function App() {
               <div className="relative z-10 space-y-2">
                 <span className="text-xs font-bold text-[#FEFAE0] tracking-wide flex items-center space-x-1.5 space-x-reverse">
                   <Sparkles className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                  <span>{isEn ? 'Your Safe & Fully Encrypted Psychological Space' : 'مساحتك النفسية الآمنة والمشفرة بالكامل'}</span>
+                  <span>{t('safeEncryptedSpace')}</span>
                 </span>
                 <h2 className="text-xl font-extrabold tracking-wide flex items-center space-x-2 space-x-reverse">
                   <span>{getArabicGreetingHeader()}</span>
@@ -5048,14 +5048,14 @@ export default function App() {
                   <p className="text-xs text-[#5A5A40] leading-relaxed font-medium">
                     {streakInfo.hasLoggedToday ? (
                       <span className="text-emerald-700 flex items-center space-x-1 space-x-reverse">
-                        <span>✨ {t.streakEncouragement || (isEn ? 'Great job! You logged your thoughts today and kept your streak alive!' : 'رائع! لقد دوّنت أفكارك اليوم وحافظت على توهج شعلتك. استمر في رعاية صحتك النفسية غداً!')}</span>
+                        <span>✨ {t('streakActiveMsg')}</span>
                       </span>
                     ) : (
                       <span>
                         {streakInfo.currentStreak === 0 ? (
-                          isEn ? "Write a log today to activate your daily streak!" : "اكتب تدوينة اليوم لتفعيل شعلة الالتزام والبدء في رصد أنماطك السلوكية!"
+                          t('streakInactiveZero')
                         ) : (
-                          isEn ? "One final step! Log your thoughts today to keep your streak going." : "تبقى خطوة أخيرة! اكتب تدوينتك اليوم للحفاظ على سلسلة التزامك من الانقطاع."
+                          t('streakInactiveOneLeft')
                         )}
                       </span>
                     )}
@@ -5417,7 +5417,7 @@ export default function App() {
                       breathingPhase === 'exhale' ? 'bg-blue-500' : 'bg-purple-500'
                     }`}>
                       <span className="text-xl font-black font-mono">{breathingTimer}</span>
-                      <span className="text-[10px] tracking-wider mt-0.5">ثوان متبقية</span>
+                      <span className="text-[10px] tracking-wider mt-0.5">{t('secondsRemaining')}</span>
                     </div>
                   </div>
 
@@ -5430,7 +5430,7 @@ export default function App() {
                       {breathingPhase === 'hold2' && '🛑 اكـتـم... استشعر السكينة والصمت النفسي'}
                     </span>
                     <span className="text-[10px] text-gray-400 block font-bold">
-                      عدد الدورات المكتملة: <span className="font-mono text-xs font-black text-[#8B9D83]">{breathingCycle}</span> دورة
+                      {t('completedCycles')} <span className="font-mono text-xs font-black text-[#8B9D83]">{breathingCycle}</span> {t('cyclesCount')}
                     </span>
                   </div>
 
@@ -5445,7 +5445,7 @@ export default function App() {
                   <CheckSquare className="w-4 h-4 text-[#8B9D83]" />
                   <span>{t('selfCareGoalsTitle')}</span>
                 </h3>
-                <span className="text-[10px] text-gray-400">تلقائي الحفظ</span>
+                <span className="text-[10px] text-gray-400 font-bold">{t('autoSaveLabel')}</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -5457,7 +5457,7 @@ export default function App() {
                       <span>{t('sleepHoursLabel')}</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-[#5A5A40]">
-                      {activeDiaryForSelectedDate?.sleepHours || 8} ساعات
+                      {activeDiaryForSelectedDate?.sleepHours || 8} {t('hoursUnit')}
                     </span>
                   </div>
                   <input
@@ -5479,7 +5479,7 @@ export default function App() {
                       <span>{t('sportsDurationLabel')}</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-[#8B9D83]">
-                      {activeDiaryForSelectedDate?.sportsDuration || 0} دقيقة
+                      {activeDiaryForSelectedDate?.sportsDuration || 0} {t('minutesUnit')}
                     </span>
                   </div>
                   <input
@@ -5510,7 +5510,7 @@ export default function App() {
                         : 'bg-[#F0EDE4] text-[#5A5A40]'
                     }`}
                   >
-                    {activeDiaryForSelectedDate?.medications?.[0]?.taken ? '✓ تم التناول' : 'متبقي'}
+                    {activeDiaryForSelectedDate?.medications?.[0]?.taken ? t('medicationTakenBtn') : t('medicationPendingBtn')}
                   </button>
                 </div>
               </div>
