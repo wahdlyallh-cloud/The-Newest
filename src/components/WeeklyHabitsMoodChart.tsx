@@ -26,7 +26,7 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
       totalHabits: number;
     }[] = [];
 
-    const arabicDayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const arabicDayNames = appLanguage === 'ar' ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();

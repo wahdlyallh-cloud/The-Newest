@@ -61,11 +61,11 @@ interface TasksChecklistSectionProps {
 }
 
 const CATEGORY_NAMES_AR: Record<string, string> = {
-  health: 'صحة بدنية 🥦',
-  mind: 'تأمل وذهن 🧠',
-  sport: 'رياضة ونشاط 🏃',
-  culture: 'ثقافة وقراءة 📚',
-  custom: 'أهداف أخرى 🎯'
+  health: t('catPhysicalHealth'),
+  mind: t('catMindMeditation'),
+  sport: t('catSportActivity'),
+  culture: t('catCultureReading'),
+  custom: t('customGoals') || (isEn ? 'Other Goals 🎯' : 'أهداف أخرى 🎯')
 };
 
 const CATEGORY_NAMES_EN: Record<string, string> = {
