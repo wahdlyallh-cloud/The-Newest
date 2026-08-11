@@ -7603,44 +7603,95 @@ function resolveKeyInDicts(key: string, lang: string = 'ar', customFallback?: st
 
 // Proxy wrapper that functions both as a callable function (t('key')) AND as property lookup (t.key)
 function createSafeTranslationProxy(langCode: string = 'ar') {
-  const targetDict = BASELINE_DICTIONARIES[langCode] || BASELINE_DICTIONARIES.ar;
+  const safeLang = (typeof langCode === 'string' && langCode.trim()) ? langCode : 'ar';
+  const targetDict = (typeof BASELINE_DICTIONARIES !== 'undefined' && BASELINE_DICTIONARIES[safeLang])
+    ? BASELINE_DICTIONARIES[safeLang]
+    : ((typeof BASELINE_DICTIONARIES !== 'undefined' && BASELINE_DICTIONARIES.ar) ? BASELINE_DICTIONARIES.ar : {});
 
-  const translateFn = (key?: string, fallbackOrReplacements?: Record<string, any> | string, replacementsObj?: Record<string, any>): any => {
-    if (!key || typeof key !== 'string') return '';
+  const translateFn = (key?: any, fallbackOrReplacements?: Record<string, any> | string, replacementsObj?: Record<string, any>): string => {
+    try {
+      if (!key) return '';
+      if (typeof key !== 'string') {
+        try {
+          return String(key);
+        } catch {
+          return '';
+        }
+      }
 
-    let customFallback: string | undefined;
-    let replacements: Record<string, any> | undefined;
+      let customFallback: string | undefined;
+      let replacements: Record<string, any> | undefined;
 
-    if (typeof fallbackOrReplacements === 'string') {
-      customFallback = fallbackOrReplacements;
-      replacements = replacementsObj;
-    } else if (typeof fallbackOrReplacements === 'object') {
-      replacements = fallbackOrReplacements;
+      if (typeof fallbackOrReplacements === 'string') {
+        customFallback = fallbackOrReplacements;
+        replacements = replacementsObj;
+      } else if (typeof fallbackOrReplacements === 'object') {
+        replacements = fallbackOrReplacements;
+      }
+
+      let val = resolveKeyInDicts(key, safeLang, customFallback);
+
+      if (replacements && typeof replacements === 'object') {
+        Object.keys(replacements).forEach((rKey) => {
+          try {
+            val = val.replace(new RegExp(`\\{${rKey}\\}|%${rKey}%`, 'g'), String(replacements[rKey] ?? ''));
+          } catch {
+            // Ignore replacement error
+          }
+        });
+      }
+      return typeof val === 'string' ? val : String(val || '');
+    } catch (err) {
+      console.error('Translation fn error caught safely:', err);
+      return typeof key === 'string' ? key : '';
     }
-
-    let val = resolveKeyInDicts(key, langCode, customFallback);
-
-    if (replacements && typeof replacements === 'object') {
-      Object.keys(replacements).forEach((rKey) => {
-        val = val.replace(new RegExp(`\\{${rKey}\\}|%${rKey}%`, 'g'), String(replacements[rKey]));
-      });
-    }
-    return val;
   };
 
   return new Proxy(translateFn as any, {
     get(target, prop: string | symbol) {
       if (typeof prop !== 'string') return (target as any)[prop];
+
+      // Reserved JS/React/Promise/Vite inspect properties MUST NOT resolve to dictionary strings
+      if (
+        prop === 'then' ||
+        prop === 'catch' ||
+        prop === 'finally' ||
+        prop === 'toJSON' ||
+        prop === '$typeof' ||
+        prop === 'nodeType' ||
+        prop === 'displayName' ||
+        prop === 'prototype' ||
+        prop === 'constructor' ||
+        prop === 'length' ||
+        prop === 'name' ||
+        prop === 'toString' ||
+        prop === 'valueOf'
+      ) {
+        return (target as any)[prop];
+      }
+
       if (prop in target && (target as any)[prop] !== undefined) {
         return (target as any)[prop];
       }
-      if (prop in targetDict && targetDict[prop] !== undefined && typeof targetDict[prop] === 'string' && targetDict[prop].trim() !== '') {
+
+      if (targetDict && prop in targetDict && targetDict[prop] !== undefined && typeof targetDict[prop] === 'string' && targetDict[prop].trim() !== '') {
         return targetDict[prop];
       }
-      return resolveKeyInDicts(prop, langCode);
+
+      try {
+        const res = resolveKeyInDicts(prop, safeLang);
+        return typeof res === 'string' ? res : String(res || '');
+      } catch {
+        return prop;
+      }
     },
     apply(target, thisArg, argArray) {
-      return translateFn(argArray[0], argArray[1], argArray[2]);
+      try {
+        return translateFn(argArray[0], argArray[1], argArray[2]);
+      } catch (err) {
+        console.error('Translation apply error caught safely:', err);
+        return String(argArray[0] || '');
+      }
     }
   });
 }
@@ -7652,7 +7703,12 @@ export const MULTI_TRANSLATIONS: Record<string, any> = new Proxy(BASELINE_DICTIO
 });
 
 export function getTranslation(lang?: string | AppLanguage | null): any {
-  return createSafeTranslationProxy(lang || 'ar');
+  try {
+    return createSafeTranslationProxy(lang || 'ar');
+  } catch (e) {
+    console.error('getTranslation error caught safely:', e);
+    return createSafeTranslationProxy('ar');
+  }
 }
 
 export interface LanguageContextType {
