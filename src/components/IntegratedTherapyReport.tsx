@@ -327,7 +327,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-lg font-black text-white">
-                🎓 تحضير جلسة العلاج النفسي والتقرير السريري الشامل
+                {t('therapyReportTitle')}
               </h3>
               <span className="bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full text-[10px] font-black border border-white/20">
                 مدعوم بالذكاء الاصطناعي 🧠

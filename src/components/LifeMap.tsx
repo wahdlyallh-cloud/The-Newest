@@ -34,7 +34,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'sleep',
         type: 'sleep',
-        title: 'فترة النوم والراحة اليومية 💤',
+        title: t('sleepPeriodTitle'),
         time: '08:00 ص',
         description: `أخذت قسطاً من الراحة والنوم بمعدل ${diaryToday.sleepHours} ساعات لترميم الطاقة النفسية والذهنية.`,
         icon: 'moon'
@@ -133,7 +133,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               <Brain className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-[#3A3A3A] text-base">خريطة ومؤشرات الحياة اليومية</h3>
+              <h3 className="font-extrabold text-[#3A3A3A] text-base">{t('dailyLifeMapTitle')}</h3>
               <p className="text-xs text-gray-400">لوحة تحليلية متكاملة لربط الأنشطة السلوكية بجودة صحتك النفسية</p>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               {/* Day Quality Indicator (Circular Gauge feel) */}
               <div className="bg-[#F9F7F2]/60 border border-[#E2DCC8]/50 rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5A5A40]">مؤشر التوازن والصحة اليومي:</span>
+                  <span className="text-xs font-bold text-[#5A5A40]">{t('dailyBalanceIndexLabel')}</span>
                   <Sparkles className="w-4 h-4 text-[#D4A373] animate-pulse" />
                 </div>
                 <div className="flex items-baseline space-x-2 space-x-reverse">
@@ -240,7 +240,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
 
       {/* ⏳ Chronological Memory Timeline with attachments */}
       <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6">
-        <h4 className="text-xs font-black text-[#5A5A40] uppercase tracking-wider">شريط الزمن المتكامل وخطوات اليوم:</h4>
+        <h4 className="text-xs font-black text-[#5A5A40] uppercase tracking-wider">{t('integratedTimelineTitle')}</h4>
 
         {events.length === 0 ? (
           <div className="text-center py-12 text-gray-400 text-xs">

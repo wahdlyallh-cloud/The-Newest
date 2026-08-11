@@ -993,7 +993,7 @@ export default function App() {
 
   const displayedHabits = useMemo(() => {
     if (!Array.isArray(habits)) return [];
-    return habits.map(h => localizeHabit(h, isAr));
+    return habits.map(h => localizeHabit(h, isAr, settings?.appLanguage));
   }, [habits, isAr]);
 
   const displayedGratitudeCards = useMemo(() => {
@@ -5373,10 +5373,10 @@ export default function App() {
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                     <span className="text-base">🧘</span>
-                    <span>مساعد التنفس الصندوقي الاسترخائي (تنشيط العصب الحائر)</span>
+                    <span>{t('boxBreathingTitle')}</span>
                   </h3>
                   <p className="text-[10px] text-gray-500 font-medium">
-                    طريقة تنفس متبعة لدى أطباء النفس والعمليات الخاصة لتهدئة ضربات القلب وتحفيز السلام العصبي فورياً (4 ثوان لكل مرحلة).
+                    {t('boxBreathingDesc')}
                   </p>
                 </div>
                 <button
@@ -5387,7 +5387,7 @@ export default function App() {
                       : 'bg-[#8B9D83] hover:bg-[#5A5A40] text-white'
                   }`}
                 >
-                  {isBreathingActive ? '⏹️ إيقاف الجلسة' : '▶️ بدء تمرين التنفس'}
+                  {isBreathingActive ? t('stopBreathingBtn') : t('startBreathingBtn')}
                 </button>
               </div>
 
@@ -5443,7 +5443,7 @@ export default function App() {
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                   <CheckSquare className="w-4 h-4 text-[#8B9D83]" />
-                  <span>أهداف الرعاية الذاتية والصحة النفسية</span>
+                  <span>{t('selfCareGoalsTitle')}</span>
                 </h3>
                 <span className="text-[10px] text-gray-400">تلقائي الحفظ</span>
               </div>
@@ -5454,7 +5454,7 @@ export default function App() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <Moon className="w-4 h-4 text-blue-500" />
-                      <span>ساعات النوم:</span>
+                      <span>{t('sleepHoursLabel')}</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-[#5A5A40]">
                       {activeDiaryForSelectedDate?.sleepHours || 8} ساعات
@@ -5476,7 +5476,7 @@ export default function App() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <Activity className="w-4 h-4 text-[#8B9D83]" />
-                      <span>التمارين الرياضية:</span>
+                      <span>{t('sportsDurationLabel')}</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-[#8B9D83]">
                       {activeDiaryForSelectedDate?.sportsDuration || 0} دقيقة
@@ -5497,7 +5497,7 @@ export default function App() {
                 <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 flex items-center justify-between">
                   <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                     <Pill className="w-4 h-4 text-[#D4A373]" />
-                    <span>جرعة العلاج/الفيتامينات:</span>
+                    <span>{t('medicationDoseLabel')}</span>
                   </span>
                   <button
                     onClick={() => {
@@ -5522,7 +5522,7 @@ export default function App() {
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                     <span className="text-base">🎯</span>
-                    <span>تتبع العادات السلوكية والروتين</span>
+                    <span>{t('habitsTrackerTitle')}</span>
                   </h3>
                   <p className="text-[10px] text-gray-500 font-medium">
                     اختر يوماً من التقويم ثم حدد العادات المنجزة لتسجيل التزامك ودعم تحليلك السلوكي اليومي.
@@ -5532,7 +5532,7 @@ export default function App() {
                   onClick={() => setShowAddHabitModal(true)}
                   className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
                 >
-                  <span>+ إضافة عادة</span>
+                  <span>{t('addHabitBtnLabel')}</span>
                 </button>
               </div>
 
@@ -5650,7 +5650,7 @@ export default function App() {
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                   <span className="text-base">📊</span>
-                  <span>التقييم السلوكي وتقارير العادات الذكية (AI)</span>
+                  <span>{t('aiBehavioralAssessmentTitle')}</span>
                 </h3>
                 <p className="text-[10px] text-gray-500 font-medium">
                   حدد الفترة الزمنية المطلوبة ليقوم الذكاء الاصطناعي برصد اتجاهاتك السلوكية وتقديم توصيات علمية لتعزيز صحتك النفسية.
@@ -5720,7 +5720,7 @@ export default function App() {
                 ) : (
                   <>
                     <span>🧠</span>
-                    <span>توليد تقرير التقييم السلوكي بالذكاء الاصطناعي</span>
+                    <span>{t('generateBehavioralReportBtn')}</span>
                   </>
                 )}
               </button>
@@ -10139,7 +10139,7 @@ export default function App() {
                   </div>
                   <div>
                     <h2 className="text-sm sm:text-lg font-extrabold flex items-center">
-                      <span>التقويم والمكتبة الشاملة • اقرأً 📖🗓️</span>
+                      <span>{t('calendarModalTitle')}</span>
                     </h2>
                     <p className="text-[9px] sm:text-[10px] text-[#E2DCC8]">تصفح اليوميات والكتب المقروءة والتقارير النفسية المتكاملة</p>
                   </div>
@@ -10171,7 +10171,7 @@ export default function App() {
                       : 'text-gray-500 hover:text-[#5A5A40]'
                   }`}
                 >
-                  <span>يومياتي وأنشطتي (اقرأ) ☀️</span>
+                  <span>{t('myActivitiesTab')}</span>
                 </button>
                 <button
                   type="button"
@@ -10182,7 +10182,7 @@ export default function App() {
                       : 'text-gray-500 hover:text-[#5A5A40]'
                   }`}
                 >
-                  <span>مكتبتي الشاملة 📖</span>
+                  <span>{t('myLibraryTab')}</span>
                 </button>
                 <button
                   type="button"
