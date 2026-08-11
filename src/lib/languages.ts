@@ -7716,7 +7716,8 @@ export const MULTI_TRANSLATIONS: Record<string, any> = new Proxy(BASELINE_DICTIO
 
 
 // Global Fail-Safe Translation Proxy (Guarantees zero 't is not defined' runtime crashes across all scopes)
-const DEFAULT_GLOBAL_TRANSLATION_PROXY = createSafeTranslationProxy('ar');
+export const DEFAULT_GLOBAL_TRANSLATION_PROXY = createSafeTranslationProxy('ar');
+export const t = DEFAULT_GLOBAL_TRANSLATION_PROXY;
 if (typeof window !== 'undefined') {
   (window as any).t = DEFAULT_GLOBAL_TRANSLATION_PROXY;
 }

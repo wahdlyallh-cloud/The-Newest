@@ -1,3 +1,4 @@
+import { t } from '../lib/languages';
 // Helper to safely format dates without throwing
 function safeFormatDate(d: any): string {
   if (!d) return 'undated';
