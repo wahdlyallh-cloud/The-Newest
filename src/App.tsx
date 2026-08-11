@@ -5943,7 +5943,7 @@ export default function App() {
                 )}
 
                 {/* Content text area with Rich Editor Toolbar */}
-                <div>
+                <div className="overflow-hidden">
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="block text-xs font-bold text-[#5A5A40]">{t.writeFeelingsLabel}</label>
                     {gratitudeCards.length > 0 && (
@@ -7545,7 +7545,7 @@ export default function App() {
                   </div>
 
                   {/* Input Chat Messages */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pb-nav-safe">
                     <input
                       type="text"
                       value={diaryChatMessage}
@@ -7600,7 +7600,7 @@ export default function App() {
                 </div>
 
                 {/* Editor Bottom Actions */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 pb-4 border-t border-[#E2DCC8]/55">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 pb-safe border-t border-[#E2DCC8]/55">
                   <button
                     type="button"
                     onClick={() => handleDeleteDiary(editingDiary.id)}

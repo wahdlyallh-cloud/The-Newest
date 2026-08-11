@@ -93,7 +93,13 @@
 
 /* Safe bottom padding for mobile action bars — respects iOS home-indicator notch */
 .pb-safe {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
+}
+
+/* Extra bottom padding for elements that sit directly above the fixed bottom nav (~56px)
+   Combines nav height + iOS safe-area so content is never hidden behind either */
+.pb-nav-safe {
+  padding-bottom: max(4.5rem, calc(3.5rem + env(safe-area-inset-bottom, 0px)));
 }
 
 /* Visually suppress the sticky header when any modal backdrop is active,
