@@ -1,6 +1,6 @@
 {
-  "name": "Antigravity App",
-  "short_name": "Antigravity",
+  "name": "اسم تطبيقك المفضل",
+  "short_name": "اسم تطبيقك المفضل",
   "description": "My Personal Assistant and Daily Productivity Tracker",
   "start_url": "/",
   "display": "standalone",
