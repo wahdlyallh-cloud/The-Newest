@@ -7714,12 +7714,35 @@ export const MULTI_TRANSLATIONS: Record<string, any> = new Proxy(BASELINE_DICTIO
   }
 });
 
+
+// Global Fail-Safe Translation Proxy (Guarantees zero 't is not defined' runtime crashes across all scopes)
+const DEFAULT_GLOBAL_TRANSLATION_PROXY = createSafeTranslationProxy('ar');
+if (typeof window !== 'undefined') {
+  (window as any).t = DEFAULT_GLOBAL_TRANSLATION_PROXY;
+}
+if (typeof globalThis !== 'undefined') {
+  (globalThis as any).t = DEFAULT_GLOBAL_TRANSLATION_PROXY;
+}
+
+export function updateGlobalTranslationProxy(lang: string = 'ar') {
+  const proxy = createSafeTranslationProxy(lang);
+  if (typeof window !== 'undefined') {
+    (window as any).t = proxy;
+  }
+  if (typeof globalThis !== 'undefined') {
+    (globalThis as any).t = proxy;
+  }
+  return proxy;
+}
+
 export function getTranslation(lang?: string | AppLanguage | null): any {
   try {
-    return createSafeTranslationProxy(lang || 'ar');
+    const proxy = createSafeTranslationProxy(lang || 'ar');
+    updateGlobalTranslationProxy(lang || 'ar');
+    return proxy;
   } catch (e) {
     console.error('getTranslation error caught safely:', e);
-    return createSafeTranslationProxy('ar');
+    return DEFAULT_GLOBAL_TRANSLATION_PROXY;
   }
 }
 
@@ -7743,6 +7766,7 @@ export function LanguageProvider({ children, initialLanguage = 'ar' }: { childre
   const isRTL = currentLanguage === 'ar';
 
   const t = createSafeTranslationProxy(currentLanguage);
+  updateGlobalTranslationProxy(currentLanguage);
 
   return React.createElement(LanguageContext.Provider, { value: { currentLanguage, setLanguage, t, isRTL } }, children);
 }
