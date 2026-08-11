@@ -376,7 +376,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
   // Calculate metrics for selected date / period
   const totalCustomTasks = tasks.length;
-  const completedCustomTasks = tasks.filter(t => t.completed).length;
+  const completedCustomTasks = tasks.filter(taskItem => taskItem.completed).length;
 
   const totalHabits = habits.length;
   const completedHabits = habits.filter(h => {
@@ -423,7 +423,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
   // Delete custom task
   const handleDeleteTask = (taskId: string) => {
-    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    const updatedTasks = tasks.filter(taskItem => taskItem.id !== taskId);
     handleUpdateTasks(updatedTasks);
   };
 

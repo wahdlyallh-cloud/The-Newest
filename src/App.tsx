@@ -3990,7 +3990,7 @@ export default function App() {
       const matchesSearch = !q || 
                             titleStr.toLowerCase().includes(q) || 
                             contentStr.toLowerCase().includes(q) ||
-                            tagsArr.some(t => typeof t === 'string' && t.toLowerCase().includes(q));
+                            tagsArr.some(tagItem => typeof tagItem === 'string' && tagItem.toLowerCase().includes(q));
                             
       const matchesTag = selectedTagFilter ? tagsArr.includes(selectedTagFilter) : true;
       const matchesFavorites = showFavoritesOnly ? ((d.importance || 0) >= 4) : true;
@@ -4082,7 +4082,7 @@ export default function App() {
   // Dynamic tasks/habits/medications count for the top bar red badge safely
   const incompleteTasksCount = useMemo(() => {
     const customTasksIncomplete = Array.isArray(activeDiaryForSelectedDate?.tasks)
-      ? activeDiaryForSelectedDate!.tasks.filter(t => t && !t.completed).length
+      ? activeDiaryForSelectedDate!.tasks.filter(taskItem => taskItem && !taskItem.completed).length
       : 0;
     const medicationsIncomplete = Array.isArray(activeDiaryForSelectedDate?.medications)
       ? activeDiaryForSelectedDate!.medications.filter(m => m && !m.taken).length
@@ -6269,7 +6269,7 @@ export default function App() {
                                 if (!prev) return null;
                                 return {
                                   ...prev,
-                                  tasks: prev.tasks.map(tag => t.id === task.id ? { ...t, completed: checked } : t)
+                                  tasks: prev.tasks.map(taskItem => taskItem.id === task.id ? { ...taskItem, completed: checked } : taskItem)
                                 };
                               });
                             }}
@@ -6284,7 +6284,7 @@ export default function App() {
                                 if (!prev) return null;
                                 return {
                                   ...prev,
-                                  tasks: prev.tasks.map(tag => t.id === task.id ? { ...t, text: val } : t)
+                                  tasks: prev.tasks.map(taskItem => taskItem.id === task.id ? { ...taskItem, text: val } : taskItem)
                                 };
                               });
                             }}
@@ -6298,7 +6298,7 @@ export default function App() {
                                 if (!prev) return null;
                                 return {
                                   ...prev,
-                                  tasks: prev.tasks.filter(t => t.id !== task.id)
+                                  tasks: prev.tasks.filter(taskItem => taskItem.id !== task.id)
                                 };
                               });
                             }}
@@ -8722,7 +8722,7 @@ export default function App() {
                           const q = archivedSearchQuery.toLowerCase();
                           const titleMatch = (d.title || '').toLowerCase().includes(q);
                           const contentMatch = (d.content || '').toLowerCase().includes(q);
-                          const tagMatch = (d.tags || []).some(t => t.toLowerCase().includes(q));
+                          const tagMatch = (d.tags || []).some(tagItem => tagItem.toLowerCase().includes(q));
                           return titleMatch || contentMatch || tagMatch;
                         }
                         return true;
@@ -10502,7 +10502,7 @@ export default function App() {
                                         type="button"
                                         onClick={() => {
                                           if (isSelected) {
-                                            setBookFormTags(bookFormTags.filter(t => t !== presetTag));
+                                            setBookFormTags(bookFormTags.filter(tagItem => tagItem !== presetTag));
                                           } else {
                                             setBookFormTags([...bookFormTags, presetTag]);
                                           }
@@ -10563,7 +10563,7 @@ export default function App() {
                                         🏷️ {tag}
                                         <button
                                           type="button"
-                                          onClick={() => setBookFormTags(bookFormTags.filter(t => t !== tag))}
+                                          onClick={() => setBookFormTags(bookFormTags.filter(tagItem => tagItem !== tag))}
                                           className="text-teal-600 hover:text-red-500 font-extrabold mr-0.5 cursor-pointer"
                                         >
                                           ×
@@ -10817,7 +10817,7 @@ export default function App() {
                           const filteredBooks = books.filter(book => {
                             const matchesSearch = book.title.toLowerCase().includes(bookSearchQuery.toLowerCase()) ||
                                                   (book.notes || '').toLowerCase().includes(bookSearchQuery.toLowerCase()) ||
-                                                  (book.tags || []).some(t => t.toLowerCase().includes(bookSearchQuery.toLowerCase()));
+                                                  (book.tags || []).some(tagItem => tagItem.toLowerCase().includes(bookSearchQuery.toLowerCase()));
                             const matchesRating = bookRatingFilter === 0 || book.rating >= bookRatingFilter;
                             const matchesAttachment = bookAttachmentFilter === 'all' ||
                                                       (bookAttachmentFilter === 'pdf' && book.pdfPath) ||

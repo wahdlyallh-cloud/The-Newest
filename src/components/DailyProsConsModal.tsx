@@ -171,8 +171,8 @@ export default function DailyProsConsModal({
 
         // Tasks inside Diary
         if (d.tasks && d.tasks.length > 0) {
-          const doneTasks = d.tasks.filter(t => t.completed).map(tag => t.text);
-          const pendingTasks = d.tasks.filter(t => !t.completed).map(tag => t.text);
+          const doneTasks = d.tasks.filter(taskItem => taskItem.completed).map(taskItem => taskItem.text);
+          const pendingTasks = d.tasks.filter(taskItem => !taskItem.completed).map(taskItem => taskItem.text);
           if (doneTasks.length > 0) {
             contextLines.push(`- المهام المكتملة في المذكرة: ${doneTasks.join(' | ')} ✅`);
           }
