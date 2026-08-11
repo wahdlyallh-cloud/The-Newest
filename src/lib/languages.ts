@@ -2674,7 +2674,7 @@ const IT_DICT: Record<string, any> = {
   archiveSearchPlaceholder: 'Cerca negli archivi...', filterAll: 'Tutto', filterDiaries: 'Diari', filterThoughts: 'Pensieri',
   archiveEmptyTitle: 'Archivio vuoto.', archiveEmptyDesc: 'Archivia note dalla scheda Diari.',
   goToDiariesToArchive: 'Vai ai Diari ✍️', untitledNote: 'Senza titolo', previewAndRead: 'Anteprima e Leggi',
-  restoreBtn: 'Ripristina', moveTo Trash: 'Sposta nel cestino', trashEmpty: 'Cestino vuoto 🗑️',
+  restoreBtn: 'Ripristina', moveToTrash: 'Sposta nel cestino', trashEmpty: 'Cestino vuoto 🗑️',
   emptyTrashBtn: 'Svuota cestino 🗑️', deletePermanently: 'Elimina definitivamente',
   lockScreenWidgetTitle: 'Widget schermata di blocco', lockScreenWidgetDesc: 'Mostra scorciatoie sulla schermata di blocco.',
   appVersionCredits: 'Hayat AI — Versione stabile 1.0.0', privacyCredits: 'Sviluppato con privacy totale e IA.',
