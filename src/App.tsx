@@ -1606,8 +1606,8 @@ export default function App() {
               tag: 'yawmiyati-lockscreen-widget',
               requireInteraction: true,
               renotify: true,
-              icon: '/favicon.ico',
-              badge: '/favicon.ico'
+              icon: '/icon-192.png',
+              badge: '/icon-192.png'
             });
             return;
           }
