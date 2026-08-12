@@ -134,7 +134,8 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
 
       let errData: any = {};
       try { errData = JSON.parse(responseText); } catch(e) {}
-      let errMessage = errData?.error?.message || `Google API error: ${res.statusText}`;
+      let errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
+      return `خطأ من خادم جوجل: ${errMessage}`;
       
       console.warn(`Model ${model} REST call failed: ${errMessage}`);
       lastErrorMsg = errMessage;

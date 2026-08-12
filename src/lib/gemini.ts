@@ -251,14 +251,14 @@ export async function generateGeminiContentDirect(
 
     const rawError = data?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الاستجابة'}`;
     if (rawError.includes('API key not valid') || rawError.includes('API_KEY_INVALID') || res.status === 400 || res.status === 403) {
-      return "مفتاح API غير صالح. يرجى التأكد من نسخ المفتاح بشكل صحيح من Google AI Studio وحفظه في الإعدادات.";
+      return "خطأ من خادم جوجل: مفتاح API غير صالح. يرجى التأكد من نسخ المفتاح بشكل صحيح من Google AI Studio وحفظه في الإعدادات.";
     }
 
     if (rawError.includes('Quota') || rawError.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
-      return "تم تجاوز حد الاستخدام المجاني المؤقت للمفتاح (Quota Exceeded). يرجى المحاولة بعد فترة قصيرة.";
+      return "خطأ من خادم جوجل: تم تجاوز حد الاستخدام المجاني المؤقت للمفتاح (Quota Exceeded). يرجى المحاولة بعد فترة قصيرة.";
     }
 
-    return `⚠️ تعذر الحصول على الرد (${rawError}). يرجى التحقق من مفتاح Gemini API في إعدادات التطبيق.`;
+    return `خطأ من خادم جوجل: ${rawError}`;
   } catch (err: any) {
     console.error("Gemini Direct Generation Error:", err);
     return `⚠️ خطأ في الاتصال بالشبكة (${err?.message || 'تعذر الوصول لخادم الذكاء الاصطناعي'}).`;
