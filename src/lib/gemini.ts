@@ -233,8 +233,17 @@ export async function generateGeminiContentDirect(
     }
 
     const candidate = data?.candidates?.[0];
-    if (candidate?.finishReason === 'SAFETY') {
-      return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+    if (candidate) {
+      const candidateText = candidate?.content?.parts?.[0]?.text;
+      if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
+        return candidateText;
+      }
+      if (candidate.finishReason === 'SAFETY') {
+        return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+      }
+      if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+        return "أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.";
+      }
     }
 
     const rawError = data?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الاستجابة'}`;

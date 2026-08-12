@@ -118,10 +118,17 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
       }
       const resJson = JSON.parse(responseText);
         const candidate = resJson.candidates?.[0];
-        const text = candidate?.content?.parts?.[0]?.text || '';
-        if (text) return text;
-        if (candidate?.finishReason === 'SAFETY') {
-          return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+        if (candidate) {
+          const candidateText = candidate?.content?.parts?.[0]?.text;
+          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
+            return candidateText;
+          }
+          if (candidate.finishReason === 'SAFETY') {
+            return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+          }
+          if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+            return "أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.";
+          }
         }
       }
 
