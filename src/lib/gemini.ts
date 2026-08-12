@@ -8,13 +8,19 @@ export function cleanModelIdentifier(modelName?: string): string {
   return cleanModel;
 }
 
+function sanitizeApiKeyString(k?: any): string {
+  if (!k || typeof k !== 'string') return '';
+  return k.trim().replace(/^['"]+|['"]+$/g, '');
+}
+
 export function getGeminiApiKey(customKey?: string): string {
-  if (customKey && customKey.trim() !== '') return customKey.trim();
+  const cleanCustom = sanitizeApiKeyString(customKey);
+  if (cleanCustom) return cleanCustom;
 
   // Try global window variable
   if (typeof window !== 'undefined' && (window as any).__GEMINI_KEY__) {
-    const key = (window as any).__GEMINI_KEY__;
-    if (typeof key === 'string' && key.trim() !== '') return key.trim();
+    const key = sanitizeApiKeyString((window as any).__GEMINI_KEY__);
+    if (key) return key;
   }
 
   // Try localStorage settings
@@ -23,9 +29,8 @@ export function getGeminiApiKey(customKey?: string): string {
       const saved = localStorage.getItem('yawmiyati_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed?.userApiKey && typeof parsed.userApiKey === 'string' && parsed.userApiKey.trim() !== '') {
-          return parsed.userApiKey.trim();
-        }
+        const key = sanitizeApiKeyString(parsed?.userApiKey);
+        if (key) return key;
       }
     } catch (e) {
       console.warn("Failed to read userApiKey from localStorage settings:", e);
@@ -34,10 +39,8 @@ export function getGeminiApiKey(customKey?: string): string {
 
   // Try VITE environment variable
   try {
-    const envKey = (import.meta as any)?.env?.VITE_GEMINI_API_KEY;
-    if (envKey && typeof envKey === 'string' && envKey.trim() !== '') {
-      return envKey.trim();
-    }
+    const envKey = sanitizeApiKeyString((import.meta as any)?.env?.VITE_GEMINI_API_KEY);
+    if (envKey) return envKey;
   } catch (e) {}
 
   return '';
