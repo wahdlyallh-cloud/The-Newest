@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, Globe } from 'lucide-react';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import { validateGeminiApiKey } from '../lib/gemini';
 
 interface GeminiKeyModalProps {
   isOpen: boolean;
@@ -25,8 +26,8 @@ export default function GeminiKeyModal({ isOpen, onClose, apiKey, onSave, onClea
   if (!isOpen) return null;
 
   const handleSave = async () => {
-    const trimmedKey = tempKey.trim();
-    if (!trimmedKey) {
+    const cleanKey = tempKey.trim();
+    if (!cleanKey) {
       onSave('');
       onClose();
       return;
@@ -37,25 +38,21 @@ export default function GeminiKeyModal({ isOpen, onClose, apiKey, onSave, onClea
     setValidationSuccess(null);
 
     try {
-      const response = await fetch('/api/gemini/verify-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: trimmedKey })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setValidationSuccess(t.apiKeyVerified);
+      // First try local validation via lightweight model
+      const result = await validateGeminiApiKey(cleanKey);
+      if (result.success) {
+        setValidationSuccess(result.message || t.apiKeyVerified);
         setTimeout(() => {
-          onSave(trimmedKey);
+          onSave(cleanKey);
           onClose();
           setValidationSuccess(null);
         }, 1500);
       } else {
-        setValidationError(data.error || t.apiKeyVerifyFailed);
+        setValidationError(result.message);
       }
     } catch (e: any) {
-      setValidationError(t.apiKeyVerifyFailed);
+      console.error('Gemini API Validation Error:', e);
+      setValidationError(e?.message || t.apiKeyVerifyFailed);
     } finally {
       setIsValidating(false);
     }

@@ -102,3 +102,78 @@ export async function callGeminiApiSafely(
     };
   }
 }
+
+
+export async function validateGeminiApiKey(rawKey: string): Promise<{ success: boolean; message: string; errorDetail?: string }> {
+  const cleanKey = (rawKey || '').trim();
+  if (!cleanKey) {
+    return {
+      success: false,
+      message: 'مفتاح API فارغ. يرجى إدخال المفتاح بشكل صحيح.'
+    };
+  }
+
+  const modelsToTest = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+  let lastErrorDetail = '';
+
+  for (const model of modelsToTest) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: "ping" }] }],
+          generationConfig: { maxOutputTokens: 5 }
+        })
+      });
+
+      if (res.ok) {
+        return {
+          success: true,
+          message: 'تم التحقق من مفتاح الـ API بنجاح وهو يعمل بشكل ممتاز! 🎉'
+        };
+      }
+
+      const errJson = await res.json().catch(() => ({}));
+      const rawMsg = errJson?.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      lastErrorDetail = rawMsg;
+      console.error('Gemini API Validation Error:', rawMsg);
+
+      if (rawMsg.includes('API key not valid') || rawMsg.includes('API_KEY_INVALID') || rawMsg.includes('invalid key')) {
+        return {
+          success: false,
+          message: 'مفتاح الـ API غير صالح. يرجى التأكد من نسخه بشكل صحيح من Google AI Studio.',
+          errorDetail: rawMsg
+        };
+      }
+
+      if (rawMsg.includes('Quota exceeded') || rawMsg.includes('RESOURCE_EXHAUSTED') || rawMsg.includes('limit') || res.status === 429) {
+        return {
+          success: true,
+          message: 'المفتاح صحيح ومُفعل، ولكنه تجاوز حد الاستخدام المؤقت (Quota Exceeded).'
+        };
+      }
+    } catch (networkErr: any) {
+      console.error('Gemini API Validation Error:', networkErr);
+      lastErrorDetail = networkErr?.message || String(networkErr);
+    }
+  }
+
+  let userFriendlyMsg = 'تعذر التحقق من مفتاح الـ API.';
+  if (lastErrorDetail.includes('API key not valid') || lastErrorDetail.includes('API_KEY_INVALID')) {
+    userFriendlyMsg = 'مفتاح الـ API غير صالح. يرجى التأكد من نسخه من Google AI Studio.';
+  } else if (lastErrorDetail.includes('Quota') || lastErrorDetail.includes('429')) {
+    userFriendlyMsg = 'المفتاح صحيح ولكنه يتجاوز حد الاستخدام المؤقت.';
+  } else if (lastErrorDetail.includes('Failed to fetch') || lastErrorDetail.includes('NetworkError')) {
+    userFriendlyMsg = 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت.';
+  } else if (lastErrorDetail) {
+    userFriendlyMsg = `فشل التحقق: ${lastErrorDetail}`;
+  }
+
+  return {
+    success: false,
+    message: userFriendlyMsg,
+    errorDetail: lastErrorDetail
+  };
+}
