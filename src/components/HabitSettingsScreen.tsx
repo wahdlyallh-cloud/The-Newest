@@ -18,6 +18,7 @@ import {
   Lock,
   Info,
   BellRing,
+  CheckCircle2,
   Maximize,
   Minimize,
   EyeOff,
@@ -41,15 +42,15 @@ export const DEFAULT_HABIT_SETTINGS: HabitSettings = {
   singleTapToggle: true,
   extendDayPastMidnight: true,
   enableSkipDays: true,
-  showMissingDataMark: false,
+  showMissingDataMark: true,
   reverseDayOrder: true,
-  pureBlackDarkMode: false,
+  pureBlackDarkMode: true,
   disableAnimations: false,
   widgetOpacity: 0.9,
   firstDayOfWeek: 'saturday',
   persistentNotifications: true,
   lockScreenWidgetEnabled: true,
-  fullscreenModeEnabled: false,
+  fullscreenModeEnabled: true,
   autoHideHeaderOnScroll: true
 };
 
@@ -491,6 +492,81 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
               <Lock className="w-3 h-3 text-amber-600" />
               <span>متاح على Android وiOS عند إضافته للشاشة الرئيسية (PWA)</span>
             </span>
+          </div>
+
+          {/* 🌟 Explanatory Note & Android Lock Screen Inset Preview */}
+          <div className="space-y-4 pt-2 border-t border-[#E5E1D4]">
+            {/* Prominent Explanatory Text Box */}
+            <div className="p-4 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-2 shadow-2xs">
+              <div className="flex items-center gap-2 text-emerald-900 font-black text-xs sm:text-sm">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>تم حل مشكلة التثبيت!</span>
+              </div>
+              <p className="text-xs text-emerald-950 font-bold leading-relaxed">
+                للتوافق مع شاشة قفل النظام، تم تفعيل لوحة الإشعارات المستمرة كـ <strong className="text-emerald-900 bg-emerald-200/90 px-1.5 py-0.5 rounded font-black">"إشعار وويدجت عائم"</strong>. تأكد من منح التطبيق <strong className="text-emerald-900 underline font-black">"إذن التشغيل في الخلفية"</strong> من إعدادات النظام للوصول السريع.
+              </p>
+            </div>
+
+            {/* Inset Stylized Android Lock Screen Preview */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-[#FAF8F5] border border-[#E2DCC8] p-4 rounded-2xl shadow-inner">
+              <div className="md:col-span-7 space-y-2">
+                <span className="text-xs font-black text-[#5A5A40] flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4 text-[#4E685B]" />
+                  <span>معاينة التثبيت على شاشة القفل الرئيسية</span>
+                </span>
+                <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
+                  تظهر لوحة (حياة AI) بشكل دائري ومثبت كـ "إشعار وويدجت عائم" فور تشغيل الهاتف لضمان الوصول الفوري لجميع المذكرات وأدوات المزاج والتسجيل.
+                </p>
+                <div className="inline-block text-[10px] font-black text-amber-900 bg-amber-100 border border-amber-200 px-3 py-1 rounded-xl shadow-3xs">
+                  مثبت كـ "إشعار وويدجت عائم"
+                </div>
+              </div>
+
+              {/* Mock Android Phone Screen Graphic */}
+              <div className="md:col-span-5 flex justify-center">
+                <div className="w-56 bg-slate-900 rounded-[28px] p-2.5 border-4 border-slate-700 shadow-xl relative overflow-hidden text-right" dir="rtl">
+                  {/* Phone Top Notch */}
+                  <div className="flex items-center justify-between px-2 text-[9px] font-bold text-slate-400 mb-2">
+                    <span>12:45</span>
+                    <div className="w-12 h-2.5 bg-slate-800 rounded-full mx-auto" />
+                    <span>85% 🔋</span>
+                  </div>
+
+                  {/* Lock Screen Time */}
+                  <div className="text-center py-2 space-y-0.5">
+                    <span className="text-xl font-black text-slate-100 block font-mono">12:45</span>
+                    <span className="text-[9px] text-slate-400 font-bold block">الأربعاء، 12 أغسطس</span>
+                  </div>
+
+                  {/* Pinned Hayat AI Floating Widget Card */}
+                  <div className="bg-gradient-to-r from-[#4E685B] to-[#3F5449] text-white p-2.5 rounded-2xl space-y-1.5 shadow-md border border-[#8B9D83]/40">
+                    <div className="flex items-center justify-between text-[9px] border-b border-white/20 pb-1">
+                      <div className="flex items-center gap-1 font-bold">
+                        <span className="text-amber-300">🌿</span>
+                        <span>حياة AI • وويدجت عائم</span>
+                      </div>
+                      <span className="bg-amber-400 text-slate-900 text-[8px] font-black px-1.5 py-0.2 rounded-full">مثبت</span>
+                    </div>
+                    <p className="text-[8px] text-emerald-100 font-medium leading-tight">
+                      كيف تشعر الآن؟ اضغط للتدوين أو التسجيل الصوتي السريع.
+                    </p>
+                    <div className="grid grid-cols-4 gap-1 text-[7px] text-center font-bold pt-0.5">
+                      <div className="bg-white/10 rounded-lg p-1">✍️ تدوين</div>
+                      <div className="bg-white/10 rounded-lg p-1">🎙️ صوت</div>
+                      <div className="bg-white/10 rounded-lg p-1">🔮 مزاج</div>
+                      <div className="bg-white/10 rounded-lg p-1">🤖 AI</div>
+                    </div>
+                  </div>
+
+                  {/* Inset Label */}
+                  <div className="text-center mt-2.5">
+                    <span className="text-[8px] text-emerald-300 font-black bg-slate-800/90 px-2 py-0.5 rounded-full border border-slate-700">
+                      مثبت كـ "إشعار وويدجت عائم"
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
