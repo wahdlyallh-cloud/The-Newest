@@ -139,6 +139,14 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
         })
       });
 
+      const responseText = await res.text();
+      let errJson: any = null;
+      if (responseText && responseText.trim()) {
+        try {
+          errJson = JSON.parse(responseText);
+        } catch (e) {}
+      }
+
       if (res.ok) {
         return {
           success: true,
@@ -146,8 +154,7 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
         };
       }
 
-      const errJson = await res.json().catch(() => ({}));
-      const rawMsg = errJson?.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+      const rawMsg = errJson?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الطلب'}`;
       lastErrorDetail = rawMsg;
       console.error('Gemini API Validation Error:', rawMsg);
 

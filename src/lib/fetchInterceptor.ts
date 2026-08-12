@@ -109,12 +109,17 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
       });
 
       if (res.ok) {
-        const resJson = await res.json();
+        const responseText = await res.text();
+      if (!responseText || !responseText.trim()) {
+        throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
+      }
+      const resJson = JSON.parse(responseText);
         const text = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '';
         if (text) return text;
       }
 
-      const errData = await res.json().catch(() => ({}));
+      let errData: any = {};
+      try { errData = JSON.parse(responseText); } catch(e) {}
       let errMessage = errData?.error?.message || `Google API error: ${res.statusText}`;
       
       console.warn(`Model ${model} REST call failed: ${errMessage}`);
@@ -838,7 +843,11 @@ Return pure JSON only in the following format:
           });
 
           if (res.ok) {
-            const resJson = await res.json();
+            const responseText = await res.text();
+      if (!responseText || !responseText.trim()) {
+        throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
+      }
+      const resJson = JSON.parse(responseText);
             const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
             const parsed = JSON.parse(rawText.trim());
             return createSuccessResponse({

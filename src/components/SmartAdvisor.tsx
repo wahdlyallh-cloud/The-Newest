@@ -466,7 +466,16 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         })
       });
 
-      const data = await response.json().catch((jsonErr) => ({ success: false, error: jsonErr?.message }));
+      const responseText = await response.text();
+      if (!responseText || !responseText.trim()) {
+        throw new Error("استجابة فارغة من خادم Gemini API");
+      }
+      let data: any;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr: any) {
+        throw new Error(`صيغة استجابة غير صحيحة من الخادم: ${parseErr.message}`);
+      }
       if (data && data.success && data.answer) {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
