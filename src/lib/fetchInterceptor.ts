@@ -66,9 +66,9 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
   }
 
   const modelsToTry = [
-    'gemini-3.6-flash',
+    'gemini-1.5-flash',
     'gemini-flash-latest',
-    'gemini-3.1-flash-lite'
+    'gemini-1.5-flash'
   ];
   let lastErrorMsg = "";
 
@@ -787,7 +787,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (key && base64Data) {
-        const modelsToTry = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+        const modelsToTry = ['gemini-1.5-flash', 'gemini-flash-latest', 'gemini-1.5-flash'];
         let lastError = "";
 
         for (const modName of modelsToTry) {
