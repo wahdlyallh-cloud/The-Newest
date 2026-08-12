@@ -47,14 +47,6 @@ function getLanguageInstruction(langCode?: string): string {
 const originalFetch = window.fetch;
 
 // Helper to make a direct REST call to Google's official Gemini API
-function mapGeminiModelName(requestedModel?: string): string {
-  const clean = (requestedModel || '').trim();
-  if (!clean || clean === 'gemini-3.5-flash-lite' || clean.includes('3.5')) {
-    return 'gemini-1.5-flash';
-  }
-  return clean;
-}
-
 async function generateWithGeminiREST(prompt: string, systemInstruction?: string, isJson?: boolean, userApiKey?: string) {
   let keyToUse = userApiKey;
   if (!keyToUse || keyToUse.trim() === '') {
@@ -73,7 +65,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error("Gemini API Key is required in app settings.");
   }
 
-  const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-1.5-flash'].map(m => mapGeminiModelName(m));
+  const modelsToTry = ['gemini-1.5-flash'];
   let lastErrorMsg = "";
 
   for (const model of modelsToTry) {
@@ -476,7 +468,7 @@ ${cbtStr}
         return `- [${safeFormatDate(g.createdAt)}] ${g.text || ''}`;
       }).join("\n");
 
-      let systemInstruction = `أنت المستشار الذكي في تطبيق حياة AI. أجب على كافة أسئلة المستخدم بذكاء ووضوح، سواء كانت استفسارات عامة في الحياة والتطوير الذاتي أو تحليلاً لبياناته ويومياته داخل التطبيق.
+      let systemInstruction = `أنت المستشار الذكي في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح وحكمة، سواء كانت أسئلة خاصة بيومياته وتدويناته داخل التطبيق، أو أسئلة عامة في الحياة والتطوير الذاتي والصحة النفسية والمعرفة العامة.
 مهمتك الأساسية هي أن تكون مرشداً، طبيباً نفسياً صديقاً، خبيراً في تحليل البيانات والمشاعر، ومساعداً معنوياً وفكرياً متكاملاً للمستخدم.
 
 تمتلك الوصول الكامل والحيوي والتحليل العميق لجميع بيانات ومعلومات المستخدم المرفقة في التطبيق (المذكرات، الخواطر، تمارين العلاج المعرفي السلوكي CBT، الأدوية، النوم، الرياضة، المياه، الأعراض الجسدية، قائمة العادات وتاريخ الالتزام بها، الكتب المقروءة وملاحظاتها والخرائط الذهنية، بطاقات الامتنان والشكر، وقوائم المهام المنجزة وغير المنجزة).

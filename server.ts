@@ -433,17 +433,8 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 }
 
 // Helper function to generate content with fallback models
-function mapGeminiModelName(requestedModel?: string): string {
-  const clean = (requestedModel || '').trim();
-  if (!clean || clean === 'gemini-3.5-flash-lite' || clean.includes('3.5')) {
-    return 'gemini-1.5-flash';
-  }
-  return clean;
-}
-
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const rawModels = ['gemini-3.5-flash-lite', 'gemini-1.5-flash'];
-  const modelsToTry = rawModels.map(m => mapGeminiModelName(m));
+  const modelsToTry = ['gemini-1.5-flash'];
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
@@ -1051,7 +1042,7 @@ ${encourageMsg}`;
 
   if (ai) {
     try {
-      let systemInstruction = "أنت المستشار الذكي في تطبيق حياة AI. أجب على كافة أسئلة المستخدم بذكاء ووضوح، سواء كانت استفسارات عامة في الحياة والتطوير الذاتي أو تحليلاً لبياناته ويومياته داخل التطبيق." + getLanguageInstruction(req.body.appLanguage);
+      let systemInstruction = "أنت المستشار الذكي في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح وحكمة، سواء كانت أسئلة خاصة بيومياته وتدويناته داخل التطبيق، أو أسئلة عامة في الحياة والتطوير الذاتي والصحة النفسية والمعرفة العامة." + getLanguageInstruction(req.body.appLanguage);
       let userPrompt = "";
 
       if (reportType === "therapist") {
