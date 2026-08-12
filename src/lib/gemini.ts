@@ -119,16 +119,13 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
     };
   }
 
-  const cleanModel = cleanModelIdentifier('gemini-1.5-flash');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+  // Use official ListModels GET endpoint for fail-proof key validation
+  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanKey)}`;
 
   try {
     const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: "hi" }] }]
-      })
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
 
     const responseText = await res.text();
@@ -142,25 +139,25 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
     if (res.status === 200 || res.ok) {
       return {
         success: true,
-        message: 'تم التحقق من مفتاح الـ API بنجاح وهو يعمل بشكل ممتاز! 🎉'
+        message: 'تم التحقق من المفتاح بنجاح'
       };
     }
 
     const rawMsg = errJson?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الطلب'}`;
     console.error('Gemini API Validation Error:', rawMsg);
 
-    if (res.status === 400 || res.status === 403 || rawMsg.includes('API key not valid') || rawMsg.includes('API_KEY_INVALID')) {
-      return {
-        success: false,
-        message: 'مفتاح API غير صالح، يرجى التأكد من نسخه بشكل صحيح من Google AI Studio',
-        errorDetail: rawMsg
-      };
-    }
-
     if (res.status === 429 || rawMsg.includes('Quota exceeded') || rawMsg.includes('RESOURCE_EXHAUSTED')) {
       return {
         success: true,
         message: 'تم تجاوز حصة الاستخدام المجانية للمفتاح، يرجى المحاولة لاحقاً',
+        errorDetail: rawMsg
+      };
+    }
+
+    if (res.status === 400 || res.status === 403 || rawMsg.includes('API key not valid') || rawMsg.includes('API_KEY_INVALID')) {
+      return {
+        success: false,
+        message: 'مفتاح API غير صالح، يرجى التأكد من نسخه بشكل صحيح من Google AI Studio',
         errorDetail: rawMsg
       };
     }
