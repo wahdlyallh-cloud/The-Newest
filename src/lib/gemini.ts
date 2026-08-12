@@ -113,7 +113,7 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
     };
   }
 
-  const modelsToTest = ['gemini-1.5-flash'];
+  const modelsToTest = ['gemini-3.5-flash-lite'];
   let lastErrorDetail = '';
 
   for (const model of modelsToTest) {
