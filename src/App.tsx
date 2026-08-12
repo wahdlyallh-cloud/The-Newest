@@ -1395,7 +1395,7 @@ export default function App() {
       });
       const data = await response.json();
       if (data.success) {
-        setCloudSyncMessage(`مزامنة سحابية ناجحة: ${new Date().toLocaleTimeString('ar-EG')}`);
+        setCloudSyncMessage(data.message || `مزامنة سحابية ناجحة: ${new Date().toLocaleTimeString('ar-EG')}`);
       } else {
         setCloudSyncMessage('فشل التزامن السحابي التلقائي');
       }
