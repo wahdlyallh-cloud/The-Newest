@@ -442,37 +442,55 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
               type="button"
               onClick={async () => {
                 if ('Notification' in window) {
-                  if (Notification.permission !== 'granted') {
+                  let perm = Notification.permission;
+                  if (perm !== 'granted') {
                     try {
-                      await Notification.requestPermission();
+                      perm = await Notification.requestPermission();
                     } catch (e) {
-                      console.error(e);
+                      console.error('Notification permission request error:', e);
                     }
                   }
-                  if (Notification.permission === 'granted') {
+
+                  if (perm === 'granted') {
                     try {
+                      let sent = false;
                       if ('serviceWorker' in navigator) {
-                        const reg = await navigator.serviceWorker.register('/sw.js').catch(() => null);
-                        if (reg && reg.showNotification) {
-                          await reg.showNotification('حياة AI • نشط الآن 📱', {
-                            body: 'كيف تشعر الآن يا صديقي؟ 😊 | اضغط هنا للوصول السريع لتدوين المذكرات، التسجيل الصوتي، المستشار، وتحديد المزاج.',
-                            tag: 'yawmiyati-lockscreen-widget',
-                            requireInteraction: true,
-                            renotify: true,
-                            icon: '/favicon.ico',
-                            badge: '/favicon.ico'
-                          });
-                          showToast('تم إرسال وتثبيت إشعار لوحة الاختصارات على شاشة القفل بنجاح 📌🔔');
-                          return;
+                        try {
+                          await navigator.serviceWorker.register('/sw.js').catch(() => null);
+                          const readyReg = await Promise.race([
+                            navigator.serviceWorker.ready,
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('SW ready timeout')), 2000))
+                          ]).catch(() => null) as ServiceWorkerRegistration | null;
+
+                          if (readyReg && readyReg.showNotification) {
+                            await readyReg.showNotification('حياة AI 🧠', {
+                              body: 'لوحة الاختصارات والمهام الذكية مفعلة الآن | كيف تشعر الآن يا صديقي؟ 😊',
+                              icon: '/icon-192.png',
+                              badge: '/icon-192.png',
+                              tag: 'lockscreen-widget',
+                              requireInteraction: true,
+                              renotify: true
+                            });
+                            sent = true;
+                          }
+                        } catch (swErr) {
+                          console.warn('Service Worker notification fallback:', swErr);
                         }
                       }
-                      new Notification('حياة AI • نشط الآن 📱', {
-                        body: 'كيف تشعر الآن يا صديقي؟ 😊 | اضغط هنا للوصول السريع لتدوين المذكرات، التسجيل الصوتي، المستشار، وتحديد المزاج.',
-                        tag: 'yawmiyati-lockscreen-widget',
-                        requireInteraction: true
-                      });
+
+                      if (!sent) {
+                        new Notification('حياة AI 🧠', {
+                          body: 'لوحة الاختصارات والمهام الذكية مفعلة الآن | كيف تشعر الآن يا صديقي؟ 😊',
+                          icon: '/icon-192.png',
+                          badge: '/icon-192.png',
+                          tag: 'lockscreen-widget',
+                          requireInteraction: true
+                        });
+                      }
+
                       showToast('تم إرسال وتثبيت إشعار لوحة الاختصارات على شاشة القفل بنجاح 📌🔔');
-                    } catch (e) {
+                    } catch (err: any) {
+                      console.error('Failed to trigger notification:', err);
                       showToast('تم تفعيل إشعار شاشة القفل بنجاح 📌');
                     }
                   } else {
