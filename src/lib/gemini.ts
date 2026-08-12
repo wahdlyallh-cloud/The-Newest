@@ -3,6 +3,11 @@
 
 export const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash';
 
+export function cleanModelIdentifier(modelName?: string): string {
+  return (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+}
+
+
 export function getGeminiApiKey(customKey?: string): string {
   if (customKey && customKey.trim() !== '') return customKey.trim();
 
@@ -115,7 +120,7 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
     };
   }
 
-  const modelsToTest = ['gemini-1.5-flash'];
+  const modelsToTest = ['gemini-1.5-flash'].map(cleanModelIdentifier);
   let lastErrorDetail = '';
 
   for (const model of modelsToTest) {

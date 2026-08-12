@@ -1,3 +1,7 @@
+function cleanModelIdentifier(modelName?: string): string {
+  return (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+}
+
 import { t } from '../lib/languages';
 // Helper to safely format dates without throwing
 function safeFormatDate(d: any): string {
@@ -65,7 +69,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error("Gemini API Key is required in app settings.");
   }
 
-  const modelsToTry = ['gemini-1.5-flash'];
+  const modelsToTry = ['gemini-1.5-flash'].map(cleanModelIdentifier);
   let lastErrorMsg = "";
 
   for (const model of modelsToTry) {

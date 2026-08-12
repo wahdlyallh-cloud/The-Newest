@@ -1,3 +1,7 @@
+function cleanModelIdentifier(modelName?: string): string {
+  return (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+}
+
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
@@ -434,7 +438,7 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 
 // Helper function to generate content with fallback models
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = ['gemini-1.5-flash'];
+  const modelsToTry = ['gemini-1.5-flash'].map(cleanModelIdentifier);
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
