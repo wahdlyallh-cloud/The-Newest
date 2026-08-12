@@ -7550,7 +7550,7 @@ export default function App() {
                   </div>
 
                   {/* Input Chat Messages */}
-                  <div className="flex gap-2 pb-nav-safe">
+                  <div className="flex w-full max-w-full overflow-hidden flex-wrap sm:flex-nowrap gap-2 items-center pb-nav-safe">
                     <input
                       type="text"
                       value={diaryChatMessage}
@@ -7562,13 +7562,13 @@ export default function App() {
                         }
                       }}
                       placeholder={t.expressMindPlaceholder || (isEn ? "Express your feelings or ask here..." : "فضفض عما ببالك أو اسألني هنا...")}
-                      className="flex-grow bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-2xl px-4 py-2.5 text-xs text-[#3A3A3A] font-medium"
+                      className="flex-1 min-w-0 w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-2xl px-3 sm:px-4 py-2.5 text-xs text-[#3A3A3A] font-medium"
                     />
                     <button
                       type="button"
                       disabled={diaryChatLoading || !diaryChatMessage.trim()}
                       onClick={() => handleSendDiaryChatMessage()}
-                      className="px-4 py-2.5 bg-[#8B9D83] hover:bg-[#72856A] disabled:opacity-50 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center space-x-1.5 space-x-reverse"
+                      className="px-3.5 sm:px-4 py-2.5 bg-[#8B9D83] hover:bg-[#72856A] disabled:opacity-50 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center justify-center space-x-1.5 space-x-reverse shrink-0 whitespace-nowrap"
                     >
                       <span>{t.sendBtnLabel || (isEn ? "Send" : "إرسال")}</span>
                       <span>🚀</span>
