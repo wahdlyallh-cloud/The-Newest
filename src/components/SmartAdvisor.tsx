@@ -466,7 +466,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         })
       });
 
-      const data = await response.json().catch(() => ({ success: false }));
+      const data = await response.json().catch((jsonErr) => ({ success: false, error: jsonErr?.message }));
       if (data && data.success && data.answer) {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
@@ -475,14 +475,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           createdAt: new Date().toISOString()
         }]);
       } else {
-        throw new Error(data?.error || 'Failed response');
+        const detail = data?.error || data?.message || (response.status ? `HTTP ${response.status}: ${response.statusText}` : 'تعذر الحصول على الرد من الذكاء الاصطناعي');
+        throw new Error(detail);
       }
     } catch (e: any) {
       const errorMsg = e?.message || 'يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لتشغيل المستشار الذكي.';
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: `⚠️ ${errorMsg}`,
+        text: `⚠️ تعذر الحصول على الرد (${errorMsg}). يرجى التأكد من مفتاح Gemini API في إعدادات التطبيق.`,
         createdAt: new Date().toISOString()
       }]);
     } finally {

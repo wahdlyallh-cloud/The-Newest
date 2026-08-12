@@ -3833,7 +3833,7 @@ export default function App() {
       } else {
         const errorMsg: ChatLogEntry = {
           sender: 'ai',
-          text: 'عذراً يا صديقي، واجهت مشكلة في الاتصال بمحرك التحليل الفوري. يرجى التحقق من إعدادات مفتاح API الخاص بك والمحاولة مجدداً.',
+          text: `⚠️ تعذر الحصول على الرد (${data?.error || data?.message || 'خطأ في مفتاح API'}). يرجى التحقق من مفتاح Gemini API في الإعدادات.`,
           createdAt: new Date().toISOString()
         };
         setEditingDiary(prev => prev ? { ...prev, chatLogs: [...updatedLogs, errorMsg] } : null);
@@ -3842,7 +3842,7 @@ export default function App() {
       console.error("Diary chat error:", error);
       const errorMsg: ChatLogEntry = {
         sender: 'ai',
-        text: 'حدث خطأ غير متوقع أثناء إرسال الفضفضة. يرجى التحقق من اتصال الشبكة ومحاولة تعيين مفتاح API مناسب.',
+        text: `⚠️ حدث خطأ أثناء إرسال الفضفضة (${(error as any)?.message || 'فشل الاتصال'}). يرجى التحقق من مفتاح Gemini API في الإعدادات.`,
         createdAt: new Date().toISOString()
       };
       setEditingDiary(prev => prev ? { ...prev, chatLogs: [...updatedLogs, errorMsg] } : null);
