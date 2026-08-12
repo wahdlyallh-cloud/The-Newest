@@ -80,6 +80,12 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         {
           parts: [{ text: prompt }]
         }
+      ],
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
       ]
     };
 
@@ -110,8 +116,12 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
       }
       const resJson = JSON.parse(responseText);
-        const text = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const candidate = resJson.candidates?.[0];
+        const text = candidate?.content?.parts?.[0]?.text || '';
         if (text) return text;
+        if (candidate?.finishReason === 'SAFETY') {
+          return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+        }
       }
 
       let errData: any = {};

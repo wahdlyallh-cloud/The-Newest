@@ -444,7 +444,16 @@ async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
     try {
       const response = await aiInstance.models.generateContent({
         ...config,
-        model: modelName
+        model: modelName,
+        config: {
+          ...(config.config || {}),
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+          ]
+        }
       });
       return response;
     } catch (err: any) {
