@@ -4,9 +4,9 @@
 export const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash';
 
 export function cleanModelIdentifier(modelName?: string): string {
-  return (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+  const cleanModel = (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+  return cleanModel;
 }
-
 
 export function getGeminiApiKey(customKey?: string): string {
   if (customKey && customKey.trim() !== '') return customKey.trim();
@@ -110,7 +110,6 @@ export async function callGeminiApiSafely(
   }
 }
 
-
 export async function validateGeminiApiKey(rawKey: string): Promise<{ success: boolean; message: string; errorDetail?: string }> {
   const cleanKey = (rawKey || '').trim();
   if (!cleanKey) {
@@ -120,8 +119,8 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
     };
   }
 
-  const model = cleanModelIdentifier('gemini-1.5-flash');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+  const cleanModel = cleanModelIdentifier('gemini-1.5-flash');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(cleanKey)}`;
 
   try {
     const res = await fetch(url, {
