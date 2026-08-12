@@ -78,6 +78,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     const requestBody: any = {
       contents: [
         {
+          role: "user",
           parts: [{ text: prompt }]
         }
       ],

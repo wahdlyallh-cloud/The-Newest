@@ -177,3 +177,78 @@ export async function validateGeminiApiKey(rawKey: string): Promise<{ success: b
     };
   }
 }
+
+export async function generateGeminiContentDirect(
+  userPromptWithContext: string,
+  systemInstruction?: string,
+  customKey?: string
+): Promise<string> {
+  const cleanKey = getGeminiApiKey(customKey);
+  if (!cleanKey || cleanKey.trim() === '') {
+    return "يرجى الذهاب إلى إعدادات التطبيق وتأكيد حفظ مفتاح Gemini API الخاص بك لتشغيل المستشار.";
+  }
+
+  const cleanModel = cleanModelIdentifier('gemini-1.5-flash');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
+
+  const requestBody: any = {
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: userPromptWithContext }]
+      }
+    ],
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+    ]
+  };
+
+  if (systemInstruction) {
+    requestBody.systemInstruction = {
+      parts: [{ text: systemInstruction }]
+    };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    const responseText = await res.text();
+    let data: any = {};
+    if (responseText && responseText.trim()) {
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {}
+    }
+
+    const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (res.ok && output && typeof output === 'string' && output.trim() !== '') {
+      return output;
+    }
+
+    const candidate = data?.candidates?.[0];
+    if (candidate?.finishReason === 'SAFETY') {
+      return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+    }
+
+    const rawError = data?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الاستجابة'}`;
+    if (rawError.includes('API key not valid') || rawError.includes('API_KEY_INVALID') || res.status === 400 || res.status === 403) {
+      return "مفتاح API غير صالح. يرجى التأكد من نسخ المفتاح بشكل صحيح من Google AI Studio وحفظه في الإعدادات.";
+    }
+
+    if (rawError.includes('Quota') || rawError.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
+      return "تم تجاوز حد الاستخدام المجاني المؤقت للمفتاح (Quota Exceeded). يرجى المحاولة بعد فترة قصيرة.";
+    }
+
+    return `⚠️ تعذر الحصول على الرد (${rawError}). يرجى التحقق من مفتاح Gemini API في إعدادات التطبيق.`;
+  } catch (err: any) {
+    console.error("Gemini Direct Generation Error:", err);
+    return `⚠️ خطأ في الاتصال بالشبكة (${err?.message || 'تعذر الوصول لخادم الذكاء الاصطناعي'}).`;
+  }
+}
