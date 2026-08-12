@@ -433,12 +433,17 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 }
 
 // Helper function to generate content with fallback models
+function mapGeminiModelName(requestedModel?: string): string {
+  const clean = (requestedModel || '').trim();
+  if (!clean || clean === 'gemini-3.5-flash-lite' || clean.includes('3.5')) {
+    return 'gemini-1.5-flash';
+  }
+  return clean;
+}
+
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = [
-    'gemini-3.5-flash-lite',
-    'gemini-3.5-flash-lite',
-    'gemini-3.5-flash-lite'
-  ];
+  const rawModels = ['gemini-3.5-flash-lite', 'gemini-1.5-flash'];
+  const modelsToTry = rawModels.map(m => mapGeminiModelName(m));
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
@@ -1046,7 +1051,7 @@ ${encourageMsg}`;
 
   if (ai) {
     try {
-      let systemInstruction = "أنت 'المستشار الذكي' (Hayat Genius AI / حياة AI) - رفيق حكيم، صديق متفهم، ومساعد ذكاء اصطناعي عبقري وشامل لكل مجالات المعرفة والتفكير والحياة (داخل التطبيق وخارجه). لديك قدرة فائقة على تقديم الإجابات الأكثر دقة وعمقاً وإبداعاً وسلاسة باللغة العربية الفصحى الدافئة والراقية، مع الحفاظ على روح الحوار البشري الراقي والتعاطف العالي." + getLanguageInstruction(req.body.appLanguage);
+      let systemInstruction = "أنت المستشار الذكي في تطبيق حياة AI. أجب على كافة أسئلة المستخدم بذكاء ووضوح، سواء كانت استفسارات عامة في الحياة والتطوير الذاتي أو تحليلاً لبياناته ويومياته داخل التطبيق." + getLanguageInstruction(req.body.appLanguage);
       let userPrompt = "";
 
       if (reportType === "therapist") {
