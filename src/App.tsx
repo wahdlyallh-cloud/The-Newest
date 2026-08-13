@@ -2929,34 +2929,60 @@ export default function App() {
     }
   };
 
-  // --- Universal Document / File Uploader ---
-  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && editingDiary) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const fileSizeFormatted = file.size > 1048576 
-            ? `${(file.size / 1048576).toFixed(1)} MB` 
-            : `${(file.size / 1024).toFixed(1)} KB`;
-          const newFile: FileAttachment = {
-            id: `file-${Date.now()}`,
+  // --- Safe File Attachment Helper with 3MB LocalStorage Quota Guard ---
+  const processSelectedFileAttachment = (file: File): Promise<FileAttachment> => {
+    return new Promise((resolve) => {
+      const fileSizeFormatted = file.size > 1048576 
+        ? `${(file.size / 1048576).toFixed(1)} MB` 
+        : `${(file.size / 1024).toFixed(1)} KB`;
+      const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const mime = file.type || 'application/octet-stream';
+
+      // 3MB Quota Guard: If file > 3MB, generate Blob ObjectURL to prevent LocalStorage QuotaExceededError
+      if (file.size > 3 * 1024 * 1024) {
+        const blobUrl = URL.createObjectURL(file);
+        resolve({
+          id: fileId,
+          name: file.name,
+          size: fileSizeFormatted,
+          type: mime,
+          dataUrl: blobUrl
+        });
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const resultUrl = (typeof reader.result === 'string' && reader.result.length > 5) 
+            ? reader.result 
+            : URL.createObjectURL(file);
+          resolve({
+            id: fileId,
             name: file.name,
             size: fileSizeFormatted,
-            type: file.type || 'application/octet-stream',
-            dataUrl: reader.result
-          };
-          setEditingDiary(prev => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              files: [...(prev.files || []), newFile]
-            };
+            type: mime,
+            dataUrl: resultUrl
           });
-          setActiveInputSection('none');
-        }
-      };
-      reader.readAsDataURL(file);
+        };
+        reader.onerror = () => {
+          resolve({
+            id: fileId,
+            name: file.name,
+            size: fileSizeFormatted,
+            type: mime,
+            dataUrl: URL.createObjectURL(file)
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
+
+  // --- Universal Document / File Uploader ---
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && editingDiary) {
+      const newFile = await processSelectedFileAttachment(file);
+      setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
+      setActiveInputSection('none');
     }
     e.target.value = '';
   };
@@ -6191,26 +6217,11 @@ export default function App() {
                         <input
                           type="file"
                           accept="*/*"
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file && editingDiary) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                if (typeof reader.result === 'string') {
-                                  const fileSizeFormatted = file.size > 1048576 
-                                    ? `${(file.size / 1048576).toFixed(1)} MB` 
-                                    : `${(file.size / 1024).toFixed(1)} KB`;
-                                  const newFile: FileAttachment = {
-                                    id: `file-${Date.now()}`,
-                                    name: file.name,
-                                    size: fileSizeFormatted,
-                                    type: file.type || 'application/octet-stream',
-                                    dataUrl: reader.result
-                                  };
-                                  setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
-                                }
-                              };
-                              reader.readAsDataURL(file);
+                              const newFile = await processSelectedFileAttachment(file);
+                              setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
                             }
                             e.target.value = '';
                           }}
