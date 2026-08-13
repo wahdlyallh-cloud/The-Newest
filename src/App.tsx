@@ -3087,12 +3087,8 @@ export default function App() {
       try {
         const imageUrl = URL.createObjectURL(file);
         const diary = getOrCreateDiaryForUpload();
-        const updatedDiary = {
-          ...diary,
-          images: [...(diary.images || []), imageUrl]
-        };
-        setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-        setEditingDiary(updatedDiary);
+        setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, images: [...(d.images || []), imageUrl] } : d));
+        setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, images: [...(prev.images || []), imageUrl] } : { ...diary, images: [...(diary.images || []), imageUrl] });
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
@@ -3101,12 +3097,9 @@ export default function App() {
           reader.onloadend = () => {
             if (typeof reader.result === 'string') {
               const diary = getOrCreateDiaryForUpload();
-              const updatedDiary = {
-                ...diary,
-                images: [...(diary.images || []), reader.result]
-              };
-              setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-              setEditingDiary(updatedDiary);
+              const resultUrl = reader.result;
+              setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, images: [...(d.images || []), resultUrl] } : d));
+              setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, images: [...(prev.images || []), resultUrl] } : { ...diary, images: [...(diary.images || []), resultUrl] });
               setIsNewEntry(false);
               setActiveTab('diaries');
             }
@@ -3134,12 +3127,8 @@ export default function App() {
       try {
         const videoBlobUrl = URL.createObjectURL(file);
         const diary = getOrCreateDiaryForUpload();
-        const updatedDiary = {
-          ...diary,
-          videos: [...(diary.videos || []), videoBlobUrl]
-        };
-        setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-        setEditingDiary(updatedDiary);
+        setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, videos: [...(d.videos || []), videoBlobUrl] } : d));
+        setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, videos: [...(prev.videos || []), videoBlobUrl] } : { ...diary, videos: [...(diary.videos || []), videoBlobUrl] });
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
@@ -3148,12 +3137,9 @@ export default function App() {
           reader.onloadend = () => {
             if (typeof reader.result === 'string') {
               const diary = getOrCreateDiaryForUpload();
-              const updatedDiary = {
-                ...diary,
-                videos: [...(diary.videos || []), reader.result]
-              };
-              setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-              setEditingDiary(updatedDiary);
+              const resultUrl = reader.result;
+              setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, videos: [...(d.videos || []), resultUrl] } : d));
+              setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, videos: [...(prev.videos || []), resultUrl] } : { ...diary, videos: [...(diary.videos || []), resultUrl] });
               setIsNewEntry(false);
               setActiveTab('diaries');
             }
@@ -3213,12 +3199,8 @@ export default function App() {
       try {
         const newFile = await processSelectedFileAttachment(file);
         const diary = getOrCreateDiaryForUpload();
-        const updatedDiary = {
-          ...diary,
-          files: [...(diary.files || []), newFile]
-        };
-        setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-        setEditingDiary(updatedDiary);
+        setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, files: [...(d.files || []), newFile] } : d));
+        setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, files: [...(prev.files || []), newFile] } : { ...diary, files: [...(diary.files || []), newFile] });
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
