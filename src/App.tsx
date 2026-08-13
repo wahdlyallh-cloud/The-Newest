@@ -2913,65 +2913,83 @@ export default function App() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && editingDiary) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setEditingDiary(prev => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              images: [...prev.images, reader.result as string]
-            };
-          });
+      try {
+        const imageUrl = URL.createObjectURL(file);
+        setEditingDiary(prev => prev ? { ...prev, images: [...(prev.images || []), imageUrl] } : null);
+      } catch (err) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              setEditingDiary(prev => prev ? { ...prev, images: [...(prev.images || []), reader.result as string] } : null);
+            }
+          };
+          reader.onerror = () => {
+            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+          };
+          reader.readAsDataURL(file);
+        } catch (e2) {
+          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
         }
-      };
-      reader.readAsDataURL(file);
+      }
     }
+    e.target.value = '';
   };
 
-  // --- Safe File Attachment Helper with 3MB LocalStorage Quota Guard ---
+  // --- Safe File Attachment Helper with 3MB LocalStorage Quota Guard & Explicit Try-Catch ---
   const processSelectedFileAttachment = (file: File): Promise<FileAttachment> => {
-    return new Promise((resolve) => {
-      const fileSizeFormatted = file.size > 1048576 
-        ? `${(file.size / 1048576).toFixed(1)} MB` 
-        : `${(file.size / 1024).toFixed(1)} KB`;
-      const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-      const mime = file.type || 'application/octet-stream';
+    return new Promise((resolve, reject) => {
+      try {
+        const fileSizeFormatted = file.size > 1048576 
+          ? `${(file.size / 1048576).toFixed(1)} MB` 
+          : `${(file.size / 1024).toFixed(1)} KB`;
+        const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        const mime = file.type || 'application/octet-stream';
 
-      // 3MB Quota Guard: If file > 3MB, generate Blob ObjectURL to prevent LocalStorage QuotaExceededError
-      if (file.size > 3 * 1024 * 1024) {
-        const blobUrl = URL.createObjectURL(file);
-        resolve({
-          id: fileId,
-          name: file.name,
-          size: fileSizeFormatted,
-          type: mime,
-          dataUrl: blobUrl
-        });
-      } else {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const resultUrl = (typeof reader.result === 'string' && reader.result.length > 5) 
-            ? reader.result 
-            : URL.createObjectURL(file);
+        // 3MB Quota Guard: If file > 3MB, generate Blob ObjectURL to prevent LocalStorage QuotaExceededError
+        if (file.size > 3 * 1024 * 1024) {
+          const blobUrl = URL.createObjectURL(file);
           resolve({
             id: fileId,
             name: file.name,
             size: fileSizeFormatted,
             type: mime,
-            dataUrl: resultUrl
+            dataUrl: blobUrl
           });
-        };
-        reader.onerror = () => {
-          resolve({
-            id: fileId,
-            name: file.name,
-            size: fileSizeFormatted,
-            type: mime,
-            dataUrl: URL.createObjectURL(file)
-          });
-        };
-        reader.readAsDataURL(file);
+        } else {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const resultUrl = (typeof reader.result === 'string' && reader.result.length > 5) 
+              ? reader.result 
+              : URL.createObjectURL(file);
+            resolve({
+              id: fileId,
+              name: file.name,
+              size: fileSizeFormatted,
+              type: mime,
+              dataUrl: resultUrl
+            });
+          };
+          reader.onerror = () => {
+            try {
+              const fallbackBlob = URL.createObjectURL(file);
+              resolve({
+                id: fileId,
+                name: file.name,
+                size: fileSizeFormatted,
+                type: mime,
+                dataUrl: fallbackBlob
+              });
+            } catch (err) {
+              alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+              reject(err);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        reject(err);
       }
     });
   };
@@ -2980,9 +2998,13 @@ export default function App() {
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && editingDiary) {
-      const newFile = await processSelectedFileAttachment(file);
-      setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
-      setActiveInputSection('none');
+      try {
+        const newFile = await processSelectedFileAttachment(file);
+        setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
+        setActiveInputSection('none');
+      } catch (err) {
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      }
     }
     e.target.value = '';
   };
@@ -2993,38 +3015,33 @@ export default function App() {
     if (file && editingDiary) {
       if (file.size > 200 * 1024 * 1024) {
         alert('حجم هذا الفيديو كبير جداً (أكثر من 200 ميجابايت). يرجى اختيار فيديو أصغر أو إضافة رابط فيديو مباشر.');
+        e.target.value = '';
         return;
       }
       try {
         const videoBlobUrl = URL.createObjectURL(file);
-        setEditingDiary(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            videos: [...(prev.videos || []), videoBlobUrl]
-          };
-        });
+        setEditingDiary(prev => prev ? { ...prev, videos: [...(prev.videos || []), videoBlobUrl] } : null);
         setActiveInputSection('none');
       } catch (err) {
-        console.error('Video blob creation error:', err);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const videoDataUrl = reader.result;
-          if (typeof videoDataUrl === 'string') {
-            setEditingDiary(prev => {
-              if (!prev) return null;
-              return {
-                ...prev,
-                videos: [...(prev.videos || []), videoDataUrl]
-              };
-            });
-            setActiveInputSection('none');
-          }
-        };
-        reader.readAsDataURL(file);
+        try {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const videoDataUrl = reader.result;
+            if (typeof videoDataUrl === 'string') {
+              setEditingDiary(prev => prev ? { ...prev, videos: [...(prev.videos || []), videoDataUrl] } : null);
+              setActiveInputSection('none');
+            }
+          };
+          reader.onerror = () => {
+            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+          };
+          reader.readAsDataURL(file);
+        } catch (err2) {
+          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        }
       }
-      e.target.value = '';
     }
+    e.target.value = '';
   };
 
   // --- Helper to Find or Create Today's / Selected Date's Diary for Dashboard Uploads ---
@@ -3067,22 +3084,43 @@ export default function App() {
   const handleGlobalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const diary = getOrCreateDiaryForUpload();
-          const updatedDiary = {
-            ...diary,
-            images: [...(diary.images || []), reader.result]
+      try {
+        const imageUrl = URL.createObjectURL(file);
+        const diary = getOrCreateDiaryForUpload();
+        const updatedDiary = {
+          ...diary,
+          images: [...(diary.images || []), imageUrl]
+        };
+        setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
+        setEditingDiary(updatedDiary);
+        setIsNewEntry(false);
+        setActiveTab('diaries');
+      } catch (err) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              const diary = getOrCreateDiaryForUpload();
+              const updatedDiary = {
+                ...diary,
+                images: [...(diary.images || []), reader.result]
+              };
+              setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
+              setEditingDiary(updatedDiary);
+              setIsNewEntry(false);
+              setActiveTab('diaries');
+            }
           };
-          setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-          setEditingDiary(updatedDiary);
-          setIsNewEntry(false);
-          setActiveTab('diaries');
+          reader.onerror = () => {
+            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+          };
+          reader.readAsDataURL(file);
+        } catch (e2) {
+          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
         }
-      };
-      reader.readAsDataURL(file);
+      }
     }
+    e.target.value = '';
   };
 
   const handleGlobalVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -3090,6 +3128,7 @@ export default function App() {
     if (file) {
       if (file.size > 200 * 1024 * 1024) {
         alert('حجم هذا الفيديو كبير جداً (أكثر من 200 ميجابايت). يرجى اختيار فيديو أصغر أو إضافة رابط فيديو مباشر.');
+        e.target.value = '';
         return;
       }
       try {
@@ -3104,72 +3143,89 @@ export default function App() {
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
-        console.error('Global video blob creation error:', err);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            const diary = getOrCreateDiaryForUpload();
-            const updatedDiary = {
-              ...diary,
-              videos: [...(diary.videos || []), reader.result]
-            };
-            setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-            setEditingDiary(updatedDiary);
-            setIsNewEntry(false);
-            setActiveTab('diaries');
-          }
-        };
-        reader.readAsDataURL(file);
+        try {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              const diary = getOrCreateDiaryForUpload();
+              const updatedDiary = {
+                ...diary,
+                videos: [...(diary.videos || []), reader.result]
+              };
+              setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
+              setEditingDiary(updatedDiary);
+              setIsNewEntry(false);
+              setActiveTab('diaries');
+            }
+          };
+          reader.onerror = () => {
+            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+          };
+          reader.readAsDataURL(file);
+        } catch (err2) {
+          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        }
       }
-      e.target.value = '';
     }
+    e.target.value = '';
   };
 
   const handleGlobalAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          processAudioRecordingOrFile({
-            dataUrl: reader.result,
-            mimeType: file.type || 'audio/mp3',
-            fileName: file.name || 'تسجيل صوتي مرفق.mp3',
-            duration: Math.round(file.size / 16000) || 10
-          });
+      try {
+        const audioUrl = URL.createObjectURL(file);
+        processAudioRecordingOrFile({
+          dataUrl: audioUrl,
+          blobUrl: audioUrl,
+          mimeType: file.type || 'audio/mp3',
+          fileName: file.name || 'تسجيل صوتي مرفق.mp3',
+          duration: Math.round(file.size / 16000) || 10
+        });
+      } catch (err) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              processAudioRecordingOrFile({
+                dataUrl: reader.result,
+                mimeType: file.type || 'audio/mp3',
+                fileName: file.name || 'تسجيل صوتي مرفق.mp3',
+                duration: Math.round(file.size / 16000) || 10
+              });
+            }
+          };
+          reader.onerror = () => {
+            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+          };
+          reader.readAsDataURL(file);
+        } catch (e2) {
+          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
         }
-      };
-      reader.readAsDataURL(file);
-      e.target.value = '';
+      }
     }
+    e.target.value = '';
   };
 
-  const handleGlobalDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGlobalDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const diary = getOrCreateDiaryForUpload();
-          const newFile: FileAttachment = {
-            id: `file-${Date.now()}`,
-            name: file.name,
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            type: file.type || 'application/pdf',
-            dataUrl: reader.result
-          };
-          const updatedDiary = {
-            ...diary,
-            files: [...(diary.files || []), newFile]
-          };
-          setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
-          setEditingDiary(updatedDiary);
-          setIsNewEntry(false);
-          setActiveTab('diaries');
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const newFile = await processSelectedFileAttachment(file);
+        const diary = getOrCreateDiaryForUpload();
+        const updatedDiary = {
+          ...diary,
+          files: [...(diary.files || []), newFile]
+        };
+        setDiaries(prev => prev.map(d => d.id === updatedDiary.id ? updatedDiary : d));
+        setEditingDiary(updatedDiary);
+        setIsNewEntry(false);
+        setActiveTab('diaries');
+      } catch (err) {
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      }
     }
+    e.target.value = '';
   };
 
   // --- Web Link / URL Adder ---
