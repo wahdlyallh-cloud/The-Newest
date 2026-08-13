@@ -294,6 +294,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
                 ? t.pinPadShortcutSub 
                 : t.pinPadSub}
             </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full inline-block">💡 الرمز الافتراضي: 1234 (يمكنك تغييره من الإعدادات)</p>
           </div>
 
           {/* Dots & Feedbacks */}
