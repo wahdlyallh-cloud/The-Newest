@@ -188,12 +188,35 @@ export async function callGeminiApiSafely(
       };
     }
 
-    const data = await response.json().catch(() => ({
-      success: false,
-      error: 'Invalid server response format',
-    }));
+    const responseText = await response.text();
+    let data: any = null;
+    if (responseText && responseText.trim()) {
+      try {
+        data = JSON.parse(responseText);
+      } catch (_) {}
+    }
 
-    return data;
+    if (data && typeof data === 'object') {
+      return data;
+    }
+
+    // Fallback gracefully if server response is empty or non-JSON
+    const prompt = payload?.prompt || payload?.newMessage || payload?.userPromptWithContext || payload?.content || payload?.query || '';
+    const system = payload?.systemInstruction || payload?.systemPrompt;
+    if (prompt) {
+      const fallbackAnswer = await generateGeminiContentDirect(prompt, system, options?.customKey);
+      return {
+        success: true,
+        answer: fallbackAnswer,
+        source: 'client-fallback'
+      };
+    }
+
+    return {
+      success: false,
+      error: 'يرجى التحقق من مفتاح API في الإعدادات',
+      source: 'invalid-json'
+    };
   } catch (err: any) {
     const rawMsg = err?.message || String(err);
     console.error(`[gemini] callGeminiApiSafely → ${endpoint} failed:`, rawMsg);

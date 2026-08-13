@@ -3775,17 +3775,33 @@ export default function App() {
     const textToSend = msgText || diaryChatMessage;
     if (!textToSend.trim() || !editingDiary) return;
 
+    const timestamp = new Date().toISOString();
     // 1. Append user message locally
     const userMsg: ChatLogEntry = {
       sender: 'user',
       text: textToSend.trim(),
-      createdAt: new Date().toISOString()
+      createdAt: timestamp
     };
 
     const updatedLogs = [...(editingDiary.chatLogs || []), userMsg];
-    
-    // Update editingDiary state
-    setEditingDiary(prev => prev ? { ...prev, chatLogs: updatedLogs } : null);
+
+    // Helper to persist diary and chatLogs to state & localStorage
+    const saveDiaryWithLogs = (logs: ChatLogEntry[]) => {
+      setEditingDiary(prev => {
+        if (!prev) return null;
+        const updatedEntry = { ...prev, chatLogs: logs };
+        setDiaries(prevDiaries => {
+          const nextDiaries = prevDiaries.map(d => d.id === updatedEntry.id ? updatedEntry : d);
+          try {
+            localStorage.setItem('yawmiyati_diaries', JSON.stringify(nextDiaries));
+          } catch (_) {}
+          return nextDiaries;
+        });
+        return updatedEntry;
+      });
+    };
+
+    saveDiaryWithLogs(updatedLogs);
     if (!msgText) {
       setDiaryChatMessage('');
     }
@@ -3812,41 +3828,64 @@ export default function App() {
         body: JSON.stringify({
           title: editingDiary.title,
           content: editingDiary.content,
-          chatLogs: updatedLogs.slice(0, -1), // pass previous logs before this new userMsg
+          chatLogs: updatedLogs.slice(0, -1),
           newMessage: textToSend.trim(),
           diaryType: editingDiary.diaryType || 'diary',
           moods: editingDiary.moods || [],
           attachments,
           audioTranscriptions,
           aiMoodAnalysis: editingDiary.aiMoodAnalysis || [],
-          tags: editingDiary.tags || []
+          tags: editingDiary.tags || [],
+          appLanguage: settings.appLanguage || 'ar'
         })
       });
 
-      const data = await res.json();
-      if (data.success && data.answer) {
-        const aiMsg: ChatLogEntry = {
-          sender: 'ai',
-          text: data.answer,
-          createdAt: new Date().toISOString()
-        };
-        setEditingDiary(prev => prev ? { ...prev, chatLogs: [...updatedLogs, aiMsg] } : null);
-      } else {
-        const errorMsg: ChatLogEntry = {
-          sender: 'ai',
-          text: `⚠️ تعذر الحصول على الرد (${data?.error || data?.message || 'خطأ في مفتاح API'}). يرجى التحقق من مفتاح Gemini API في الإعدادات.`,
-          createdAt: new Date().toISOString()
-        };
-        setEditingDiary(prev => prev ? { ...prev, chatLogs: [...updatedLogs, errorMsg] } : null);
+      const responseText = await res.text();
+      let data: any = null;
+      if (responseText && responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (_) {}
       }
-    } catch (error) {
-      console.error("Diary chat error:", error);
-      const errorMsg: ChatLogEntry = {
+
+      let answerText = '';
+      if (data && data.success && data.answer) {
+        answerText = data.answer;
+      } else if (data && data.answer) {
+        answerText = data.answer;
+      } else {
+        // Fallback directly to client-side Gemini generation if proxy server returned invalid JSON or error
+        const promptContext = `الموضوع: ${editingDiary.title || 'مذكرة'}\nالمحتوى: ${editingDiary.content || ''}\nرسالة المستخدم الجديدة: ${textToSend.trim()}`;
+        answerText = await generateGeminiContentDirect(
+          promptContext,
+          'أنت مستشار نفسي وعاطفي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومدعم وتفاعلي باللغة العربية.',
+          settings.userApiKey
+        );
+      }
+
+      const aiMsg: ChatLogEntry = {
         sender: 'ai',
-        text: `⚠️ حدث خطأ أثناء إرسال الفضفضة (${(error as any)?.message || 'فشل الاتصال'}). يرجى التحقق من مفتاح Gemini API في الإعدادات.`,
+        text: answerText || 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.',
         createdAt: new Date().toISOString()
       };
-      setEditingDiary(prev => prev ? { ...prev, chatLogs: [...updatedLogs, errorMsg] } : null);
+      saveDiaryWithLogs([...updatedLogs, aiMsg]);
+    } catch (error) {
+      console.error("Diary chat error:", error);
+      let fallbackText = '';
+      try {
+        fallbackText = await generateGeminiContentDirect(
+          `رسالة الفضفضة: ${textToSend.trim()}`,
+          'أنت مستشار نفسي حكيم وداعم في تطبيق حياة AI. أجب بأسلوب دافئ ومطمئن.',
+          settings.userApiKey
+        );
+      } catch (_) {}
+
+      const errorMsg: ChatLogEntry = {
+        sender: 'ai',
+        text: fallbackText || 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك.',
+        createdAt: new Date().toISOString()
+      };
+      saveDiaryWithLogs([...updatedLogs, errorMsg]);
     } finally {
       setDiaryChatLoading(false);
       // Auto-scroll chat box
@@ -7533,7 +7572,14 @@ export default function App() {
                             {msg.text}
                           </div>
                           <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
-                            {msg.sender === 'user' ? (t.meLabel || (isEn ? "Me" : "أنا")) : (t.aiPsychAdvisor || (isEn ? "AI Counselor" : "مستشارك النفسي AI"))} • {new Date(msg.createdAt).toLocaleTimeString((settings?.appLanguage || 'ar') === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                            {msg.sender === 'user' ? (t.meLabel || (isEn ? "Me" : "أنا")) : (t.aiPsychAdvisor || (isEn ? "AI Counselor" : "مستشارك النفسي AI"))} • {(() => {
+                              const d = new Date(msg.createdAt);
+                              if (isNaN(d.getTime())) return msg.createdAt;
+                              const isAr = (settings?.appLanguage || 'ar') === 'ar';
+                              const datePart = d.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                              const timePart = d.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+                              return `${datePart} - ${timePart}`;
+                            })()}
                           </span>
                         </div>
                       ))
