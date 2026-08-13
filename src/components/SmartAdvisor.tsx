@@ -1,3 +1,4 @@
+import { generateGeminiContentDirect } from '../lib/gemini';
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X } from 'lucide-react';
 import { DiaryEntry, AppLanguage } from '../types';
