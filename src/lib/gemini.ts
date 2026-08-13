@@ -190,76 +190,91 @@ export async function generateGeminiContentDirect(
     return "يرجى الذهاب إلى إعدادات التطبيق وتأكيد حفظ مفتاح Gemini API الخاص بك لتشغيل المستشار.";
   }
 
-  const cleanModel = cleanModelIdentifier('gemini-1.5-flash');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
+  const modelsToTry = [
+    'gemini-1.5-flash-latest',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro-latest',
+    'gemini-1.5-flash-8b'
+  ].map(cleanModelIdentifier);
 
-  const requestBody: any = {
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: userPromptWithContext }]
-      }
-    ],
-    safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-    ]
-  };
+  let lastError = '';
 
-  if (systemInstruction) {
-    requestBody.systemInstruction = {
-      parts: [{ text: systemInstruction }]
+  for (const model of modelsToTry) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
+
+    const requestBody: any = {
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: userPromptWithContext }]
+        }
+      ],
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
     };
+
+    if (systemInstruction) {
+      requestBody.systemInstruction = {
+        parts: [{ text: systemInstruction }]
+      };
+    }
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      const responseText = await res.text();
+      let data: any = {};
+      if (responseText && responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {}
+      }
+
+      if (res.ok) {
+        const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (output && typeof output === 'string' && output.trim() !== '') {
+          return output;
+        }
+
+        const candidate = data?.candidates?.[0];
+        if (candidate) {
+          const candidateText = candidate?.content?.parts?.[0]?.text;
+          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
+            return candidateText;
+          }
+          if (candidate.finishReason === 'SAFETY') {
+            return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+          }
+          if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+            return "أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.";
+          }
+        }
+      }
+
+      const rawError = data?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الاستجابة'}`;
+      lastError = rawError;
+
+      if (rawError.includes('API key not valid') || rawError.includes('API_KEY_INVALID') || res.status === 400 || res.status === 403) {
+        return "خطأ من خادم جوجل: مفتاح API غير صالح. يرجى التأكد من نسخ المفتاح بشكل صحيح من Google AI Studio وحفظه في الإعدادات.";
+      }
+
+      if (rawError.includes('Quota') || rawError.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
+        return "خطأ من خادم جوجل: تم تجاوز حد الاستخدام المجاني المؤقت للمفتاح (Quota Exceeded). يرجى المحاولة بعد فترة قصيرة.";
+      }
+    } catch (err: any) {
+      console.error(`Gemini model ${model} direct call error:`, err);
+      lastError = err?.message || String(err);
+    }
   }
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    const responseText = await res.text();
-    let data: any = {};
-    if (responseText && responseText.trim()) {
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {}
-    }
-
-    const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (res.ok && output && typeof output === 'string' && output.trim() !== '') {
-      return output;
-    }
-
-    const candidate = data?.candidates?.[0];
-    if (candidate) {
-      const candidateText = candidate?.content?.parts?.[0]?.text;
-      if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
-        return candidateText;
-      }
-      if (candidate.finishReason === 'SAFETY') {
-        return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
-      }
-      if (candidate.finishReason && candidate.finishReason !== 'STOP') {
-        return "أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.";
-      }
-    }
-
-    const rawError = data?.error?.message || `HTTP ${res.status}: ${res.statusText || 'خطأ في الاستجابة'}`;
-    if (rawError.includes('API key not valid') || rawError.includes('API_KEY_INVALID') || res.status === 400 || res.status === 403) {
-      return "خطأ من خادم جوجل: مفتاح API غير صالح. يرجى التأكد من نسخ المفتاح بشكل صحيح من Google AI Studio وحفظه في الإعدادات.";
-    }
-
-    if (rawError.includes('Quota') || rawError.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
-      return "خطأ من خادم جوجل: تم تجاوز حد الاستخدام المجاني المؤقت للمفتاح (Quota Exceeded). يرجى المحاولة بعد فترة قصيرة.";
-    }
-
-    return `خطأ من خادم جوجل: ${rawError}`;
-  } catch (err: any) {
-    console.error("Gemini Direct Generation Error:", err);
-    return `⚠️ خطأ في الاتصال بالشبكة (${err?.message || 'تعذر الوصول لخادم الذكاء الاصطناعي'}).`;
-  }
+  return `خطأ من خادم جوجل: ${lastError || 'تعذر الحصول على الرد'}`;
 }

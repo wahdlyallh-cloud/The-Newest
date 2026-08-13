@@ -438,7 +438,7 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 
 // Helper function to generate content with fallback models
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = ['gemini-1.5-flash'].map(cleanModelIdentifier);
+  const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro-latest'].map(cleanModelIdentifier);
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
