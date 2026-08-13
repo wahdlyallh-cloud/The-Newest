@@ -195,12 +195,13 @@ export async function generateGeminiContentDirect(
   }
 
   const modelsToTry = [
+    'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-latest',
     'gemini-1.5-flash-8b',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro'
-  ].map(cleanModelIdentifier);
+    'gemini-1.5-flash'
+  ];
 
   let lastError = '';
 
@@ -273,6 +274,10 @@ export async function generateGeminiContentDirect(
 
       if (rawError.includes('Quota') || rawError.includes('RESOURCE_EXHAUSTED') || res.status === 429) {
         return "خطأ من خادم جوجل: تم تجاوز حد الاستخدام المجاني المؤقت للمفتاح (Quota Exceeded). يرجى المحاولة بعد فترة قصيرة.";
+      }
+
+      if (rawError.includes('not found') || rawError.includes('is not supported') || rawError.includes('v1beta') || res.status === 404) {
+        return "خطأ من خادم جوجل: مفتاح API المستخدَم غير مفعل على نماذج Gemini الحالية. يرجى إنشاء مفتاح جديد مجاناً من Google AI Studio (aistudio.google.com) وحفظه في الإعدادات.";
       }
     } catch (err: any) {
       console.error(`Gemini model ${model} direct call error:`, err);
