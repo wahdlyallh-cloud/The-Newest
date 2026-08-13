@@ -2929,18 +2929,21 @@ export default function App() {
     }
   };
 
-  // --- PDF File Uploader ---
+  // --- Universal Document / File Uploader ---
   const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && editingDiary) {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
+          const fileSizeFormatted = file.size > 1048576 
+            ? `${(file.size / 1048576).toFixed(1)} MB` 
+            : `${(file.size / 1024).toFixed(1)} KB`;
           const newFile: FileAttachment = {
             id: `file-${Date.now()}`,
             name: file.name,
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            type: 'application/pdf',
+            size: fileSizeFormatted,
+            type: file.type || 'application/octet-stream',
             dataUrl: reader.result
           };
           setEditingDiary(prev => {
@@ -2955,6 +2958,7 @@ export default function App() {
       };
       reader.readAsDataURL(file);
     }
+    e.target.value = '';
   };
 
   // --- Video File Uploader ---
@@ -6193,11 +6197,14 @@ export default function App() {
                               const reader = new FileReader();
                               reader.onloadend = () => {
                                 if (typeof reader.result === 'string') {
+                                  const fileSizeFormatted = file.size > 1048576 
+                                    ? `${(file.size / 1048576).toFixed(1)} MB` 
+                                    : `${(file.size / 1024).toFixed(1)} KB`;
                                   const newFile: FileAttachment = {
                                     id: `file-${Date.now()}`,
                                     name: file.name,
-                                    size: `${(file.size / 1024).toFixed(1)} KB`,
-                                    type: file.type || 'application/pdf',
+                                    size: fileSizeFormatted,
+                                    type: file.type || 'application/octet-stream',
                                     dataUrl: reader.result
                                   };
                                   setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
@@ -6205,6 +6212,7 @@ export default function App() {
                               };
                               reader.readAsDataURL(file);
                             }
+                            e.target.value = '';
                           }}
                           className="hidden"
                         />
