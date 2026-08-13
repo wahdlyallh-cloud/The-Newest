@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Check, AlertTriangle, FileText, Calendar, CheckSquare, Square, Search, HelpCircle } from 'lucide-react';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
+import { cleanDiaryText } from '../lib/gemini';
 
 interface WriteDiaryImporterProps {
   isOpen: boolean;
@@ -610,7 +611,7 @@ export default function WriteDiaryImporter({
                           </span>
                         </div>
                         <p className="text-[10px] text-gray-500 font-semibold line-clamp-2 leading-relaxed text-justify">
-                          {entry.content}
+                          {cleanDiaryText(entry.content)}
                         </p>
                       </div>
                     </div>

@@ -16,6 +16,35 @@ export function cleanModelIdentifier(modelName?: string): string {
   return modelName.trim().replace(/^models\//, '');
 }
 
+/**
+ * Sanitizes raw HTML tags, breaks, and entities from diary entry text before display.
+ */
+export function cleanDiaryText(rawText?: string): string {
+  if (!rawText) return '';
+  let text = String(rawText);
+  // 1. Replace <div>, <br>, <p>, </div>, </p> tags with newline characters
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  text = text.replace(/<\/(div|p)>/gi, '\n');
+  text = text.replace(/<(div|p)[^>]*>/gi, '\n');
+
+  // 2. Strip all other HTML tags safely
+  text = text.replace(/<[^>]*>/g, '');
+
+  // 3. Decode/replace HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'");
+
+  // 4. Trim unnecessary extra whitespace (multiple consecutive newlines reduced to max 2)
+  text = text.replace(/\n{3,}/g, '\n\n');
+  return text.trim();
+}
+
 // ─── Safety Settings (BLOCK_NONE for all categories) ──────────
 /** Attached to every generateContent request — prevents blocked responses. */
 const SAFETY_SETTINGS_BLOCK_NONE = [

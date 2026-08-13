@@ -23,6 +23,7 @@ import LanguagesModal from './components/LanguagesModal';
 import TypographySettingsSection from './components/TypographySettingsSection';
 import { getFontCss, getLineHeightCss } from './lib/fonts';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
+import { cleanDiaryText } from './lib/gemini';
 import SmartAdvisor from './components/SmartAdvisor';
 import GratitudeJournal from './components/GratitudeJournal';
 import LifeMap from './components/LifeMap';
@@ -11313,7 +11314,7 @@ export default function App() {
 
             {/* Content */}
             <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-4 rounded-2xl text-xs leading-relaxed text-[#3A3A3A] whitespace-pre-wrap font-medium">
-              {viewArchivedDiary.content || 'لا يوجد نص مكتوب (مرفقات فقط).'}
+              {cleanDiaryText(viewArchivedDiary.content) || 'لا يوجد نص مكتوب (مرفقات فقط).'}
             </div>
 
             {/* Moods & Tags */}
