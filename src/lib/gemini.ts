@@ -108,7 +108,12 @@ function isKeyObviouslyInvalid(key: string): boolean {
   return !key || key.trim().length < 6;
 }
 
-// ─── Language System Instruction ──────────────────────────────
+// ─── Hybrid System Instructions ───────────────────────────────
+
+export const HYBRID_SYSTEM_INSTRUCTION = `أنت 'حياة AI' — مساعد ذكي هجين يجمع ببراعة بين دورين:
+1) مساعد شخصي واستشاري نفسي واعٍ بسياق التطبيق ومذكرات المستخدم وعاداته وتحليلاته.
+2) ذكاء اصطناعي عام شامل وكفء يجيب عن أي سؤال خارجي في العلوم، البرمجة، الدراسة، التخطيط الشخصي، والمعرفة العامة بذكاء وعمق ومباشرة.
+لا ترفض إطلاقاً الإجابة عن أي سؤال بحجة أنك مساعد يوميات فقط. أجب بأسلوب دافئ، متفهم، فصيح، وداعم.`;
 
 export function getLanguageSystemInstruction(activeLanguage?: string): string {
   const lang = (activeLanguage || 'ar').toLowerCase();
@@ -127,11 +132,11 @@ export function getLanguageSystemInstruction(activeLanguage?: string): string {
   const target = langNames[lang] || { name: 'Arabic', native: 'العربية' };
 
   return (
+    `SYSTEM PERSONA: You are Hayat AI — a Hybrid Dual-Capability AI combining Context-Aware Personal Counseling (diaries, habits, CBT, gratitude, wellness) AND Comprehensive General Knowledge (science, studies, programming, general Q&A, advice, drafting). ` +
+    `Never refuse general external questions with "I only handle diaries". Answer all questions with high intelligence, empathy, and depth. ` +
     `CRITICAL REQUIREMENT: You MUST process input and generate your response EXCLUSIVELY in ` +
     `${target.name} (${target.native}) [Language code: ${lang}]. ` +
-    `Do NOT output Arabic or any other language unless explicitly requested by the user. ` +
-    `Translate all mood tags, psychological insights, CBT exercises, and clinical recommendations ` +
-    `completely into ${target.name}.`
+    `Do NOT output Arabic or any other language unless explicitly requested by the user.`
   );
 }
 
