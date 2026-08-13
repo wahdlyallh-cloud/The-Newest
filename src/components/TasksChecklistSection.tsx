@@ -484,29 +484,29 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     <div className={`space-y-6 ${isDarkMode ? 'text-gray-200' : 'text-[#3A3A3A]'}`} id="daily-tasks-main-section" dir="rtl">
       
       {/* 1. Sub-Tab Switcher inside "المهام اليومية والنشاط" */}
-      <div className="flex bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-2xs gap-1">
+      <div className="flex bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-2xs gap-1 overflow-x-auto">
         <button
           onClick={() => setSubView('daily_checklist')}
-          className={`flex-1 flex items-center justify-center space-x-1.5 space-x-reverse py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 min-w-0 flex items-center justify-center space-x-1 space-x-reverse py-2.5 px-1.5 sm:px-3 text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer ${
             subView === 'daily_checklist'
               ? 'bg-white text-[#5A5A40] shadow-xs font-extrabold'
               : 'text-gray-500 hover:text-[#5A5A40]'
           }`}
         >
-          <ListTodo className="w-4 h-4 text-[#8B9D83]" />
-          <span>اليومية والمهام السريعة</span>
+          <ListTodo className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8B9D83] shrink-0" />
+          <span className="truncate">اليومية والمهام</span>
         </button>
 
         <button
           onClick={() => setSubView('habits_matrix')}
-          className={`flex-1 flex items-center justify-center space-x-1.5 space-x-reverse py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+          className={`flex-1 min-w-0 flex items-center justify-center space-x-1 space-x-reverse py-2.5 px-1.5 sm:px-3 text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer ${
             subView === 'habits_matrix'
               ? 'bg-white text-[#5A5A40] shadow-xs font-extrabold'
               : 'text-gray-500 hover:text-[#5A5A40]'
           }`}
         >
-          <Grid className="w-4 h-4 text-[#2B529A]" />
-          <span>جدول العادات الشامل (عادات)</span>
+          <Grid className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#2B529A] shrink-0" />
+          <span className="truncate">جدول العادات</span>
         </button>
 
         <button

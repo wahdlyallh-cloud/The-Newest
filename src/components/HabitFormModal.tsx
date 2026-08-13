@@ -110,7 +110,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[55] font-sans" dir={langInfo.dir}>
-      <div className="bg-white border border-gray-200 rounded-[28px] w-full max-w-lg overflow-hidden shadow-2xl transition-all max-h-[92vh] flex flex-col">
+      <div className="bg-white border border-gray-200 rounded-[28px] w-full max-w-lg overflow-hidden shadow-2xl transition-all max-h-[88dvh] sm:max-h-[90vh] flex flex-col my-auto">
         
         {/* Header Bar */}
         <div className="bg-[#2B529A] text-white p-4 px-5 flex items-center justify-between shadow-xs">
@@ -148,7 +148,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 md:p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-5 md:p-6 overflow-y-auto flex-1 space-y-6 pb-12 sm:pb-6">
           
           {/* STEP 1: TYPE SELECTION MODAL */}
           {step === 'type_selection' && (

@@ -45,7 +45,7 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
           <button 
             type="button"
             onClick={onClose}
-            className="p-1.5 hover:bg-gray-200/60 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer"
+            className="p-1.5 hover:bg-gray-200/60 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4E685B]"
           >
             <X className="w-5 h-5" />
           </button>

@@ -101,12 +101,12 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
     <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
       {/* Header Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2DCC8]/50 pb-3 gap-2">
-        <div className="space-y-1">
-          <h3 className="font-extrabold text-[#3A3A3A] text-sm flex items-center space-x-2 space-x-reverse">
-            <span className="p-1.5 bg-[#8B9D83]/15 text-[#556E4F] rounded-xl text-base">📈</span>
-            <span>الربط الأسبوعي: إنجاز العادات واستقرار المزاج</span>
+        <div className="space-y-1 min-w-0">
+          <h3 className="font-extrabold text-[#3A3A3A] text-xs sm:text-sm flex items-center space-x-1.5 space-x-reverse min-w-0">
+            <span className="p-1.5 bg-[#8B9D83]/15 text-[#556E4F] rounded-xl text-sm sm:text-base shrink-0">📈</span>
+            <span className="truncate">الربط الأسبوعي: إنجاز العادات واستقرار المزاج</span>
           </h3>
-          <p className="text-[11px] text-gray-500 font-medium">
+          <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium leading-normal">
             عرض بياني تفاعلي يوضح تأثير الالتزام بالعادات السلوكية على رفع توازن واستقرار حالتك المزاجية على مدار الأسبوع.
           </p>
         </div>

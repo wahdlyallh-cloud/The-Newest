@@ -44,7 +44,7 @@ export default function RatingModal({ isOpen, onClose, appLanguage = 'ar' }: Rat
           <button 
             type="button"
             onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600 cursor-pointer"
+            className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8B9D83]"
           >
             <X className="w-4 h-4" />
           </button>

@@ -68,7 +68,7 @@ export default function GeminiKeyModal({ isOpen, onClose, apiKey, onSave, onClea
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[55] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl transition-all duration-300 transform scale-100">
+      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 max-h-[88dvh] sm:max-h-[90vh] flex flex-col my-auto">
         
         {/* Header */}
         <div className="p-6 pb-2 flex items-center justify-between">
@@ -79,14 +79,14 @@ export default function GeminiKeyModal({ isOpen, onClose, apiKey, onSave, onClea
           <button 
             type="button"
             onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer"
+            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 overflow-y-auto flex-1 space-y-4 pb-12 sm:pb-6">
           <p className="text-xs text-gray-600 font-extrabold leading-relaxed text-justify">
             {t.geminiKeyDesc}
           </p>
