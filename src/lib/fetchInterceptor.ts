@@ -39,7 +39,6 @@ function getLanguageInstruction(langCode?: string): string {
     de: "German",
     fr: "French",
     es: "Spanish",
-    it: "Italian",
     tr: "Turkish",
     ur: "Urdu",
     hi: "Hindi",
@@ -332,8 +331,6 @@ ${formattedHabits}
       return createSuccessResponse({ success: true, answer: fallbackAnswer, source: "local-simulation" });
     }
   }
-
-}
 
 function getDynamicSmartAdvisorFallback(query: string, reportType: string, diaries: any[], books: any[], gratitudeCards: any[], habits: any[]): string {
   if (reportType === "therapist") {
