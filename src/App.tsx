@@ -23,7 +23,7 @@ import LanguagesModal from './components/LanguagesModal';
 import TypographySettingsSection from './components/TypographySettingsSection';
 import { getFontCss, getLineHeightCss } from './lib/fonts';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
-import { cleanDiaryText } from './lib/gemini';
+import { cleanDiaryText, generateGeminiContentDirect } from './lib/gemini';
 import SmartAdvisor from './components/SmartAdvisor';
 import GratitudeJournal from './components/GratitudeJournal';
 import LifeMap from './components/LifeMap';
