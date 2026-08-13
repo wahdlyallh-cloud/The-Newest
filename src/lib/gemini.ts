@@ -442,3 +442,78 @@ export async function generateGeminiContentDirect(
   // All models in the chain were exhausted
   return lastError || 'Google API Error: Request failed';
 }
+
+/**
+ * Transcribes audio data using Gemini multimodal REST API (`inlineData`).
+ */
+export async function transcribeAudioWithGemini(
+  audioBase64: string,
+  mimeType = 'audio/webm',
+  customKey?: string
+): Promise<string> {
+  const cleanKey = getGeminiApiKey(customKey);
+  if (isKeyObviouslyInvalid(cleanKey)) {
+    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
+  }
+
+  let pureBase64 = audioBase64;
+  let resolvedMime = mimeType;
+  if (audioBase64.startsWith('data:')) {
+    const parts = audioBase64.split(';base64,');
+    if (parts.length === 2) {
+      const mimeMatch = parts[0].match(/data:(.*?)$/);
+      if (mimeMatch) resolvedMime = mimeMatch[1];
+      pureBase64 = parts[1];
+    }
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
+
+  const requestBody = {
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          {
+            inlineData: {
+              mimeType: resolvedMime || 'audio/webm',
+              data: pureBase64
+            }
+          },
+          {
+            text: 'قم بتفريغ هذا التسجيل الصوتي إلى نص عربي دقيق جداً. اكتب النص المفرغ فقط دون أي مقدمات أو شروحات.'
+          }
+        ]
+      }
+    ],
+    safetySettings: SAFETY_SETTINGS_BLOCK_NONE
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    const responseText = await res.text();
+    let data: any = {};
+    if (responseText && responseText.trim()) {
+      try { data = JSON.parse(responseText); } catch (_) {}
+    }
+
+    if (res.ok) {
+      const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (output && typeof output === 'string' && output.trim() !== '') {
+        return output.trim();
+      }
+    }
+
+    const errStr = data?.error?.message || data?.message || `HTTP ${res.status}`;
+    console.warn('[gemini-transcribe] API Error:', errStr);
+    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
+  } catch (err) {
+    console.error('[gemini-transcribe] Fetch exception:', err);
+    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
+  }
+}

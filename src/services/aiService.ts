@@ -11,10 +11,11 @@ import {
   validateGeminiApiKey,
   callGeminiApiSafely,
   generateGeminiContentDirect,
-  HYBRID_SYSTEM_INSTRUCTION
+  HYBRID_SYSTEM_INSTRUCTION,
+  transcribeAudioWithGemini
 } from '../lib/gemini';
 
-export { AI_MODEL, cleanModelIdentifier, getGeminiApiKey, hasValidGeminiKey, validateGeminiApiKey, HYBRID_SYSTEM_INSTRUCTION };
+export { AI_MODEL, cleanModelIdentifier, getGeminiApiKey, hasValidGeminiKey, validateGeminiApiKey, HYBRID_SYSTEM_INSTRUCTION, transcribeAudioWithGemini };
 
 export interface AIResponse<T = string> {
   success: boolean;

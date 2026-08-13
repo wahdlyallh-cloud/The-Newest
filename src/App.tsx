@@ -3374,7 +3374,7 @@ export default function App() {
   }) => {
     const newRecId = `rec-${Date.now()}`;
     const cleanLiveSpeech = (liveSpeechText && liveSpeechText.trim() && !liveSpeechText.includes('تم التسجيل بنجاح')) ? liveSpeechText.trim() : '';
-    const initialTranscription = cleanLiveSpeech || 'جاري تفريغ الصوت بالذكاء الاصطناعي... ⏳';
+    const initialTranscription = cleanLiveSpeech || '⏳ جاري التفريغ النصي بذكاء Gemini...';
 
     const validDataUrl = (dataUrl && dataUrl !== '#' && dataUrl.length > 5) 
       ? dataUrl 
@@ -3420,13 +3420,13 @@ export default function App() {
       } else if (data.transcription && !data.transcription.includes('وضع المعالجة الصوتية')) {
         finalTranscript = data.transcription;
       } else {
-        finalTranscript = cleanLiveSpeech || 'تم تفريغ واستلام الفضفضة الصوتية بنجاح.';
+        finalTranscript = cleanLiveSpeech || 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
       }
 
       updateAudioTranscriptionAtomic(newRecId, finalTranscript, data.speechEmotion);
     } catch (err) {
       console.warn("Audio transcription error:", err);
-      const fallbackText = cleanLiveSpeech || 'تم حفظ التسجيل الصوتي بنجاح. يمكنك الاستماع إليه من المشغل الصوتي أسفله.';
+      const fallbackText = cleanLiveSpeech || 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
       updateAudioTranscriptionAtomic(newRecId, fallbackText);
     } finally {
       setTranscribingAudioId(null);
@@ -3442,6 +3442,7 @@ export default function App() {
     }
 
     setTranscribingAudioId(rec.id);
+    updateAudioTranscriptionAtomic(rec.id, '⏳ جاري التفريغ النصي بذكاء Gemini...');
     try {
       const res = await fetch('/api/gemini/transcribe-audio', {
         method: 'POST',
@@ -3455,13 +3456,11 @@ export default function App() {
       if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية')) {
         updateAudioTranscriptionAtomic(rec.id, data.transcription, data.speechEmotion);
       } else {
-        const fallbackText = rec.transcription && !rec.transcription.includes('جاري تفريغ') ? rec.transcription : "تم حفظ واستلام التسجيل الصوتي بنجاح ويمكنك الاستماع إليه مباشرة.";
-        updateAudioTranscriptionAtomic(rec.id, fallbackText);
+        updateAudioTranscriptionAtomic(rec.id, 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.');
       }
     } catch (err: any) {
       console.warn('Transcribe error:', err);
-      const fallbackText = rec.transcription || "تم حفظ التسجيل الصوتي بنجاح في مذكرتك.";
-      updateAudioTranscriptionAtomic(rec.id, fallbackText);
+      updateAudioTranscriptionAtomic(rec.id, 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.');
     } finally {
       setTranscribingAudioId(null);
     }
@@ -6525,48 +6524,72 @@ export default function App() {
                   </div>
                 )}
 
-                {/* 📄 Attached PDFs Display inside editor */}
+                {/* 📁 Attached Files Display inside editor */}
                 {editingDiary.files && editingDiary.files.length > 0 && (
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <span>📄</span>
-                      <span>ملفات PDF المرفقة بالمذكرة:</span>
+                      <span>📁</span>
+                      <span>الملفات والمرفقات بالمذكرة:</span>
                     </span>
                     <div className="space-y-2">
-                      {editingDiary.files.map((file) => (
-                        <div key={file.id} className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl flex items-center justify-between text-xs">
-                          <div className="flex items-center space-x-2 space-x-reverse">
-                            <div className="p-2 bg-red-100 text-red-700 rounded-lg font-bold text-[11px] shrink-0">
-                              PDF
+                      {editingDiary.files.map((file) => {
+                        const name = (file.name || '').toLowerCase();
+                        const type = (file.type || '').toLowerCase();
+                        let badgeLabel = '📁 ملف';
+                        let badgeStyle = 'bg-gray-100 text-gray-700 border-gray-200';
+
+                        if (type.includes('video') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
+                          badgeLabel = '🎬 فيديو';
+                          badgeStyle = 'bg-purple-100 text-purple-700 border-purple-200';
+                        } else if (type.includes('audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name)) {
+                          badgeLabel = '🎙️ صوت';
+                          badgeStyle = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                        } else if (type.includes('pdf') || name.endsWith('.pdf')) {
+                          badgeLabel = '📄 PDF';
+                          badgeStyle = 'bg-red-100 text-red-700 border-red-200';
+                        } else if (type.includes('word') || /\.(doc|docx)$/i.test(name)) {
+                          badgeLabel = '📝 DOC';
+                          badgeStyle = 'bg-blue-100 text-blue-700 border-blue-200';
+                        } else if (/\.(zip|rar|7z|gz|tar)$/i.test(name)) {
+                          badgeLabel = '📦 أرشيف';
+                          badgeStyle = 'bg-amber-100 text-amber-700 border-amber-200';
+                        }
+
+                        return (
+                          <div key={file.id} className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-2 space-x-reverse min-w-0">
+                              <div className={`px-2 py-1 border rounded-lg font-bold text-[10px] shrink-0 ${badgeStyle}`}>
+                                {badgeLabel}
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-semibold block text-[#3A3A3A] truncate max-w-[180px] sm:max-w-xs">{file.name}</span>
+                                <span className="text-[10px] text-gray-400">الحجم: {file.size}</span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <span className="font-semibold block text-[#3A3A3A] truncate">{file.name}</span>
-                              <span className="text-[10px] text-gray-400">الحجم: {file.size}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2 space-x-reverse">
-                            {file.dataUrl && (
-                              <a
-                                href={file.dataUrl}
-                                download={file.name}
-                                className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold cursor-pointer"
+                            
+                            <div className="flex items-center space-x-2 space-x-reverse shrink-0">
+                              {file.dataUrl && (
+                                <a
+                                  href={file.dataUrl}
+                                  download={file.name}
+                                  className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold cursor-pointer"
+                                >
+                                  تحميل
+                                </a>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingDiary(prev => prev ? { ...prev, files: prev.files.filter(x => x.id !== file.id) } : null);
+                                }}
+                                className="text-red-600 hover:text-red-700 font-bold px-2 cursor-pointer text-xs"
                               >
-                                تحميل
-                              </a>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingDiary(prev => prev ? { ...prev, files: prev.files.filter(x => x.id !== file.id) } : null);
-                              }}
-                              className="text-red-600 hover:text-red-700 font-bold px-2 cursor-pointer text-xs"
-                            >
-                              حذف
-                            </button>
+                                حذف
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -6618,7 +6641,7 @@ export default function App() {
                       <span>أضف ملف صوتي</span>
                       <input
                         type="file"
-                        accept=".mp3,.m4a,.wav,.aac,.ogg,.opus,.flac,.webm,.amr,.3gp,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/x-m4a,audio/aac,audio/ogg,audio/webm,audio/amr"
+                        accept="*/*"
                         onChange={handleAudioFileUpload}
                         className="hidden"
                       />
@@ -6631,7 +6654,7 @@ export default function App() {
                       <input
                         id="image-upload-trigger"
                         type="file"
-                        accept="image/*"
+                        accept="*/*"
                         onChange={handleImageUpload}
                         className="hidden"
                       />
@@ -6770,7 +6793,7 @@ export default function App() {
                               <span>📁 اختر فيديو من جهازك</span>
                               <input
                                 type="file"
-                                accept="video/*"
+                                accept="*/*"
                                 onChange={handleVideoUpload}
                                 className="hidden"
                               />
@@ -6803,16 +6826,16 @@ export default function App() {
 
                     {activeInputSection === 'pdf' && (
                       <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">إضافة ملف PDF للمذكرة:</span>
+                        <span className="block text-xs font-bold text-[#5A5A40]">إضافة ملف PDF أو مستند للمذكرة:</span>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {/* Option 1: PDF File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">الخيار 1: رفع ملف PDF من جهازك</span>
+                            <span className="text-[11px] font-bold text-gray-500">الخيار 1: رفع ملف أو مستند من جهازك</span>
                             <label className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>📄 اختر ملف PDF</span>
+                              <span>📄 اختر ملف من جهازك</span>
                               <input
                                 type="file"
-                                accept=".pdf"
+                                accept="*/*"
                                 onChange={handlePdfUpload}
                                 className="hidden"
                               />
@@ -11262,28 +11285,28 @@ export default function App() {
       <input 
         type="file" 
         id="global-image-uploader" 
-        accept="image/*" 
+        accept="*/*" 
         className="hidden" 
         onChange={handleGlobalImageUpload} 
       />
       <input 
         type="file" 
         id="global-video-uploader" 
-        accept="video/*" 
+        accept="*/*" 
         className="hidden" 
         onChange={handleGlobalVideoUpload} 
       />
       <input 
         type="file" 
         id="global-audio-uploader" 
-        accept=".mp3,.m4a,.wav,.aac,.ogg,.opus,.flac,.webm,.amr,.3gp,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/x-m4a,audio/aac,audio/ogg,audio/webm,audio/amr" 
+        accept="*/*" 
         className="hidden" 
         onChange={handleGlobalAudioUpload} 
       />
       <input 
         type="file" 
         id="global-document-uploader" 
-        accept=".pdf,.doc,.docx,.txt" 
+        accept="*/*" 
         className="hidden" 
         onChange={handleGlobalDocumentUpload} 
       />
