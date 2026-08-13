@@ -3853,6 +3853,9 @@ export default function App() {
         answerText = data.answer;
       } else if (data && data.answer) {
         answerText = data.answer;
+      } else if (data && (data.error || data.message)) {
+        const rawErrStr = data.error || data.message;
+        answerText = `Google API Error: ${typeof rawErrStr === 'string' ? rawErrStr : JSON.stringify(rawErrStr)}`;
       } else {
         // Fallback directly to client-side Gemini generation if proxy server returned invalid JSON or error
         const promptContext = `الموضوع: ${editingDiary.title || 'مذكرة'}\nالمحتوى: ${editingDiary.content || ''}\nرسالة المستخدم الجديدة: ${textToSend.trim()}`;
@@ -3863,13 +3866,14 @@ export default function App() {
         );
       }
 
+      const defaultErrStr = !settings.userApiKey ? 'يرجى التحقق من مفتاح API في الإعدادات' : 'Google API Error: Failed to generate response';
       const aiMsg: ChatLogEntry = {
         sender: 'ai',
-        text: answerText && answerText.trim() ? answerText : 'يرجى التحقق من مفتاح API في الإعدادات',
+        text: answerText && answerText.trim() ? answerText : defaultErrStr,
         createdAt: new Date().toISOString()
       };
       saveDiaryWithLogs([...updatedLogs, aiMsg]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Diary chat error:", error);
       let fallbackText = '';
       try {
@@ -3880,9 +3884,11 @@ export default function App() {
         );
       } catch (_) {}
 
+      const netErrStr = error?.message || String(error);
+      const defaultErrStr = !settings.userApiKey ? 'يرجى التحقق من مفتاح API في الإعدادات' : `Network Failure: ${netErrStr}`;
       const errorMsg: ChatLogEntry = {
         sender: 'ai',
-        text: fallbackText && fallbackText.trim() ? fallbackText : 'يرجى التحقق من مفتاح API في الإعدادات',
+        text: fallbackText && fallbackText.trim() ? fallbackText : defaultErrStr,
         createdAt: new Date().toISOString()
       };
       saveDiaryWithLogs([...updatedLogs, errorMsg]);

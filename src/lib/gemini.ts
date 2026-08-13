@@ -389,45 +389,23 @@ export async function generateGeminiContentDirect(
       // ── Error path ────────────────────────────────────────────────
       const rawError =
         data?.error?.message ||
-        `HTTP ${res.status}: ${res.statusText || 'خطأ في الاستجابة'}`;
-      lastError = rawError;
+        data?.error?.status ||
+        data?.message ||
+        `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
+      
+      const exactApiError = `Google API Error [${res.status}]: ${rawError}`;
+      lastError = exactApiError;
 
-      // ── 429 Rate-limit ─────────────────────────────────────────────
-      if (res.status === 429 || rawError.includes('Quota') || rawError.includes('RESOURCE_EXHAUSTED')) {
-        return 'لقد تجاوزت حد الاستخدام اليومي المجاني';
-      }
-
-      // ── Invalid / forbidden key ────────────────────────────────────
-      if (
-        rawError.includes('API key not valid') ||
-        rawError.includes('API_KEY_INVALID') ||
-        res.status === 400 ||
-        res.status === 403
-      ) {
-        return 'يرجى التحقق من مفتاح API في الإعدادات';
-      }
-
-      // ── Model not found → try next in chain ───────────────────────
-      if (
-        rawError.includes('not found') ||
-        rawError.includes('is not supported') ||
-        rawError.includes('v1beta') ||
-        res.status === 404
-      ) {
-        console.warn(`[gemini] Model "${model}" not available, trying next…`);
-        continue;
-      }
-
-      console.warn(`[gemini] Model "${model}" returned error: ${rawError}`);
+      // Return exact raw API error directly to caller
+      return exactApiError;
     } catch (err: any) {
       const rawMsg = err?.message || String(err);
       console.error(`[gemini] Model "${model}" fetch exception:`, rawMsg);
-      lastError = rawMsg;
-      if (rawMsg.includes('يرجى') || rawMsg.includes('لقد تجاوزت')) return rawMsg;
-      return 'يرجى التحقق من مفتاح API في الإعدادات';
+      lastError = `Network Failure: ${rawMsg}`;
+      return `Network Failure: ${rawMsg}`;
     }
   }
 
   // All models in the chain were exhausted
-  return 'يرجى التحقق من مفتاح API في الإعدادات';
+  return lastError || 'Google API Error: Request failed';
 }
