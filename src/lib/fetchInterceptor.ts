@@ -63,29 +63,21 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
   if (!keyToUse || keyToUse.trim() === '') {
     try {
       const saved = localStorage.getItem('yawmiyati_settings');
-      if (saved) {
-        keyToUse = JSON.parse(saved)?.userApiKey || '';
-      }
+      if (saved) { keyToUse = JSON.parse(saved)?.userApiKey || ''; }
     } catch (e) {}
   }
-
   if (!keyToUse || keyToUse.trim() === '') {
-    throw new Error("Gemini API Key is required in app settings.");
+    throw new Error('يرجى التحقق من مفتاح API في الإعدادات');
   }
 
   const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
-  let lastErrorMsg = "";
+  let lastErrorMsg = '';
 
   for (const model of modelsToTry) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyToUse.trim()}`;
 
     const requestBody: any = {
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ],
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       safetySettings: [
         { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
         { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
@@ -97,7 +89,6 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     if (systemInstruction) {
       requestBody.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
-
     if (isJson) {
       requestBody.generationConfig = { responseMimeType: 'application/json' };
     }
@@ -109,61 +100,42 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         body: JSON.stringify(requestBody)
       });
 
-      // Read body ONCE here — accessible in both success and error paths
       const responseText = await res.text();
 
       if (res.ok) {
-        if (!responseText || !responseText.trim()) {
-          throw new Error('استجابة فارغة من خادم الذكاء الاصطناعي');
-        }
+        if (!responseText || !responseText.trim()) throw new Error('استجابة فارغة من خادم الذكاء الاصطناعي');
         const resJson = JSON.parse(responseText);
         const candidate = resJson.candidates?.[0];
         if (candidate) {
           const candidateText = candidate?.content?.parts?.[0]?.text;
-          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
-            return candidateText;
-          }
-          if (candidate.finishReason === 'SAFETY') {
-            return 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.';
-          }
-          if (candidate.finishReason && candidate.finishReason !== 'STOP') {
-            return 'أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.';
-          }
+          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') return candidateText;
+          if (candidate.finishReason === 'SAFETY') return 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة.';
+          if (candidate.finishReason && candidate.finishReason !== 'STOP') return 'أشكرك على مشاركة أفكارك معي!';
         }
       }
 
-      // ── Error path: decide whether to stop or continue the chain ──────
       let errData: any = {};
       try { errData = JSON.parse(responseText); } catch (_) {}
       const errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
 
-      // 429 quota exceeded — stop immediately
       if (res.status === 429 || errMessage.includes('Quota') || errMessage.includes('RESOURCE_EXHAUSTED')) {
         return 'لقد تجاوزت حد الاستخدام اليومي المجاني';
       }
-
-      // Invalid / forbidden key — stop immediately
-      if (res.status === 400 || res.status === 403 ||
-          errMessage.includes('API key not valid') || errMessage.includes('API_KEY_INVALID')) {
+      if (res.status === 400 || res.status === 403 || errMessage.includes('API key not valid') || errMessage.includes('API_KEY_INVALID')) {
         return 'يرجى التحقق من مفتاح API في الإعدادات';
       }
-
-      // Model not found / unsupported — continue to next model in chain
-      if (res.status === 404 || errMessage.includes('not found') ||
-          errMessage.includes('is not supported') || errMessage.includes('is not found')) {
+      if (res.status === 404 || errMessage.includes('not found') || errMessage.includes('is not supported') || errMessage.includes('is not found')) {
         console.warn(`[fetchInterceptor] Model "${model}" not available, trying next…`);
         lastErrorMsg = errMessage;
         continue;
       }
 
-      // Any other non-OK status — log and try next
       console.warn(`[fetchInterceptor] Model "${model}" failed: ${errMessage}`);
       lastErrorMsg = errMessage;
     } catch (e: any) {
       lastErrorMsg = e.message || String(e);
       console.warn(`[fetchInterceptor] Model "${model}" exception: ${lastErrorMsg}`);
-      // Network-level errors are fatal — stop chain
-      throw new Error(`خطأ في الاتصال: ${lastErrorMsg}`);
+      if (lastErrorMsg.includes('يرجى') || lastErrorMsg.includes('لقد تجاوزت')) throw new Error(lastErrorMsg);
     }
   }
 
@@ -360,6 +332,8 @@ ${formattedHabits}
       return createSuccessResponse({ success: true, answer: fallbackAnswer, source: "local-simulation" });
     }
   }
+
+}
 
 function getDynamicSmartAdvisorFallback(query: string, reportType: string, diaries: any[], books: any[], gratitudeCards: any[], habits: any[]): string {
   if (reportType === "therapist") {
@@ -564,9 +538,10 @@ ${formattedBooks || "لا توجد كتب مسجلة بعد."}
       }
 
       const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse);
-      return createSuccessResponse({ success: true, answer, source: "gemini" });
+      return createSuccessResponse({ success: true, answer, source: 'gemini' });
     } catch (err: any) {
-      return createSuccessResponse({ success: true, answer: fallbackAnswer, source: "smart-fallback" });
+      // Always return the rich local fallback — never surface raw errors to the user
+      return createSuccessResponse({ success: true, answer: fallbackAnswer, source: 'smart-fallback' });
     }
   }
 
