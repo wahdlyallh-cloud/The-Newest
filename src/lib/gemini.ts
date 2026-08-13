@@ -274,11 +274,7 @@ export async function validateGeminiApiKey(
  * Calls the Gemini generateContent REST endpoint directly from the client.
  *
  * Model resolution strategy:
- *   gemini-2.0-flash → gemini-2.0-flash-lite
- *   → gemini-1.5-flash-latest → gemini-1.5-flash-8b → gemini-1.5-flash
- *
- * "gemini-3.5-flash-lite" is the UI display label — it is mapped by
- * cleanModelIdentifier() upstream and never reaches this function raw.
+ *   gemini-3.5-flash-lite → gemini-2.0-flash → gemini-2.0-flash-lite
  *
  * Every request includes BLOCK_NONE safety settings.
  * All error messages returned to callers are in Arabic.
@@ -295,11 +291,9 @@ export async function generateGeminiContentDirect(
   }
 
   const modelsToTry = [
+    'gemini-3.5-flash-lite',
     'gemini-2.0-flash',
     'gemini-2.0-flash-lite',
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash-8b',
-    'gemini-1.5-flash',
   ];
 
   let lastError = '';

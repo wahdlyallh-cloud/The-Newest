@@ -69,7 +69,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error('يرجى التحقق من مفتاح API في الإعدادات');
   }
 
-  const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
   let lastErrorMsg = '';
 
   for (const model of modelsToTry) {
@@ -805,7 +805,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (key && base64Data) {
-        const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
+        const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
         let lastError = "";
 
         for (const modName of modelsToTry) {
