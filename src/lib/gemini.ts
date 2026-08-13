@@ -1,10 +1,10 @@
 // Safe, resilient Gemini API helper module with lazy initialization.
 // Ensures Gemini API initialization NEVER executes synchronously on app boot up.
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-1.5-flash';
+export const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
 
 export function cleanModelIdentifier(modelName?: string): string {
-  return (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+  return (modelName || 'gemini-2.0-flash').trim().replace(/^models\//, '');
 }
 
 function sanitizeApiKeyString(k?: any): string {
@@ -191,11 +191,11 @@ export async function generateGeminiContentDirect(
   }
 
   const modelsToTry = [
-    'gemini-1.5-flash-latest',
     'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-8b',
     'gemini-1.5-flash',
-    'gemini-1.5-pro-latest',
-    'gemini-1.5-flash-8b'
+    'gemini-1.5-pro'
   ].map(cleanModelIdentifier);
 
   let lastError = '';

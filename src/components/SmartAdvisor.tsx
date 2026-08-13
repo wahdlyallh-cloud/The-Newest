@@ -478,7 +478,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       let finalAnswer = data?.answer || data?.text;
 
       // Fail-proof direct REST call fallback if Vercel serverless function or response is empty/invalid
-      if (!finalAnswer || typeof finalAnswer !== 'string' || !finalAnswer.trim()) {
+      if (!data?.success || !finalAnswer || typeof finalAnswer !== 'string' || !finalAnswer.trim() || (data?.error && String(data.error).includes('not found'))) {
         const promptContext = `إليك سؤال المستخدم: "${textWithAttachments}"\n\nبيانات ومعلومات المستخدم المسجلة في التطبيق للتحليل عند الحاجة:\n` +
           `1) اليوميات: ${diariesToPass.slice(0, 10).map((d: any) => `[${d.createdAt || ''}] ${d.title || 'تدوينة'}: ${d.content || ''}`).join('\n') || 'المستخدم لم يضف يوميات بعد.'}\n` +
           `2) بطاقات الامتنان: ${gratitudeCardsToPass.slice(0, 10).map((g: any) => g.text || '').join('\n') || 'لا توجد'}\n` +
