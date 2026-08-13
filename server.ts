@@ -1,9 +1,6 @@
 function cleanModelIdentifier(modelName?: string): string {
-  const clean = (modelName || 'gemini-3.5-flash-lite').trim().replace(/^models\//, '');
-  if (clean.includes('3.5') || clean === 'gemini-3.5-flash-lite') {
-    return 'gemini-2.0-flash';
-  }
-  return clean;
+  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
+  return modelName.trim().replace(/^models\//, '');
 }
 
 import express from "express";
@@ -442,7 +439,7 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 
 // Helper function to generate content with fallback models
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+  const modelsToTry = ['gemini-3.5-flash-lite'];
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {

@@ -4,30 +4,16 @@
 //  NEVER executes synchronously on app boot.
 // ============================================================
 
-/** Centralized AI Model ID used across the application configuration & UI */
 export const AI_MODEL = 'gemini-3.5-flash-lite';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
- * Maps a user-facing model string → a real Google API model ID.
- *
- * "gemini-3.5-flash-lite" (and any "3.x" variant) is strictly
- * translated to "gemini-2.0-flash" before hitting the API.
- * The UI string "gemini-3.5-flash-lite" is preserved for display.
+ * Returns the exact model identifier without any alias translation or mapping.
+ * Strictly preserves 'gemini-3.5-flash-lite' as the literal Model ID sent to Google API.
  */
 export function cleanModelIdentifier(modelName?: string): string {
-  const clean = (modelName || DEFAULT_GEMINI_MODEL).trim().replace(/^models\//, '');
-
-  // Strict mapping: any 3.x alias → gemini-2.0-flash (real endpoint)
-  if (
-    clean === 'gemini-3.5-flash-lite' ||
-    clean === 'gemini-3.5-flash' ||
-    clean.startsWith('gemini-3.')
-  ) {
-    return 'gemini-2.0-flash';
-  }
-
-  return clean;
+  if (!modelName || !modelName.trim()) return AI_MODEL;
+  return modelName.trim().replace(/^models\//, '');
 }
 
 // ─── Safety Settings (BLOCK_NONE for all categories) ──────────
@@ -204,12 +190,15 @@ export async function validateGeminiApiKey(
     };
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(cleanKey)}`;
 
   try {
     const res = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'hi' }] }]
+      })
     });
 
     const responseText = await res.text();
@@ -274,7 +263,7 @@ export async function validateGeminiApiKey(
  * Calls the Gemini generateContent REST endpoint directly from the client.
  *
  * Model resolution strategy:
- *   gemini-3.5-flash-lite → gemini-2.0-flash → gemini-2.0-flash-lite
+ *   gemini-3.5-flash-lite (Direct Model ID)
  *
  * Every request includes BLOCK_NONE safety settings.
  * All error messages returned to callers are in Arabic.
@@ -290,11 +279,7 @@ export async function generateGeminiContentDirect(
     return 'يرجى التحقق من مفتاح API في الإعدادات';
   }
 
-  const modelsToTry = [
-    'gemini-3.5-flash-lite',
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
-  ];
+  const modelsToTry = [AI_MODEL];
 
   let lastError = '';
 
