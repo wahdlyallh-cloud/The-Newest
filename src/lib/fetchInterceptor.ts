@@ -78,49 +78,45 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
 
   for (const model of modelsToTry) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyToUse.trim()}`;
-    
+
     const requestBody: any = {
       contents: [
         {
-          role: "user",
+          role: 'user',
           parts: [{ text: prompt }]
         }
       ],
       safetySettings: [
-        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+        { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
       ]
     };
 
     if (systemInstruction) {
-      requestBody.systemInstruction = {
-        parts: [{ text: systemInstruction }]
-      };
+      requestBody.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
 
     if (isJson) {
-      requestBody.generationConfig = {
-        responseMimeType: "application/json"
-      };
+      requestBody.generationConfig = { responseMimeType: 'application/json' };
     }
 
     try {
       const res = await originalFetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
       });
 
+      // Read body ONCE here — accessible in both success and error paths
+      const responseText = await res.text();
+
       if (res.ok) {
-        const responseText = await res.text();
-      if (!responseText || !responseText.trim()) {
-        throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
-      }
-      const resJson = JSON.parse(responseText);
+        if (!responseText || !responseText.trim()) {
+          throw new Error('استجابة فارغة من خادم الذكاء الاصطناعي');
+        }
+        const resJson = JSON.parse(responseText);
         const candidate = resJson.candidates?.[0];
         if (candidate) {
           const candidateText = candidate?.content?.parts?.[0]?.text;
@@ -128,28 +124,50 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
             return candidateText;
           }
           if (candidate.finishReason === 'SAFETY') {
-            return "أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.";
+            return 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.';
           }
           if (candidate.finishReason && candidate.finishReason !== 'STOP') {
-            return "أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.";
+            return 'أشكرك على مشاركة أفكارك معي! أنا جاهز لمساعدتك وحوارك في أي موضوع أو استفسار ترغب به بكل سرور ووضوح.';
           }
         }
       }
 
+      // ── Error path: decide whether to stop or continue the chain ──────
       let errData: any = {};
-      try { errData = JSON.parse(responseText); } catch(e) {}
-      let errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
-      return `خطأ من خادم جوجل: ${errMessage}`;
-      
-      console.warn(`Model ${model} REST call failed: ${errMessage}`);
+      try { errData = JSON.parse(responseText); } catch (_) {}
+      const errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
+
+      // 429 quota exceeded — stop immediately
+      if (res.status === 429 || errMessage.includes('Quota') || errMessage.includes('RESOURCE_EXHAUSTED')) {
+        return 'لقد تجاوزت حد الاستخدام اليومي المجاني';
+      }
+
+      // Invalid / forbidden key — stop immediately
+      if (res.status === 400 || res.status === 403 ||
+          errMessage.includes('API key not valid') || errMessage.includes('API_KEY_INVALID')) {
+        return 'يرجى التحقق من مفتاح API في الإعدادات';
+      }
+
+      // Model not found / unsupported — continue to next model in chain
+      if (res.status === 404 || errMessage.includes('not found') ||
+          errMessage.includes('is not supported') || errMessage.includes('is not found')) {
+        console.warn(`[fetchInterceptor] Model "${model}" not available, trying next…`);
+        lastErrorMsg = errMessage;
+        continue;
+      }
+
+      // Any other non-OK status — log and try next
+      console.warn(`[fetchInterceptor] Model "${model}" failed: ${errMessage}`);
       lastErrorMsg = errMessage;
     } catch (e: any) {
       lastErrorMsg = e.message || String(e);
-      console.warn(`Model ${model} REST exception: ${lastErrorMsg}`);
+      console.warn(`[fetchInterceptor] Model "${model}" exception: ${lastErrorMsg}`);
+      // Network-level errors are fatal — stop chain
+      throw new Error(`خطأ في الاتصال: ${lastErrorMsg}`);
     }
   }
 
-  throw new Error(lastErrorMsg || "Could not connect to Gemini models.");
+  throw new Error(lastErrorMsg || 'Could not connect to Gemini models.');
 }
 
 // Intercept window.fetch robustly
