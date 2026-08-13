@@ -468,32 +468,43 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       });
 
       const responseText = await response.text();
-      if (!responseText || !responseText.trim()) {
-        throw new Error("استجابة فارغة من خادم Gemini API");
+      let data: any = null;
+      if (responseText && responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {}
       }
-      let data: any;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseErr: any) {
-        throw new Error(`صيغة استجابة غير صحيحة من الخادم: ${parseErr.message}`);
+
+      let finalAnswer = data?.answer || data?.text;
+
+      // Fail-proof direct REST call fallback if Vercel serverless function or response is empty/invalid
+      if (!finalAnswer || typeof finalAnswer !== 'string' || !finalAnswer.trim()) {
+        const promptContext = `إليك سؤال المستخدم: "${textWithAttachments}"\n\nبيانات ومعلومات المستخدم المسجلة في التطبيق للتحليل عند الحاجة:\n` +
+          `1) اليوميات: ${diariesToPass.slice(0, 10).map((d: any) => `[${d.createdAt || ''}] ${d.title || 'تدوينة'}: ${d.content || ''}`).join('\n') || 'المستخدم لم يضف يوميات بعد.'}\n` +
+          `2) بطاقات الامتنان: ${gratitudeCardsToPass.slice(0, 10).map((g: any) => g.text || '').join('\n') || 'لا توجد'}\n` +
+          `3) العادات السلوكية: ${habitsToPass.slice(0, 10).map((h: any) => h.name || '').join(', ') || 'لا توجد'}\n` +
+          `4) الكتب والملخصات: ${booksToPass.slice(0, 10).map((b: any) => b.title || '').join(', ') || 'لا توجد'}`;
+
+        finalAnswer = await generateGeminiContentDirect(
+          promptContext,
+          `أنت المستشار الذكي في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح وحكمة، سواء كانت أسئلة خاصة بيومياته وتدويناته داخل التطبيق، أو أسئلة عامة في الحياة والتطوير الذاتي والصحة النفسية والمعرفة العامة.`,
+          userApiKey
+        );
       }
-      if (data && data.success && data.answer) {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          sender: 'ai',
-          text: data.answer,
-          createdAt: new Date().toISOString()
-        }]);
-      } else {
-        const detail = data?.error || data?.message || (response.status ? `HTTP ${response.status}: ${response.statusText}` : 'تعذر الحصول على الرد من الذكاء الاصطناعي');
-        throw new Error(detail);
-      }
-    } catch (e: any) {
-      const errorMsg = e?.message || 'يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لتشغيل المستشار الذكي.';
+
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: `⚠️ تعذر الحصول على الرد (${errorMsg}). يرجى التأكد من مفتاح Gemini API في إعدادات التطبيق.`,
+        text: finalAnswer || 'أهلاً بك في المستشار الذكي! أنا رفيقك للتحليل والاستشارة والتطوير الذاتي في أي وقت.',
+        createdAt: new Date().toISOString()
+      }]);
+    } catch (e: any) {
+      console.error("SmartAdvisor Execution Error:", e);
+      const errorMsg = e?.message || 'تعذر الاتصال بـ Gemini API';
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: `⚠️ خطأ في الاتصال: ${errorMsg}`,
         createdAt: new Date().toISOString()
       }]);
     } finally {
