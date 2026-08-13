@@ -69,7 +69,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error("Gemini API Key is required in app settings.");
   }
 
-  const modelsToTry = ['gemini-3.5-flash-lite'].map(getInternalModelName);
+  const modelsToTry = ['gemini-1.5-flash'].map(cleanModelIdentifier);
   let lastErrorMsg = "";
 
   for (const model of modelsToTry) {
@@ -811,7 +811,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (key && base64Data) {
-        const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash-lite', 'gemini-3.5-flash-lite'];
+        const modelsToTry = ['gemini-1.5-flash'];
         let lastError = "";
 
         for (const modName of modelsToTry) {
