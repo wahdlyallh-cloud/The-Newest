@@ -3865,7 +3865,7 @@ export default function App() {
 
       const aiMsg: ChatLogEntry = {
         sender: 'ai',
-        text: answerText || 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك وتطوير ذاتك بشكل رائع.',
+        text: answerText && answerText.trim() ? answerText : 'يرجى التحقق من مفتاح API في الإعدادات',
         createdAt: new Date().toISOString()
       };
       saveDiaryWithLogs([...updatedLogs, aiMsg]);
@@ -3882,7 +3882,7 @@ export default function App() {
 
       const errorMsg: ChatLogEntry = {
         sender: 'ai',
-        text: fallbackText || 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة. يسعدني تقديم التوجيه الإيجابي والتحليل الذي يساعدك في فهم مشاعرك.',
+        text: fallbackText && fallbackText.trim() ? fallbackText : 'يرجى التحقق من مفتاح API في الإعدادات',
         createdAt: new Date().toISOString()
       };
       saveDiaryWithLogs([...updatedLogs, errorMsg]);

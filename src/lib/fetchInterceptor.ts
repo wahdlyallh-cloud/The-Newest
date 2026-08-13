@@ -105,8 +105,6 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         if (candidate) {
           const candidateText = candidate?.content?.parts?.[0]?.text;
           if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') return candidateText;
-          if (candidate.finishReason === 'SAFETY') return 'أنا هنا دائماً لدعمك والاستماع إليك بكل محبة وحكمة.';
-          if (candidate.finishReason && candidate.finishReason !== 'STOP') return 'أشكرك على مشاركة أفكارك معي!';
         }
       }
 
