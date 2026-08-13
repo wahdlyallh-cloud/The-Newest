@@ -4,15 +4,9 @@
 //  NEVER executes synchronously on app boot.
 // ============================================================
 
-// ─── Strict Model Mapping ─────────────────────────────────────
-//
-// "gemini-3.5-flash-lite" is the UI/settings-facing label shown
-// to the user and stored in app config.  It is NOT a real Google
-// model ID.  cleanModelIdentifier() maps it to a live endpoint
-// before every network request.
-
-/** The display-only model name shown in the UI and stored in settings. */
-export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite';
+/** Centralized AI Model ID used across the application configuration & UI */
+export const AI_MODEL = 'gemini-3.5-flash-lite';
+export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
  * Maps a user-facing model string → a real Google API model ID.
@@ -225,7 +219,7 @@ export async function validateGeminiApiKey(
     }
 
     if (res.status === 200 || res.ok) {
-      return { success: true, message: 'تم التحقق من المفتاح بنجاح' };
+      return { success: true, message: 'تم التحقق من المفتاح بنجاح 🎉' };
     }
 
     const rawMsg =
@@ -240,7 +234,7 @@ export async function validateGeminiApiKey(
     ) {
       return {
         success: true,
-        message: 'تم تجاوز حصة الاستخدام المجانية للمفتاح، يرجى المحاولة لاحقاً',
+        message: 'تم حفظ المفتاح بنجاح! 🎉 (تنبيه: تم الوصول للحد اليومي المجاني مؤقتاً)',
         errorDetail: rawMsg,
       };
     }
@@ -260,7 +254,7 @@ export async function validateGeminiApiKey(
 
     return {
       success: false,
-      message: `تعذر التحقق من المفتاح (${rawMsg})`,
+      message: 'يرجى التحقق من مفتاح API في الإعدادات',
       errorDetail: rawMsg,
     };
   } catch (networkErr: any) {
@@ -280,7 +274,7 @@ export async function validateGeminiApiKey(
  * Calls the Gemini generateContent REST endpoint directly from the client.
  *
  * Model resolution strategy:
- *   gemini-2.5-flash → gemini-2.0-flash → gemini-2.0-flash-lite
+ *   gemini-2.0-flash → gemini-2.0-flash-lite
  *   → gemini-1.5-flash-latest → gemini-1.5-flash-8b → gemini-1.5-flash
  *
  * "gemini-3.5-flash-lite" is the UI display label — it is mapped by
@@ -301,7 +295,6 @@ export async function generateGeminiContentDirect(
   }
 
   const modelsToTry = [
-    'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-2.0-flash-lite',
     'gemini-1.5-flash-latest',
@@ -405,13 +398,11 @@ export async function generateGeminiContentDirect(
       const rawMsg = err?.message || String(err);
       console.error(`[gemini] Model "${model}" fetch exception:`, rawMsg);
       lastError = rawMsg;
-      // Network-level errors are fatal — stop chain and report
-      return `خطأ في الاتصال: ${rawMsg}`;
+      if (rawMsg.includes('يرجى') || rawMsg.includes('لقد تجاوزت')) return rawMsg;
+      return 'يرجى التحقق من مفتاح API في الإعدادات';
     }
   }
 
   // All models in the chain were exhausted
-  return lastError
-    ? `خطأ في الاتصال: ${lastError}`
-    : 'خطأ في الاتصال: تعذر الحصول على الرد من خادم Gemini';
+  return 'يرجى التحقق من مفتاح API في الإعدادات';
 }

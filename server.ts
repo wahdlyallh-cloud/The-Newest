@@ -442,7 +442,7 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 
 // Helper function to generate content with fallback models
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
@@ -1653,74 +1653,7 @@ Return pure JSON object only:
 
 
 
-// API Endpoint: Interactive chat with AI within a specific diary (مساحة الفضفضة والتحليل 🧠✨)
-app.post("/api/gemini/diary-chat", async (req, res) => {
-  const { title, content, chatLogs, newMessage, diaryType, moods, attachments, audioTranscriptions, aiMoodAnalysis, tags } = req.body;
 
-  if (!newMessage || newMessage.trim() === "") {
-    return res.status(400).json({ success: false, error: "الرسالة مفقودة" });
-  }
-
-  const customKey = req.headers["x-gemini-key"] as string;
-  const ai = getGenAI(customKey);
-  
-  // Format the history
-  const formattedLogs = (chatLogs || []).map((msg: any) => {
-    return `${msg.sender === 'user' ? 'المستخدم' : 'المستشار النفسي العبقري'}: ${msg.text}`;
-  }).join("\n");
-
-  const formattedAudioTranscriptions = (audioTranscriptions || []).length > 0
-    ? audioTranscriptions.join("\n\n")
-    : "لا يوجد تسجيلات صوتية مفرغة مرفقة.";
-
-  const prompt = `أنت طبيب نفسي، معالج إكلينيكي، ومستشار مرونة نفسية عالي الذكاء والبصيرة النافذة باللغة العربية.
-أنت الآن في جلسة علاجية تفاعلية سرية مخصصة للتحليل والإنصات العميق بـ "مساحة الفضفضة والتحليل 🧠✨".
-
-بيانات المذكرة الحالية للمستخدم:
-- العنوان: "${title || 'بدون عنوان'}"
-- نوع التدوين: "${diaryType === 'thought' ? 'خاطرة وأفكار سريعة' : 'يومية تفصيلية'}"
-- المشاعر المحددة: "${moods && moods.length > 0 ? moods.join(', ') : 'طبيعي'}"
-- الوسوم: "${tags && tags.length > 0 ? tags.join(', ') : 'بدون وسوم'}"
-- المحتوى النصي المكتوب:
-"${content && content.trim() ? content : 'لم يكتب المستخدم نصاً مباشراً بعد في الصندوق.'}"
-
-- تفريغ التسجيلات والفضفضة الصوتية المرفقة (Voice Transcriptions):
-${formattedAudioTranscriptions}
-
-- المرفقات والوسائط المتاحة للتحليل:
-${attachments && attachments.length > 0 ? attachments.join(', ') : 'لا يوجد مرفقات إضافية'}
-
-سجل الحوار السابق في الجلسة:
-${formattedLogs || 'هذه بداية الجلسة.'}
-
-رسالة المستخدم الجديدة: "${newMessage}"
-
-التوجيهات والتعليمات الصارمة للإجابة (المستشار العبقري):
-1. كن ذكياً وعميقاً وداعماً لأقصى درجة، وافهم أبعاد التدوينة سواء كانت نصية أو تسجيلات صوتية مفرغة أو مشاعر.
-2. إذا طلب المستخدم تلخيص التدوينة/الخاطرة أو مشاعره (مثل: "لخص تدوينتي بايجاز"): قدم ملخصاً استثنائياً ومنظماً يشتمل على:
-   - 📌 **الملخص التنفيذي والإنساني للمضمون**
-   - 🧠 **تحليل نبرة المشاعر والنص الخفي (Emotional Insight)**
-   - 💡 **التوصية النفسية والخطوة العملية التالية**
-3. إذا سأل المستخدم عن أي فكرة أو مشكلة: أجب ببصيرة علاجية نافذة (CBT & Mindfulness) دون إصدار أحكام أو استخدام عبارات مكررة.
-4. استخدم لغة عربية فصحى راقية، دافئة، وواضحة جداً.`;
-
-  if (ai) {
-    try {
-      const response = await generateWithGenAI(ai, {
-        contents: prompt
-      });
-      return res.json({ success: true, answer: response.text, source: "gemini" });
-    } catch (error) {
-      return handleGeminiError(res, error, customKey);
-    }
-  }
-
-  return res.status(400).json({
-    success: false,
-    error: "يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لمحادثة اليومية والفضفضة.",
-    requiresKey: true
-  });
-});
 
 // Helper to generate dynamic, topic-specific note content if Gemini API fails or is offline
 function generateDynamicFallbackNote(topic: string): { title: string; content: string } {
