@@ -3,9 +3,16 @@
 
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
+export function getInternalModelName(model?: string): string {
+  const clean = (model || '').trim();
+  if (!clean || clean.includes("3.5") || clean === "gemini-3.5-flash-lite") {
+    return "gemini-1.5-flash";
+  }
+  return clean.replace(/^models\//, '');
+}
+
 export function cleanModelIdentifier(modelName?: string): string {
-  const cleanModel = (modelName || 'gemini-3.5-flash-lite').trim().replace(/^models\//, '');
-  return cleanModel;
+  return getInternalModelName(modelName);
 }
 
 function sanitizeApiKeyString(k?: any): string {
@@ -191,7 +198,7 @@ export async function generateGeminiContentDirect(
     return "يرجى الذهاب إلى إعدادات التطبيق وتأكيد حفظ مفتاح Gemini API الخاص بك لتشغيل المستشار.";
   }
 
-  const cleanModel = cleanModelIdentifier('gemini-3.5-flash-lite');
+  const cleanModel = getInternalModelName('gemini-3.5-flash-lite');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
 
   const requestBody: any = {
