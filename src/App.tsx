@@ -10388,7 +10388,7 @@ export default function App() {
                               <div>
                                 <span className="text-[10px] font-bold text-gray-400">المحتوى والفضفضة ✍️</span>
                                 <p className="text-xs text-gray-600 leading-relaxed max-h-[160px] overflow-y-auto mt-1 whitespace-pre-wrap">
-                                  {dayEntry.content || 'مذكرة فارغة بدون تفاصيل نصية.'}
+                                  {cleanDiaryText(dayEntry.content) || 'مذكرة فارغة بدون تفاصيل نصية.'}
                                 </p>
                               </div>
                               <div className="flex flex-wrap gap-1 pt-2 border-t border-[#E2DCC8]/30">

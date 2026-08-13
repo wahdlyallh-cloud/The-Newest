@@ -18,30 +18,40 @@ export function cleanModelIdentifier(modelName?: string): string {
 
 /**
  * Sanitizes raw HTML tags, breaks, and entities from diary entry text before display.
+ * Implements multi-pass entity decoding (e.g. &amp;nbsp; -> &nbsp; -> space).
  */
 export function cleanDiaryText(rawText?: string): string {
   if (!rawText) return '';
   let text = String(rawText);
-  // 1. Replace <div>, <br>, <p>, </div>, </p> tags with newline characters
-  text = text.replace(/<br\s*\/?>/gi, '\n');
-  text = text.replace(/<\/(div|p)>/gi, '\n');
-  text = text.replace(/<(div|p)[^>]*>/gi, '\n');
 
-  // 2. Strip all other HTML tags safely
+  // 1. Convert structural tags into newlines/spaces
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  text = text.replace(/<\/(div|p|h[1-6]|li|tr)>/gi, '\n');
+  text = text.replace(/<(div|p|h[1-6]|li|tr)[^>]*>/gi, '\n');
+
+  // 2. Multi-pass entity decoding (up to 3 passes to handle double-encoded entities like &amp;nbsp;)
+  for (let pass = 0; pass < 3; pass++) {
+    const prev = text;
+    text = text
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/gi, "'");
+    if (text === prev) break;
+  }
+
+  // 3. Strip ALL remaining HTML tags safely
   text = text.replace(/<[^>]*>/g, '');
 
-  // 3. Decode/replace HTML entities
-  text = text
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'");
+  // 4. Collapse multiple spaces & nbsp remnants into a single space
+  text = text.replace(/[ \t\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]+/g, ' ');
 
-  // 4. Trim unnecessary extra whitespace (multiple consecutive newlines reduced to max 2)
-  text = text.replace(/\n{3,}/g, '\n\n');
+  // 5. Collapse excessive newlines (max 2 consecutive newlines)
+  text = text.replace(/[\r\n]{3,}/g, '\n\n');
+
   return text.trim();
 }
 
