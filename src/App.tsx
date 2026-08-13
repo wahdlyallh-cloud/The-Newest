@@ -8103,7 +8103,7 @@ export default function App() {
                                       
                                       {/* Content Snippet */}
                                       <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
-                                        {diary.content || <em className="text-gray-400 font-light text-[11px]">{t.audioDrawingsOnly || (isEn ? "Audio attachments or sketches only" : "مرفقات صوتية أو تخطيطات فقط")}</em>}
+                                        {cleanDiaryText(diary.content) || <em className="text-gray-400 font-light text-[11px]">{t.audioDrawingsOnly || (isEn ? "Audio attachments or sketches only" : "مرفقات صوتية أو تخطيطات فقط")}</em>}
                                       </p>
 
                                       {/* Appended Edits Count / Snippet Preview */}
@@ -8842,7 +8842,7 @@ export default function App() {
 
                                 {/* Content Preview Snippet */}
                                 <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
-                                  {diary.content || <em className="text-gray-400">...</em>}
+                                  {cleanDiaryText(diary.content) || <em className="text-gray-400">...</em>}
                                 </p>
                               </div>
 

@@ -18,18 +18,34 @@ export function cleanModelIdentifier(modelName?: string): string {
 
 /**
  * Sanitizes raw HTML tags, breaks, and entities from diary entry text before display.
- * Implements multi-pass entity decoding (e.g. &amp;nbsp; -> &nbsp; -> space).
+ * Uses browser-native DOM parsing (DOMParser / div element) for bulletproof entity & tag extraction,
+ * completely preventing leakage of string artifacts like `nbsp;&div;`.
  */
 export function cleanDiaryText(rawText?: string): string {
   if (!rawText) return '';
   let text = String(rawText);
 
-  // 1. Convert structural tags into newlines/spaces
+  // 1. Replace structural/block HTML tags with newlines
   text = text.replace(/<br\s*\/?>/gi, '\n');
-  text = text.replace(/<\/(div|p|h[1-6]|li|tr)>/gi, '\n');
-  text = text.replace(/<(div|p|h[1-6]|li|tr)[^>]*>/gi, '\n');
+  text = text.replace(/<\/(div|p|h[1-6]|li|tr|article|section)>/gi, '\n');
+  text = text.replace(/<(div|p|h[1-6]|li|tr|article|section)[^>]*>/gi, '\n');
 
-  // 2. Multi-pass entity decoding (up to 3 passes to handle double-encoded entities like &amp;nbsp;)
+  // 2. Browser-native DOM parsing for entity decoding & tag stripping
+  if (typeof window !== 'undefined') {
+    try {
+      if (typeof DOMParser !== 'undefined') {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        text = doc.body?.textContent || doc.documentElement?.textContent || text;
+      } else if (typeof document !== 'undefined' && document.createElement) {
+        const div = document.createElement('div');
+        div.innerHTML = text;
+        text = div.textContent || div.innerText || text;
+      }
+    } catch (_) {}
+  }
+
+  // 3. Fallback regex multi-pass entity decoding & tag stripping (SSR/Node safety)
   for (let pass = 0; pass < 3; pass++) {
     const prev = text;
     text = text
@@ -43,13 +59,15 @@ export function cleanDiaryText(rawText?: string): string {
     if (text === prev) break;
   }
 
-  // 3. Strip ALL remaining HTML tags safely
+  // 4. Strip any residual HTML tags and malformed entity remnants
   text = text.replace(/<[^>]*>/g, '');
+  text = text.replace(/nbsp;/gi, ' ');
+  text = text.replace(/&[a-z0-9#]+;/gi, ' ');
 
-  // 4. Collapse multiple spaces & nbsp remnants into a single space
+  // 5. Collapse multiple spaces & nbsp remnants into a single space
   text = text.replace(/[ \t\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]+/g, ' ');
 
-  // 5. Collapse excessive newlines (max 2 consecutive newlines)
+  // 6. Collapse excessive newlines (max 2 consecutive newlines)
   text = text.replace(/[\r\n]{3,}/g, '\n\n');
 
   return text.trim();
