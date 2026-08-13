@@ -1,5 +1,9 @@
 function cleanModelIdentifier(modelName?: string): string {
-  return (modelName || 'gemini-1.5-flash').trim().replace(/^models\//, '');
+  const clean = (modelName || 'gemini-3.5-flash-lite').trim().replace(/^models\//, '');
+  if (clean.includes('3.5') || clean === 'gemini-3.5-flash-lite') {
+    return 'gemini-2.0-flash';
+  }
+  return clean;
 }
 
 import express from "express";
