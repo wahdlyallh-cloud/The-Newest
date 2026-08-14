@@ -470,11 +470,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }, 1000);
   };
 
-  // File Upload Handler for Multimodal General AI Mode using Unified Attachment Service
+  // File Upload Handler for Multimodal AI Modes using Unified Attachment Service
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowAttachmentMenu(false);
     const files = e.target.files;
+    console.log('[PRO FILE DEBUG] change fired. Active tab:', activeAdvisorTab);
+    console.log('[PRO FILE DEBUG] files count:', files ? files.length : 0);
+
     if (!files || files.length === 0) {
+      console.log('[PRO FILE DEBUG] No files selected or picker cancelled');
       onFilePickerClose?.();
       return;
     }
@@ -488,10 +492,16 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     for (const file of selectedFiles) {
+      console.log(`[PRO FILE DEBUG] file details -> name: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
       try {
+        console.log('[PRO FILE DEBUG] processAttachmentUnified called for:', file.name);
+        console.log('[PRO FILE DEBUG] upload started...');
         const att = await processAttachmentUnified(file, userApiKey);
+        console.log('[PRO FILE DEBUG] upload success for:', file.name, att);
         setMultimodalFiles(prev => [...prev, att]);
       } catch (err: any) {
+        console.error('[PRO FILE DEBUG] upload failed for:', file.name);
+        console.error('[PRO FILE DEBUG] error message:', err?.message || String(err));
         setFileErrorToast(`فشل معالجة أو رفع الملف "${file.name}": ${err?.message || String(err)}`);
       }
     }
@@ -962,8 +972,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         </div>
       )}
 
-      {/* Multimodal Attached Files Preview Bar (General AI Mode) */}
-      {activeAdvisorTab === 'general' && multimodalFiles.length > 0 && (
+      {/* Multimodal Attached Files Preview Bar (Both Modes) */}
+      {multimodalFiles.length > 0 && (
         <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
           {multimodalFiles.map(att => (
             <div key={att.id} className="bg-white border border-[#E2DCC8] text-[#2B3E50] text-[10px] font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-2 shadow-3xs">
