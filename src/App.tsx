@@ -8619,7 +8619,7 @@ export default function App() {
             </div>
 
             {analyticsSubTab === 'report' ? (
-              <IntegratedTherapyReport diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} />
+              <IntegratedTherapyReport diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings?.appLanguage || 'ar'} />
             ) : analyticsSubTab === 'pros_cons' ? (
               <ProsConsHistoryLog diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings?.appLanguage || 'ar'} />
             ) : (
@@ -8662,10 +8662,10 @@ export default function App() {
                 </div>
 
                 {/* New Feature: Sleep vs Fast Mood Score Correlation Chart (Past Month) */}
-                <SleepMoodCorrelationChart diaries={diaries} />
+                <SleepMoodCorrelationChart diaries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
 
                 {/* Chart 3: Weekly Habit Completion vs Mood Stability Chart */}
-                <WeeklyHabitsMoodChart habits={habits} diaries={diaries} />
+                <WeeklyHabitsMoodChart habits={habits} diaries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   

@@ -3,14 +3,15 @@ import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, ReferenceLine 
 } from 'recharts';
-import { DiaryEntry } from '../types';
+import { DiaryEntry, AppLanguage } from '../types';
 import { Moon, Smile, TrendingUp, Sparkles, Calendar, Activity, Zap, Info, ShieldCheck } from 'lucide-react';
 
 interface SleepMoodCorrelationChartProps {
   diaries: DiaryEntry[];
+  appLanguage?: AppLanguage;
 }
 
-export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps> = ({ diaries }) => {
+export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps> = ({ diaries, appLanguage = 'ar' }) => {
   const [timeRange, setTimeRange] = useState<'30' | '14' | '7'>('30');
 
   // Process data for past 30 / 14 / 7 days
