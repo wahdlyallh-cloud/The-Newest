@@ -1,10 +1,16 @@
 import { generateGeminiContentDirect } from '../lib/gemini';
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload } from 'lucide-react';
+import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark } from 'lucide-react';
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { getAthkarContextForAI, getFormattedAthkarPromptContext } from '../services/aiAthkarSync';
 import { processAttachmentUnified, sniffMimeType, getAttachmentTypeCategory } from '../services/attachmentService';
+import {
+  buildUnifiedKnowledgeIndex,
+  retrieveRelevantKnowledge,
+  analyzeQueryIntent,
+  getGroundedSystemDirectives
+} from '../services/unifiedAIKnowledgeService';
 
 export interface AdvisorPermissions {
   diaries: boolean;
@@ -725,12 +731,21 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(updatedMsgs));
 
       const filesToSend = [...readyFiles];
-      console.log('[ATTACHMENT ROOT DEBUG] sending payload for GENERAL advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType, fileUri: f.fileUri })));
       setInput('');
       setGeneralMultimodalFiles([]);
       setLoading(true);
 
       try {
+        // Retrieve local app data if general query references internal items (Hybrid Support)
+        let localCopingCards: any[] = [];
+        let localProsCons: any[] = [];
+        try {
+          const cRaw = localStorage.getItem('app_custom_coping_cards');
+          if (cRaw) localCopingCards = JSON.parse(cRaw);
+          const pRaw = localStorage.getItem('yawmiyati_pros_cons_records');
+          if (pRaw) localProsCons = JSON.parse(pRaw);
+        } catch {}
+
         const response = await fetch('/api/gemini/smart-advisor', {
           method: 'POST',
           headers: {
@@ -742,10 +757,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             mode: 'general',
             query: textToSend,
             attachments: filesToSend,
-            diaries: [],
-            habits: [],
-            gratitudeCards: [],
-            books: [],
+            diaries: (hasConsent && advisorPermissions.diaries) ? diaries : [],
+            habits: (hasConsent && advisorPermissions.habits) ? habits : [],
+            gratitudeCards: (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [],
+            books: (hasConsent && advisorPermissions.books) ? books : [],
+            athkarContext: getAthkarContextForAI(),
+            athkarPromptText: getFormattedAthkarPromptContext(),
+            customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
+            prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
+            permissions: advisorPermissions,
             appLanguage
           })
         });
@@ -756,12 +776,19 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           try { data = JSON.parse(responseText); } catch (e) {}
         }
 
-        const answerText = data?.answer || 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع تعبيري أو معرفي.';
+        let answerText = data?.answer || data?.text;
+        if (!answerText) {
+          answerText = await generateGeminiContentDirect(
+            textToSend || 'يرجى تقديم إجابة شاملة',
+            `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح، حكمة، وذكاء، سواء كانت في المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو تحليل المرفقات.`,
+            userApiKey
+          );
+        }
 
         const aiMsg: Message = {
           id: (Date.now() + 1).toString(),
           sender: 'ai',
-          text: answerText,
+          text: answerText || 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع تعبيري أو معرفي.',
           createdAt: new Date().toISOString()
         };
 
@@ -822,7 +849,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
     setMessages(prev => [...prev, userMsg]);
     const filesToSend = [...readyFiles];
-    console.log('[ATTACHMENT ROOT DEBUG] sending payload for DIARY PRO advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType, fileUri: f.fileUri })));
     setInput('');
     setDiaryMultimodalFiles([]);
     setChatAttachments({ links: [], videos: [], pdfs: [] });
@@ -835,6 +861,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
       const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
       const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
+
+      let localCopingCards: any[] = [];
+      let localProsCons: any[] = [];
+      try {
+        const cRaw = localStorage.getItem('app_custom_coping_cards');
+        if (cRaw) localCopingCards = JSON.parse(cRaw);
+        const pRaw = localStorage.getItem('yawmiyati_pros_cons_records');
+        if (pRaw) localProsCons = JSON.parse(pRaw);
+      } catch {}
 
       const response = await fetch('/api/gemini/smart-advisor', {
         method: 'POST',
@@ -852,7 +887,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           attachments: filesToSend,
           appLanguage: appLanguage,
           athkarContext: getAthkarContextForAI(),
-          athkarPromptText: getFormattedAthkarPromptContext()
+          athkarPromptText: getFormattedAthkarPromptContext(),
+          customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
+          prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
+          permissions: advisorPermissions
         })
       });
 
@@ -866,17 +904,25 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       let finalAnswer = data?.answer || data?.text;
 
-      // Fail-proof direct REST call fallback if Vercel serverless function or response is empty/invalid
+      // Fail-proof direct REST call fallback if serverless function or response is empty/invalid
       if (!data?.success || !finalAnswer || typeof finalAnswer !== 'string' || !finalAnswer.trim() || (data?.error && String(data.error).includes('not found'))) {
-        const promptContext = `إليك سؤال المستخدم: "${textWithAttachments}"\n\nبيانات ومعلومات المستخدم المسجلة في التطبيق للتحليل عند الحاجة:\n` +
-          `1) اليوميات: ${diariesToPass.slice(0, 10).map((d: any) => `[${d.createdAt || ''}] ${d.title || 'تدوينة'}: ${d.content || ''}`).join('\n') || 'المستخدم لم يضف يوميات بعد.'}\n` +
-          `2) بطاقات الامتنان: ${gratitudeCardsToPass.slice(0, 10).map((g: any) => g.text || '').join('\n') || 'لا توجد'}\n` +
-          `3) العادات السلوكية: ${habitsToPass.slice(0, 10).map((h: any) => h.name || '').join(', ') || 'لا توجد'}\n` +
-          `4) الكتب والملخصات: ${booksToPass.slice(0, 10).map((b: any) => b.title || '').join(', ') || 'لا توجد'}`;
+        const index = buildUnifiedKnowledgeIndex({
+          diaries: diariesToPass,
+          habits: habitsToPass,
+          gratitudeCards: gratitudeCardsToPass,
+          books: booksToPass,
+          athkarContext: getAthkarContextForAI(),
+          customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
+          prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
+          permissions: advisorPermissions
+        });
+
+        const retrieved = await retrieveRelevantKnowledge(textWithAttachments, index, { maxEntities: 10, requireMediaBlobs: true });
+        const groundedPrompt = `سؤال المستخدم: "${textWithAttachments}"\n\n${retrieved.formattedContextText}\n\n${getGroundedSystemDirectives(appLanguage)}`;
 
         finalAnswer = await generateGeminiContentDirect(
-          promptContext,
-          `أنت المستشار الذكي في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح وحكمة، سواء كانت أسئلة خاصة بيومياته وتدويناته داخل التطبيق، أو أسئلة عامة في الحياة والتطوير الذاتي والصحة النفسية والمعرفة العامة.`,
+          groundedPrompt,
+          `أنت المستشار الذكي الموحد في تطبيق 'حياة AI'. التزم بالدقة والشفافية التامة، واذكر المصادر بوضوح.`,
           userApiKey
         );
       }

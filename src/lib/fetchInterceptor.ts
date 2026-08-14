@@ -5,6 +5,11 @@ import {
   recordKeySuccess,
   classifyGeminiError
 } from './apiKeyManager';
+import {
+  buildUnifiedKnowledgeIndex,
+  retrieveRelevantKnowledge,
+  getGroundedSystemDirectives
+} from '../services/unifiedAIKnowledgeService';
 
 function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
@@ -472,12 +477,58 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
 
   if (url.includes('/api/gemini/smart-advisor')) {
     const reqLang = reqHeaders.get('x-app-language') || requestBody.appLanguage || requestBody.langCode || 'ar';
-    const { diaries, query, reportType, gratitudeCards, habits, books, mode, attachments } = requestBody;
+    const {
+      diaries,
+      query,
+      reportType,
+      gratitudeCards,
+      habits,
+      books,
+      mode,
+      attachments,
+      athkarContext,
+      athkarPromptText,
+      prosConsRecords,
+      customCopingCards,
+      permissions
+    } = requestBody;
 
-    // Handle General AI Advisor mode (independent context + multimodal attachments)
+    // Build Unified Knowledge Index from all provided app data sources
+    const knowledgeIndex = buildUnifiedKnowledgeIndex({
+      diaries,
+      habits,
+      gratitudeCards,
+      books,
+      athkarContext,
+      prosConsRecords,
+      customCopingCards,
+      permissions
+    });
+
+    const userQuery = (query || '').trim();
+    let retrievedContext: any = null;
+    try {
+      retrievedContext = await retrieveRelevantKnowledge(userQuery, knowledgeIndex, {
+        maxEntities: 12,
+        requireMediaBlobs: true
+      });
+    } catch (retrievalErr) {
+      console.warn('[fetchInterceptor] Knowledge retrieval warning:', retrievalErr);
+    }
+
+    const groundedDirectives = getGroundedSystemDirectives(reqLang);
+
+    // Handle General AI Advisor mode
     if (mode === 'general') {
-      const generalSystemInstruction = `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح، حكمة، وذكاء، سواء كانت في المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو تحليل المرفقات المرفقة (صور، مستندات PDF، تسجيلات صوتية، مقاطع فيديو).
-أنت مساعد عام شامل وإجاباتك مستقلة عن بيانات ومذكرات المستخدم الشخصية.` + getLanguageInstruction(reqLang);
+      const isGeneralOnly = !userQuery.includes('يومياتي') && !userQuery.includes('بياناتي') && !userQuery.includes('عاداتي') && !userQuery.includes('كتبي');
+      let generalSystemInstruction = `أنت المستشار الذكي العام في تطبيق 'حياة AI'.
+تتميز بذكاء موسوعي شامل للإجابة عن أي سؤال في العلوم، البرمجة، الدراسة، التاريخ، الثقافة، والترجمة.
+عندما يسأل المستخدم سؤالاً عاماً، أجب بعبقرية ومباشرة كأفضل ذكاء اصطناعي في العالم.
+إذا أرفق المستخدم ملفات أو وسائط، قم بتحليلها بدقة واحترافية عالية.` + getLanguageInstruction(reqLang);
+
+      if (!isGeneralOnly && retrievedContext && retrievedContext.matchedEntities.length > 0) {
+        generalSystemInstruction += `\n\n${groundedDirectives}\n\n${retrievedContext.formattedContextText}`;
+      }
 
       let extraParts: any[] = [];
       if (attachments && Array.isArray(attachments)) {
@@ -499,110 +550,77 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
               }
             };
           });
-        console.log(`[ATTACHMENT FORENSIC] GENERAL mode -> attachments count: ${attachments.length}, extraParts constructed: ${extraParts.length}`);
+      }
+
+      if (retrievedContext && retrievedContext.multimodalParts && retrievedContext.multimodalParts.length > 0) {
+        retrievedContext.multimodalParts.forEach((part: any) => {
+          if (part.data) {
+            extraParts.push({
+              inlineData: {
+                mimeType: part.mimeType,
+                data: part.data
+              }
+            });
+          } else if (part.fileUri) {
+            extraParts.push({
+              fileData: {
+                mimeType: part.mimeType,
+                fileUri: part.fileUri
+              }
+            });
+          }
+        });
       }
 
       try {
-        const answer = await generateWithGeminiREST(query || 'يرجى تحليل المحتوى المرفق', generalSystemInstruction, false, keyToUse, extraParts);
-        return createSuccessResponse({ success: true, answer, source: 'gemini-general' });
+        const answer = await generateWithGeminiREST(userQuery || 'يرجى تحليل المحتوى المرفق', generalSystemInstruction, false, keyToUse, extraParts);
+        return createSuccessResponse({ success: true, answer, source: 'gemini-general', citations: retrievedContext?.sourceCitations });
       } catch (err: any) {
         return createSuccessResponse({
           success: true,
-          answer: `أهلاً بك في المستشار الذكي العام! يسعدني الإجابة على استفسارك حول "${query || 'موضوعك'}" وتقديم التحليلات والمساعدة والمعرفة الشاملة.`,
+          answer: `أهلاً بك في المستشار الذكي العام! يسعدني الإجابة على استفسارك حول "${userQuery || 'موضوعك'}" وتقديم التحليلات والمساعدة والمعرفة الشاملة.`,
           source: 'general-fallback'
         });
       }
     }
 
-    const fallbackAnswer = getDynamicSmartAdvisorFallback(query, reportType, diaries, books, gratitudeCards, habits);
+    const fallbackAnswer = getDynamicSmartAdvisorFallback(userQuery, reportType, diaries, books, gratitudeCards, habits);
 
     try {
-      // Formatting logic similar to server.ts - sliced to most recent items to optimize token quota
-      const formattedDiaries = (diaries || []).slice(0, 15).map((d: any) => {
-        if (!d) return "";
-        const moodsStr = d.moods ? d.moods.join(", ") : "لا يوجد";
-        const cbtStr = d.cbtWorksheets && d.cbtWorksheets.length > 0 
-          ? d.cbtWorksheets.map((w: any) => `  * الحدث المثير: ${w.triggerEvent || ''}\n  * الأفكار التلقائية: ${w.negativeThoughts || ''}\n  * التشوه المعرفي: ${w.cognitiveDistortion || ''}\n  * البديل العقلاني: ${w.rationalAlternative || ''}`).join("\n---\n")
-          : "لا يوجد";
-        const tasksStr = d.tasks && d.tasks.length > 0 ? d.tasks.map((t: any) => `  - [${t.completed ? '✓' : ' '}] ${t.text || ''}`).join("\n") : "لا يوجد";
-        
-        return `التاريخ: ${safeFormatDate(d.createdAt)}
-العنوان: ${d.title || 'بدون عنوان'}
-المزاج: ${moodsStr}
-ساعات النوم: ${d.sleepHours || 'لم يسجل'}
-الرياضة: ${d.sportsDuration || 'لم يسجل'}
-المهام:
-${tasksStr}
-تمارين CBT:
-${cbtStr}
-المحتوى النصي: ${d.content || ''}`;
-      }).join("\n\n");
+      let systemInstruction = `أنت المستشار الذكي الموحد في تطبيق 'حياة AI' (Unified Hayat AI Intelligence).
+تجمع ببراعة بين دورين متكاملين:
+1) استشاري نفسي وحياتي عميق، واعٍ ومطلع بدقة متناهية على سجلات المستخدم ويومياته وعاداته وتجاربه عبر الزمن (Episodic, Semantic, Temporal, & Media Memory).
+2) ذكاء اصطناعي عام موسوعي يجيب عن أي موضوع في الحياة، العلوم، والتطوير الذاتي.
 
-      const formattedHabits = (habits || []).slice(0, 10).map((h: any) => {
-        if (!h) return "";
-        const doneDates = Object.entries(h.history || {}).filter(([_, completed]) => completed).map(([d]) => d).join(", ");
-        return `- العادة: ${h.name || ''} (${h.category || ''}) [الأيام: ${doneDates || 'لا توجد'}]`;
-      }).join("\n");
-
-      const formattedBooks = (books || []).slice(0, 10).map((b: any) => {
-        if (!b) return "";
-        return `- كتاب: "${b.title || ''}" [الملخص والملاحظات: ${b.notes || 'لا يوجد'}]`;
-      }).join("\n");
-      
-      const formattedGratitude = (gratitudeCards || []).slice(0, 15).map((g: any) => {
-        if (!g) return "";
-        return `- [${safeFormatDate(g.createdAt)}] ${g.text || ''}`;
-      }).join("\n");
-
-      let systemInstruction = `أنت المستشار الذكي في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح وحكمة، سواء كانت أسئلة خاصة بيومياته وتدويناته داخل التطبيق، أو أسئلة عامة في الحياة والتطوير الذاتي والصحة النفسية والمعرفة العامة.
-مهمتك الأساسية هي أن تكون مرشداً، طبيباً نفسياً صديقاً، خبيراً في تحليل البيانات والمشاعر، ومساعداً معنوياً وفكرياً متكاملاً للمستخدم.
-
-تمتلك الوصول الكامل والحيوي والتحليل العميق لجميع بيانات ومعلومات المستخدم المرفقة في التطبيق (المذكرات، الخواطر، تمارين العلاج المعرفي السلوكي CBT، الأدوية، النوم، الرياضة، المياه، الأعراض الجسدية، قائمة العادات وتاريخ الالتزام بها، الكتب المقروءة وملاحظاتها والخرائط الذهنية، بطاقات الامتنان والشكر، وقوائم المهام المنجزة وغير المنجزة).
-
-توجيهات الإجابة الجوهرية:
-1. قدرتك فائقة ومفتوحة للإجابة عن أي سؤال يطرحه المستخدم بدون استثناء، سواء كان السؤال يتعلق ببياناته الخاصة داخل التطبيق أو سؤالاً عاماً خارج التطبيق.
-2. إذا كان السؤال عن بياناته المسجلة داخل التطبيق (مثل: "ماذا حدث لي يوم 15 يوليو؟"، "ما هي كتب القراءة التي أضفتها؟"، "كيف كان مزاجي في الأسبوع الماضي؟"، "ما العادات التي ألتزم بها؟"):
-   - قم بالبحث الدقيق في كل قسم من البيانات المرفقة بالتاريخ واليوم والشهر والمحتوى.
-   - اقرأ المذكرات والبطاقات والعادات والكتب في ذلك التاريخ أو الموضوع، والخصها للمستخدم بلغة عربية فصحى راقية، سلسة، دافئة، متفهمة، ومباشرة.
-   - لا تعطِ قوائم بحث جافة أو أكواد، بل قدم صياغة تحليلية ذكية تظهر فهمك المباشر لما مر به ورؤيتك النفسية الداعمة.
-3. إذا كان السؤال عاماً أو خارجياً (مثل: أسئلة في الصحة النفسية، الاسترخاء، الثقافة، العلوم، التخطيط الشخصي، الحياة، الفلسفة، أو أي موضوع آخر):
-   - أجب باستفاضة، وضوح، وذكاء كمرشد وخبير حكيم دون أي تقييد!
-4. صغ إجاباتك دائماً بتنسيق Markdown جميل مع عناوين فرعية منسقة وتباعد مريح، وبطريقة محفزة ومريحة للأعصاب.` + getLanguageInstruction(reqLang);
+${groundedDirectives}` + getLanguageInstruction(reqLang);
 
       let userPrompt = "";
 
       if (reportType === "therapist") {
-        userPrompt = `بناءً على مذكراتي وتصرفاتي المسجلة في التطبيق (اليوميات والخواطر، وعاداتي ومدى التزامي بها، وكتبي وملخصاتي وملاحظات القراءة، وبطاقات الامتنان والشكر المكتوبة)، يرجى صياغة "تقرير جلسة العلاج النفسي الذكي" المخصص والكامل باللغة العربية الفصحى والموجه لأخصائي العلاج النفسي الخاص بي أو لمساعدتي ذاتياً.
-يرجى تغطية المحاور التالية بدقة شديدة وعلمية بالاعتماد الكلي على البيانات المرفقة:
+        userPrompt = `بناءً على سجلات المستخدم الموثقة في التطبيق المرفقة أدناه:
+${retrievedContext ? retrievedContext.formattedContextText : ''}
+
+يرجى صياغة "تقرير جلسة العلاج النفسي والتقييم السلوكي الشامل" بدقة علمية وموضوعية موجه للأخصائي النفسي أو للمستخدم ذاتياً، يغطي:
 1. 📝 ملخص الفترة الحالية وسياقها العام.
-2. 📊 تحليل دقيق للحالة النفسية والاتجاهات المزاجية (المشاعر الغالبة ونسبها وتغيرها).
-3. 🏆 أهم الإنجازات واللحظات الإيجابية التي تم رصدها (مع ربطها ببطاقات الامتنان وملاحظات الكتب المنجزة).
-4. 📉 الإخفاقات، ومسببات الإحباط أو التراجع.
-5. ⚡ مصادر التوتر الأساسية والمثيرات النفسية (Triggers).
-6. 🗣️ نقاط مقترحة ومحاور هامة لمناقشتها مع المعالج في الجلسة القادمة.
-7. 🔄 مقارنة موجزة بين الفترات وعادات النوم والرياضة والماء والالتزام بالعادات.
-8. 💡 نصائح وتوصيات سلوكية وعلاجية بناءة للمستخدم.
-
-أجب بتنسيق Markdown جميل مع تباعد مريح وعناوين بارزة.`;
+2. 📊 تحليل المشاعر والاتجاهات المزاجية عبر التواريخ المسجلة.
+3. 🏆 أهم الإنجازات واللحظات الإيجابية (مع ربطها بالامتنان والكتب والعادات).
+4. ⚡ مصادر التوتر والمثيرات (Triggers) الموثقة بالتواريخ.
+5. 🔗 تقاطعات السلوك: ربط جودة النوم ومعدل الرياضة بالأعراض النفسية والإنتاجية.
+6. 🗣️ محاور مقترحة للنقاش مع المعالج في الجلسة القادمة.
+7. 💡 توصيات معرفية وسلوكية واضحة وقابلة للتطبيق.`;
       } else {
-        userPrompt = `إليك سؤال أو طلب المستخدم: "${query}"
+        userPrompt = `سؤال المستخدم: "${userQuery}"
 
-بيانات ومعلومات المستخدم المسجلة في التطبيق للتحليل عند الحاجة:
+${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بيانات مسجلة مطابقة.'}
 
-1) مذكرات اليوميات والخواطر والتمارين والمهام والصحة:
-${(formattedDiaries && formattedDiaries.trim()) ? formattedDiaries : "المستخدم لم يضف يوميات بعد. أجب بشكل عام وادعه لكتابة أول تدوينة."}
-
-2) بطاقات مفكرة الامتنان والشكر:
-${formattedGratitude || "لا توجد بطاقات امتنان مسجلة بعد."}
-
-3) العادات السلوكية ومدى الالتزام اليومي والأسبوعي بها:
-${formattedHabits || "لا توجد عادات مسجلة بعد."}
-
-4) ركن الكتب والملخصات والملاحظات والخرائط الذهنية:
-${formattedBooks || "لا توجد كتب مسجلة بعد."}
-
-أجب الآن على سؤال المستخدم بأسلوب المستشار الذكي والدافئ والتحليلي المباشر:`;
+المطلوب:
+- أجب عن سؤال المستخدم بدقة استناداً إلى البيانات الموثقة المسترجعة أعلاه.
+- اذكر المصادر بوضوح عند استخدام معلومات شخصية.
+- إذا كان السؤال عاماً بالكامل، أجب بحكمة وذكاء وموسوعية دون التقيد بالتطبيق.
+- صغ إجابتك بتنسيق Markdown جميل ومتدفق.`;
       }
+
+      let extraParts: any[] = [];
       if (attachments && Array.isArray(attachments)) {
         extraParts = attachments
           .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType)
@@ -622,13 +640,38 @@ ${formattedBooks || "لا توجد كتب مسجلة بعد."}
               }
             };
           });
-        console.log(`[ATTACHMENT FORENSIC] DIARY PRO mode -> attachments count: ${attachments.length}, extraParts constructed: ${extraParts.length}`);
+      }
+
+      // Add multimodal parts extracted from the knowledge index (drawings, audio, images)
+      if (retrievedContext && retrievedContext.multimodalParts && retrievedContext.multimodalParts.length > 0) {
+        retrievedContext.multimodalParts.forEach((part: any) => {
+          if (part.data) {
+            extraParts.push({
+              inlineData: {
+                mimeType: part.mimeType,
+                data: part.data
+              }
+            });
+          } else if (part.fileUri) {
+            extraParts.push({
+              fileData: {
+                mimeType: part.mimeType,
+                fileUri: part.fileUri
+              }
+            });
+          }
+        });
       }
 
       const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse, extraParts);
-      return createSuccessResponse({ success: true, answer, source: 'gemini' });
+      return createSuccessResponse({
+        success: true,
+        answer,
+        source: 'gemini-unified',
+        citations: retrievedContext?.sourceCitations,
+        correlations: retrievedContext?.crossSourceCorrelations
+      });
     } catch (err: any) {
-      // Always return the rich local fallback — never surface raw errors to the user
       return createSuccessResponse({ success: true, answer: fallbackAnswer, source: 'smart-fallback' });
     }
   }

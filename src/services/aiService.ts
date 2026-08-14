@@ -14,8 +14,31 @@ import {
   HYBRID_SYSTEM_INSTRUCTION,
   transcribeAudioWithGemini
 } from '../lib/gemini';
+import {
+  buildUnifiedKnowledgeIndex,
+  retrieveRelevantKnowledge,
+  analyzeQueryIntent,
+  getGroundedSystemDirectives,
+  UnifiedKnowledgeIndex,
+  KnowledgeIndexOptions,
+  RetrievedKnowledgeContext
+} from './unifiedAIKnowledgeService';
 
-export { AI_MODEL, cleanModelIdentifier, getGeminiApiKey, hasValidGeminiKey, validateGeminiApiKey, HYBRID_SYSTEM_INSTRUCTION, transcribeAudioWithGemini };
+export {
+  AI_MODEL,
+  cleanModelIdentifier,
+  getGeminiApiKey,
+  hasValidGeminiKey,
+  validateGeminiApiKey,
+  HYBRID_SYSTEM_INSTRUCTION,
+  transcribeAudioWithGemini,
+  buildUnifiedKnowledgeIndex,
+  retrieveRelevantKnowledge,
+  analyzeQueryIntent,
+  getGroundedSystemDirectives,
+  UnifiedKnowledgeIndex
+};
+export type { KnowledgeIndexOptions, RetrievedKnowledgeContext };
 
 export interface AIResponse<T = string> {
   success: boolean;

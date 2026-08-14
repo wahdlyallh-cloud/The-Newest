@@ -356,7 +356,8 @@ export async function validateGeminiApiKey(
 export async function generateGeminiContentDirect(
   userPromptWithContext: string,
   systemInstruction?: string,
-  customKey?: string
+  customKey?: string,
+  extraParts?: any[]
 ): Promise<string> {
   // ── Key guard ─────────────────────────────────────────────────
   const cleanKey = getGeminiApiKey(customKey);
@@ -373,12 +374,17 @@ export async function generateGeminiContentDirect(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}` +
       `:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
 
+    // ── Build user parts array with optional multimodal items ─────
+    const partsArray = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
+      ? [...extraParts, { text: userPromptWithContext }]
+      : [{ text: userPromptWithContext }];
+
     // ── Build request body with mandatory BLOCK_NONE safety settings ─
     const requestBody: any = {
       contents: [
         {
           role: 'user',
-          parts: [{ text: userPromptWithContext }],
+          parts: partsArray,
         },
       ],
       safetySettings: SAFETY_SETTINGS_BLOCK_NONE,
