@@ -152,12 +152,12 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
   const flushTable = () => {
     if (inTable && tableHeader.length > 0) {
       elements.push(
-        <div key={`table-${currentKey++}`} className="my-3 overflow-x-auto rounded-xl border border-[#E2DCC8] shadow-3xs pdf-card-block">
-          <table className="w-full text-xs text-right border-collapse bg-white">
+        <div key={`table-${currentKey++}`} className="my-3 overflow-x-auto rounded-xl border border-[#E2DCC8] shadow-3xs max-w-full pdf-card-block">
+          <table className="w-full min-w-[280px] text-xs text-right border-collapse bg-white">
             <thead className="bg-[#F0EDE4] text-[#5A5A40] font-bold border-b border-[#E2DCC8]">
               <tr>
                 {tableHeader.map((cell, idx) => (
-                  <th key={idx} className="p-2.5 border-l border-[#E2DCC8] last:border-l-0 text-right">
+                  <th key={idx} className="p-2 sm:p-2.5 border-l border-[#E2DCC8] last:border-l-0 text-right break-words">
                     {parseInlineFormatting(cell.trim())}
                   </th>
                 ))}
@@ -167,7 +167,7 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
               {tableRows.map((row, rIdx) => (
                 <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-white' : 'bg-[#FAF8F5]'}>
                   {row.map((cell, cIdx) => (
-                    <td key={cIdx} className="p-2 border-t border-l border-[#E2DCC8] last:border-l-0 text-gray-800 text-right">
+                    <td key={cIdx} className="p-2 border-t border-l border-[#E2DCC8] last:border-l-0 text-gray-800 text-right break-words">
                       {parseInlineFormatting(cell.trim())}
                     </td>
                   ))}
@@ -207,16 +207,15 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
     if (!line) continue;
 
     // ASCII Progress Bar Detection
-    // e.g., ]████████████████[ القلق والتوتر (40%) or [████████████████] القلق والتوتر (40%)
     const progressBarMatch = line.match(/^[\[\]][█\s#]+[\[\]]\s*(.*?)\s*\((\d+)%\)/) || line.match(/^(.*?)\s*\((\d+)%\)\s*:\s*[\[\]][█\s#]+[\[\]]/);
     if (progressBarMatch) {
       const label = progressBarMatch[1] || progressBarMatch[3] || 'مؤشر نفسي';
       const percentage = parseInt(progressBarMatch[2] || '50', 10);
       elements.push(
-        <div key={`progress-${currentKey++}`} className="my-2.5 p-2.5 bg-white rounded-xl border border-[#E2DCC8] space-y-1.5 pdf-card-block">
-          <div className="flex justify-between items-center text-xs font-bold text-[#3A3A3A]">
-            <span>{parseInlineFormatting(label)}</span>
-            <span className="text-[#5A5A40] font-black bg-[#8B9D83]/20 px-2 py-0.5 rounded-lg text-[11px]">{percentage}%</span>
+        <div key={`progress-${currentKey++}`} className="my-2.5 p-2.5 bg-white rounded-xl border border-[#E2DCC8] space-y-1.5 pdf-card-block max-w-full">
+          <div className="flex justify-between items-center text-xs font-bold text-[#3A3A3A] gap-2 flex-wrap">
+            <span className="break-words">{parseInlineFormatting(label)}</span>
+            <span className="text-[#5A5A40] font-black bg-[#8B9D83]/20 px-2 py-0.5 rounded-lg text-[11px] shrink-0">{percentage}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden border border-[#E2DCC8]">
             <div
@@ -232,31 +231,31 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
     // Headers
     if (line.startsWith('#### ')) {
       elements.push(
-        <h4 key={`h4-${currentKey++}`} className="text-xs font-black text-[#5A5A40] mt-3 mb-1">
+        <h4 key={`h4-${currentKey++}`} className="text-xs font-black text-[#5A5A40] mt-3 mb-1 break-words">
           {parseInlineFormatting(line.replace(/^####\s*/, ''))}
         </h4>
       );
     } else if (line.startsWith('### ')) {
       elements.push(
-        <h3 key={`h3-${currentKey++}`} className="text-sm font-black text-[#5A5A40] border-b border-[#E2DCC8] pb-1 mt-4 mb-2 flex items-center gap-1.5">
+        <h3 key={`h3-${currentKey++}`} className="text-xs sm:text-sm font-black text-[#5A5A40] border-b border-[#E2DCC8] pb-1 mt-3 sm:mt-4 mb-2 flex items-center gap-1.5 break-words">
           <span>{parseInlineFormatting(line.replace(/^###\s*/, ''))}</span>
         </h3>
       );
     } else if (line.startsWith('## ')) {
       elements.push(
-        <h2 key={`h2-${currentKey++}`} className="text-sm font-black text-[#2B3E50] border-b border-[#8B9D83] pb-1 mt-4 mb-2">
+        <h2 key={`h2-${currentKey++}`} className="text-sm font-black text-[#2B3E50] border-b border-[#8B9D83] pb-1 mt-3 sm:mt-4 mb-2 break-words">
           {parseInlineFormatting(line.replace(/^##\s*/, ''))}
         </h2>
       );
     } else if (line.startsWith('# ')) {
       elements.push(
-        <h1 key={`h1-${currentKey++}`} className="text-base font-black text-[#5A5A40] text-center my-3">
+        <h1 key={`h1-${currentKey++}`} className="text-sm sm:text-base font-black text-[#5A5A40] text-center my-3 break-words">
           {parseInlineFormatting(line.replace(/^#\s*/, ''))}
         </h1>
       );
     } else if (line.startsWith('> ') || line.startsWith('< ')) {
       elements.push(
-        <blockquote key={`quote-${currentKey++}`} className="bg-[#FAF8F5] border-r-4 border-[#8B9D83] p-3 rounded-l-xl my-2 text-xs text-gray-700 font-medium leading-relaxed">
+        <blockquote key={`quote-${currentKey++}`} className="bg-[#FAF8F5] border-r-4 border-[#8B9D83] p-2.5 sm:p-3 rounded-l-xl my-2 text-xs text-gray-700 font-medium leading-relaxed break-words max-w-full">
           {parseInlineFormatting(line.replace(/^[><]\s*/, ''))}
         </blockquote>
       );
@@ -264,14 +263,14 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
       elements.push(<hr key={`hr-${currentKey++}`} className="border-t border-[#E2DCC8] my-3" />);
     } else if (line.startsWith('* ') || line.startsWith('- ') || line.startsWith('• ')) {
       elements.push(
-        <div key={`li-${currentKey++}`} className="flex items-start gap-2 text-xs text-gray-800 my-1 leading-relaxed">
+        <div key={`li-${currentKey++}`} className="flex items-start gap-2 text-xs text-gray-800 my-1 leading-relaxed break-words max-w-full">
           <span className="text-[#8B9D83] font-black text-sm shrink-0">•</span>
-          <span>{parseInlineFormatting(line.replace(/^[*•-]\s*/, ''))}</span>
+          <span className="break-words">{parseInlineFormatting(line.replace(/^[*•-]\s*/, ''))}</span>
         </div>
       );
     } else {
       elements.push(
-        <p key={`p-${currentKey++}`} className="text-xs text-gray-800 leading-relaxed my-1">
+        <p key={`p-${currentKey++}`} className="text-xs text-gray-800 leading-relaxed my-1 break-words max-w-full">
           {parseInlineFormatting(line)}
         </p>
       );
@@ -280,7 +279,7 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
 
   flushTable();
 
-  return <div className="space-y-1 text-right text-[#3A3A3A] font-sans">{elements}</div>;
+  return <div className="space-y-1 text-right text-[#3A3A3A] font-sans break-words">{elements}</div>;
 };
 
 interface MonthlyMentalHealthPDFReportModalProps {
@@ -978,23 +977,23 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-[#2B3E50]/60 backdrop-blur-md font-sans overflow-y-auto" dir={langInfo.dir}>
-      <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[94vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200 my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#2B3E50]/70 backdrop-blur-md font-sans" dir={langInfo.dir}>
+      <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-5xl h-full max-h-[96vh] md:max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Top Header Bar */}
-        <div className="p-4 sm:p-5 bg-gradient-to-l from-[#5A5A40] via-[#6B7C62] to-[#8B9D83] text-white flex items-center justify-between shrink-0 shadow-xs">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="p-2.5 bg-white/15 rounded-2xl border border-white/20 shadow-3xs">
-              <FileCheck2 className="w-6 h-6 text-[#FEFAE0]" />
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-gradient-to-l from-[#5A5A40] via-[#6B7C62] to-[#8B9D83] text-white flex items-center justify-between shrink-0 shadow-xs">
+          <div className="flex items-center space-x-3 space-x-reverse min-w-0">
+            <div className="p-2 sm:p-2.5 bg-white/15 rounded-2xl border border-white/20 shadow-3xs shrink-0">
+              <FileCheck2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#FEFAE0]" />
             </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-black text-white flex items-center gap-2 flex-wrap truncate">
                 <span>{isEn ? 'Export Mental Health Report (Custom PDF)' : 'تصدير تقرير الصحة النفسية (PDF المخصص)'}</span>
-                <span className="bg-[#FEFAE0] text-[#5A5A40] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                  {isEn ? 'Weekly / Monthly / Yearly / Custom' : 'أسبوعي / شهري / سنوي / مخصص'}
+                <span className="bg-[#FEFAE0] text-[#5A5A40] text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">
+                  {isEn ? 'Custom Period' : 'فترة مخصصة'}
                 </span>
               </h2>
-              <p className="text-xs text-[#E2DCC8] font-medium">
+              <p className="text-[11px] text-[#E2DCC8] font-medium truncate hidden sm:block">
                 {isEn ? 'Comprehensive structured document customizable by date range for sharing with therapists & doctors' : 'وثيقة منظمة وشاملة قابلة للتخصيص حسب الفترة الزمانية لمشاركتها مع المعالجين والأطباء النفسيين'}
               </p>
             </div>
@@ -1002,74 +1001,75 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
+            className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer shrink-0"
+            title={isEn ? 'Close' : 'إغلاق'}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Dynamic Period Selector Control Panel */}
-        <div className="p-4 bg-[#F9F7F2] border-b border-[#E2DCC8] space-y-3 shrink-0">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            
-            {/* Period Type Tabs: Daily, Weekly, Monthly, Quarterly, Semi-Annually, Yearly, Custom */}
-            <div className="flex flex-wrap items-center bg-[#EAE7DC] p-1 rounded-2xl border border-[#E2DCC8] gap-0.5">
-              {[
-                { id: 'daily', label: isEn ? '☀️ Daily' : '☀️ يومي' },
-                { id: 'weekly', label: isEn ? '📅 Weekly' : '📅 أسبوعي' },
-                { id: 'monthly', label: isEn ? '📆 Monthly' : '📆 شهري' },
-                { id: 'quarterly', label: isEn ? '🧱 Quarterly' : '🧱 ربع سنوي' },
-                { id: 'semi-annually', label: isEn ? '🌓 Semi-Annual' : '🌓 نصف سنوي' },
-                { id: 'yearly', label: isEn ? '📊 Yearly' : '📊 سنوي' },
-                { id: 'custom', label: isEn ? '⚙️ Custom' : '⚙️ مخصص' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setPeriodType(tab.id as any);
-                    setSelectedOffset(0);
-                  }}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    periodType === tab.id
-                      ? 'bg-white text-[#5A5A40] shadow-xs font-black'
-                      : 'text-gray-600 hover:text-[#5A5A40]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+        <div className="px-3.5 py-2.5 sm:px-5 sm:py-3 bg-[#F9F7F2] border-b border-[#E2DCC8] space-y-2.5 shrink-0">
+
+          {/* Row 1: Period Type Horizontal Scrollable Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none max-w-full">
+            {[
+              { id: 'daily', label: isEn ? '☀️ Daily' : '☀️ يومي' },
+              { id: 'weekly', label: isEn ? '📅 Weekly' : '📅 أسبوعي' },
+              { id: 'monthly', label: isEn ? '📆 Monthly' : '📆 شهري' },
+              { id: 'quarterly', label: isEn ? '🧱 Quarterly' : '🧱 ربع سنوي' },
+              { id: 'semi-annually', label: isEn ? '🌓 Semi-Annual' : '🌓 نصف سنوي' },
+              { id: 'yearly', label: isEn ? '📊 Yearly' : '📊 سنوي' },
+              { id: 'custom', label: isEn ? '⚙️ Custom' : '⚙️ مخصص' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setPeriodType(tab.id as any);
+                  setSelectedOffset(0);
+                }}
+                className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                  periodType === tab.id
+                    ? 'bg-[#5A5A40] text-white shadow-xs font-black'
+                    : 'bg-[#EAE7DC] text-gray-700 hover:text-[#5A5A40] hover:bg-[#DFDBCF]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Row 2: Range Selection & Action Buttons Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
 
             {/* Sub-selector or Custom Date Pickers */}
-            <div className="flex items-center space-x-2 space-x-reverse">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {periodType === 'custom' ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-[#5A5A40]">
-                  <span>{isEn ? 'From:' : 'من:'}</span>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A5A40] flex-wrap">
+                  <span className="shrink-0">{isEn ? 'From:' : 'من:'}</span>
                   <input
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="bg-white border border-[#E2DCC8] rounded-xl px-2.5 py-1 text-xs text-[#3A3A3A] font-bold shadow-3xs"
+                    className="bg-white border border-[#E2DCC8] rounded-xl px-2 py-1 text-xs text-[#3A3A3A] font-bold shadow-3xs"
                   />
-                  <span>{isEn ? 'To:' : 'إلى:'}</span>
+                  <span className="shrink-0">{isEn ? 'To:' : 'إلى:'}</span>
                   <input
                     type="date"
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="bg-white border border-[#E2DCC8] rounded-xl px-2.5 py-1 text-xs text-[#3A3A3A] font-bold shadow-3xs"
+                    className="bg-white border border-[#E2DCC8] rounded-xl px-2 py-1 text-xs text-[#3A3A3A] font-bold shadow-3xs"
                   />
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <span className="text-xs font-bold text-[#5A5A40] flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-[#8B9D83]" />
-                    <span>{isEn ? 'Range:' : 'حدد الفاصل:'}</span>
-                  </span>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A5A40]">
+                  <Clock className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
+                  <span className="shrink-0">{isEn ? 'Range:' : 'الفاصل:'}</span>
                   <select
                     value={selectedOffset}
                     onChange={(e) => setSelectedOffset(Number(e.target.value))}
-                    className="bg-white border border-[#E2DCC8] text-[#3A3A3A] text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#8B9D83] shadow-3xs cursor-pointer"
+                    className="bg-white border border-[#E2DCC8] text-[#3A3A3A] text-xs font-bold rounded-xl px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-[#8B9D83] shadow-3xs cursor-pointer"
                   >
                     {periodType === 'daily' && (
                       <>
@@ -1125,24 +1125,24 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            {/* Action Buttons Group */}
+            <div className="flex items-center gap-1.5 flex-wrap justify-end">
               <button
                 type="button"
                 onClick={() => setShowHistoryDrawer(true)}
-                className="px-3.5 py-1.5 bg-[#5A5A40] hover:bg-[#2B3E50] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#5A5A40] hover:bg-[#2B3E50] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
               >
                 <History className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                <span>{isEn ? `Saved Reports (${savedReports.length}) 📜` : `سجل التقارير المولدة (${savedReports.length}) 📜`}</span>
+                <span>{isEn ? `History (${savedReports.length})` : `السجل (${savedReports.length}) 📜`}</span>
               </button>
 
               <button
                 type="button"
                 onClick={saveCurrentReportToHistory}
-                className="px-3.5 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5 text-white" />
-                <span>{isEn ? 'Save Report 💾' : 'حفظ التقرير في السجل 💾'}</span>
+                <span>{isEn ? 'Save' : 'حفظ 💾'}</span>
               </button>
 
               {!aiAnalysisText && (
@@ -1150,87 +1150,71 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   type="button"
                   onClick={generateAiReport}
                   disabled={loadingAi}
-                  className="px-3.5 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   <Brain className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                  <span>{loadingAi ? (isEn ? 'Analyzing...' : 'جاري التحليل...') : (isEn ? 'Generate AI Summary 🧠' : 'توليد ملخص المستشار الذكي 🧠')}</span>
+                  <span>{loadingAi ? (isEn ? 'Analyzing...' : 'جاري التحليل...') : (isEn ? 'AI Summary 🧠' : 'ملخص الذكاء الاصطناعي 🧠')}</span>
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={handleCopyText}
-                className="px-3 py-1.5 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
+                title={isEn ? 'Copy Text' : 'نسخ النص'}
               >
                 {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
-                <span>{copySuccess ? (isEn ? 'Copied!' : 'تم النسخ!') : (isEn ? 'Copy Text' : 'نسخ النص')}</span>
+                <span className="hidden sm:inline">{copySuccess ? (isEn ? 'Copied!' : 'تم النسخ!') : (isEn ? 'Copy' : 'نسخ')}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDownloadDoc}
-                className="px-3 py-1.5 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-[#2B3E50] text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-[#2B3E50] text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
+                title="Word Document (.doc)"
               >
                 <FileCode className="w-3.5 h-3.5 text-blue-600" />
-                <span>Word (.doc)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDownloadTxt}
-                className="px-3 py-1.5 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-[#5A5A40]" />
-                <span>{isEn ? 'Text (UTF-8)' : 'نصي (UTF-8)'}</span>
+                <span className="hidden md:inline">Word</span>
               </button>
 
               <button
                 type="button"
                 onClick={handlePrintPdf}
-                className="px-3 py-1.5 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1.5 cursor-pointer"
+                className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
+                title={isEn ? 'Print' : 'طباعة'}
               >
                 <Printer className="w-3.5 h-3.5 text-[#5A5A40]" />
-                <span>{isEn ? 'Print / Save PDF 🖨️' : 'طباعة / حفظ PDF 🖨️'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                disabled={isExportingPdf}
-                className="px-3.5 py-1.5 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <Download className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                <span>{isExportingPdf ? 'معالجة...' : 'تصدير PDF 📄'}</span>
+                <span className="hidden md:inline">{isEn ? 'Print' : 'طباعة'}</span>
               </button>
             </div>
 
           </div>
         </div>
 
-        {/* PDF Document Preview & Printable Container */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-grow bg-[#EAE8E1]/40">
+        {/* Master Single Vertical Scroll Area for Report Document */}
+        <div className="p-2.5 sm:p-4 md:p-6 overflow-y-auto flex-1 overscroll-contain bg-[#EAE8E1]/30">
           
           <div 
             ref={reportRef}
             id="monthly-pdf-report-canvas"
-            className="bg-white border border-[#E2DCC8] rounded-3xl p-6 sm:p-8 shadow-md max-w-3xl mx-auto space-y-6 text-right text-[#3A3A3A] font-sans"
+            className="bg-white border border-[#E2DCC8] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-md max-w-4xl mx-auto space-y-4 sm:space-y-6 text-right text-[#3A3A3A] font-sans break-words [overflow-wrap:anywhere]"
             dir="rtl"
           >
             {/* PDF Header Section */}
-            <div className="border-b-2 border-[#5A5A40] pb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="space-y-1 text-center sm:text-right">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <span className="p-1.5 bg-[#8B9D83]/20 text-[#5A5A40] rounded-xl text-lg">🎓</span>
-                  <h1 className="text-xl font-black text-[#5A5A40]">
+            <div className="border-b-2 border-[#5A5A40] pb-3 sm:pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="space-y-1 text-right">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 bg-[#8B9D83]/20 text-[#5A5A40] rounded-xl text-base sm:text-lg shrink-0">🎓</span>
+                  <h1 className="text-base sm:text-lg md:text-xl font-black text-[#5A5A40] break-words">
                     {periodTitle}
                   </h1>
                 </div>
-                <p className="text-xs text-gray-500 font-bold">
+                <p className="text-[11px] text-gray-500 font-bold">
                   منصة حياة AI | المستند السريري الشامل المجهز للمختص والأطباء النفسيين
                 </p>
               </div>
 
-              <div className="bg-[#F9F7F2] border border-[#E2DCC8] p-3 rounded-2xl text-xs space-y-1 text-left sm:text-left shrink-0">
+              <div className="bg-[#F9F7F2] border border-[#E2DCC8] p-2.5 rounded-xl text-xs space-y-1 text-right shrink-0 w-full sm:w-auto">
                 <p className="font-bold text-[#5A5A40]">النطاق: <span className="font-black text-[#2B3E50]">{periodLabel}</span></p>
                 <p className="text-[10px] text-gray-500">تاريخ الإصدار: {new Date().toLocaleDateString('ar-EG')}</p>
                 <span className="inline-block bg-[#8B9D83] text-white text-[9px] font-black px-2 py-0.5 rounded-md">
@@ -1240,52 +1224,52 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             </div>
 
             {/* Key Metrics Cards Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3.5 rounded-2xl space-y-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5 text-[#5A5A40]" />
-                  <span>{isEn ? 'Logged Diaries' : 'اليوميات المدونة'}</span>
+                  <FileText className="w-3.5 h-3.5 text-[#5A5A40] shrink-0" />
+                  <span className="truncate">{isEn ? 'Logged Diaries' : 'اليوميات المدونة'}</span>
                 </span>
-                <p className="text-lg font-black text-[#2B3E50]">{stats.totalDiaries} <span className="text-xs font-normal text-gray-500">{isEn ? 'entries' : 'مذكرة'}</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.totalDiaries} <span className="text-xs font-normal text-gray-500">{isEn ? 'entries' : 'مذكرة'}</span></p>
               </div>
 
-              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3.5 rounded-2xl space-y-1">
+              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
-                  <Moon className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>{isEn ? 'Avg Sleep' : 'متوسط النوم'}</span>
+                  <Moon className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span className="truncate">{isEn ? 'Avg Sleep' : 'متوسط النوم'}</span>
                 </span>
-                <p className="text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{isEn ? 'hrs/night' : 'ساعة/ليلة'}</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{isEn ? 'hrs' : 'ساعة'}</span></p>
               </div>
 
-              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3.5 rounded-2xl space-y-1">
+              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
-                  <Smile className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{isEn ? 'Mood Score' : 'معدل المزاج'}</span>
+                  <Smile className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="truncate">{isEn ? 'Mood Score' : 'معدل المزاج'}</span>
                 </span>
-                <p className="text-lg font-black text-[#2B3E50]">{stats.avgMood} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgMood} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
               </div>
 
-              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3.5 rounded-2xl space-y-1">
+              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
-                  <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{isEn ? 'Exercise Time' : 'وقت الرياضة'}</span>
+                  <Activity className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="truncate">{isEn ? 'Exercise Time' : 'وقت الرياضة'}</span>
                 </span>
-                <p className="text-lg font-black text-emerald-700">{stats.totalSportsMinutes} <span className="text-xs font-normal text-gray-500">{isEn ? 'min' : 'دقيقة'}</span></p>
+                <p className="text-base sm:text-lg font-black text-emerald-700">{stats.totalSportsMinutes} <span className="text-xs font-normal text-gray-500">{isEn ? 'min' : 'دقيقة'}</span></p>
               </div>
             </div>
 
             {/* Visual Chart Embed: Sleep vs Fast Mood Correlation */}
-            <div className="border border-[#E2DCC8] rounded-2xl p-4 bg-[#FBF9F5] space-y-2 pdf-card-block">
+            <div className="border border-[#E2DCC8] rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-[#FBF9F5] space-y-2 max-w-full overflow-hidden pdf-card-block">
               <div className="flex items-center justify-between text-xs font-extrabold text-[#5A5A40] border-b border-[#E2DCC8] pb-2">
                 <span className="flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-[#8B9D83]" />
+                  <TrendingUp className="w-4 h-4 text-[#8B9D83] shrink-0" />
                   <span>{isEn ? 'Sleep vs Mood Trend Chart' : 'الرسم البياني للربط بين النوم والمزاج (Sleep vs Mood Trend)'}</span>
                 </span>
-                <span className="text-[10px] text-gray-500">{isEn ? 'Time breakdown' : 'توزيع الفترة الزمانية'}</span>
+                <span className="text-[10px] text-gray-500 shrink-0">{isEn ? 'Timeline' : 'توزيع الفترة'}</span>
               </div>
 
-              <div className="h-56 min-h-[220px] w-full pt-2">
-                <ResponsiveContainer width="100%" height={220}>
+              <div className="h-52 sm:h-56 min-h-[190px] w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E2DCC8" />
                     <XAxis dataKey="date" stroke="#5A5A40" tick={{ fontSize: 9 }} />
@@ -1299,29 +1283,29 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             </div>
 
             {/* AI Counselor & Clinical Analysis Box */}
-            <div className="border border-[#E2DCC8] rounded-2xl p-4 bg-[#F9F7F2] space-y-3 pdf-card-block">
-              <div className="flex items-center justify-between border-b border-[#E2DCC8] pb-2">
-                <h3 className="font-extrabold text-sm text-[#5A5A40] flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#D4A373]" />
+            <div className="border border-[#E2DCC8] rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-[#F9F7F2] space-y-3 pdf-card-block">
+              <div className="flex items-center justify-between border-b border-[#E2DCC8] pb-2 flex-wrap gap-2">
+                <h3 className="font-extrabold text-xs sm:text-sm text-[#5A5A40] flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-[#D4A373] shrink-0" />
                   <span>{isEn ? 'Clinical Psychological Analysis (AI Advisor)' : 'التقرير والتحليل النفسي السريري (المستشار الذكي)'}</span>
                 </h3>
                 {loadingAi && <span className="text-xs text-[#8B9D83] font-bold animate-pulse">{isEn ? 'Analyzing...' : 'جاري التحليلات...'}</span>}
               </div>
 
-              <div className="text-xs text-gray-800 leading-relaxed font-normal bg-white p-3.5 rounded-xl border border-[#E2DCC8]/60 min-h-[100px]">
+              <div className="text-xs text-gray-800 leading-relaxed font-normal bg-white p-3 sm:p-4 rounded-xl border border-[#E2DCC8]/60 min-h-[90px] break-words">
                 {aiAnalysisText ? (
                   <FormattedReportView content={aiAnalysisText} />
                 ) : (
                   <div className="text-gray-400 italic text-center py-4">
-                    {isEn ? 'Click "Generate AI Summary" above to include behavior & mood analysis for this period.' : 'انقر على زر "توليد ملخص المستشار الذكي" أعلاه لإدراج تحليلات الملاحظات والسلوكيات لهذه الفترة.'}
+                    {isEn ? 'Click "AI Summary" above to include behavior & mood analysis for this period.' : 'انقر على زر "ملخص الذكاء الاصطناعي 🧠" أعلاه لإدراج تحليلات الملاحظات والسلوكيات لهذه الفترة.'}
                   </div>
                 )}
               </div>
             </div>
 
             {/* Dominant Moods & Habits Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-4 rounded-2xl space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2">
                 <h4 className="font-bold text-xs text-[#5A5A40]">{isEn ? 'Top Logged Feelings:' : 'أبرز المشاعر المسجلة خلال الفترة:'}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {stats.topMoods.length > 0 ? (
@@ -1336,7 +1320,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 </div>
               </div>
 
-              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-4 rounded-2xl space-y-2">
+              <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2">
                 <h4 className="font-bold text-xs text-[#5A5A40]">{isEn ? 'Daily Habits Commitment:' : 'التزام العادات اليومية:'}</h4>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-600 font-medium">{isEn ? 'Completion Rate:' : 'نسبة الإنجاز:'}</span>
@@ -1349,13 +1333,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             </div>
 
             {/* DUAL CARD THERAPY SESSION SECTION */}
-            <div className="border border-[#E2DCC8] rounded-2xl p-4 bg-[#F9F7F2] space-y-4 pdf-card-block">
+            <div className="border border-[#E2DCC8] rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-[#F9F7F2] space-y-3 sm:space-y-4 pdf-card-block">
               
               {/* Header Title Bar */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#E2DCC8] pb-3 gap-2">
                 <div>
-                  <h3 className="font-black text-sm text-[#5A5A40] flex items-center gap-2">
-                    <ArrowRightLeft className="w-4 h-4 text-[#8B9D83]" />
+                  <h3 className="font-black text-xs sm:text-sm text-[#5A5A40] flex items-center gap-2">
+                    <ArrowRightLeft className="w-4 h-4 text-[#8B9D83] shrink-0" />
                     <span>{isEn ? 'Therapy Session Review & Monitoring (Pre & Post Session)' : 'رصد ومتابعة الجلسة العلاجية (ما قبل وما بعد الجلسة)'}</span>
                   </h3>
                   <p className="text-[11px] text-gray-500 mt-0.5">
@@ -1364,8 +1348,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 </div>
 
                 {/* Live Mood Delta Comparison Badge */}
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-[#E2DCC8] shadow-3xs text-xs font-bold">
-                  <span className="text-gray-500">{isEn ? 'Mood Recovery Delta:' : 'فرق التعافي المزاجي:'}</span>
+                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-[#E2DCC8] shadow-3xs text-xs font-bold shrink-0">
+                  <span className="text-gray-500">{isEn ? 'Recovery:' : 'التعافي:'}</span>
                   <span className={`font-black ${postSessionMood - preSessionMood >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
                     {postSessionMood - preSessionMood >= 0 ? `+${postSessionMood - preSessionMood}% 📈` : `${postSessionMood - preSessionMood}% 📉`}
                   </span>
@@ -1373,22 +1357,22 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               </div>
 
               {/* Dual Grid Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 relative items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
                 
                 {/* RIGHT SIDE CARD: Pre-Session */}
-                <div className="bg-white border-2 border-[#E2DCC8] rounded-2xl p-4 space-y-3 shadow-3xs relative">
-                  <div className="flex items-center justify-between border-b border-[#F0EDE4] pb-2 bg-[#F7F5EE] -mx-4 -mt-4 p-3 rounded-t-2xl">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-[#8B9D83] text-white rounded-xl shadow-3xs">
+                <div className="bg-white border border-[#E2DCC8] rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-3 shadow-3xs">
+                  <div className="flex items-center justify-between border-b border-[#F0EDE4] pb-2 bg-[#F7F5EE] -mx-3 -mt-3 sm:-mx-4 sm:-mt-4 p-2.5 sm:p-3 rounded-t-xl sm:rounded-t-2xl">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="p-1.5 bg-[#8B9D83] text-white rounded-xl shadow-3xs shrink-0">
                         <Stethoscope className="w-4 h-4" />
                       </div>
-                      <div>
-                        <h4 className="font-extrabold text-xs text-[#2B3E50]">{isEn ? 'Pre-Session Preparation' : 'أيقونة ما قبل الجلسة (إعداد المستشار والمعالج)'}</h4>
-                        <span className="text-[10px] text-gray-500">{isEn ? 'Patient notes & questions' : 'الأسئلة وملاحظات المريض قبل الجلسة'}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-extrabold text-xs text-[#2B3E50] truncate">{isEn ? 'Pre-Session Prep' : 'ما قبل الجلسة (تحضير المريض)'}</h4>
+                        <span className="text-[10px] text-gray-500 truncate block">{isEn ? 'Notes & questions' : 'الملاحظات والأسئلة'}</span>
                       </div>
                     </div>
-                    <span className="text-xs font-black text-[#5A5A40] bg-white px-2.5 py-1 rounded-lg border border-[#E2DCC8]">
-                      {preSessionMood}% {preSessionMoodLabel}
+                    <span className="text-xs font-black text-[#5A5A40] bg-white px-2 py-0.5 rounded-lg border border-[#E2DCC8] shrink-0">
+                      {preSessionMood}%
                     </span>
                   </div>
 
@@ -1396,11 +1380,11 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1.5 bg-[#FAF8F5] p-2.5 rounded-xl border border-[#E2DCC8]">
                     <div className="flex items-center justify-between text-xs font-bold text-[#5A5A40]">
                       <span className="flex items-center gap-1">
-                        <Smile className="w-3.5 h-3.5 text-[#8B9D83]" />
-                        <span>{isEn ? 'Pre-session mood level (%):' : 'تسجيل المزاج قبل الجلسة (%):'}</span>
+                        <Smile className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
+                        <span>{isEn ? 'Pre-session mood:' : 'المزاج قبل الجلسة:'}</span>
                       </span>
                       <span className="text-xs font-black text-[#8B9D83] bg-white px-2 py-0.5 rounded-md border border-[#E2DCC8]">
-                        {preSessionMood}%
+                        {preSessionMood}% {preSessionMoodLabel}
                       </span>
                     </div>
                     
@@ -1421,7 +1405,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     />
 
                     {/* Quick Emoji Buttons */}
-                    <div className="flex items-center justify-between gap-1 pt-1">
+                    <div className="grid grid-cols-5 gap-1 pt-1">
                       {MOOD_PRESETS.map((m) => (
                         <button
                           key={m.percentage}
@@ -1430,54 +1414,54 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                             setPreSessionMood(m.percentage);
                             setPreSessionMoodLabel(m.label);
                           }}
-                          className={`flex-1 text-[11px] font-bold py-1 px-1 rounded-lg border transition-all cursor-pointer text-center ${
+                          className={`text-[11px] font-bold py-1 px-0.5 rounded-lg border transition-all cursor-pointer text-center ${
                             preSessionMood === m.percentage ? 'bg-[#5A5A40] text-white border-[#5A5A40] shadow-3xs' : 'bg-white text-gray-700 border-[#E2DCC8] hover:bg-gray-50'
                           }`}
                         >
-                          <span>{m.emoji}</span>
-                          <span className="block text-[9px] truncate">{m.percentage}%</span>
+                          <span className="block">{m.emoji}</span>
+                          <span className="block text-[8px] truncate">{m.percentage}%</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   {/* Questions & Notes for Therapist */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label className="block text-xs font-extrabold text-[#5A5A40]">
-                      {isEn ? '✍️ Questions & Notes to Discuss with Your Therapist:' : '✍️ أسئلة وملاحظات ترغب بمناقشتها مع معالجك النفسي في الجلسة:'}
+                      {isEn ? '✍️ Notes to Discuss with Therapist:' : '✍️ أسئلة وملاحظات ترغب بمناقشتها مع معالجك:'}
                     </label>
                     <textarea
                       value={patientNotes}
                       onChange={(e) => setPatientNotes(e.target.value)}
-                      placeholder={isEn ? 'Write questions or thoughts to bring to your next session...' : 'اكتب هنا أي استفسارات، مواقف أثرت عليك، أو نقاط تود طرحها على الطبيب المعالج أثناء الجلسة القادمة...'}
+                      placeholder={isEn ? 'Write questions or thoughts...' : 'اكتب هنا أي استفسارات أو مواقف تود طرحها على المعالج في الجلسة القادمة...'}
                       rows={3}
-                      className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl p-2.5 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed"
+                      className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed break-words"
                     />
                   </div>
                 </div>
 
                 {/* LEFT SIDE CARD: Post-Session */}
-                <div className="bg-white border-2 border-[#8B9D83]/60 rounded-2xl p-4 space-y-3 shadow-3xs relative">
-                  <div className="flex items-center justify-between border-b border-[#E8F0E6] pb-2 bg-[#F2F7F0] -mx-4 -mt-4 p-3 rounded-t-2xl">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-[#5A5A40] text-white rounded-xl shadow-3xs">
+                <div className="bg-white border border-[#8B9D83]/60 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-3 shadow-3xs">
+                  <div className="flex items-center justify-between border-b border-[#E8F0E6] pb-2 bg-[#F2F7F0] -mx-3 -mt-3 sm:-mx-4 sm:-mt-4 p-2.5 sm:p-3 rounded-t-xl sm:rounded-t-2xl">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="p-1.5 bg-[#5A5A40] text-white rounded-xl shadow-3xs shrink-0">
                         <UserCheck className="w-4 h-4" />
                       </div>
-                      <div>
-                        <h4 className="font-extrabold text-xs text-[#2D5A27]">{isEn ? 'Post-Session Feedback & Homework' : 'أيقونة ما بعد الجلسة (نتائج ورأي وتوصيات المعالج)'}</h4>
-                        <span className="text-[10px] text-gray-500">{isEn ? 'Therapist advice, feedback & tasks' : 'استجابة المريض، رد المعالج والمهام المطلوبة'}</span>
+                      <div className="min-w-0">
+                        <h4 className="font-extrabold text-xs text-[#2D5A27] truncate">{isEn ? 'Post-Session Feedback' : 'ما بعد الجلسة (توصيات المعالج)'}</h4>
+                        <span className="text-[10px] text-gray-500 truncate block">{isEn ? 'Advice & Homework' : 'التوجيهات والمهام المطلوبة'}</span>
                       </div>
                     </div>
-                    <span className="text-xs font-black text-[#2D5A27] bg-white px-2.5 py-1 rounded-lg border border-[#C2DCBE]">
-                      {postSessionMood}% {postSessionMoodLabel}
+                    <span className="text-xs font-black text-[#2D5A27] bg-white px-2 py-0.5 rounded-lg border border-[#C2DCBE] shrink-0">
+                      {postSessionMood}%
                     </span>
                   </div>
 
                   {/* Date & Time of Session */}
-                  <div className="flex items-center justify-between bg-[#F7F9F6] p-2 rounded-xl border border-[#C2DCBE] gap-2">
+                  <div className="flex items-center justify-between bg-[#F7F9F6] p-2 rounded-xl border border-[#C2DCBE] gap-2 flex-wrap">
                     <label className="text-xs font-bold text-[#2D5A27] flex items-center gap-1 shrink-0">
-                      <Clock className="w-3.5 h-3.5 text-[#8B9D83]" />
-                      <span>{isEn ? 'Session Date & Time:' : 'تاريخ ووقت انعقاد الجلسة:'}</span>
+                      <Clock className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
+                      <span>{isEn ? 'Session Time:' : 'وقت الجلسة:'}</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1488,38 +1472,38 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   </div>
 
                   {/* Real Therapist Responses & Feedback */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
-                      <MessageSquare className="w-3.5 h-3.5 text-[#8B9D83]" />
-                      <span>{isEn ? 'Therapist Answers & Feedback:' : 'ردود وإجابات المعالج النفسي الحقيقي على أسئلتك وملاحظاتك:'}</span>
+                      <MessageSquare className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
+                      <span>{isEn ? 'Therapist Feedback:' : 'ردود وتوجيهات المعالج النفسي:'}</span>
                     </label>
                     <textarea
                       value={therapistFeedback}
                       onChange={(e) => setTherapistFeedback(e.target.value)}
-                      placeholder={isEn ? 'Record therapist answers and explanations discussed in session...' : 'سجل هنا إجابات المعالج النفسي وتوضيحاته لملاحظاتك واستفساراتك التي ناقشتماها في الجلسة...'}
+                      placeholder={isEn ? 'Record therapist answers discussed in session...' : 'سجل هنا إجابات المعالج وتوجيهاته التي ناقشتماها في الجلسة...'}
                       rows={2}
-                      className="w-full bg-[#F9FBF8] border border-[#C2DCBE] rounded-xl p-2.5 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed"
+                      className="w-full bg-[#F9FBF8] border border-[#C2DCBE] rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed break-words"
                     />
                   </div>
 
-                  {/* Therapist Homework & Instructions */}
+                  {/* Therapist Homework & Instructions (Natural Flow without Nested Scroll) */}
                   <div className="space-y-1.5 bg-[#F4F8F3] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
-                      <ListTodo className="w-3.5 h-3.5 text-[#5A5A40]" />
-                      <span>{isEn ? 'Therapist Homework & Instructions:' : 'المهام والتوصيات والتعليمات المطلوبة من المعالج النفسي:'}</span>
+                      <ListTodo className="w-3.5 h-3.5 text-[#5A5A40] shrink-0" />
+                      <span>{isEn ? 'Therapist Homework:' : 'المهام والتوصيات المطلوبة:'}</span>
                     </label>
 
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                    <div className="space-y-1">
                       {therapistHomework.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-lg border border-[#C2DCBE] text-xs text-gray-800">
-                          <span className="flex items-center gap-1.5 font-medium">
+                        <div key={idx} className="flex items-center justify-between bg-white px-2 py-1 rounded-lg border border-[#C2DCBE] text-xs text-gray-800 gap-1.5">
+                          <span className="flex items-center gap-1.5 font-medium min-w-0 break-words">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>{item}</span>
+                            <span className="break-words">{item}</span>
                           </span>
                           <button
                             type="button"
                             onClick={() => handleRemoveHomework(idx)}
-                            className="text-red-400 hover:text-red-600 p-0.5 cursor-pointer"
+                            className="text-red-400 hover:text-red-600 p-0.5 cursor-pointer shrink-0"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -1533,8 +1517,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         value={homeworkInput}
                         onChange={(e) => setHomeworkInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddHomework())}
-                        placeholder={isEn ? 'Add new homework or instruction...' : 'أضف مهمة أو تعليمات جديدة طلبها المعالج...'}
-                        className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none"
+                        placeholder={isEn ? 'Add homework...' : 'أضف مهمة جديدة طلبها المعالج...'}
+                        className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none min-w-0"
                       />
                       <button
                         type="button"
@@ -1542,7 +1526,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shrink-0"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Add Task' : 'إضافة مهمة'}</span>
+                        <span>{isEn ? 'Add' : 'إضافة'}</span>
                       </button>
                     </div>
                   </div>
@@ -1551,11 +1535,11 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1.5 bg-[#F4F8F3] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <div className="flex items-center justify-between text-xs font-bold text-[#2D5A27]">
                       <span className="flex items-center gap-1">
-                        <Smile className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{isEn ? 'Post-session mood level (%):' : 'تسجيل المزاج بعد الجلسة (%):'}</span>
+                        <Smile className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>{isEn ? 'Post-session mood:' : 'المزاج بعد الجلسة:'}</span>
                       </span>
                       <span className="text-xs font-black text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-[#C2DCBE]">
-                        {postSessionMood}%
+                        {postSessionMood}% {postSessionMoodLabel}
                       </span>
                     </div>
                     <input
@@ -1572,7 +1556,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       }}
                       className="w-full accent-emerald-600 cursor-pointer"
                     />
-                    <div className="flex items-center justify-between gap-1 pt-1">
+                    <div className="grid grid-cols-5 gap-1 pt-1">
                       {MOOD_PRESETS.map((m) => (
                         <button
                           key={m.percentage}
@@ -1581,35 +1565,35 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                             setPostSessionMood(m.percentage);
                             setPostSessionMoodLabel(m.label);
                           }}
-                          className={`flex-1 text-[11px] font-bold py-1 px-1 rounded-lg border transition-all cursor-pointer text-center ${
+                          className={`text-[11px] font-bold py-1 px-0.5 rounded-lg border transition-all cursor-pointer text-center ${
                             postSessionMood === m.percentage ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-3xs' : 'bg-white text-gray-700 border-[#C2DCBE] hover:bg-gray-50'
                           }`}
                         >
-                          <span>{m.emoji}</span>
-                          <span className="block text-[9px] truncate">{m.percentage}%</span>
+                          <span className="block">{m.emoji}</span>
+                          <span className="block text-[8px] truncate">{m.percentage}%</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Session Summary Bullet Points */}
+                  {/* Session Summary Bullet Points (Natural Flow without Nested Scroll) */}
                   <div className="space-y-1.5 bg-[#F9FBF8] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                      <span>{isEn ? 'Session Summary Points:' : 'تلخيص الجلسة العلاجية على هيئة عناصر ونقاط مهمة:'}</span>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>{isEn ? 'Session Summary Points:' : 'نقاط ملخصة للجلسة العلاجية:'}</span>
                     </label>
 
-                    <div className="space-y-1 max-h-28 overflow-y-auto">
+                    <div className="space-y-1">
                       {sessionSummaryBullets.map((b, idx) => (
-                        <div key={idx} className="flex items-start justify-between bg-white p-2 rounded-lg border border-[#C2DCBE] text-xs text-gray-800 leading-relaxed">
-                          <div className="flex items-start gap-1.5">
+                        <div key={idx} className="flex items-start justify-between bg-white p-2 rounded-lg border border-[#C2DCBE] text-xs text-gray-800 leading-relaxed gap-1.5">
+                          <div className="flex items-start gap-1.5 min-w-0 break-words">
                             <span className="text-[#8B9D83] font-bold shrink-0">•</span>
-                            <span>{b}</span>
+                            <span className="break-words">{b}</span>
                           </div>
                           <button
                             type="button"
                             onClick={() => handleRemoveSummaryBullet(idx)}
-                            className="text-red-400 hover:text-red-600 p-0.5 cursor-pointer shrink-0 mr-1"
+                            className="text-red-400 hover:text-red-600 p-0.5 cursor-pointer shrink-0"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -1623,8 +1607,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         value={summaryInput}
                         onChange={(e) => setSummaryInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSummaryBullet())}
-                        placeholder={isEn ? 'Add session takeaway point...' : 'اكتب نقطة مستفادة من الجلسة واضغط إضافة...'}
-                        className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none"
+                        placeholder={isEn ? 'Add takeaway point...' : 'اكتب نقطة مستفادة من الجلسة...'}
+                        className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none min-w-0"
                       />
                       <button
                         type="button"
@@ -1632,7 +1616,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         className="px-2.5 py-1 bg-[#5A5A40] hover:bg-[#8B9D83] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shrink-0"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Add Point' : 'إضافة عنصر'}</span>
+                        <span>{isEn ? 'Add' : 'إضافة'}</span>
                       </button>
                     </div>
                   </div>
@@ -1641,13 +1625,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             </div>
 
             {/* Footer & Doctor Verification Signature Area */}
-            <div className="border-t border-[#E2DCC8] pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-3">
+            <div className="border-t border-[#E2DCC8] pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-gray-500 gap-3">
               <div>
                 <p className="font-bold text-[#5A5A40]">{isEn ? 'Therapist / Doctor Signature & Notes:' : 'توقيع وملاحظات الطبيب / المعالج النفسي:'}</p>
-                <div className="w-48 h-10 border-b border-dashed border-gray-400 mt-1"></div>
+                <div className="w-44 sm:w-48 h-8 border-b border-dashed border-gray-400 mt-1"></div>
               </div>
 
-              <div className="text-center sm:text-left space-y-0.5">
+              <div className="text-right sm:text-left space-y-0.5">
                 <p className="font-extrabold text-[#5A5A40]">Hayat AI Medical & Behavioral Report</p>
                 <p className="text-[10px] text-gray-400">{isEn ? 'Encrypted automated report from Hayat AI system' : 'وثيقة مشفرة ومولدة تلقائياً من نظام حياة AI'}</p>
               </div>
@@ -1658,7 +1642,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
         </div>
 
         {/* Modal Bottom Actions Footer */}
-        <div className="p-4 bg-[#F0EDE4] border-t border-[#E2DCC8] flex items-center justify-between shrink-0">
+        <div className="px-4 py-3 bg-[#F0EDE4] border-t border-[#E2DCC8] flex items-center justify-between shrink-0">
           <p className="text-xs text-gray-600 font-medium hidden sm:block">
             {isEn ? 'Ready for export & sharing with therapist 📄' : 'جاهز للتصدير والتسليم للمعالج النفسي 📄'}
           </p>

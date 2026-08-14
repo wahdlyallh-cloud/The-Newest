@@ -197,78 +197,78 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={isEn ? 'ltr' : 'rtl'}>
-      <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={isEn ? 'ltr' : 'rtl'}>
+      <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94vh] md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="p-6 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] text-white flex items-center justify-between">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="p-2.5 bg-white/10 rounded-2xl">
-              <FileText className="w-6 h-6 text-[#FEFAE0]" />
+        <div className="p-4 sm:p-5 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-3 space-x-reverse min-w-0">
+            <div className="p-2 sm:p-2.5 bg-white/10 rounded-2xl shrink-0">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#FEFAE0]" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold">{isEn ? '🎓 Prepare Therapy Session Report' : '🎓 تجهيز تقرير جلسة العلاج'}</h2>
-              <p className="text-xs text-[#E2DCC8]">{isEn ? 'Generate a comprehensive report for your therapist in seconds' : 'توليد تقرير احترافي شامل لمعالجك النفسي في ثوانٍ'}</p>
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold truncate">{isEn ? '🎓 Prepare Therapy Session Report' : '🎓 تجهيز تقرير جلسة العلاج'}</h2>
+              <p className="text-[11px] sm:text-xs text-[#E2DCC8] truncate">{isEn ? 'Generate a comprehensive report for your therapist in seconds' : 'توليد تقرير احترافي شامل لمعالجك النفسي في ثوانٍ'}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
+            className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer shrink-0"
           >
             <ArrowRight className="w-5 h-5 rotate-180" />
           </button>
         </div>
 
-        {/* Form & Content */}
-        <div className="p-6 overflow-y-auto flex-grow space-y-6">
+        {/* Single Scroll Container for Form & Content */}
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-6">
           
           {/* Step 1: Select Date Range */}
-          <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8] grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-[#F9F7F2] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E2DCC8] grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold text-[#5A5A40] mb-1.5 flex items-center space-x-1 space-x-reverse">
-                <Calendar className="w-3.5 h-3.5 text-[#8B9D83]" />
+                <Calendar className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
                 <span>{isEn ? 'Start Date:' : 'تاريخ البدء:'}</span>
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-white border border-[#E2DCC8] rounded-xl px-3 py-2 text-sm text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83]"
+                className="w-full bg-white border border-[#E2DCC8] rounded-xl px-3 py-2 text-xs sm:text-sm text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83]"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-[#5A5A40] mb-1.5 flex items-center space-x-1 space-x-reverse">
-                <Calendar className="w-3.5 h-3.5 text-[#8B9D83]" />
+                <Calendar className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
                 <span>{isEn ? 'End Date:' : 'تاريخ الانتهاء:'}</span>
               </label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-white border border-[#E2DCC8] rounded-xl px-3 py-2 text-sm text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83]"
+                className="w-full bg-white border border-[#E2DCC8] rounded-xl px-3 py-2 text-xs sm:text-sm text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83]"
               />
             </div>
           </div>
 
           {/* Local Range Statistics Info */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 bg-[#F0EDE4] rounded-xl border border-[#E2DCC8] text-center">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="p-2.5 sm:p-3 bg-[#F0EDE4] rounded-xl border border-[#E2DCC8] text-center">
               <span className="block text-[10px] font-bold text-gray-500">{isEn ? 'Total Entries' : 'عدد اليوميات'}</span>
-              <span className="text-lg font-extrabold text-[#5A5A40]">{totalEntries}</span>
+              <span className="text-base sm:text-lg font-extrabold text-[#5A5A40]">{totalEntries}</span>
             </div>
-            <div className="p-3 bg-[#CCD5AE]/30 rounded-xl border border-[#CCD5AE]/60 text-center">
+            <div className="p-2.5 sm:p-3 bg-[#CCD5AE]/30 rounded-xl border border-[#CCD5AE]/60 text-center">
               <span className="block text-[10px] font-bold text-gray-500">{isEn ? 'Avg Sleep' : 'متوسط ساعات النوم'}</span>
-              <span className="text-lg font-extrabold text-[#8B9D83]">{averageSleep} {isEn ? 'h' : 'س'}</span>
+              <span className="text-base sm:text-lg font-extrabold text-[#8B9D83]">{averageSleep} {isEn ? 'h' : 'س'}</span>
             </div>
-            <div className="p-3 bg-[#FAEDCD]/40 rounded-xl border border-[#E2DCC8] text-center">
+            <div className="p-2.5 sm:p-3 bg-[#FAEDCD]/40 rounded-xl border border-[#E2DCC8] text-center">
               <span className="block text-[10px] font-bold text-gray-500">{isEn ? 'Sports Time' : 'التمارين الرياضية'}</span>
-              <span className="text-lg font-extrabold text-[#D4A373]">{totalSports} {isEn ? 'm' : 'د'}</span>
+              <span className="text-base sm:text-lg font-extrabold text-[#D4A373]">{totalSports} {isEn ? 'm' : 'د'}</span>
             </div>
           </div>
 
           {/* Generate Action Button */}
           {filteredDiaries.length === 0 ? (
-            <div className="bg-[#FAEDCD]/50 border border-[#D4A373]/30 rounded-xl p-4 text-center text-[#D4A373] text-sm flex items-center justify-center space-x-2 space-x-reverse">
+            <div className="bg-[#FAEDCD]/50 border border-[#D4A373]/30 rounded-xl p-3 sm:p-4 text-center text-[#D4A373] text-xs sm:text-sm flex items-center justify-center space-x-2 space-x-reverse">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{isEn ? 'No entries found in selected period. Please log diaries or adjust date range!' : 'لا توجد مذكرات مدونة في الفترة المحددة. يرجى تدوين مذكرات أو تعديل نطاق التاريخ أولاً!'}</span>
             </div>
@@ -276,7 +276,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
             !reportText && !loading && (
               <button
                 onClick={generateReport}
-                className="w-full py-3.5 px-4 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white rounded-2xl font-bold text-sm shadow-md transition-colors flex items-center justify-center space-x-2 space-x-reverse cursor-pointer group"
+                className="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-colors flex items-center justify-center space-x-2 space-x-reverse cursor-pointer group"
               >
                 <Brain className="w-4 h-4 animate-pulse group-hover:scale-110 transition-transform text-[#FEFAE0]" />
                 <span>{isEn ? 'Analyze Data & Generate AI Medical Report 🧠' : 'تحليل البيانات وتوليد التقرير الطبي بالذكاء الاصطناعي 🧠'}</span>
@@ -286,25 +286,25 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="p-8 border border-[#E2DCC8] rounded-2xl bg-[#F9F7F2] flex flex-col items-center justify-center text-center space-y-4">
-              <div className="relative w-12 h-12">
+            <div className="p-6 sm:p-8 border border-[#E2DCC8] rounded-2xl bg-[#F9F7F2] flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12">
                 <div className="absolute inset-0 rounded-full border-4 border-[#E2DCC8]"></div>
                 <div className="absolute inset-0 rounded-full border-4 border-[#8B9D83] border-t-transparent animate-spin"></div>
               </div>
               <div className="space-y-1">
-                <h4 className="font-bold text-[#5A5A40]">{isEn ? 'Reading and analyzing your entries...' : 'جاري قراءة وتحليل مذكراتك...'}</h4>
-                <p className="text-xs text-gray-500">{isEn ? 'AI is evaluating mood, activities, and psychological patterns to compose a clinical report.' : 'يقوم الذكاء الاصطناعي بفحص الحالة المزاجية، الأنشطة، والأنماط النفسية وصياغة تقرير عيادي.'}</p>
+                <h4 className="font-bold text-xs sm:text-sm text-[#5A5A40]">{isEn ? 'Reading and analyzing your entries...' : 'جاري قراءة وتحليل مذكراتك...'}</h4>
+                <p className="text-[11px] sm:text-xs text-gray-500">{isEn ? 'AI is evaluating mood, activities, and psychological patterns to compose a clinical report.' : 'يقوم الذكاء الاصطناعي بفحص الحالة المزاجية، الأنشطة، والأنماط النفسية وصياغة تقرير عيادي.'}</p>
               </div>
             </div>
           )}
 
-          {/* Generated Report View */}
+          {/* Generated Report View (Natural Flow without Nested Scroll) */}
           {reportText && (
-            <div className="border border-[#E2DCC8] rounded-2xl overflow-hidden shadow-xs bg-[#F9F7F2]">
-              <div className="bg-[#F0EDE4] p-3 px-4 border-b border-[#E2DCC8] flex items-center justify-between">
+            <div className="border border-[#E2DCC8] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs bg-[#F9F7F2]">
+              <div className="bg-[#F0EDE4] p-2.5 sm:p-3 px-3 sm:px-4 border-b border-[#E2DCC8] flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center space-x-2 space-x-reverse text-xs font-bold text-[#5A5A40]">
-                  <Sparkles className="w-4 h-4 text-[#D4A373]" />
-                  <span>{isEn ? 'Report generated by ' : 'التقرير النفسي المولد بواسطة '}{reportSource === 'gemini' ? 'Gemini 3.5-Flash 🚀' : (isEn ? 'Local Advisor 🖥️' : 'المستشار المحلي 🖥️')}</span>
+                  <Sparkles className="w-4 h-4 text-[#D4A373] shrink-0" />
+                  <span>{isEn ? 'Report generated by ' : 'التقرير النفسي المولد بواسطة '}{reportSource === 'gemini' ? 'Gemini 🚀' : (isEn ? 'Local Advisor 🖥️' : 'المستشار المحلي 🖥️')}</span>
                 </div>
                 {reportSource !== 'gemini' && (
                   <span className="text-[10px] bg-[#D4A373]/10 text-[#D4A373] border border-[#D4A373]/20 px-2 py-0.5 rounded-full font-semibold">
@@ -312,7 +312,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
                   </span>
                 )}
               </div>
-              <div className="p-5 overflow-y-auto max-h-[350px] text-sm text-[#3A3A3A] leading-relaxed font-normal whitespace-pre-wrap text-right prose prose-slate">
+              <div className="p-3.5 sm:p-5 text-xs sm:text-sm text-[#3A3A3A] leading-relaxed font-normal whitespace-pre-wrap text-right break-words [overflow-wrap:anywhere]">
                 {reportText}
               </div>
             </div>
@@ -322,49 +322,49 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
 
         {/* Footer Actions */}
         {reportText && (
-          <div className="p-4 bg-[#F0EDE4] border-t border-[#E2DCC8] flex items-center justify-between">
+          <div className="p-3 sm:p-4 bg-[#F0EDE4] border-t border-[#E2DCC8] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
             <button
               onClick={generateReport}
-              className="px-4 py-2 text-xs font-medium text-[#8B9D83] hover:bg-white/50 rounded-lg transition-colors cursor-pointer"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-[#5A5A40] hover:bg-white/50 rounded-lg transition-colors cursor-pointer text-center"
               disabled={loading}
             >
               {isEn ? 'Regenerate 🔄' : 'إعادة توليد 🔄'}
             </button>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={handleCopyText}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
               >
                 {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
-                <span>{copySuccess ? (isEn ? 'Copied!' : 'تم النسخ!') : (isEn ? 'Copy Text' : 'نسخ النص')}</span>
+                <span>{copySuccess ? (isEn ? 'Copied!' : 'تم!') : (isEn ? 'Copy' : 'نسخ')}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDownloadDoc}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-[#2B3E50] rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-[#2B3E50] rounded-lg text-xs font-bold transition-colors cursor-pointer"
               >
                 <FileCode className="w-3.5 h-3.5 text-blue-600" />
-                <span>Word (.doc)</span>
+                <span>Word</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDownloadTxt}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5 text-[#5A5A40]" />
-                <span>{isEn ? 'Text File (UTF-8)' : 'ملف نصي (UTF-8)'}</span>
+                <span>TXT</span>
               </button>
 
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex items-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#5A5A40] hover:bg-[#5A5A40]/90 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 sm:px-4 sm:py-2 bg-[#5A5A40] hover:bg-[#5A5A40]/90 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5 text-white" />
-                <span>{isEn ? 'Print Report' : 'طباعة التقرير'}</span>
+                <span>{isEn ? 'Print' : 'طباعة'}</span>
               </button>
             </div>
           </div>
