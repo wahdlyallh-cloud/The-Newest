@@ -446,13 +446,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const triggerFilePicker = () => {
     onFilePickerOpen?.();
     fileInputRef.current?.click();
-    const handleWindowFocus = () => {
-      window.removeEventListener('focus', handleWindowFocus);
-      setTimeout(() => {
-        onFilePickerClose?.();
-      }, 500);
-    };
-    window.addEventListener('focus', handleWindowFocus);
+    setTimeout(() => {
+      const handleWindowFocus = () => {
+        window.removeEventListener('focus', handleWindowFocus);
+        setTimeout(() => {
+          onFilePickerClose?.();
+        }, 500);
+      };
+      window.addEventListener('focus', handleWindowFocus, { once: true });
+    }, 1000);
   };
 
   // File Upload Handler for Multimodal General AI Mode using Unified Attachment Service
@@ -995,8 +997,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         </div>
       )}
 
-      {/* Attachment Inputs Drawer (Diary Pro Mode) */}
-      {activeAdvisorTab === 'diary' && activeAttachmentType !== 'none' && (
+      {/* Attachment Inputs Drawer (Both Modes) */}
+      {activeAttachmentType !== 'none' && (
         <div className="p-3 bg-[#F0EDE4] border-t border-[#E2DCC8] space-y-2 shrink-0">
           {activeAttachmentType === 'link' && (
             <div className="space-y-1">
@@ -1113,9 +1115,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             </div>
 
             <button
-              onClick={() => {
-                setShowAttachmentMenu(false);
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 triggerFilePicker();
+                setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
@@ -1124,9 +1128,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             </button>
 
             <button
-              onClick={() => {
-                setShowAttachmentMenu(false);
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 setActiveAttachmentType('link');
+                setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-blue-700 transition-colors cursor-pointer"
             >
@@ -1135,9 +1141,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             </button>
 
             <button
-              onClick={() => {
-                setShowAttachmentMenu(false);
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 setActiveAttachmentType('video');
+                setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer"
             >
@@ -1146,9 +1154,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             </button>
 
             <button
-              onClick={() => {
-                setShowAttachmentMenu(false);
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 setActiveAttachmentType('pdf');
+                setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-50 text-red-700 transition-colors cursor-pointer"
             >
