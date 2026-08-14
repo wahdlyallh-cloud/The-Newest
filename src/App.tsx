@@ -59,7 +59,7 @@ import OfflineSyncBanner from './components/OfflineSyncBanner';
 import PredictiveHealthInsightsModal from './components/PredictiveHealthInsightsModal';
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
 import OnboardingTourModal from './components/OnboardingTourModal';
-import { SpeechSessionTracker } from './lib/speechRecognition';
+import { SpeechRecognitionManager } from './lib/speechRecognition';
 
 // Recharts components for gorgeous analytics
 import { 
@@ -2359,9 +2359,7 @@ export default function App() {
   const [recordingIntervalId, setRecordingIntervalId] = useState<number | null>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
-  const speechRecognitionRef = React.useRef<any>(null);
   const speechTranscriptRef = React.useRef<string>('');
-  const diarySpeechTrackerRef = React.useRef<SpeechSessionTracker>(new SpeechSessionTracker());
   const [speechTranscript, setSpeechTranscript] = useState('');
   const [transcribingAudioId, setTranscribingAudioId] = useState<string | null>(null);
   const [editingTranscriptId, setEditingTranscriptId] = useState<string | null>(null);
@@ -3879,10 +3877,8 @@ export default function App() {
       }
       setIsRecording(false);
 
-      if (speechRecognitionRef.current) {
-        try { speechRecognitionRef.current.stop(); } catch (e) {}
-      }
-      const finalSpeechText = diarySpeechTrackerRef.current.finalize();
+      const manager = SpeechRecognitionManager.getInstance();
+      const finalSpeechText = manager.finalize();
       if (finalSpeechText) {
         speechTranscriptRef.current = finalSpeechText;
         setSpeechTranscript(finalSpeechText);
@@ -3896,7 +3892,7 @@ export default function App() {
           try { mediaRecorderRef.current.stop(); } catch (e) {}
         }
         audioChunksRef.current = [];
-        diarySpeechTrackerRef.current.reset();
+        manager.abortSession();
         setRecordingSeconds(0);
         recordingSecondsRef.current = 0;
         recordingStartTimeRef.current = null;
@@ -3910,7 +3906,7 @@ export default function App() {
         try { mediaRecorderRef.current.requestData(); } catch (e) {}
         mediaRecorderRef.current.stop();
       } else {
-        const capturedSpeech = (diarySpeechTrackerRef.current.finalize() || speechTranscriptRef.current).trim();
+        const capturedSpeech = (manager.getFinalTranscript() || speechTranscriptRef.current).trim();
         const fallbackAudioUrl = createFallbackAudioWav(finalSecs);
         processAudioRecordingOrFile({
           dataUrl: fallbackAudioUrl,
@@ -3933,27 +3929,23 @@ export default function App() {
       setSpeechTranscript('');
       speechTranscriptRef.current = '';
       audioChunksRef.current = [];
-      const sessionToken = diarySpeechTrackerRef.current.startNewSession();
 
-      // Start Browser Speech Recognition in Arabic
-      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRec) {
-        try {
-          const rec = new SpeechRec();
-          rec.continuous = true;
-          rec.interimResults = true;
-          rec.lang = 'ar-SA';
-          rec.onresult = (event: any) => {
-            if (!diarySpeechTrackerRef.current.isSessionActive(sessionToken)) return;
-            const parsed = diarySpeechTrackerRef.current.processEvent(event, sessionToken);
-            speechTranscriptRef.current = parsed.displayTranscript;
-            setSpeechTranscript(parsed.displayTranscript);
-          };
-          rec.start();
-          speechRecognitionRef.current = rec;
-        } catch (e) {
-          console.error("Speech Recognition setup error:", e);
-        }
+      // Start centralized speech recognition
+      const manager = SpeechRecognitionManager.getInstance();
+      if (manager.isSupported()) {
+        manager.startSession({
+          lang: 'ar-SA',
+          continuous: true,
+          callbacks: {
+            onTranscriptChange: (state) => {
+              speechTranscriptRef.current = state.displayTranscript;
+              setSpeechTranscript(state.displayTranscript);
+            },
+            onError: (e) => {
+              console.error("Speech Recognition setup error:", e);
+            }
+          }
+        });
       }
 
       // Try MediaRecorder for microphone recording

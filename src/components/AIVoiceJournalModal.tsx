@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Mic, MicOff, Sparkles, Check, Play, Square, Save, RefreshCw, Volume2, Smile, Activity, Heart, Clock } from 'lucide-react';
 import { DiaryEntry } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
-import { SpeechSessionTracker } from '../lib/speechRecognition';
+import { SpeechRecognitionManager } from '../lib/speechRecognition';
 
 interface AIVoiceJournalModalProps {
   isOpen: boolean;
@@ -32,8 +32,6 @@ export default function AIVoiceJournalModal({
   } | null>(null);
 
   const timerRef = useRef<any>(null);
-  const recognitionRef = useRef<any>(null);
-  const voiceTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
@@ -42,7 +40,7 @@ export default function AIVoiceJournalModal({
   useEffect(() => {
     if (!isOpen) {
       stopRecording();
-      voiceTrackerRef.current.reset();
+      SpeechRecognitionManager.getInstance().abortSession();
       setTranscript('');
       setRecordingSeconds(0);
       setProcessedResult(null);
@@ -55,36 +53,24 @@ export default function AIVoiceJournalModal({
     setIsRecording(true);
     setRecordingSeconds(0);
 
-    const sessionToken = voiceTrackerRef.current.startNewSession();
-
     timerRef.current = setInterval(() => {
       setRecordingSeconds(prev => prev + 1);
     }, 1000);
 
-    // Initialize Web Speech API if supported
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      try {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = isEn ? 'en-US' : 'ar-SA';
-
-        recognition.onresult = (event: any) => {
-          if (!voiceTrackerRef.current.isSessionActive(sessionToken)) return;
-          const parsed = voiceTrackerRef.current.processEvent(event, sessionToken);
-          setTranscript(parsed.displayTranscript);
-        };
-
-        recognition.onerror = (e: any) => {
-          console.warn('Speech recognition error:', e);
-        };
-
-        recognition.start();
-        recognitionRef.current = recognition;
-      } catch (err) {
-        console.warn('Speech recognition init error:', err);
-      }
+    const manager = SpeechRecognitionManager.getInstance();
+    if (manager.isSupported()) {
+      manager.startSession({
+        lang: isEn ? 'en-US' : 'ar-SA',
+        continuous: true,
+        callbacks: {
+          onTranscriptChange: (state) => {
+            setTranscript(state.displayTranscript);
+          },
+          onError: (e) => {
+            console.warn('Speech recognition error:', e);
+          }
+        }
+      });
     }
   };
 
@@ -94,13 +80,8 @@ export default function AIVoiceJournalModal({
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {}
-      recognitionRef.current = null;
-    }
-    const finalTxt = voiceTrackerRef.current.finalize();
+    const manager = SpeechRecognitionManager.getInstance();
+    const finalTxt = manager.finalize();
     if (finalTxt) {
       setTranscript(finalTxt);
     }
@@ -114,7 +95,8 @@ export default function AIVoiceJournalModal({
       // Simulate/Run AI voice processing
       await new Promise(resolve => setTimeout(resolve, 1400));
 
-      const speechText = (voiceTrackerRef.current.finalize() || transcript).trim() || (isEn
+      const manager = SpeechRecognitionManager.getInstance();
+      const speechText = (manager.getFinalTranscript() || transcript).trim() || (isEn
         ? "Today was a productive day. I felt a bit anxious in the morning about tasks, but went for a 30-minute run and slept 7 hours last night, which helped me regain calm and focus."
         : "اليوم كان حافلاً بالمهام. شعرت ببعض التوتر في الصباح بشأن الدراسة، لكن مارست المشي السريع لمدة 30 دقيقة ونمت 7 ساعات الليلة الماضية والحمد لله استعدت هدوئي وتركيزي.");
 

@@ -163,56 +163,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const toggleDiariesConsent = () => {
     const nextVal = !advisorPermissions.diaries;
     setHasConsent(nextVal);
-    setAdvisorPermissions(prev => {
-      const updated = { ...prev, diaries: nextVal };
-      try {
-        localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(updated));
-        localStorage.setItem('yawmiyati_chat_has_consent', String(nextVal));
-      } catch (e) { console.warn(e); }
-      return updated;
-    });
-  };
-
-  const toggleAllPermissions = () => {
-    const nextVal = !isAllEnabled;
-    const updated: AdvisorPermissions = {
-      diaries: nextVal,
-      moodLogs: nextVal,
-      habits: nextVal,
-      tasks: nextVal,
-      cbtExercises: nextVal,
-      therapyReports: nextVal,
-      voiceNotes: nextVal,
-      books: nextVal,
-      gratitude: nextVal,
-      lifeMap: nextVal,
-      prosCons: nextVal,
-    };
-    setAdvisorPermissions(updated);
-    setHasConsent(nextVal);
-    try {
-      localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(updated));
-      localStorage.setItem('yawmiyati_chat_has_consent', String(nextVal));
-    } catch (e) { console.warn(e); }
-  };
-
-  const toggleSinglePermission = (key: keyof AdvisorPermissions) => {
-    setAdvisorPermissions(prev => {
-      const updated = { ...prev, [key]: !prev[key] };
-      if (key === 'diaries') {
-        setHasConsent(updated.diaries);
-      }
-      try {
-        localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(updated));
-      } catch (e) { console.warn(e); }
-      return updated;
-    });
-  };
-  const [loading, setLoading] = useState(false);
+  const [activeAnalysisTopic, setActiveAnalysisTopic] = useState<'all' | 'mood' | 'habits' | 'cbt' | 'gratitude'>('all');
+  const [selectedVoice, setSelectedVoice] = useState<'female_calm' | 'male_wise' | 'female_energetic'>('female_calm');
   const [isRecording, setIsRecording] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-  // Chat Attachments states
   const [attachments, setAttachments] = useState<MultimodalAttachment[]>([]);
   const [isProcessingAttachment, setIsProcessingAttachment] = useState(false);
   const [tempPdfName, setTempPdfName] = useState<string>('');
@@ -223,9 +176,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const langInfo = getLanguageInfo(appLanguage);
-
-  // Speech Trackers for clean, idempotent, non-repeating speech recognition
-  const voiceSessionTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
 
   useEffect(() => {
     try {
@@ -239,55 +189,17 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       if (savedTherapist) setMessages(JSON.parse(savedTherapist));
       const savedGeneral = localStorage.getItem('yawmiyati_general_chat_history');
       if (savedGeneral) setGeneralMessages(JSON.parse(savedGeneral));
-      const savedPdfName = localStorage.getItem('yawmiyati_chat_temp_pdf_name');
-      if (savedPdfName) setTempPdfName(savedPdfName);
-      const savedPdfUrl = localStorage.getItem('yawmiyati_chat_temp_pdf_url');
-      if (savedPdfUrl) setTempPdfUrl(savedPdfUrl);
     } catch (e) {
       console.error(e);
     }
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_advisor_voice', selectedVoice);
-  }, [selectedVoice]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_advisor_consent', hasConsent.toString());
-  }, [hasConsent]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(advisorPermissions));
-  }, [advisorPermissions]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_therapist_chat_history', JSON.stringify(messages));
-  }, [messages]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_general_chat_history', JSON.stringify(generalMessages));
-  }, [generalMessages]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_temp_pdf_name', tempPdfName);
-  }, [tempPdfName]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_temp_pdf_url', tempPdfUrl);
-  }, [tempPdfUrl]);
 
   // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
-  const voiceRecognitionRef = useRef<any>(null);
-  const recognitionRef = useRef<any>(null);
   const voiceStatusRef = useRef<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
-
-  // Speech Trackers for clean, idempotent, non-repeating speech recognition
-  const voiceSessionTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
-  const dictationTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
 
   // Keep ref synchronized to prevent closure stale states in callbacks
   useEffect(() => {
@@ -302,19 +214,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   const endVoiceChatSession = () => {
     stopVoiceChatSpeech();
-    voiceSessionTrackerRef.current.reset();
-    if (voiceRecognitionRef.current) {
-      try {
-        voiceRecognitionRef.current.onstart = null;
-        voiceRecognitionRef.current.onresult = null;
-        voiceRecognitionRef.current.onerror = null;
-        voiceRecognitionRef.current.onend = null;
-        voiceRecognitionRef.current.onspeechend = null;
-        voiceRecognitionRef.current.stop();
-        voiceRecognitionRef.current.abort();
-      } catch (e) {}
-      voiceRecognitionRef.current = null;
-    }
+    SpeechRecognitionManager.getInstance().abortSession();
     setShowVoiceModal(false);
     setVoiceStatus('idle');
     setVoiceTranscript('');
@@ -324,10 +224,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   useEffect(() => {
     return () => {
       stopVoiceChatSpeech();
-      voiceSessionTrackerRef.current.reset();
-      if (voiceRecognitionRef.current) {
-        try { voiceRecognitionRef.current.abort(); } catch (e) {}
-      }
+      SpeechRecognitionManager.getInstance().abortSession();
     };
   }, []);
 
@@ -339,8 +236,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    const manager = SpeechRecognitionManager.getInstance();
+    if (!manager.isSupported()) {
       setVoiceStatus('idle');
       setVoiceTranscript(appLanguage === 'ar'
         ? 'المتصفح لا يدعم ميزة التعرف التلقائي على الصوت.'
@@ -348,46 +245,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       return;
     }
 
-    // Abort previous instance if any
-    if (voiceRecognitionRef.current) {
-      try { voiceRecognitionRef.current.abort(); } catch (e) {}
-    }
-
-    // Start fresh session with unique token
-    const sessionToken = voiceSessionTrackerRef.current.startNewSession();
-
-    const rec = new SpeechRecognition();
-    rec.lang = langInfo.speechLang;
-    rec.continuous = false;
-    rec.interimResults = true;
-
-    rec.onstart = () => {
-      setVoiceStatus('listening');
-      setVoiceTranscript(appLanguage === 'ar' ? 'جاري الاستماع... تفضل بالتحدث معي...' : 'Listening... Speak freely...');
-    };
-
-    rec.onresult = (event: any) => {
-      if (voiceStatusRef.current === 'analyzing' || voiceStatusRef.current === 'speaking') return;
-      if (!voiceSessionTrackerRef.current.isSessionActive(sessionToken)) return;
-
-      const parsed = voiceSessionTrackerRef.current.processEvent(event, sessionToken);
-      if (parsed.displayTranscript) {
-        setVoiceTranscript(parsed.displayTranscript);
-      }
-    };
-
-    rec.onerror = (event: any) => {
-      console.error('Voice chat speech recognition error:', event);
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        setVoiceStatus('idle');
-        setVoiceTranscript(appLanguage === 'ar'
-          ? '⚠️ تم رفض إذن الميكروفون.'
-          : '⚠️ Microphone permission denied.');
-        return;
-      }
-      if (event.error !== 'no-speech' && voiceStatusRef.current === 'listening') {
-        setVoiceStatus('idle');
-      }
     };
 
     // Auto-submit when user finishes talking
@@ -986,62 +843,18 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   // Real Web Speech API Dictation (Speech To Text) with secure simulated fallback
   const handleDictation = () => {
+    const manager = SpeechRecognitionManager.getInstance();
     if (isRecording) {
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (e) {}
-      }
+      const finalRecorded = manager.finalize();
       setIsRecording(false);
+      if (finalRecorded) {
+        setInput(prev => {
+          const base = prev ? prev.trim() : '';
+          return base ? `${base} ${finalRecorded}` : finalRecorded;
+        });
+      }
     } else {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const dictationToken = dictationTrackerRef.current.startNewSession();
-        const rec = new SpeechRecognition();
-        rec.lang = langInfo.speechLang;
-        rec.continuous = false;
-        rec.interimResults = true;
-        
-        rec.onstart = () => {
-          setIsRecording(true);
-        };
-        
-        rec.onresult = (event: any) => {
-          if (!dictationTrackerRef.current.isSessionActive(dictationToken)) return;
-          const parsed = dictationTrackerRef.current.processEvent(event, dictationToken);
-          const finalOrCurrent = parsed.finalTranscript || parsed.displayTranscript;
-          if (finalOrCurrent) {
-            setInput(prev => {
-              const base = prev ? prev.trim() : '';
-              return base ? `${base} ${finalOrCurrent}` : finalOrCurrent;
-            });
-          }
-        };
-        
-        rec.onerror = (err: any) => {
-          console.error("Speech recognition error:", err);
-          setIsRecording(false);
-          // Fallback to simulated text
-          const mockDictations = [
-            "ما هي مسببات التوتر التي قمت بكتابتها مؤخراً في يومياتي؟",
-            "هل الرياضة اليومية ساعدتني في تخفيف وطأة القلق والتوتر؟",
-            "لخص مذكرات الأسبوع الماضي وقدم لي نصيحة وقائية وعيادية.",
-            "ما هو تقييمي النفسي العام بناءً على تدوينات النوم والرياضة؟"
-          ];
-          const randomQuery = mockDictations[Math.floor(Math.random() * mockDictations.length)];
-          setInput(randomQuery);
-        };
-        
-        rec.onend = () => {
-          setIsRecording(false);
-        };
-        
-        recognitionRef.current = rec;
-        try {
-          rec.start();
-        } catch (e) {
-          console.error('Dictation start error:', e);
-        }
-      } else {
-        // Fallback for browsers without speech support (e.g. some web views)
+      if (!manager.isSupported()) {
         setIsRecording(true);
         setTimeout(() => {
           setIsRecording(false);
@@ -1054,7 +867,30 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           const randomQuery = mockDictations[Math.floor(Math.random() * mockDictations.length)];
           setInput(randomQuery);
         }, 1200);
+        return;
       }
+
+      setIsRecording(true);
+      manager.startSession({
+        lang: langInfo.speechLang,
+        continuous: false,
+        callbacks: {
+          onError: (err) => {
+            console.error("Speech recognition error:", err);
+            setIsRecording(false);
+          },
+          onSpeechEnd: () => {
+            const finalRecorded = manager.finalize();
+            setIsRecording(false);
+            if (finalRecorded) {
+              setInput(prev => {
+                const base = prev ? prev.trim() : '';
+                return base ? `${base} ${finalRecorded}` : finalRecorded;
+              });
+            }
+          }
+        }
+      });
     }
   };
 

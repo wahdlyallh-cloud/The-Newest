@@ -1,20 +1,24 @@
 /**
- * Hayat AI - High Precision Speech Recognition Processing Layer
- * 
- * Provides strict separation between FINAL and INTERIM transcripts,
- * idempotent result-index parsing to prevent cumulative repetition (e.g. "السلامالسلام"),
- * space normalization, and session-token protection against stale callbacks.
+ * Hayat AI - Centralized Speech Recognition Engine & Manager
+ *
+ * Provides:
+ * 1. Global Singleton Recognition Instance Management (prevents concurrent instances).
+ * 2. Overlap-aware transcript stitching (reconciles Android Chrome / WebKit whole-utterance re-emissions).
+ * 3. Strict separation of Final Transcript and Interim Preview (Interim NEVER enters Gemini / storage).
+ * 4. Zero naive text.replace; 100% preservation of intentional natural word repetition ("نعم نعم أريد ذلك").
+ * 5. Comprehensive session token protection against stale callbacks on rapid start/stop/close.
  */
 
-export interface SpeechParseResult {
-  finalTranscript: string;
-  interimTranscript: string;
-  displayTranscript: string;
+export const DEBUG_SPEECH = false;
+
+function speechLog(...args: any[]) {
+  if (DEBUG_SPEECH) {
+    console.log('[SpeechEngine]', ...args);
+  }
 }
 
 /**
- * Clean and normalize text by trimming leading/trailing whitespace
- * and collapsing multiple consecutive whitespace characters into a single space.
+ * Normalizes whitespace: collapses multiple consecutive spaces into a single space and trims edges.
  */
 export function normalizeSpeechWhitespace(text: string): string {
   if (!text) return '';
@@ -22,122 +26,330 @@ export function normalizeSpeechWhitespace(text: string): string {
 }
 
 /**
- * Session-based Speech Recognition Tracker that ensures idempotency,
- * clean spacing, and zero cumulative duplication.
+ * Finds the maximum word-level overlap where the end of baseText matches the beginning of incomingText.
+ * Returns the non-overlapping remaining part of incomingText.
+ *
+ * Example 1:
+ * baseText = "السلام"
+ * incomingText = "السلام عليكم ورحمة"
+ * Returns: "عليكم ورحمة"
+ *
+ * Example 2 (Complete subset):
+ * baseText = "السلام عليكم"
+ * incomingText = "السلام عليكم"
+ * Returns: ""
+ *
+ * Example 3 (Disjoint / No overlap):
+ * baseText = "الجملة الأولى."
+ * incomingText = "الجملة الثانية."
+ * Returns: "الجملة الثانية."
+ *
+ * Example 4 (Natural repetition preserved in incoming):
+ * baseText = ""
+ * incomingText = "نعم نعم أريد ذلك"
+ * Returns: "نعم نعم أريد ذلك"
  */
-export class SpeechSessionTracker {
-  private sessionId: number = 0;
-  private finalSegments: Map<number, string> = new Map();
-  private lastInterim: string = '';
+export function reconcileWordOverlap(baseText: string, incomingText: string): string {
+  const cleanBase = normalizeSpeechWhitespace(baseText);
+  const cleanIncoming = normalizeSpeechWhitespace(incomingText);
 
-  /**
-   * Starts a new speech recognition session, increments the session ID,
-   * and clears previous session data.
-   */
-  public startNewSession(): number {
-    this.sessionId += 1;
-    this.finalSegments.clear();
-    this.lastInterim = '';
-    return this.sessionId;
+  if (!cleanBase) return cleanIncoming;
+  if (!cleanIncoming) return '';
+
+  // If incoming is identical to base or base ends with incoming, nothing new
+  if (cleanBase === cleanIncoming || cleanBase.endsWith(cleanIncoming)) {
+    return '';
+  }
+
+  // If incoming contains the entire base as a prefix, return only the suffix
+  if (cleanIncoming.startsWith(cleanBase)) {
+    const remainder = cleanIncoming.slice(cleanBase.length).trim();
+    return remainder;
+  }
+
+  const baseWords = cleanBase.split(' ');
+  const incomingWords = cleanIncoming.split(' ');
+
+  const maxCheck = Math.min(baseWords.length, incomingWords.length);
+
+  // Check for the largest suffix-to-prefix word match
+  for (let overlapLen = maxCheck; overlapLen > 0; overlapLen--) {
+    const baseSuffix = baseWords.slice(baseWords.length - overlapLen).join(' ');
+    const incomingPrefix = incomingWords.slice(0, overlapLen).join(' ');
+
+    if (baseSuffix.toLowerCase() === incomingPrefix.toLowerCase()) {
+      const remainingWords = incomingWords.slice(overlapLen);
+      return remainingWords.join(' ');
+    }
+  }
+
+  return cleanIncoming;
+}
+
+/**
+ * Pure function to stitch a new final segment into the accumulated final transcript.
+ */
+export function stitchFinalSegment(currentFinal: string, newSegment: string): string {
+  const cleanCurrent = normalizeSpeechWhitespace(currentFinal);
+  const cleanSegment = normalizeSpeechWhitespace(newSegment);
+
+  if (!cleanCurrent) return cleanSegment;
+  if (!cleanSegment) return cleanCurrent;
+
+  const delta = reconcileWordOverlap(cleanCurrent, cleanSegment);
+  if (!delta) return cleanCurrent;
+
+  return `${cleanCurrent} ${delta}`;
+}
+
+export interface SpeechSessionState {
+  sessionId: number;
+  finalTranscript: string;
+  interimTranscript: string;
+  displayTranscript: string;
+  isListening: boolean;
+}
+
+export interface SpeechManagerCallbacks {
+  onTranscriptChange?: (state: SpeechSessionState) => void;
+  onStatusChange?: (status: 'idle' | 'listening' | 'analyzing' | 'speaking') => void;
+  onError?: (error: any) => void;
+  onSpeechEnd?: () => void;
+}
+
+export class SpeechRecognitionManager {
+  private static instance: SpeechRecognitionManager | null = null;
+
+  private currentSessionId: number = 0;
+  private activeRecognition: any = null;
+  private finalTranscript: string = '';
+  private interimTranscript: string = '';
+  private isListening: boolean = false;
+  private callbacks: SpeechManagerCallbacks = {};
+  private lang: string = 'ar-SA';
+  private continuous: boolean = false;
+
+  private constructor() {}
+
+  public static getInstance(): SpeechRecognitionManager {
+    if (!SpeechRecognitionManager.instance) {
+      SpeechRecognitionManager.instance = new SpeechRecognitionManager();
+    }
+    return SpeechRecognitionManager.instance;
+  }
+
+  public isSupported(): boolean {
+    if (typeof window === 'undefined') return false;
+    return !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
   }
 
   public getSessionId(): number {
-    return this.sessionId;
+    return this.currentSessionId;
   }
 
-  public isSessionActive(id: number): boolean {
-    return this.sessionId === id;
-  }
-
-  /**
-   * Resets the current session buffers.
-   */
-  public reset(): void {
-    this.finalSegments.clear();
-    this.lastInterim = '';
-  }
-
-  /**
-   * Processes a SpeechRecognitionEvent safely.
-   * If sessionToken is provided and doesn't match the active session, the event is ignored.
-   */
-  public processEvent(event: any, sessionToken?: number): SpeechParseResult {
-    if (sessionToken !== undefined && sessionToken !== this.sessionId) {
-      return this.getCurrentResult();
-    }
-
-    if (!event || !event.results) {
-      return this.getCurrentResult();
-    }
-
-    const interimChunks: string[] = [];
-
-    for (let i = 0; i < event.results.length; i++) {
-      const res = event.results[i];
-      if (!res || !res[0]) continue;
-
-      const transcriptChunk = normalizeSpeechWhitespace(res[0].transcript || '');
-      if (!transcriptChunk) continue;
-
-      if (res.isFinal) {
-        // Confirmed final segment: stored uniquely by its result index
-        this.finalSegments.set(i, transcriptChunk);
-      } else {
-        // Interim segment: accumulated only for the current unconfirmed event
-        interimChunks.push(transcriptChunk);
-      }
-    }
-
-    this.lastInterim = normalizeSpeechWhitespace(interimChunks.join(' '));
-    return this.getCurrentResult();
-  }
-
-  /**
-   * Returns the concatenated and normalized final transcript.
-   */
   public getFinalTranscript(): string {
-    const sortedIndices = Array.from(this.finalSegments.keys()).sort((a, b) => a - b);
-    const finalParts = sortedIndices
-      .map(idx => this.finalSegments.get(idx)!)
-      .filter(Boolean);
-    return normalizeSpeechWhitespace(finalParts.join(' '));
+    return this.finalTranscript;
   }
 
-  /**
-   * Returns the current interim hypothesis.
-   */
   public getInterimTranscript(): string {
-    return this.lastInterim;
+    return this.interimTranscript;
   }
 
-  /**
-   * Returns the current combined result for UI display and AI submission.
-   */
-  public getCurrentResult(): SpeechParseResult {
-    const finalTranscript = this.getFinalTranscript();
-    const interimTranscript = this.getInterimTranscript();
-    
-    let displayTranscript = finalTranscript;
-    if (interimTranscript) {
-      displayTranscript = finalTranscript 
-        ? `${finalTranscript} ${interimTranscript}` 
-        : interimTranscript;
-    }
+  public getDisplayTranscript(): string {
+    if (!this.interimTranscript) return this.finalTranscript;
+    const cleanInterimDelta = reconcileWordOverlap(this.finalTranscript, this.interimTranscript);
+    if (!cleanInterimDelta) return this.finalTranscript;
+    return this.finalTranscript ? `${this.finalTranscript} ${cleanInterimDelta}` : cleanInterimDelta;
+  }
 
+  public getState(): SpeechSessionState {
     return {
-      finalTranscript,
-      interimTranscript,
-      displayTranscript: normalizeSpeechWhitespace(displayTranscript)
+      sessionId: this.currentSessionId,
+      finalTranscript: this.finalTranscript,
+      interimTranscript: this.interimTranscript,
+      displayTranscript: this.getDisplayTranscript(),
+      isListening: this.isListening
     };
   }
 
   /**
-   * Finalizes the transcript when speech ends.
-   * Prefers confirmed final transcript; falls back to interim only if no final was emitted.
+   * Forcefully tears down and nullifies any running recognition instance.
+   */
+  public destroyActiveRecognition(): void {
+    if (this.activeRecognition) {
+      try {
+        this.activeRecognition.onstart = null;
+        this.activeRecognition.onresult = null;
+        this.activeRecognition.onerror = null;
+        this.activeRecognition.onend = null;
+        this.activeRecognition.onspeechend = null;
+        this.activeRecognition.stop();
+        this.activeRecognition.abort();
+      } catch (e) {
+        // ignore already aborted errors
+      }
+      this.activeRecognition = null;
+    }
+    this.isListening = false;
+  }
+
+  /**
+   * Starts a new speech recognition session, killing any previous instance immediately.
+   */
+  public startSession(options: {
+    lang?: string;
+    continuous?: boolean;
+    callbacks?: SpeechManagerCallbacks;
+  } = {}): number {
+    this.destroyActiveRecognition();
+
+    this.currentSessionId += 1;
+    const sessionToken = this.currentSessionId;
+
+    this.finalTranscript = '';
+    this.interimTranscript = '';
+    this.callbacks = options.callbacks || {};
+    this.lang = options.lang || 'ar-SA';
+    this.continuous = options.continuous ?? false;
+
+    speechLog(`Starting session #${sessionToken} (lang: ${this.lang}, continuous: ${this.continuous})`);
+
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      speechLog('SpeechRecognition not supported in browser');
+      if (this.callbacks.onError) {
+        this.callbacks.onError({ error: 'not-supported' });
+      }
+      return sessionToken;
+    }
+
+    try {
+      const rec = new SpeechRec();
+      rec.lang = this.lang;
+      rec.continuous = this.continuous;
+      rec.interimResults = true;
+
+      rec.onstart = () => {
+        if (this.currentSessionId !== sessionToken) return;
+        this.isListening = true;
+        speechLog(`Session #${sessionToken} started listening`);
+        if (this.callbacks.onStatusChange) {
+          this.callbacks.onStatusChange('listening');
+        }
+        this.emitState();
+      };
+
+      rec.onresult = (event: any) => {
+        if (this.currentSessionId !== sessionToken) {
+          speechLog(`Discarding stale onresult from older session`);
+          return;
+        }
+        this.processRecognitionEvent(event, sessionToken);
+      };
+
+      rec.onerror = (event: any) => {
+        if (this.currentSessionId !== sessionToken) return;
+        speechLog(`Session #${sessionToken} error:`, event.error);
+        if (this.callbacks.onError) {
+          this.callbacks.onError(event);
+        }
+      };
+
+      rec.onspeechend = () => {
+        if (this.currentSessionId !== sessionToken) return;
+        speechLog(`Session #${sessionToken} speech ended`);
+        if (this.callbacks.onSpeechEnd) {
+          this.callbacks.onSpeechEnd();
+        }
+      };
+
+      rec.onend = () => {
+        if (this.currentSessionId !== sessionToken) return;
+        this.isListening = false;
+        speechLog(`Session #${sessionToken} recognition ended`);
+      };
+
+      this.activeRecognition = rec;
+      rec.start();
+    } catch (err) {
+      console.error('[SpeechEngine] Failed to start recognition:', err);
+      if (this.callbacks.onError) {
+        this.callbacks.onError(err);
+      }
+    }
+
+    return sessionToken;
+  }
+
+  /**
+   * Processes incoming Web Speech API results with overlap reconciliation.
+   */
+  public processRecognitionEvent(event: any, sessionToken: number): void {
+    if (!event || !event.results || sessionToken !== this.currentSessionId) {
+      return;
+    }
+
+    let rawInterim = '';
+
+    for (let i = 0; i < event.results.length; i++) {
+      const res = event.results[i];
+      if (!res || !res[0]) continue;
+      const chunk = normalizeSpeechWhitespace(res[0].transcript || '');
+      if (!chunk) continue;
+
+      if (res.isFinal) {
+        // Stitch final chunk into accumulated final transcript safely
+        this.finalTranscript = stitchFinalSegment(this.finalTranscript, chunk);
+      } else {
+        rawInterim = chunk;
+      }
+    }
+
+    this.interimTranscript = rawInterim;
+    this.emitState();
+  }
+
+  /**
+   * Stops recognition and finalizes the transcript.
+   * Returns ONLY the clean, final transcript (never unconfirmed interim garbage).
    */
   public finalize(): string {
-    const finalTxt = this.getFinalTranscript();
-    if (finalTxt) return finalTxt;
-    return normalizeSpeechWhitespace(this.lastInterim);
+    this.destroyActiveRecognition();
+
+    let result = normalizeSpeechWhitespace(this.finalTranscript);
+    if (!result && this.interimTranscript) {
+      // Fallback: If user stopped and browser only emitted interim without final
+      result = normalizeSpeechWhitespace(this.interimTranscript);
+    }
+
+    this.finalTranscript = result;
+    this.interimTranscript = '';
+    this.emitState();
+
+    speechLog(`Finalized transcript: "${result}"`);
+    return result;
+  }
+
+  /**
+   * Stops the active session.
+   */
+  public stopSession(): string {
+    return this.finalize();
+  }
+
+  /**
+   * Aborts and resets without keeping transcripts.
+   */
+  public abortSession(): void {
+    this.destroyActiveRecognition();
+    this.finalTranscript = '';
+    this.interimTranscript = '';
+    this.emitState();
+  }
+
+  private emitState(): void {
+    if (this.callbacks.onTranscriptChange) {
+      this.callbacks.onTranscriptChange(this.getState());
+    }
   }
 }

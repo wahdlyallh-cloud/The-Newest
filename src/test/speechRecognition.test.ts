@@ -1,7 +1,11 @@
 /**
- * Tests for Hayat AI Speech Recognition Layer
+ * High Precision Tests for Hayat AI Centralized Speech Recognition Engine
  */
-import { SpeechSessionTracker, normalizeSpeechWhitespace } from '../lib/speechRecognition';
+import {
+  SpeechRecognitionManager,
+  reconcileWordOverlap,
+  stitchFinalSegment
+} from '../lib/speechRecognition';
 
 function createMockEvent(results: Array<{ transcript: string; isFinal: boolean }>) {
   const resultList = results.map(r => {
@@ -16,8 +20,8 @@ function createMockEvent(results: Array<{ transcript: string; isFinal: boolean }
   };
 }
 
-function runTests() {
-  console.log('Running Speech Recognition Tests...\n');
+function runComprehensiveTests() {
+  console.log('=== Running Speech Recognition Core Tests ===\n');
   let passed = 0;
   let failed = 0;
 
@@ -35,110 +39,126 @@ function runTests() {
     }
   }
 
-  const tracker = new SpeechSessionTracker();
+  // --- UNIT 1: Word Overlap & Suffix Reconciliation Tests ---
+  console.log('--- Sub-suite 1: Word Overlap Reconciliation ---');
 
-  // Test 1: Short Arabic sentence
-  tracker.startNewSession();
-  let res = tracker.processEvent(createMockEvent([
-    { transcript: 'السلام عليكم', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'السلام عليكم', 'Test 1: Short Arabic sentence final', res.finalTranscript, 'السلام عليكم');
-  assert(res.interimTranscript === '', 'Test 1: Short Arabic interim is empty', res.interimTranscript, '');
+  // Test 1.1: Single word overlap
+  let delta = reconcileWordOverlap('السلام', 'السلام عليكم');
+  assert(delta === 'عليكم', 'Overlap: "السلام" vs "السلام عليكم" -> "عليكم"', delta, 'عليكم');
 
-  // Test 2: Full Arabic sentence "السلام عليكم ورحمة الله وبركاته"
-  tracker.startNewSession();
-  res = tracker.processEvent(createMockEvent([
-    { transcript: 'السلام عليكم ورحمة الله وبركاته', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'السلام عليكم ورحمة الله وبركاته', 'Test 2: Full Arabic sentence', res.finalTranscript, 'السلام عليكم ورحمة الله وبركاته');
+  // Test 1.2: Multi-word overlap
+  delta = reconcileWordOverlap('السلام عليكم', 'السلام عليكم ورحمة الله وبركاته');
+  assert(delta === 'ورحمة الله وبركاته', 'Overlap: "السلام عليكم" vs "السلام عليكم ورحمة الله وبركاته"', delta, 'ورحمة الله وبركاته');
 
-  // Test 3: English sentence
-  tracker.startNewSession();
-  res = tracker.processEvent(createMockEvent([
-    { transcript: 'Hello, this is a test of voice recognition.', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'Hello, this is a test of voice recognition.', 'Test 3: English sentence', res.finalTranscript, 'Hello, this is a test of voice recognition.');
+  // Test 1.3: Identical / Complete subset
+  delta = reconcileWordOverlap('السلام عليكم', 'السلام عليكم');
+  assert(delta === '', 'Overlap: Identical text produces empty delta', delta, '');
 
-  // Test 4: Arabic sentence with multiple interim events
-  tracker.startNewSession();
-  // Step 1 interim
-  res = tracker.processEvent(createMockEvent([
+  // Test 1.4: Disjoint sentences (No overlap)
+  delta = reconcileWordOverlap('الجملة الأولى.', 'الجملة الثانية.');
+  assert(delta === 'الجملة الثانية.', 'Overlap: Disjoint sentences preserved fully', delta, 'الجملة الثانية.');
+
+  // Test 1.5: Natural repetition preserved inside incoming
+  delta = reconcileWordOverlap('', 'نعم نعم أريد ذلك');
+  assert(delta === 'نعم نعم أريد ذلك', 'Overlap: Natural repetition preserved', delta, 'نعم نعم أريد ذلك');
+
+  // Test 1.6: English overlap
+  delta = reconcileWordOverlap('Hello there', 'Hello there my friend');
+  assert(delta === 'my friend', 'Overlap: English words overlap', delta, 'my friend');
+
+  // --- UNIT 2: Stitching Final Segments Tests ---
+  console.log('\n--- Sub-suite 2: Stitching Final Segments ---');
+
+  let current = '';
+  current = stitchFinalSegment(current, 'السلام');
+  assert(current === 'السلام', 'Stitch step 1: "السلام"');
+
+  // Mobile re-emitted whole phrase as final
+  current = stitchFinalSegment(current, 'السلام عليكم');
+  assert(current === 'السلام عليكم', 'Stitch step 2: "السلام" + "السلام عليكم" -> "السلام عليكم"', current, 'السلام عليكم');
+
+  // Mobile emitted disjoint final
+  current = stitchFinalSegment(current, 'ورحمة الله وبركاته');
+  assert(current === 'السلام عليكم ورحمة الله وبركاته', 'Stitch step 3: + "ورحمة الله وبركاته"', current, 'السلام عليكم ورحمة الله وبركاته');
+
+  // --- UNIT 3: Mobile Event Stream Simulation ---
+  console.log('\n--- Sub-suite 3: Mobile Event Stream Simulation ---');
+
+  const manager = SpeechRecognitionManager.getInstance();
+
+  // Scenario: Mobile stream exactly as described by user
+  const s1 = manager.startSession();
+
+  // Event 1: "السلام" (interim)
+  manager.processRecognitionEvent(createMockEvent([
     { transcript: 'السلام', isFinal: false }
-  ]));
-  assert(res.interimTranscript === 'السلام' && res.finalTranscript === '', 'Test 4.1: Interim step 1');
-  assert(res.displayTranscript === 'السلام', 'Test 4.1: Display step 1');
+  ]), s1);
+  assert(manager.getDisplayTranscript() === 'السلام', 'Stream Event 1: Display is "السلام"');
+  assert(manager.getFinalTranscript() === '', 'Stream Event 1: Final is empty');
 
-  // Step 2 interim
-  res = tracker.processEvent(createMockEvent([
+  // Event 2: "السلام عليكم" (interim)
+  manager.processRecognitionEvent(createMockEvent([
     { transcript: 'السلام عليكم', isFinal: false }
-  ]));
-  assert(res.interimTranscript === 'السلام عليكم' && res.finalTranscript === '', 'Test 4.2: Interim step 2');
-  assert(res.displayTranscript === 'السلام عليكم', 'Test 4.2: Display step 2');
+  ]), s1);
+  assert(manager.getDisplayTranscript() === 'السلام عليكم', 'Stream Event 2: Display is "السلام عليكم"');
+  assert(manager.getFinalTranscript() === '', 'Stream Event 2: Final is empty');
 
-  // Step 3 final arrives
-  res = tracker.processEvent(createMockEvent([
-    { transcript: 'السلام عليكم', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'السلام عليكم' && res.interimTranscript === '', 'Test 4.3: Final step 3');
-  assert(res.displayTranscript === 'السلام عليكم', 'Test 4.3: Display step 3');
+  // Event 3: "السلام" (final) + "السلام عليكم ورحمة" (interim)
+  manager.processRecognitionEvent(createMockEvent([
+    { transcript: 'السلام', isFinal: true },
+    { transcript: 'السلام عليكم ورحمة', isFinal: false }
+  ]), s1);
+  assert(manager.getFinalTranscript() === 'السلام', 'Stream Event 3: Final has "السلام"');
+  assert(manager.getDisplayTranscript() === 'السلام عليكم ورحمة', 'Stream Event 3: Display is "السلام عليكم ورحمة" (NO DUPLICATION)', manager.getDisplayTranscript(), 'السلام عليكم ورحمة');
 
-  // Test 5: Same final result arrives more than once (idempotent result index)
-  tracker.startNewSession();
-  tracker.processEvent(createMockEvent([
-    { transcript: 'مرحبا بك', isFinal: true }
-  ]));
-  res = tracker.processEvent(createMockEvent([
-    { transcript: 'مرحبا بك', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'مرحبا بك', 'Test 5: Idempotent duplicate final result', res.finalTranscript, 'مرحبا بك');
+  // Event 4: "السلام" (final) + "عليكم ورحمة الله وبركاته" (final)
+  manager.processRecognitionEvent(createMockEvent([
+    { transcript: 'السلام', isFinal: true },
+    { transcript: 'عليكم ورحمة الله وبركاته', isFinal: true }
+  ]), s1);
+  assert(manager.getFinalTranscript() === 'السلام عليكم ورحمة الله وبركاته', 'Stream Event 4: Final is "السلام عليكم ورحمة الله وبركاته"', manager.getFinalTranscript(), 'السلام عليكم ورحمة الله وبركاته');
 
-  // Test 6: Event containing both interim and final
-  tracker.startNewSession();
-  res = tracker.processEvent(createMockEvent([
-    { transcript: 'الجزء الأول المؤكد', isFinal: true },
-    { transcript: 'والجزء الثاني المؤقت', isFinal: false }
-  ]));
-  assert(res.finalTranscript === 'الجزء الأول المؤكد', 'Test 6: Separate final chunk', res.finalTranscript, 'الجزء الأول المؤكد');
-  assert(res.interimTranscript === 'والجزء الثاني المؤقت', 'Test 6: Separate interim chunk', res.interimTranscript, 'والجزء الثاني المؤقت');
-  assert(res.displayTranscript === 'الجزء الأول المؤكد والجزء الثاني المؤقت', 'Test 6: Display combined with space', res.displayTranscript, 'الجزء الأول المؤكد والجزء الثاني المؤقت');
+  // Finalize
+  const finalized = manager.finalize();
+  assert(finalized === 'السلام عليكم ورحمة الله وبركاته', 'Finalize: Result matches perfectly', finalized, 'السلام عليكم ورحمة الله وبركاته');
 
-  // Test 7: Multiple consecutive sentences across separate final chunks
-  tracker.startNewSession();
-  res = tracker.processEvent(createMockEvent([
-    { transcript: 'الجملة الأولى.', isFinal: true },
-    { transcript: 'الجملة الثانية.', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'الجملة الأولى. الجملة الثانية.', 'Test 7: Consecutive final sentences with clean space', res.finalTranscript, 'الجملة الأولى. الجملة الثانية.');
-
-  // Test 8: Naturally repeated words preserved (e.g. "نعم نعم أريد ذلك")
-  tracker.startNewSession();
-  res = tracker.processEvent(createMockEvent([
+  // --- UNIT 4: Natural Repetition Test ---
+  console.log('\n--- Sub-suite 4: Natural Repetition Test ---');
+  const s2 = manager.startSession();
+  manager.processRecognitionEvent(createMockEvent([
     { transcript: 'نعم نعم أريد ذلك بالتأكيد', isFinal: true }
-  ]));
-  assert(res.finalTranscript === 'نعم نعم أريد ذلك بالتأكيد', 'Test 8: Natural repetition preserved', res.finalTranscript, 'نعم نعم أريد ذلك بالتأكيد');
+  ]), s2);
+  const repFinal = manager.finalize();
+  assert(repFinal === 'نعم نعم أريد ذلك بالتأكيد', 'Natural repetition "نعم نعم أريد ذلك بالتأكيد" preserved', repFinal, 'نعم نعم أريد ذلك بالتأكيد');
 
-  // Test 9: Session reset & finalize on voice chat close
-  tracker.startNewSession();
-  tracker.processEvent(createMockEvent([
-    { transcript: 'نص مؤقت فقط', isFinal: false }
-  ]));
-  tracker.reset();
-  assert(tracker.getFinalTranscript() === '' && tracker.getInterimTranscript() === '', 'Test 9: Session reset clears buffers');
+  // --- UNIT 5: Session Token & Stale Callbacks ---
+  console.log('\n--- Sub-suite 5: Session Tokens & Stale Callbacks ---');
+  const oldSession = manager.startSession();
+  manager.processRecognitionEvent(createMockEvent([
+    { transcript: 'جلسة سابقة', isFinal: true }
+  ]), oldSession);
 
-  // Test 10: Reopen session token protection
-  const session1 = tracker.startNewSession();
-  tracker.processEvent(createMockEvent([
-    { transcript: 'جلسة أولى', isFinal: true }
-  ]), session1);
-  const session2 = tracker.startNewSession();
-  // Simulate late callback from session 1
-  tracker.processEvent(createMockEvent([
-    { transcript: 'استجابة متأخرة من جلسة 1', isFinal: true }
-  ]), session1);
-  assert(tracker.getFinalTranscript() === '', 'Test 10: Stale callback from session 1 dropped in session 2');
+  // Start new session immediately
+  const newSession = manager.startSession();
+  assert(manager.getFinalTranscript() === '', 'New session starts clean');
 
-  console.log(`\nResults: ${passed} passed, ${failed} failed.`);
+  // Late callback from old session arrives
+  manager.processRecognitionEvent(createMockEvent([
+    { transcript: 'استجابة متأخرة من جلسة قديمة', isFinal: true }
+  ]), oldSession);
+  assert(manager.getFinalTranscript() === '', 'Stale callback from old session discarded');
+
+  // New session valid callback
+  manager.processRecognitionEvent(createMockEvent([
+    { transcript: 'الجلسة الجديدة الفعلية', isFinal: true }
+  ]), newSession);
+  assert(manager.getFinalTranscript() === 'الجلسة الجديدة الفعلية', 'New session callback processed successfully');
+
+  console.log(`\n========================================`);
+  console.log(`Results: ${passed} passed, ${failed} failed.`);
+  console.log(`========================================\n`);
+
   return failed === 0;
 }
 
-runTests();
+runComprehensiveTests();
