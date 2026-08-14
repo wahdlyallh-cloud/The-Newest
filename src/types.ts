@@ -11,6 +11,7 @@ export interface AudioRecording {
   blobUrl?: string;
   duration: number; // in seconds
   transcription?: string;
+  attachmentId?: string;
   speechEmotion?: {
     primaryEmotion: 'joy' | 'anxiety' | 'sadness' | 'anger' | 'calm' | 'normal' | string;
     intensity: 'high' | 'medium' | 'low' | string;
@@ -26,6 +27,7 @@ export interface FileAttachment {
   size: string;
   type: string;
   dataUrl: string;
+  attachmentId?: string;
 }
 
 export interface ChatLogEntry {

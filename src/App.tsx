@@ -38,6 +38,13 @@ import WeeklyHabitsMoodChart from './components/WeeklyHabitsMoodChart';
 import SleepMoodCorrelationChart from './components/SleepMoodCorrelationChart';
 import SmartRemindersModal from './components/SmartRemindersModal';
 import { AuthModal } from './components/AuthModal';
+import { 
+  saveAttachmentBlob, 
+  getAttachmentBlob, 
+  getAttachmentObjectUrl, 
+  deleteAttachmentBlob, 
+  cleanOrphanAttachments 
+} from './lib/attachmentStore';
 import DailyProsConsModal from './components/DailyProsConsModal';
 import ProsConsHistoryLog from './components/ProsConsHistoryLog';
 import FullAthkarModal from './components/FullAthkarModal';
@@ -1169,9 +1176,57 @@ export default function App() {
     } catch (e) { console.warn(e); }
   }, [settings]);
 
+  // --- Pure Event-Driven File Picker Guard & Synchronous Draft Persistence ---
+  const isFilePickerActiveRef = useRef<boolean>(false);
+
+  const markFilePickerActive = useCallback(() => {
+    isFilePickerActiveRef.current = true;
+    // Instant sync: Ensure current editor DOM content is persisted to localStorage immediately before picker opens
+    if (editorRef.current && editingDiary) {
+      const htmlContent = editorRef.current.innerHTML;
+      const currentDraft = { ...editingDiary, content: htmlContent };
+      saveDraftSynchronously(currentDraft);
+    }
+  }, [editingDiary]);
+
+  const resetFilePickerGuard = useCallback(() => {
+    isFilePickerActiveRef.current = false;
+  }, []);
+
+  const saveDraftSynchronously = useCallback((draft: DiaryEntry | null) => {
+    if (draft) {
+      try {
+        const safeDraft = {
+          ...draft,
+          videos: (draft.videos || []).map(v => (v && v.length > 500000) ? '#' : v),
+          images: (draft.images || []).map(img => (img && img.length > 500000) ? '' : img).filter(Boolean),
+          audioRecordings: (draft.audioRecordings || []).map(r => ({
+            ...r,
+            dataUrl: (r.attachmentId || (r.dataUrl && r.dataUrl.length > 500000)) ? '#' : r.dataUrl
+          })),
+          files: (draft.files || []).map(f => ({
+            ...f,
+            dataUrl: (f.attachmentId || (f.dataUrl && f.dataUrl.length > 500000)) ? '#' : f.dataUrl
+          }))
+        };
+        localStorage.setItem('yawmiyati_draft_editing_diary', JSON.stringify(safeDraft));
+      } catch (e) {
+        console.warn('Failed synchronous draft save:', e);
+      }
+    } else {
+      try {
+        localStorage.removeItem('yawmiyati_draft_editing_diary');
+      } catch (e) {}
+    }
+  }, []);
+
   // Auto-lock when user leaves tab/window, hides page, or switches applications
   useEffect(() => {
     const handleAutoLock = () => {
+      // Do NOT auto-lock if user is currently picking a file / taking a photo / recording audio!
+      if (isFilePickerActiveRef.current) {
+        return;
+      }
       if (document.visibilityState === 'hidden' || document.hidden) {
         if (settings.appPinCode || settings.isAppLocked) {
           setSettings(prev => {
@@ -1876,6 +1931,46 @@ export default function App() {
     }
     return null;
   });
+
+  // --- Restore IndexedDB Attachment Blobs into ObjectURLs on Mount ---
+  useEffect(() => {
+    const restoreIndexedDBAttachments = async () => {
+      if (editingDiary) {
+        let hasChanges = false;
+        const restoredFiles = await Promise.all((editingDiary.files || []).map(async (f) => {
+          if (f.attachmentId && (!f.dataUrl || f.dataUrl === '#')) {
+            const objectUrl = await getAttachmentObjectUrl(f.attachmentId);
+            if (objectUrl) {
+              hasChanges = true;
+              return { ...f, dataUrl: objectUrl };
+            }
+          }
+          return f;
+        }));
+
+        const restoredAudio = await Promise.all((editingDiary.audioRecordings || []).map(async (r) => {
+          if (r.attachmentId && (!r.dataUrl || r.dataUrl === '#')) {
+            const objectUrl = await getAttachmentObjectUrl(r.attachmentId);
+            if (objectUrl) {
+              hasChanges = true;
+              return { ...r, dataUrl: objectUrl };
+            }
+          }
+          return r;
+        }));
+
+        if (hasChanges) {
+          setEditingDiary(prev => prev ? {
+            ...prev,
+            files: restoredFiles,
+            audioRecordings: restoredAudio
+          } : null);
+        }
+      }
+    };
+
+    restoreIndexedDBAttachments();
+  }, []);
   const [isNewEntry, setIsNewEntry] = useState(() => {
     return localStorage.getItem('yawmiyati_draft_is_new_entry') === 'true';
   });
@@ -2909,137 +3004,150 @@ export default function App() {
     });
   };
 
-  // --- Image Base64 File Uploader ---
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // --- Image File Uploader (Gallery & Camera Photos via IndexedDB) ---
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file && editingDiary) {
       try {
+        const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
         const imageUrl = URL.createObjectURL(file);
-        setEditingDiary(prev => prev ? { ...prev, images: [...(prev.images || []), imageUrl] } : null);
+
+        const newFileAttachment: FileAttachment = {
+          id: `file-img-${Date.now()}`,
+          name: file.name || 'صورة مرفقة.png',
+          size: `${(file.size / 1024).toFixed(1)} KB`,
+          type: file.type || 'image/png',
+          dataUrl: imageUrl,
+          attachmentId
+        };
+
+        setEditingDiary(prev => {
+          if (!prev) return null;
+          const updated = {
+            ...prev,
+            images: [...(prev.images || []), imageUrl],
+            files: [...(prev.files || []), newFileAttachment]
+          };
+          saveDraftSynchronously(updated);
+          return updated;
+        });
       } catch (err) {
-        try {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              setEditingDiary(prev => prev ? { ...prev, images: [...(prev.images || []), reader.result as string] } : null);
-            }
-          };
-          reader.onerror = () => {
-            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-          };
-          reader.readAsDataURL(file);
-        } catch (e2) {
-          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-        }
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+    } else {
+      resetFilePickerGuard();
     }
     e.target.value = '';
   };
 
-  // --- Safe File Attachment Helper with 3MB LocalStorage Quota Guard & Explicit Try-Catch ---
-  const processSelectedFileAttachment = (file: File): Promise<FileAttachment> => {
-    return new Promise((resolve, reject) => {
-      try {
-        const fileSizeFormatted = file.size > 1048576 
-          ? `${(file.size / 1048576).toFixed(1)} MB` 
-          : `${(file.size / 1024).toFixed(1)} KB`;
-        const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        const mime = file.type || 'application/octet-stream';
+  // --- Safe File Attachment Helper with Native IndexedDB Binary Persistence ---
+  const processSelectedFileAttachment = async (file: File): Promise<FileAttachment> => {
+    markFilePickerActive();
+    try {
+      const fileSizeFormatted = file.size > 1048576 
+        ? `${(file.size / 1048576).toFixed(1)} MB` 
+        : `${(file.size / 1024).toFixed(1)} KB`;
+      const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const attachmentId = `att-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const mime = file.type || 'application/octet-stream';
 
-        // 3MB Quota Guard: If file > 3MB, generate Blob ObjectURL to prevent LocalStorage QuotaExceededError
-        if (file.size > 3 * 1024 * 1024) {
-          const blobUrl = URL.createObjectURL(file);
-          resolve({
-            id: fileId,
-            name: file.name,
-            size: fileSizeFormatted,
-            type: mime,
-            dataUrl: blobUrl
-          });
-        } else {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const resultUrl = (typeof reader.result === 'string' && reader.result.length > 5) 
-              ? reader.result 
-              : URL.createObjectURL(file);
-            resolve({
-              id: fileId,
-              name: file.name,
-              size: fileSizeFormatted,
-              type: mime,
-              dataUrl: resultUrl
-            });
-          };
-          reader.onerror = () => {
-            try {
-              const fallbackBlob = URL.createObjectURL(file);
-              resolve({
-                id: fileId,
-                name: file.name,
-                size: fileSizeFormatted,
-                type: mime,
-                dataUrl: fallbackBlob
-              });
-            } catch (err) {
-              alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-              reject(err);
-            }
-          };
-          reader.readAsDataURL(file);
-        }
-      } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-        reject(err);
-      }
-    });
+      // Save raw binary file into IndexedDB for real persistence across reloads & WebViews
+      await saveAttachmentBlob(attachmentId, file, mime);
+
+      // Create session Blob ObjectURL for instant UI preview
+      const objectUrl = URL.createObjectURL(file);
+
+      return {
+        id: fileId,
+        name: file.name,
+        size: fileSizeFormatted,
+        type: mime,
+        dataUrl: objectUrl,
+        attachmentId
+      };
+    } catch (err) {
+      alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      throw err;
+    } finally {
+      resetFilePickerGuard();
+    }
   };
 
   // --- Universal Document / File Uploader ---
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file && editingDiary) {
       try {
         const newFile = await processSelectedFileAttachment(file);
-        setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
+        setEditingDiary(prev => {
+          if (!prev) return null;
+          const updated = {
+            ...prev,
+            files: [...(prev.files || []), newFile]
+          };
+          saveDraftSynchronously(updated);
+          return updated;
+        });
         setActiveInputSection('none');
       } catch (err) {
         alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+    } else {
+      resetFilePickerGuard();
     }
     e.target.value = '';
   };
 
-  // --- Video File Uploader ---
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // --- Video File Uploader (Gallery & Camera Videos via IndexedDB) ---
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file && editingDiary) {
       if (file.size > 200 * 1024 * 1024) {
         alert('حجم هذا الفيديو كبير جداً (أكثر من 200 ميجابايت). يرجى اختيار فيديو أصغر أو إضافة رابط فيديو مباشر.');
+        resetFilePickerGuard();
         e.target.value = '';
         return;
       }
       try {
+        const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
         const videoBlobUrl = URL.createObjectURL(file);
-        setEditingDiary(prev => prev ? { ...prev, videos: [...(prev.videos || []), videoBlobUrl] } : null);
+
+        const newFileAttachment: FileAttachment = {
+          id: `file-vid-${Date.now()}`,
+          name: file.name || 'مقطع فيديو.mp4',
+          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+          type: file.type || 'video/mp4',
+          dataUrl: videoBlobUrl,
+          attachmentId
+        };
+
+        setEditingDiary(prev => {
+          if (!prev) return null;
+          const updated = {
+            ...prev,
+            videos: [...(prev.videos || []), videoBlobUrl],
+            files: [...(prev.files || []), newFileAttachment]
+          };
+          saveDraftSynchronously(updated);
+          return updated;
+        });
         setActiveInputSection('none');
       } catch (err) {
-        try {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const videoDataUrl = reader.result;
-            if (typeof videoDataUrl === 'string') {
-              setEditingDiary(prev => prev ? { ...prev, videos: [...(prev.videos || []), videoDataUrl] } : null);
-              setActiveInputSection('none');
-            }
-          };
-          reader.onerror = () => {
-            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-          };
-          reader.readAsDataURL(file);
-        } catch (err2) {
-          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-        }
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+    } else {
+      resetFilePickerGuard();
     }
     e.target.value = '';
   };
@@ -3081,119 +3189,134 @@ export default function App() {
   };
 
   // --- Global File Upload Handlers (for direct Dashboard access) ---
-  const handleGlobalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGlobalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file) {
       try {
+        const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
         const imageUrl = URL.createObjectURL(file);
         const diary = getOrCreateDiaryForUpload();
-        setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, images: [...(d.images || []), imageUrl] } : d));
-        setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, images: [...(prev.images || []), imageUrl] } : { ...diary, images: [...(diary.images || []), imageUrl] });
+
+        const newFileAttachment: FileAttachment = {
+          id: `file-img-${Date.now()}`,
+          name: file.name || 'صورة مرفقة.png',
+          size: `${(file.size / 1024).toFixed(1)} KB`,
+          type: file.type || 'image/png',
+          dataUrl: imageUrl,
+          attachmentId
+        };
+
+        setDiaries(prev => prev.map(d => d.id === diary.id ? {
+          ...d,
+          images: [...(d.images || []), imageUrl],
+          files: [...(d.files || []), newFileAttachment]
+        } : d));
+        setEditingDiary(prev => prev && prev.id === diary.id ? {
+          ...prev,
+          images: [...(prev.images || []), imageUrl],
+          files: [...(prev.files || []), newFileAttachment]
+        } : {
+          ...diary,
+          images: [...(diary.images || []), imageUrl],
+          files: [...(diary.files || []), newFileAttachment]
+        });
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
-        try {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              const diary = getOrCreateDiaryForUpload();
-              const resultUrl = reader.result;
-              setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, images: [...(d.images || []), resultUrl] } : d));
-              setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, images: [...(prev.images || []), resultUrl] } : { ...diary, images: [...(diary.images || []), resultUrl] });
-              setIsNewEntry(false);
-              setActiveTab('diaries');
-            }
-          };
-          reader.onerror = () => {
-            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-          };
-          reader.readAsDataURL(file);
-        } catch (e2) {
-          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-        }
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+      e.target.value = '';
+    } else {
+      resetFilePickerGuard();
     }
-    e.target.value = '';
   };
 
-  const handleGlobalVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGlobalVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 200 * 1024 * 1024) {
         alert('حجم هذا الفيديو كبير جداً (أكثر من 200 ميجابايت). يرجى اختيار فيديو أصغر أو إضافة رابط فيديو مباشر.');
+        resetFilePickerGuard();
         e.target.value = '';
         return;
       }
       try {
+        const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
         const videoBlobUrl = URL.createObjectURL(file);
         const diary = getOrCreateDiaryForUpload();
-        setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, videos: [...(d.videos || []), videoBlobUrl] } : d));
-        setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, videos: [...(prev.videos || []), videoBlobUrl] } : { ...diary, videos: [...(diary.videos || []), videoBlobUrl] });
+
+        const newFileAttachment: FileAttachment = {
+          id: `file-vid-${Date.now()}`,
+          name: file.name || 'مقطع فيديو.mp4',
+          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+          type: file.type || 'video/mp4',
+          dataUrl: videoBlobUrl,
+          attachmentId
+        };
+
+        setDiaries(prev => prev.map(d => d.id === diary.id ? {
+          ...d,
+          videos: [...(d.videos || []), videoBlobUrl],
+          files: [...(d.files || []), newFileAttachment]
+        } : d));
+        setEditingDiary(prev => prev && prev.id === diary.id ? {
+          ...prev,
+          videos: [...(prev.videos || []), videoBlobUrl],
+          files: [...(prev.files || []), newFileAttachment]
+        } : {
+          ...diary,
+          videos: [...(diary.videos || []), videoBlobUrl],
+          files: [...(diary.files || []), newFileAttachment]
+        });
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
-        try {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              const diary = getOrCreateDiaryForUpload();
-              const resultUrl = reader.result;
-              setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, videos: [...(d.videos || []), resultUrl] } : d));
-              setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, videos: [...(prev.videos || []), resultUrl] } : { ...diary, videos: [...(diary.videos || []), resultUrl] });
-              setIsNewEntry(false);
-              setActiveTab('diaries');
-            }
-          };
-          reader.onerror = () => {
-            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-          };
-          reader.readAsDataURL(file);
-        } catch (err2) {
-          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-        }
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+      e.target.value = '';
+    } else {
+      resetFilePickerGuard();
     }
-    e.target.value = '';
   };
 
-  const handleGlobalAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGlobalAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file) {
       try {
+        const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
         const audioUrl = URL.createObjectURL(file);
+
         processAudioRecordingOrFile({
           dataUrl: audioUrl,
           blobUrl: audioUrl,
           mimeType: file.type || 'audio/mp3',
           fileName: file.name || 'تسجيل صوتي مرفق.mp3',
-          duration: Math.round(file.size / 16000) || 10
+          duration: Math.round(file.size / 16000) || 10,
+          attachmentId
         });
       } catch (err) {
-        try {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              processAudioRecordingOrFile({
-                dataUrl: reader.result,
-                mimeType: file.type || 'audio/mp3',
-                fileName: file.name || 'تسجيل صوتي مرفق.mp3',
-                duration: Math.round(file.size / 16000) || 10
-              });
-            }
-          };
-          reader.onerror = () => {
-            alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-          };
-          reader.readAsDataURL(file);
-        } catch (e2) {
-          alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-        }
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+      e.target.value = '';
+    } else {
+      resetFilePickerGuard();
     }
-    e.target.value = '';
   };
 
   const handleGlobalDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file) {
       try {
@@ -3205,9 +3328,13 @@ export default function App() {
         setActiveTab('diaries');
       } catch (err) {
         alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
       }
+      e.target.value = '';
+    } else {
+      resetFilePickerGuard();
     }
-    e.target.value = '';
   };
 
   // --- Web Link / URL Adder ---
@@ -3431,7 +3558,8 @@ export default function App() {
     mimeType,
     fileName,
     duration,
-    liveSpeechText
+    liveSpeechText,
+    attachmentId: inputAttachmentId
   }: {
     dataUrl: string;
     blobUrl?: string;
@@ -3439,14 +3567,21 @@ export default function App() {
     fileName: string;
     duration: number;
     liveSpeechText?: string;
+    attachmentId?: string;
   }) => {
     const newRecId = `rec-${Date.now()}`;
-    const cleanLiveSpeech = (liveSpeechText && liveSpeechText.trim() && !liveSpeechText.includes('تم التسجيل بنجاح')) ? liveSpeechText.trim() : '';
-    const initialTranscription = cleanLiveSpeech || '⏳ جاري التفريغ النصي بذكاء Gemini...';
-
+    const attachmentId = inputAttachmentId || `att-rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const validDataUrl = (dataUrl && dataUrl !== '#' && dataUrl.length > 5) 
       ? dataUrl 
       : (blobUrl && blobUrl !== '#' ? blobUrl : '#');
+
+    // Save audio binary blob to IndexedDB for persistent reload
+    if (validDataUrl && validDataUrl !== '#') {
+      await saveAttachmentBlob(attachmentId, validDataUrl, mimeType || 'audio/webm');
+    }
+
+    const cleanLiveSpeech = (liveSpeechText && liveSpeechText.trim() && !liveSpeechText.includes('تم التسجيل بنجاح')) ? liveSpeechText.trim() : '';
+    const initialTranscription = cleanLiveSpeech || '⏳ جاري التفريغ النصي بذكاء Gemini...';
 
     const newRec: AudioRecording = {
       id: newRecId,
@@ -3454,7 +3589,8 @@ export default function App() {
       dataUrl: validDataUrl,
       blobUrl: blobUrl || (validDataUrl.startsWith('blob:') ? validDataUrl : undefined),
       duration: duration || 5,
-      transcription: initialTranscription
+      transcription: initialTranscription,
+      attachmentId
     };
 
     addAudioToDiaryAtomic(newRec);
@@ -3551,23 +3687,32 @@ export default function App() {
   };
 
   // --- Audio File Uploader (من جهاز المستخدم) ---
-  const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          processAudioRecordingOrFile({
-            dataUrl: reader.result,
-            mimeType: file.type || 'audio/mp3',
-            fileName: file.name || 'ملف صوتي مرفق.mp3',
-            duration: Math.round(file.size / 16000) || 12
-          });
-          setActiveInputSection('none');
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
+        const audioUrl = URL.createObjectURL(file);
+
+        processAudioRecordingOrFile({
+          dataUrl: audioUrl,
+          blobUrl: audioUrl,
+          mimeType: file.type || 'audio/mp3',
+          fileName: file.name || 'ملف صوتي مرفق.mp3',
+          duration: Math.round(file.size / 16000) || 12,
+          attachmentId
+        });
+        setActiveInputSection('none');
+      } catch (err) {
+        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+      } finally {
+        resetFilePickerGuard();
+      }
       e.target.value = '';
+    } else {
+      resetFilePickerGuard();
     }
   };
 
@@ -5052,7 +5197,10 @@ export default function App() {
 
                 {/* 2. صورة */}
                 <button
-                  onClick={() => document.getElementById('global-image-uploader')?.click()}
+                  onClick={() => {
+                    markFilePickerActive();
+                    document.getElementById('global-image-uploader')?.click();
+                  }}
                   className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
                 >
                   <div className="w-12 h-12 rounded-full bg-sky-500/10 text-sky-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
@@ -5066,7 +5214,10 @@ export default function App() {
 
                 {/* 3. فيديو */}
                 <button
-                  onClick={() => document.getElementById('global-video-uploader')?.click()}
+                  onClick={() => {
+                    markFilePickerActive();
+                    document.getElementById('global-video-uploader')?.click();
+                  }}
                   className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
                 >
                   <div className="w-12 h-12 rounded-full bg-orange-500/10 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
@@ -5080,7 +5231,10 @@ export default function App() {
 
                 {/* 4. تسجيل ريكورد */}
                 <button
-                  onClick={() => document.getElementById('global-audio-uploader')?.click()}
+                  onClick={() => {
+                    markFilePickerActive();
+                    document.getElementById('global-audio-uploader')?.click();
+                  }}
                   className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
                 >
                   <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
@@ -5094,7 +5248,10 @@ export default function App() {
 
                 {/* 5. كتاب / PDF */}
                 <button
-                  onClick={() => document.getElementById('global-document-uploader')?.click()}
+                  onClick={() => {
+                    markFilePickerActive();
+                    document.getElementById('global-document-uploader')?.click();
+                  }}
                   className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
                 >
                   <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
@@ -6231,11 +6388,21 @@ export default function App() {
                       if (Math.abs(html.length - prevRecorded.length) > 5 || html.endsWith(' ') || html.endsWith('&nbsp;')) {
                         recordUndoSnapshot(prevRecorded);
                       }
-                      setEditingDiary(prev => prev ? { ...prev, content: html } : null);
+                      setEditingDiary(prev => {
+                        if (!prev) return null;
+                        const updated = { ...prev, content: html };
+                        saveDraftSynchronously(updated);
+                        return updated;
+                      });
                     }}
                     onBlur={(e) => {
                       const html = e.currentTarget.innerHTML;
-                      setEditingDiary(prev => prev ? { ...prev, content: html } : null);
+                      setEditingDiary(prev => {
+                        if (!prev) return null;
+                        const updated = { ...prev, content: html };
+                        saveDraftSynchronously(updated);
+                        return updated;
+                      });
                     }}
                     style={{
                       backgroundColor: editingDiary.color || '#F9F7F2',
@@ -6249,17 +6416,26 @@ export default function App() {
                   <div className="bg-[#EAE5D9] border border-t-0 border-[#E2DCC8] rounded-b-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex flex-wrap items-center gap-1.5">
                       {/* Attach File (Paperclip) */}
-                      <label className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
+                      <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
                         <span>📎</span>
                         <span className="hidden sm:inline">{t.attachFileTitle}</span>
                         <input
                           type="file"
                           accept="*/*"
                           onChange={async (e) => {
+                            markFilePickerActive();
                             const file = e.target.files?.[0];
                             if (file && editingDiary) {
                               const newFile = await processSelectedFileAttachment(file);
-                              setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
+                              setEditingDiary(prev => {
+                                if (!prev) return null;
+                                const updated = {
+                                  ...prev,
+                                  files: [...(prev.files || []), newFile]
+                                };
+                                saveDraftSynchronously(updated);
+                                return updated;
+                              });
                             }
                             e.target.value = '';
                           }}
@@ -6290,7 +6466,7 @@ export default function App() {
                       </button>
 
                       {/* Add Image */}
-                      <label className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.photoTitle}>
+                      <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.photoTitle}>
                         <span>🖼️</span>
                         <span className="hidden sm:inline">{t.photoTitle}</span>
                         <input
@@ -6637,7 +6813,15 @@ export default function App() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setEditingDiary(prev => prev ? { ...prev, files: prev.files.filter(x => x.id !== file.id) } : null);
+                                  if (file.attachmentId) {
+                                    deleteAttachmentBlob(file.attachmentId);
+                                  }
+                                  setEditingDiary(prev => {
+                                    if (!prev) return null;
+                                    const updated = { ...prev, files: prev.files.filter(x => x.id !== file.id) };
+                                    saveDraftSynchronously(updated);
+                                    return updated;
+                                  });
                                 }}
                                 className="text-red-600 hover:text-red-700 font-bold px-2 cursor-pointer text-xs"
                               >
@@ -6693,7 +6877,7 @@ export default function App() {
                   <div className="flex flex-wrap gap-2">
                     
                     {/* Audio File Upload button */}
-                    <label className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title="اختر من (الملفات / Files) لرفع الملاحظة الصوتية">
+                    <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title="اختر من (الملفات / Files) لرفع الملاحظة الصوتية">
                       <span>🎵</span>
                       <span>أضف ملف صوتي</span>
                       <input
@@ -6705,7 +6889,7 @@ export default function App() {
                     </label>
 
                     {/* Image Snapper / File upload */}
-                    <label className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
+                    <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                       <Image className="w-3.5 h-3.5 text-[#D4A373]" />
                       <span>إضافة لقطة/صورة</span>
                       <input
@@ -6846,7 +7030,7 @@ export default function App() {
                           {/* Option 1: File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
                             <span className="text-[11px] font-bold text-gray-500">الخيار 1: رفع ملف فيديو محلي</span>
-                            <label className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
+                            <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>📁 اختر فيديو من جهازك</span>
                               <input
                                 type="file"
@@ -6888,7 +7072,7 @@ export default function App() {
                           {/* Option 1: PDF File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
                             <span className="text-[11px] font-bold text-gray-500">الخيار 1: رفع ملف أو مستند من جهازك</span>
-                            <label className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
+                            <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>📄 اختر ملف من جهازك</span>
                               <input
                                 type="file"
@@ -7262,6 +7446,7 @@ export default function App() {
 
                         {/* 2. أضف صورة (Add Image) */}
                         <label
+                          onClick={markFilePickerActive}
                           className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
                         >
                           <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
@@ -7296,6 +7481,7 @@ export default function App() {
 
                         {/* 4. إرفاق ملف (Attach File) */}
                         <label
+                          onClick={markFilePickerActive}
                           className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
                         >
                           <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
@@ -7305,24 +7491,26 @@ export default function App() {
                           <input
                             type="file"
                             accept="*/*"
-                            onChange={(e) => {
+                            onChange={async (e) => {
+                              markFilePickerActive();
                               const file = e.target.files?.[0];
                               if (file && editingDiary) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  if (typeof reader.result === 'string') {
-                                    const newFile: FileAttachment = {
-                                      id: `file-${Date.now()}`,
-                                      name: file.name,
-                                      size: `${(file.size / 1024).toFixed(1)} KB`,
-                                      type: file.type || 'application/pdf',
-                                      dataUrl: reader.result
+                                try {
+                                  const newFile = await processSelectedFileAttachment(file);
+                                  setEditingDiary(prev => {
+                                    if (!prev) return null;
+                                    const updated = {
+                                      ...prev,
+                                      files: [...(prev.files || []), newFile]
                                     };
-                                    setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
-                                  }
-                                };
-                                reader.readAsDataURL(file);
+                                    saveDraftSynchronously(updated);
+                                    return updated;
+                                  });
+                                } catch (err) {
+                                  alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+                                }
                               }
+                              e.target.value = '';
                               setShowMoreFeaturesSheet(false);
                             }}
                             className="hidden"
