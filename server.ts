@@ -833,7 +833,7 @@ ${formattedHabits}
 
 // API Endpoint 2: Smart Advisor (🧠 المستشار الذكي العام والعبقري الشامل)
 app.post("/api/gemini/smart-advisor", async (req, res) => {
-  const { diaries, query, reportType, startDate, endDate, gratitudeCards, habits, books, athkarContext, athkarPromptText } = req.body;
+  const { diaries, query, reportType, startDate, endDate, gratitudeCards, habits, books, athkarContext, athkarPromptText, attachments } = req.body;
 
   let formattedAthkar = "لم تسجل أذكار اليوم بعد.";
   if (athkarPromptText && typeof athkarPromptText === 'string') {
@@ -1104,8 +1104,32 @@ ${formattedAthkar}
 4. صغ إجابتك كحوار بشري ذكي، متدفق، ممتع، ومنسق بجمالية وبأسلوب Markdown راقٍ.`;
       }
 
+      let extraParts: any[] = [];
+      if (attachments && Array.isArray(attachments)) {
+        extraParts = attachments
+          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType)
+          .map((att: any) => {
+            if (att.fileUri) {
+              return {
+                fileData: {
+                  mimeType: att.mimeType,
+                  fileUri: att.fileUri
+                }
+              };
+            }
+            return {
+              inlineData: {
+                mimeType: att.mimeType,
+                data: att.base64Data
+              }
+            };
+          });
+      }
+
+      const contents = extraParts.length > 0 ? [userPrompt, ...extraParts] : userPrompt;
+
       const response = await generateWithGenAI(ai, {
-        contents: userPrompt,
+        contents,
         config: {
           systemInstruction,
         }

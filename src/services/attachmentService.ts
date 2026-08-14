@@ -5,8 +5,15 @@ import { MultimodalAttachment } from '../types';
  * Sniff correct MIME type from file extension if Android / browser returns empty or generic octet-stream
  */
 export function sniffMimeType(file: File): string {
-  if (file.type && file.type !== '' && file.type !== 'application/octet-stream') {
-    return file.type;
+  let detectedType = file.type;
+
+  // Normalize non-standard browser MIME types
+  if (detectedType === 'audio/mp3') {
+    detectedType = 'audio/mpeg';
+  }
+
+  if (detectedType && detectedType !== '' && detectedType !== 'application/octet-stream') {
+    return detectedType;
   }
 
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
@@ -27,18 +34,21 @@ export function sniffMimeType(file: File): string {
     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 
     // Audio
-    mp3: 'audio/mp3',
+    mp3: 'audio/mpeg',
+    mpga: 'audio/mpeg',
     wav: 'audio/wav',
-    webm: 'audio/webm',
-    m4a: 'audio/m4a',
+    m4a: 'audio/mp4',
     ogg: 'audio/ogg',
     aac: 'audio/aac',
+    flac: 'audio/flac',
 
     // Video
     mp4: 'video/mp4',
     mkv: 'video/x-matroska',
     mov: 'video/quicktime',
-    avi: 'video/x-msvideo'
+    avi: 'video/x-msvideo',
+    '3gp': 'video/3gpp',
+    webm: 'video/webm'
   };
 
   return mimeMap[ext] || 'application/octet-stream';
@@ -94,7 +104,7 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
   const category = getAttachmentTypeCategory(mimeType);
   const INLINE_SIZE_THRESHOLD = 2 * 1024 * 1024; // 2MB
 
-  if (file.size <= INLINE_SIZE_THRESHOLD && category !== 'video') {
+  if (file.size <= INLINE_SIZE_THRESHOLD) {
     // Convert to inline Base64
     const base64Data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();

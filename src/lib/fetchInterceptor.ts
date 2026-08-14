@@ -599,8 +599,28 @@ ${formattedBooks || "لا توجد كتب مسجلة بعد."}
 
 أجب الآن على سؤال المستخدم بأسلوب المستشار الذكي والدافئ والتحليلي المباشر:`;
       }
+      if (attachments && Array.isArray(attachments)) {
+        extraParts = attachments
+          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType)
+          .map((att: any) => {
+            if (att.fileUri) {
+              return {
+                fileData: {
+                  mimeType: att.mimeType,
+                  fileUri: att.fileUri
+                }
+              };
+            }
+            return {
+              inlineData: {
+                mimeType: att.mimeType,
+                data: att.base64Data
+              }
+            };
+          });
+      }
 
-      const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse);
+      const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse, extraParts);
       return createSuccessResponse({ success: true, answer, source: 'gemini' });
     } catch (err: any) {
       // Always return the rich local fallback — never surface raw errors to the user

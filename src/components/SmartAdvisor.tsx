@@ -124,7 +124,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   });
 
   // Multimodal File Attachments for General Mode & Pro Mode
-  const [multimodalFiles, setMultimodalFiles] = useState<MultimodalAttachment[]>([]);
+  const [generalMultimodalFiles, setGeneralMultimodalFiles] = useState<MultimodalAttachment[]>([]);
+  const [diaryMultimodalFiles, setDiaryMultimodalFiles] = useState<MultimodalAttachment[]>([]);
   const [fileErrorToast, setFileErrorToast] = useState<string | null>(null);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -492,16 +493,21 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     for (const file of selectedFiles) {
-      console.log(`[PRO FILE DEBUG] file details -> name: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
+      console.log(`[ATTACHMENT ROOT DEBUG] selected -> advisor: ${activeAdvisorTab}, name: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
       try {
-        console.log('[PRO FILE DEBUG] processAttachmentUnified called for:', file.name);
-        console.log('[PRO FILE DEBUG] upload started...');
+        console.log(`[ATTACHMENT ROOT DEBUG] processAttachmentUnified called for ${file.name}...`);
         const att = await processAttachmentUnified(file, userApiKey);
-        console.log('[PRO FILE DEBUG] upload success for:', file.name, att);
-        setMultimodalFiles(prev => [...prev, att]);
+        console.log(`[ATTACHMENT ROOT DEBUG] upload success for ${file.name}:`, att.fileUri ? `fileUri: ${att.fileUri}` : `inlineData (${att.base64Data?.length} chars)`);
+
+        if (activeAdvisorTab === 'general') {
+          setGeneralMultimodalFiles(prev => [...prev, att]);
+          console.log('[ATTACHMENT ROOT DEBUG] stored in generalMultimodalFiles');
+        } else {
+          setDiaryMultimodalFiles(prev => [...prev, att]);
+          console.log('[ATTACHMENT ROOT DEBUG] stored in diaryMultimodalFiles');
+        }
       } catch (err: any) {
-        console.error('[PRO FILE DEBUG] upload failed for:', file.name);
-        console.error('[PRO FILE DEBUG] error message:', err?.message || String(err));
+        console.error('[ATTACHMENT ROOT DEBUG] upload failed for:', file.name, err);
         setFileErrorToast(`فشل معالجة أو رفع الملف "${file.name}": ${err?.message || String(err)}`);
       }
     }
@@ -509,18 +515,22 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   };
 
   const removeMultimodalFile = (id: string) => {
-    setMultimodalFiles(prev => prev.filter(f => f.id !== id));
+    if (activeAdvisorTab === 'general') {
+      setGeneralMultimodalFiles(prev => prev.filter(f => f.id !== id));
+    } else {
+      setDiaryMultimodalFiles(prev => prev.filter(f => f.id !== id));
+    }
   };
 
   const handleSend = async (textToSend: string) => {
     // Mode Switcher Branching
     if (activeAdvisorTab === 'general') {
-      if (!textToSend.trim() && multimodalFiles.length === 0) return;
+      if (!textToSend.trim() && generalMultimodalFiles.length === 0) return;
       if (loading) return;
 
       let sendText = textToSend;
-      if (multimodalFiles.length > 0) {
-        sendText += `\n📎 المرفقات: ${multimodalFiles.map(f => f.name).join(' ، ')}`;
+      if (generalMultimodalFiles.length > 0) {
+        sendText += `\n📎 المرفقات: ${generalMultimodalFiles.map(f => f.name).join(' ، ')}`;
       }
 
       const userMsg: Message = {
@@ -534,9 +544,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       setGeneralMessages(updatedMsgs);
       localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(updatedMsgs));
 
-      const filesToSend = [...multimodalFiles];
+      const filesToSend = [...generalMultimodalFiles];
+      console.log('[ATTACHMENT ROOT DEBUG] sending payload for GENERAL advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType })));
       setInput('');
-      setMultimodalFiles([]);
+      setGeneralMultimodalFiles([]);
       setLoading(true);
 
       try {
@@ -588,14 +599,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     // Diary Pro Advisor Mode Logic
-    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && multimodalFiles.length === 0) return;
+    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && diaryMultimodalFiles.length === 0) return;
     if (loading) return;
 
     // Format prompt text with active chat attachments to pass transparently to AI model
     let textWithAttachments = textToSend;
     const attachmentsText: string[] = [];
-    if (multimodalFiles.length > 0) {
-      attachmentsText.push(`\n📎 الملفات المرفقة: ${multimodalFiles.map(f => f.name).join(' ، ')}`);
+    if (diaryMultimodalFiles.length > 0) {
+      attachmentsText.push(`\n📎 الملفات المرفقة: ${diaryMultimodalFiles.map(f => f.name).join(' ، ')}`);
     }
     if (chatAttachments.links.length > 0) {
       attachmentsText.push(`\n🔗 الروابط المرفقة بالشات: ${chatAttachments.links.join(' ، ')}`);
@@ -618,9 +629,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     };
 
     setMessages(prev => [...prev, userMsg]);
-    const filesToSend = [...multimodalFiles];
+    const filesToSend = [...diaryMultimodalFiles];
+    console.log('[ATTACHMENT ROOT DEBUG] sending payload for DIARY PRO advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType })));
     setInput('');
-    setMultimodalFiles([]);
+    setDiaryMultimodalFiles([]);
     setChatAttachments({ links: [], videos: [], pdfs: [] });
     setActiveAttachmentType('none');
     setLoading(true);
@@ -972,10 +984,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         </div>
       )}
 
-      {/* Multimodal Attached Files Preview Bar (Both Modes) */}
-      {multimodalFiles.length > 0 && (
+      {/* Multimodal Attached Files Preview Bar (Scoped to Active Advisor Tab) */}
+      {((activeAdvisorTab === 'general' ? generalMultimodalFiles : diaryMultimodalFiles).length > 0) && (
         <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
-          {multimodalFiles.map(att => (
+          {(activeAdvisorTab === 'general' ? generalMultimodalFiles : diaryMultimodalFiles).map(att => (
             <div key={att.id} className="bg-white border border-[#E2DCC8] text-[#2B3E50] text-[10px] font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-2 shadow-3xs">
               {att.type === 'image' && <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />}
               {att.type === 'pdf' && <FileText className="w-3.5 h-3.5 text-red-500" />}
@@ -986,7 +998,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <button
                 type="button"
                 onClick={() => removeMultimodalFile(att.id)}
-                className="text-red-500 hover:text-red-700 text-xs font-black p-0.5 rounded-full hover:bg-red-50"
+                className="text-red-500 hover:text-red-700 text-xs font-black p-0.5 rounded-full hover:bg-red-50 cursor-pointer"
               >
                 ✕
               </button>
