@@ -1105,32 +1105,34 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       )}
 
       {/* Bottom Input Area */}
-      <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0">
+      <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0 relative z-20">
         {/* Attachment Options Popover Menu */}
         {showAttachmentMenu && (
-          <div className="absolute bottom-16 start-3 z-30 bg-white border border-[#E2DCC8] rounded-2xl shadow-xl p-2 w-56 space-y-1 animate-fade-in text-xs font-sans">
+          <div className="absolute bottom-full start-3 mb-2 z-50 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 w-56 space-y-1 animate-fade-in text-xs font-sans">
             <div className="text-[10px] font-bold text-gray-400 px-2 py-1 border-b border-gray-100 mb-1 flex items-center justify-between">
               <span>{isAr ? 'إضافة مرفق للمحادثة:' : 'Add Attachment:'}</span>
               <button onClick={() => setShowAttachmentMenu(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xs">✕</button>
             </div>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerFilePicker();
+            {/* Native Mobile-First File Upload Trigger */}
+            <label
+              htmlFor="smart-advisor-file-input"
+              onClick={() => {
+                console.log('[SmartAdvisor Mobile] Image/Doc option tapped');
+                onFilePickerOpen?.();
                 setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
               <span className="text-base">📷</span>
               <span className="font-bold">{isAr ? 'صورة / مستند / صوت' : 'Image / Document / Audio'}</span>
-            </button>
+            </label>
 
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                console.log('[SmartAdvisor Mobile] Web Link option tapped');
                 setActiveAttachmentType('link');
                 setShowAttachmentMenu(false);
               }}
@@ -1144,6 +1146,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                console.log('[SmartAdvisor Mobile] Video Link option tapped');
                 setActiveAttachmentType('video');
                 setShowAttachmentMenu(false);
               }}
@@ -1157,6 +1160,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                console.log('[SmartAdvisor Mobile] PDF Info option tapped');
                 setActiveAttachmentType('pdf');
                 setShowAttachmentMenu(false);
               }}
@@ -1169,11 +1173,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         )}
 
         <div className="flex items-center gap-1.5 sm:gap-2 relative">
-          {/* Universal Attachment Button (+) for Both Modes */}
+          {/* Universal Hidden File Input with explicit ID for Native Label trigger */}
           <input
+            id="smart-advisor-file-input"
             type="file"
             ref={fileInputRef}
-            onChange={handleFileUpload}
+            onChange={(e) => {
+              console.log('[SmartAdvisor Mobile] File input onChange fired:', e.target.files?.length);
+              handleFileUpload(e);
+            }}
             accept="image/*,application/pdf,audio/*,video/*"
             multiple
             className="hidden"
