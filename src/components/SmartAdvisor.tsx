@@ -425,40 +425,36 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     try {
-      let bodyData: any = {};
-      if (isGeneralMode) {
-        // General AI Advisor Voice Mode: 100% General Purpose AI Conversation (Science, History, Programming, News, Math, Travel, etc.)
-        const readyAttachments = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
-        bodyData = {
-          mode: 'general',
-          query: contextualQuery,
-          attachments: readyAttachments,
-          diaries: [],
-          habits: [],
-          gratitudeCards: [],
-          books: [],
-          appLanguage
-        };
-      } else {
-        // Diary Pro Advisor Voice Mode: Behavioral, mood & diary entries analysis
-        const diariesToPass = (hasConsent && advisorPermissions.diaries) ? diaries : [];
-        const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
-        const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
-        const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
-        const readyAttachments = diaryMultimodalFiles.filter(f => !f.status || f.status === 'ready');
-        bodyData = {
-          mode: 'diary',
-          diaries: diariesToPass,
-          habits: habitsToPass,
-          gratitudeCards: gratitudeCardsToPass,
-          books: booksToPass,
-          query: contextualQuery,
-          attachments: readyAttachments,
-          appLanguage,
-          athkarContext: getAthkarContextForAI(),
-          athkarPromptText: getFormattedAthkarPromptContext()
-        };
-      }
+      let localCopingCards: any[] = [];
+      let localProsCons: any[] = [];
+      try {
+        const cRaw = localStorage.getItem('app_custom_coping_cards');
+        if (cRaw) localCopingCards = JSON.parse(cRaw);
+        const pRaw = localStorage.getItem('yawmiyati_pros_cons_records');
+        if (pRaw) localProsCons = JSON.parse(pRaw);
+      } catch {}
+
+      const diariesToPass = (hasConsent && advisorPermissions.diaries) ? diaries : [];
+      const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
+      const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
+      const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
+      const readyAttachments = (isGeneralMode ? generalMultimodalFiles : diaryMultimodalFiles).filter(f => !f.status || f.status === 'ready');
+
+      const bodyData = {
+        mode: isGeneralMode ? 'general' : 'diary',
+        diaries: diariesToPass,
+        habits: habitsToPass,
+        gratitudeCards: gratitudeCardsToPass,
+        books: booksToPass,
+        query: contextualQuery,
+        attachments: readyAttachments,
+        appLanguage,
+        athkarContext: getAthkarContextForAI(),
+        athkarPromptText: getFormattedAthkarPromptContext(),
+        customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
+        prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
+        permissions: advisorPermissions
+      };
 
       const response = await fetch('/api/gemini/smart-advisor', {
         method: 'POST',
@@ -476,9 +472,38 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         try { data = JSON.parse(responseText); } catch (e) {}
       }
 
-      const answerText = data?.answer || (isGeneralMode 
-        ? 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع عام أو معرفي.' 
-        : 'أهلاً بك! أنا المستشار الذكي لليوميات.');
+      let answerText = data?.answer || data?.text;
+
+      // Fail-proof direct REST call fallback for voice session
+      if (!answerText) {
+        const index = buildUnifiedKnowledgeIndex({
+          diaries: diariesToPass,
+          habits: habitsToPass,
+          gratitudeCards: gratitudeCardsToPass,
+          books: booksToPass,
+          athkarContext: getAthkarContextForAI(),
+          customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
+          prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
+          permissions: advisorPermissions
+        });
+
+        const retrieved = await retrieveRelevantKnowledge(contextualQuery, index, { maxEntities: 8, requireMediaBlobs: true });
+        const groundedPrompt = `سؤال المستخدم: "${contextualQuery}"\n\n${retrieved.formattedContextText}\n\n${getGroundedSystemDirectives(appLanguage)}`;
+
+        answerText = await generateGeminiContentDirect(
+          groundedPrompt,
+          isGeneralMode
+            ? `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب صوتياً بإيجاز وبراعة ومباشرة.`
+            : `أنت المستشار الذكي الموحد في تطبيق 'حياة AI'. أجب صوتياً بلغة دافئة وموجزة ومبنية على البيانات.`,
+          userApiKey
+        );
+      }
+
+      if (!answerText) {
+        answerText = isGeneralMode
+          ? 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع عام أو معرفي.'
+          : 'أهلاً بك! أنا المستشار الذكي لليوميات.';
+      }
 
       setVoiceStatus('speaking');
       setVoiceTranscript(answerText);
