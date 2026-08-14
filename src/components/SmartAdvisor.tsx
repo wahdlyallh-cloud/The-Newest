@@ -123,9 +123,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     ];
   });
 
-  // Multimodal File Attachments for General Mode
+  // Multimodal File Attachments for General Mode & Pro Mode
   const [multimodalFiles, setMultimodalFiles] = useState<MultimodalAttachment[]>([]);
   const [fileErrorToast, setFileErrorToast] = useState<string | null>(null);
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState(() => {
     return localStorage.getItem('yawmiyati_chat_input') || '';
@@ -561,12 +562,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     // Diary Pro Advisor Mode Logic
-    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0) return;
+    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && multimodalFiles.length === 0) return;
     if (loading) return;
 
     // Format prompt text with active chat attachments to pass transparently to AI model
     let textWithAttachments = textToSend;
     const attachmentsText: string[] = [];
+    if (multimodalFiles.length > 0) {
+      attachmentsText.push(`\n📎 الملفات المرفقة: ${multimodalFiles.map(f => f.name).join(' ، ')}`);
+    }
     if (chatAttachments.links.length > 0) {
       attachmentsText.push(`\n🔗 الروابط المرفقة بالشات: ${chatAttachments.links.join(' ، ')}`);
     }
@@ -588,7 +592,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const filesToSend = [...multimodalFiles];
     setInput('');
+    setMultimodalFiles([]);
     setChatAttachments({ links: [], videos: [], pdfs: [] });
     setActiveAttachmentType('none');
     setLoading(true);
@@ -613,6 +619,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           gratitudeCards: gratitudeCardsToPass,
           books: booksToPass,
           query: textWithAttachments,
+          attachments: filesToSend,
           appLanguage: appLanguage,
           athkarContext: getAthkarContextForAI(),
           athkarPromptText: getFormattedAthkarPromptContext()
@@ -798,51 +805,53 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* Top Bar Info & Consent Switch (Diary Pro Mode Only) */}
       {activeAdvisorTab === 'diary' && (
-        <div className="p-3 bg-[#F0EDE4] border-b border-[#E2DCC8] flex flex-col md:flex-row md:items-center md:justify-between gap-3 shrink-0">
-          <div className="flex items-center space-x-2.5 space-x-reverse">
-            <div className="bg-[#8B9D83]/15 p-2 rounded-xl text-[#8B9D83]">
-              <Brain className="w-5 h-5" />
+        <div className="p-2 sm:p-2.5 bg-[#F0EDE4] border-b border-[#E2DCC8] flex items-center justify-between gap-2 shrink-0 z-10">
+          <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
+            <div className="bg-[#8B9D83]/15 p-1.5 rounded-lg text-[#8B9D83] shrink-0">
+              <Brain className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="font-bold text-[#5A5A40] text-sm">{appLanguage === 'ar' ? 'المستشار الذكي لليوميات Pro' : 'AI Smart Advisor Pro'}</h3>
-              <p className="text-[10px] text-gray-500">{appLanguage === 'ar' ? 'تحليل الأنماط السلوكية، التغير المزاجي والعلاقات الزمنية' : 'Analyze behavioral patterns, mood trends & timeline correlations'}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-[#5A5A40] text-xs sm:text-sm truncate">
+                {appLanguage === 'ar' ? 'المستشار الذكي لليوميات Pro' : 'AI Smart Advisor Pro'}
+              </h3>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-500 truncate hidden sm:block">
+                {appLanguage === 'ar' ? 'تحليل الأنماط السلوكية، التغير المزاجي والعلاقات الزمنية' : 'Analyze behavioral patterns, mood trends & timeline correlations'}
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => {
                 setShowVoiceModal(true);
                 startListeningVoiceChat();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1 space-x-reverse px-2 py-1 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-[10px] sm:text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
+              title={appLanguage === 'ar' ? 'بدء محادثة صوتية مستمرة' : 'Start Voice Chat'}
             >
               <span className="animate-pulse">🎙️</span>
-              <span className="break-words">{appLanguage === 'ar' ? 'بدء محادثة صوتية مستمرة' : 'Start Voice Chat'}</span>
+              <span className="truncate">{appLanguage === 'ar' ? 'محادثة صوتية' : 'Voice Chat'}</span>
             </button>
 
             <button
               onClick={() => setShowPermissionsModal(true)}
-              className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1 space-x-reverse px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[10px] sm:text-xs font-black rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
+              title={appLanguage === 'ar' ? 'صلاحية وصول المستشار' : 'Access Permissions'}
             >
-              <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-              <span className="break-words">{appLanguage === 'ar' ? 'صلاحية وصول المستشار' : 'Access Permissions'}</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span className="truncate hidden xs:inline">{appLanguage === 'ar' ? 'الصلاحيات' : 'Permissions'}</span>
             </button>
 
-            <div className="flex items-center justify-between md:justify-end bg-white p-2 rounded-xl border border-[#E2DCC8] shadow-xs gap-3">
-              <span className="text-[11px] font-bold text-gray-500 flex items-center space-x-1 space-x-reverse">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#8B9D83]" />
-                <span className="break-words">{appLanguage === 'ar' ? 'صلاحية الوصول لليوميات:' : 'Diaries Access:'}</span>
-              </span>
+            <div className="flex items-center bg-white p-1 rounded-lg border border-[#E2DCC8] shadow-xs gap-1" title={appLanguage === 'ar' ? 'صلاحية الوصول لليوميات' : 'Diaries Access'}>
               <button
                 onClick={toggleDiariesConsent}
-                className={`w-10 h-6 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer ${
+                className={`w-8 h-4.5 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer flex items-center ${
                   hasConsent && advisorPermissions.diaries ? 'bg-[#8B9D83]' : 'bg-[#E2DCC8]'
                 }`}
               >
                 <div
-                  className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
-                    hasConsent && advisorPermissions.diaries ? 'translate-x-0' : '-translate-x-4'
+                  className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transform transition-transform ${
+                    hasConsent && advisorPermissions.diaries ? 'translate-x-0' : '-translate-x-3.5'
                   }`}
                 />
               </button>
@@ -1095,59 +1104,80 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* Bottom Input Area */}
       <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0">
-        {/* Fast toggle buttons for attachment types (Diary Pro Mode Only) */}
-        {activeAdvisorTab === 'diary' && (
-          <div className="flex items-center space-x-2 space-x-reverse text-xs">
-            <span className="text-[10px] text-gray-400">{isAr ? 'إرفاق بالشات:' : 'Attach to Chat:'}</span>
+        {/* Attachment Options Popover Menu */}
+        {showAttachmentMenu && (
+          <div className="absolute bottom-16 start-3 z-30 bg-white border border-[#E2DCC8] rounded-2xl shadow-xl p-2 w-56 space-y-1 animate-fade-in text-xs font-sans">
+            <div className="text-[10px] font-bold text-gray-400 px-2 py-1 border-b border-gray-100 mb-1 flex items-center justify-between">
+              <span>{isAr ? 'إضافة مرفق للمحادثة:' : 'Add Attachment:'}</span>
+              <button onClick={() => setShowAttachmentMenu(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xs">✕</button>
+            </div>
+
             <button
-              onClick={() => setActiveAttachmentType(activeAttachmentType === 'link' ? 'none' : 'link')}
-              className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
-                activeAttachmentType === 'link' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50/50'
-              }`}
+              onClick={() => {
+                setShowAttachmentMenu(false);
+                triggerFilePicker();
+              }}
+              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
-              {isAr ? '🌐 رابط ويب' : '🌐 Web Link'}
+              <span className="text-base">📷</span>
+              <span className="font-bold">{isAr ? 'صورة / مستند / صوت' : 'Image / Document / Audio'}</span>
             </button>
+
             <button
-              onClick={() => setActiveAttachmentType(activeAttachmentType === 'video' ? 'none' : 'video')}
-              className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
-                activeAttachmentType === 'video' ? 'bg-purple-500 text-white border-purple-500' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50/50'
-              }`}
+              onClick={() => {
+                setShowAttachmentMenu(false);
+                setActiveAttachmentType('link');
+              }}
+              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-blue-700 transition-colors cursor-pointer"
             >
-              {isAr ? '🎥 فيديو مرجعي' : '🎥 Video'}
+              <span className="text-base">🌐</span>
+              <span className="font-bold">{isAr ? 'رابط موقع إلكتروني' : 'Web Link'}</span>
             </button>
+
             <button
-              onClick={() => setActiveAttachmentType(activeAttachmentType === 'pdf' ? 'none' : 'pdf')}
-              className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
-                activeAttachmentType === 'pdf' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50/50'
-              }`}
+              onClick={() => {
+                setShowAttachmentMenu(false);
+                setActiveAttachmentType('video');
+              }}
+              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer"
             >
-              {isAr ? '📄 ملف PDF' : '📄 PDF File'}
+              <span className="text-base">🎥</span>
+              <span className="font-bold">{isAr ? 'رابط فيديو مرجعي' : 'Video Link'}</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setShowAttachmentMenu(false);
+                setActiveAttachmentType('pdf');
+              }}
+              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-50 text-red-700 transition-colors cursor-pointer"
+            >
+              <span className="text-base">📄</span>
+              <span className="font-bold">{isAr ? 'معلومات مستند PDF' : 'PDF Document Info'}</span>
             </button>
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Universal Attachment Button (+) in General AI Mode */}
-          {activeAdvisorTab === 'general' && (
-            <>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept="image/*,application/pdf,audio/*,video/*"
-                multiple
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={triggerFilePicker}
-                className="p-2 sm:p-2.5 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center"
-                title={isAr ? "إرفاق صورة، PDF، صوت، أو فيديو" : "Attach Image, PDF, Audio, or Video"}
-              >
-                <Plus className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-300" />
-              </button>
-            </>
-          )}
+        <div className="flex items-center gap-1.5 sm:gap-2 relative">
+          {/* Universal Attachment Button (+) for Both Modes */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/*,application/pdf,audio/*,video/*"
+            multiple
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => setShowAttachmentMenu(prev => !prev)}
+            className={`p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center ${
+              activeAdvisorTab === 'general' ? 'bg-[#2B3E50] hover:bg-[#1E2B38] text-white' : 'bg-[#8B9D83] hover:bg-[#5A5A40] text-white'
+            }`}
+            title={isAr ? "إضافة صورة، PDF، صوت، رابط أو فيديو" : "Attach Image, PDF, Audio, Link, or Video"}
+          >
+            <Plus className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform ${showAttachmentMenu ? 'rotate-45 text-amber-300' : 'text-amber-300'}`} />
+          </button>
 
           <button
             onClick={handleClearHistory}
