@@ -511,9 +511,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         if (langVoice) utterance.voice = langVoice;
 
         utterance.onend = () => {
-          // Continuous Voice Conversation Loop: Automatically resume listening!
-          setVoiceStatus('listening');
-          startListeningVoiceChat();
+          // Continuous Voice Conversation Loop: Automatically resume listening ONLY if modal is still active & speaking
+          if (voiceStatusRef.current === 'speaking') {
+            setVoiceStatus('listening');
+            startListeningVoiceChat();
+          }
         };
         utterance.onerror = () => {
           setVoiceStatus('idle');
