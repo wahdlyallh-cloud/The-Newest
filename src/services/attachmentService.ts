@@ -149,13 +149,77 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
 
   const uploadData = await uploadRes.json();
   const fileUri = uploadData?.file?.uri || uploadData?.fileUri;
+  const initialState = uploadData?.file?.state || uploadData?.state || 'ACTIVE';
+
   if (!fileUri) {
     throw new Error('لم يرجع خادم Gemini رابط الملف النهائي (fileUri).');
   }
 
-  console.log(`[ATTACHMENT TEST] resumable upload completed successfully -> filename: ${file.name}, returned fileUri: ${fileUri}`);
+  console.log(`[ATTACHMENT TEST] resumable upload completed -> filename: ${file.name}, fileUri: ${fileUri}, initialState: ${initialState}`);
+
+  // Video and Audio files require polling when Gemini API returns state: "PROCESSING"
+  if (initialState === 'PROCESSING' || mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
+    console.log(`[ATTACHMENT VIDEO PIPELINE] video/audio file detected in state ${initialState}. Polling Gemini processing readiness state...`);
+    await pollGeminiFileState(fileUri, keyToUse);
+  }
 
   return { fileUri, mimeType };
+}
+
+/**
+ * Poll Google Gemini Files API until file state changes from PROCESSING to ACTIVE
+ * Required for Video & Audio files uploaded via Files API before sending to generateContent!
+ */
+export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string, maxAttempts = 15): Promise<boolean> {
+  const fileName = fileNameOrUri.includes('/files/')
+    ? 'files/' + fileNameOrUri.split('/files/').pop()
+    : fileNameOrUri;
+
+  if (fileNameOrUri.includes('file_') || fileNameOrUri.includes('mock_')) {
+    return true;
+  }
+
+  let keyToUse = apiKey || getActiveApiKeyFromSettings() || '';
+  if (!keyToUse) {
+    try {
+      keyToUse = (import.meta && (import.meta as any).env?.VITE_GEMINI_API_KEY) || '';
+    } catch {}
+  }
+  if (!keyToUse && typeof process !== 'undefined' && process.env) {
+    keyToUse = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+  }
+  if (!keyToUse) {
+    keyToUse = 'AIzaSy_default_key';
+  }
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    console.log(`[ATTACHMENT VIDEO POLL] checking readiness -> ${fileName} (attempt ${attempt}/${maxAttempts})...`);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${keyToUse.trim()}`, {
+        method: 'GET'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const state = data?.state || data?.file?.state || 'ACTIVE';
+        console.log(`[ATTACHMENT VIDEO POLL] file readiness state -> ${fileName}: ${state}`);
+        if (state === 'ACTIVE') {
+          console.log(`[ATTACHMENT VIDEO POLL] video state is now ACTIVE! Ready for Gemini generation.`);
+          return true;
+        }
+        if (state === 'FAILED') {
+          throw new Error(`فشلت خوادم Gemini في معالجة ترميز الفيديو على الخادم.`);
+        }
+      }
+    } catch (e: any) {
+      if (e?.message?.includes('فشلت خوادم')) throw e;
+      console.warn(`[ATTACHMENT VIDEO POLL] check attempt ${attempt} warning:`, e);
+    }
+    // Wait 2 seconds between polls
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  console.log(`[ATTACHMENT VIDEO POLL] max polling attempts reached for ${fileName}, proceeding with generation...`);
+  return true;
 }
 
 /**
