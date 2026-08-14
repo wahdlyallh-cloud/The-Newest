@@ -215,8 +215,20 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const [loading, setLoading] = useState(false);
   const [attachments, setAttachments] = useState<MultimodalAttachment[]>([]);
   const [isProcessingAttachment, setIsProcessingAttachment] = useState(false);
+  const [activeAttachmentType, setActiveAttachmentType] = useState<'none' | 'link' | 'video' | 'pdf'>('none');
+  const [tempLink, setTempLink] = useState<string>('');
+  const [tempVideo, setTempVideo] = useState<string>('');
   const [tempPdfName, setTempPdfName] = useState<string>('');
   const [tempPdfUrl, setTempPdfUrl] = useState<string>('');
+  const [chatAttachments, setChatAttachments] = useState<{
+    links: string[];
+    videos: string[];
+    pdfs: { name: string; url: string }[];
+  }>({
+    links: [],
+    videos: [],
+    pdfs: []
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const generalMessagesEndRef = useRef<HTMLDivElement>(null);
