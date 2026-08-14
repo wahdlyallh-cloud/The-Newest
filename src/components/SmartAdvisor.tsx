@@ -492,24 +492,37 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       fileInputRef.current.value = '';
     }
 
-    for (const file of selectedFiles) {
-      console.log(`[ATTACHMENT ROOT DEBUG] selected -> advisor: ${activeAdvisorTab}, name: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
-      try {
-        console.log(`[ATTACHMENT ROOT DEBUG] processAttachmentUnified called for ${file.name}...`);
-        const att = await processAttachmentUnified(file, userApiKey);
-        console.log(`[ATTACHMENT ROOT DEBUG] upload success for ${file.name}:`, att.fileUri ? `fileUri: ${att.fileUri}` : `inlineData (${att.base64Data?.length} chars)`);
+    console.log(`[ATTACHMENT TEST] batch file processing started -> advisor: ${activeAdvisorTab}, count: ${selectedFiles.length}`);
 
-        if (activeAdvisorTab === 'general') {
-          setGeneralMultimodalFiles(prev => [...prev, att]);
-          console.log('[ATTACHMENT ROOT DEBUG] stored in generalMultimodalFiles');
-        } else {
-          setDiaryMultimodalFiles(prev => [...prev, att]);
-          console.log('[ATTACHMENT ROOT DEBUG] stored in diaryMultimodalFiles');
-        }
-      } catch (err: any) {
-        console.error('[ATTACHMENT ROOT DEBUG] upload failed for:', file.name, err);
-        setFileErrorToast(`فشل معالجة أو رفع الملف "${file.name}": ${err?.message || String(err)}`);
+    const results = await Promise.allSettled(
+      selectedFiles.map(file => processAttachmentUnified(file, userApiKey))
+    );
+
+    const successfulAtts: MultimodalAttachment[] = [];
+    const failedNames: string[] = [];
+
+    results.forEach((res, idx) => {
+      if (res.status === 'fulfilled') {
+        successfulAtts.push(res.value);
+        console.log(`[ATTACHMENT TEST] upload success for ${selectedFiles[idx].name} ->`, res.value.fileUri ? `fileUri: ${res.value.fileUri}` : `inlineData (${res.value.base64Data?.length} chars)`);
+      } else {
+        failedNames.push(selectedFiles[idx].name);
+        console.error(`[ATTACHMENT TEST] upload failed for ${selectedFiles[idx].name}:`, res.reason);
       }
+    });
+
+    if (successfulAtts.length > 0) {
+      if (activeAdvisorTab === 'general') {
+        setGeneralMultimodalFiles(prev => [...prev, ...successfulAtts]);
+        console.log(`[ATTACHMENT TEST] stored ${successfulAtts.length} files in generalMultimodalFiles`);
+      } else {
+        setDiaryMultimodalFiles(prev => [...prev, ...successfulAtts]);
+        console.log(`[ATTACHMENT TEST] stored ${successfulAtts.length} files in diaryMultimodalFiles`);
+      }
+    }
+
+    if (failedNames.length > 0) {
+      setFileErrorToast(`تعذر معالجة أو رفع بعض الملفات: ${failedNames.join(' ، ')}`);
     }
     onFilePickerClose?.();
   };
@@ -1271,6 +1284,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           />
 
           <button
+            id="smart-advisor-send-button"
             onClick={() => handleSend(input)}
             className={`p-2 sm:p-2.5 text-white rounded-xl shadow-xs transition-all cursor-pointer shrink-0 ${
               activeAdvisorTab === 'general' ? 'bg-[#2B3E50] hover:bg-[#1E2B38]' : 'bg-[#8B9D83] hover:bg-[#5A5A40]'
