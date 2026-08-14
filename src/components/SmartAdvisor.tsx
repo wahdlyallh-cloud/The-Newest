@@ -270,12 +270,19 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   }, [tempPdfUrl]);
 
   // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
+  // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
   const voiceRecognitionRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
+  const voiceStatusRef = useRef<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
+
+  // Keep ref synchronized to prevent closure stale states in callbacks
+  useEffect(() => {
+    voiceStatusRef.current = voiceStatus;
+  }, [voiceStatus]);
 
   const stopVoiceChatSpeech = () => {
     if ('speechSynthesis' in window) {
@@ -283,13 +290,54 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
   };
 
+  const endVoiceChatSession = () => {
+    stopVoiceChatSpeech();
+    if (voiceRecognitionRef.current) {
+      try {
+        voiceRecognitionRef.current.onstart = null;
+        voiceRecognitionRef.current.onresult = null;
+        voiceRecognitionRef.current.onerror = null;
+        voiceRecognitionRef.current.onend = null;
+        voiceRecognitionRef.current.onspeechend = null;
+        voiceRecognitionRef.current.stop();
+        voiceRecognitionRef.current.abort();
+      } catch (e) {}
+      voiceRecognitionRef.current = null;
+    }
+    setShowVoiceModal(false);
+    setVoiceStatus('idle');
+  };
+
+  // Clean up on component unmount
+  useEffect(() => {
+    return () => {
+      stopVoiceChatSpeech();
+      if (voiceRecognitionRef.current) {
+        try { voiceRecognitionRef.current.abort(); } catch (e) {}
+      }
+    };
+  }, []);
+
   const startListeningVoiceChat = () => {
     stopVoiceChatSpeech();
+
+    // Prevent starting listening while AI is speaking to avoid feedback echo loop
+    if (voiceStatusRef.current === 'speaking' || voiceStatusRef.current === 'analyzing') {
+      return;
+    }
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setVoiceStatus('speaking');
-      setVoiceTranscript('المتصفح لا يدعم ميزة التعرف التلقائي على الصوت باللغة العربية. سأقوم بالرد كتابياً فقط.');
+      setVoiceStatus('idle');
+      setVoiceTranscript(appLanguage === 'ar'
+        ? 'المتصفح لا يدعم ميزة التعرف التلقائي على الصوت. سأقوم بالرد كتابياً فقط.'
+        : 'Browser does not support Speech Recognition. Will respond in text format.');
       return;
+    }
+
+    // Abort previous instance if any
+    if (voiceRecognitionRef.current) {
+      try { voiceRecognitionRef.current.abort(); } catch (e) {}
     }
 
     const rec = new SpeechRecognition();
@@ -299,10 +347,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
     rec.onstart = () => {
       setVoiceStatus('listening');
-      setVoiceTranscript('جاري الاستماع... تفضل بالفضفضة والتحدث معي...');
+      setVoiceTranscript(appLanguage === 'ar' ? 'جاري الاستماع... تفضل بالتحدث معي...' : 'Listening... Speak freely...');
     };
 
     rec.onresult = (event: any) => {
+      if (voiceStatusRef.current === 'analyzing' || voiceStatusRef.current === 'speaking') return;
       const currentResult = event.results[0];
       const text = currentResult[0].transcript;
       setVoiceTranscript(text);
@@ -317,7 +366,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           : '⚠️ Microphone permission denied. Please allow microphone access in your browser settings.');
         return;
       }
-      if (event.error !== 'no-speech') {
+      if (event.error !== 'no-speech' && voiceStatusRef.current === 'listening') {
         setVoiceStatus('idle');
       }
     };
@@ -328,23 +377,37 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
     // Auto-submit when user finishes talking
     rec.onspeechend = () => {
-      rec.stop();
+      try { rec.stop(); } catch (e) {}
       setTimeout(() => {
         setVoiceTranscript(prev => {
-          if (prev && !prev.includes('جاري الاستماع') && prev.trim().length > 0) {
-            handleVoiceChatSubmit(prev);
+          if (prev && !prev.includes('جاري الاستماع') && !prev.includes('Listening...') && prev.trim().length > 0) {
+            if (voiceStatusRef.current === 'listening') {
+              handleVoiceChatSubmit(prev);
+            }
           }
           return prev;
         });
-      }, 600);
+      }, 500);
     };
 
     voiceRecognitionRef.current = rec;
-    rec.start();
+    try {
+      rec.start();
+    } catch (e) {
+      console.error('Speech recognition start error:', e);
+    }
   };
 
   const handleVoiceChatSubmit = async (queryText: string) => {
+    if (voiceStatusRef.current === 'analyzing') return;
     setVoiceStatus('analyzing');
+    stopVoiceChatSpeech();
+
+    // Stop speech recognition while analyzing to prevent echo
+    if (voiceRecognitionRef.current) {
+      try { voiceRecognitionRef.current.stop(); } catch (e) {}
+    }
+
     const isGeneralMode = activeAdvisorTab === 'general';
 
     // Format recent conversation context (last 6 messages) to preserve voice conversation memory for follow-up questions
@@ -438,10 +501,13 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         window.speechSynthesis.cancel();
         const cleanText = answerText.replace(/[*#_`~•]/g, '').replace(/🔗|🎥|📄/g, '');
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.lang = langInfo.speechLang;
+
+        // Intelligent Bilingual Voice Detection: Use native English voice for English text and Arabic voice for Arabic text
+        const isArabicText = /[\u0600-\u06FF]/.test(cleanText);
+        utterance.lang = isArabicText ? langInfo.speechLang : 'en-US';
         
         const voices = window.speechSynthesis.getVoices();
-        const langVoice = voices.find(v => v.lang.toLowerCase().startsWith(langInfo.code.toLowerCase()));
+        const langVoice = voices.find(v => v.lang.toLowerCase().startsWith(utterance.lang.toLowerCase().substring(0, 2)));
         if (langVoice) utterance.voice = langVoice;
 
         utterance.onend = () => {
@@ -1437,12 +1503,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             
             {/* Close Button */}
             <button
-              onClick={() => {
-                stopVoiceChatSpeech();
-                if (voiceRecognitionRef.current) voiceRecognitionRef.current.stop();
-                setShowVoiceModal(false);
-                setVoiceStatus('idle');
-              }}
+              onClick={endVoiceChatSession}
               className={`absolute top-4 ${appLanguage === 'ar' ? 'left-4' : 'right-4'} p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-sm font-bold`}
             >
               ×
@@ -1472,23 +1533,23 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               
               {/* Animated Audio Wave bars */}
               <div className="flex items-end justify-center space-x-2 space-x-reverse h-24">
-                <div className={`w-2 bg-[#8B9D83] rounded-full transition-all duration-300 ${
+                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
                   voiceStatus === 'listening' ? 'h-16 animate-bounce' : 
                   voiceStatus === 'speaking' ? 'h-20 animate-pulse' : 'h-4'
                 }`}></div>
-                <div className={`w-2 bg-[#8B9D83] rounded-full transition-all duration-300 ${
+                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
                   voiceStatus === 'listening' ? 'h-24 animate-bounce delay-75' : 
                   voiceStatus === 'speaking' ? 'h-14 animate-pulse delay-75' : 'h-4'
                 }`}></div>
-                <div className={`w-2 bg-[#D4A373] rounded-full transition-all duration-300 ${
+                <div className="w-2 bg-[#D4A373] rounded-full transition-all duration-300 ${
                   voiceStatus === 'listening' ? 'h-28 animate-bounce delay-150' : 
                   voiceStatus === 'speaking' ? 'h-24 animate-pulse delay-150' : 'h-4'
-                }`}></div>
-                <div className={`w-2 bg-[#8B9D83] rounded-full transition-all duration-300 ${
+                }"></div>
+                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
                   voiceStatus === 'listening' ? 'h-18 animate-bounce delay-100' : 
                   voiceStatus === 'speaking' ? 'h-12 animate-pulse delay-100' : 'h-4'
                 }`}></div>
-                <div className={`w-2 bg-[#8B9D83] rounded-full transition-all duration-300 ${
+                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
                   voiceStatus === 'listening' ? 'h-10 animate-bounce delay-200' : 
                   voiceStatus === 'speaking' ? 'h-8 animate-pulse delay-200' : 'h-4'
                 }`}></div>
@@ -1499,7 +1560,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             <div className="bg-[#F0EDE4]/45 p-4 rounded-2xl border border-[#E2DCC8]/50 max-h-40 overflow-y-auto">
               <p className="text-xs text-gray-500 font-medium mb-1">{t.voiceLiveTranscript || 'النسخ التلقائي للمحادثة:'}</p>
               <p className="text-sm text-[#3A3A3A] font-medium leading-relaxed">
-                {voiceTranscript || (appLanguage === 'ar' ? 'تكلم بطلاقة، وسيقوم المساعد بقراءة تدويناتك وتحليلها والرد عليك فوراً بالصوت...' : 'Speak freely, the assistant will process your entries and speak back to you...')}
+                {voiceTranscript || (activeAdvisorTab === 'general'
+                  ? (appLanguage === 'ar' ? 'تحدث بطلاقة، وسيقوم المستشار الذكي العام بالإجابة عن كافة أسئلتك واستفساراتك بالصوت...' : 'Speak freely, the general AI assistant will answer all your questions via voice...')
+                  : (appLanguage === 'ar' ? 'تكلم بطلاقة، وسيقوم المساعد بقراءة تدويناتك وتحليلها والرد عليك فوراً بالصوت...' : 'Speak freely, the assistant will process your entries and speak back to you...')
+                )}
               </p>
             </div>
 
@@ -1528,12 +1592,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               )}
 
               <button
-                onClick={() => {
-                  stopVoiceChatSpeech();
-                  if (voiceRecognitionRef.current) voiceRecognitionRef.current.stop();
-                  setShowVoiceModal(false);
-                  setVoiceStatus('idle');
-                }}
+                onClick={endVoiceChatSession}
                 className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-bold cursor-pointer"
               >
                 {t.voiceEndSession || 'إنهاء المكالمة 📞'}
