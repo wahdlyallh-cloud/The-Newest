@@ -1,9 +1,10 @@
+import { t } from '../lib/languages';
+
 function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
   return modelName.trim().replace(/^models\//, '');
 }
 
-import { t } from '../lib/languages';
 // Helper to safely format dates without throwing
 function safeFormatDate(d: any): string {
   if (!d) return 'undated';
