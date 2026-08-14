@@ -444,8 +444,21 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   ];
 
   const triggerFilePicker = () => {
+    console.log('[FILE DEBUG] triggerFilePicker called');
+    console.log('[FILE DEBUG] ref exists:', !!fileInputRef.current);
+    console.log('[FILE DEBUG] input:', fileInputRef.current);
+    console.log('[FILE DEBUG] input type:', fileInputRef.current?.type);
+    console.log('[FILE DEBUG] input connected:', fileInputRef.current?.isConnected);
+
     onFilePickerOpen?.();
-    fileInputRef.current?.click();
+
+    if (fileInputRef.current) {
+      console.log('[FILE DEBUG] calling input.click()');
+      fileInputRef.current.click();
+    } else {
+      console.error('[FILE DEBUG] fileInputRef.current is null!');
+    }
+
     setTimeout(() => {
       const handleWindowFocus = () => {
         window.removeEventListener('focus', handleWindowFocus);
@@ -459,6 +472,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   // File Upload Handler for Multimodal General AI Mode using Unified Attachment Service
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowAttachmentMenu(false);
     const files = e.target.files;
     if (!files || files.length === 0) {
       onFilePickerClose?.();
@@ -1114,19 +1128,20 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <button onClick={() => setShowAttachmentMenu(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xs">✕</button>
             </div>
 
-            {/* Native Mobile-First File Upload Trigger */}
-            <label
-              htmlFor="smart-advisor-file-input"
-              onClick={() => {
-                console.log('[SmartAdvisor Mobile] Image/Doc option tapped');
-                onFilePickerOpen?.();
+            {/* Native Mobile-First File Upload Button Trigger */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('[SmartAdvisor Mobile] Image/Doc option clicked - invoking triggerFilePicker synchronously');
+                triggerFilePicker();
                 setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
               <span className="text-base">📷</span>
               <span className="font-bold">{isAr ? 'صورة / مستند / صوت' : 'Image / Document / Audio'}</span>
-            </label>
+            </button>
 
             <button
               type="button"
