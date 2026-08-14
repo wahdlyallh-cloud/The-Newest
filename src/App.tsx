@@ -7,7 +7,8 @@ import {
   Trash2, Edit3, Trash, Star, Image, Paperclip, Mic, MicOff, 
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
   User, Printer, ChevronRight, ArrowRight, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
-  Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize
+  Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
+  MoreVertical, MoreHorizontal
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage } from './types';
@@ -1137,6 +1138,48 @@ export default function App() {
       clearTimeout(headerAutoTimerRef.current);
     }
   }, []);
+
+  // Navbar More Menu Dropdown State & Ref
+  const [showNavMoreMenu, setShowNavMoreMenu] = useState(false);
+  const navMoreMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Close Navbar More Menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navMoreMenuRef.current && !navMoreMenuRef.current.contains(event.target as Node)) {
+        setShowNavMoreMenu(false);
+      }
+    };
+    if (showNavMoreMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNavMoreMenu]);
+
+  // Fullscreen Toggle Helper
+  const handleToggleFullscreen = async () => {
+    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+      try {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        } else if ((document.documentElement as any).webkitRequestFullscreen) {
+          await (document.documentElement as any).webkitRequestFullscreen();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   const diariesSaveDebounceRef = useRef<any>(null);
 
@@ -4848,7 +4891,7 @@ export default function App() {
         </motion.div>
       )}
 
-      {/* 🚀 Header bar with branding & Quick Navigation Badges */}
+      {/* 🚀 Header bar with branding & Responsive Navigation Toolbar */}
       <header 
         className={`sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs transition-all duration-300 transform ${
           isHeaderCollapsedOnMobile 
@@ -4862,110 +4905,77 @@ export default function App() {
           }
         }}
       >
-        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center space-x-3 space-x-reverse self-stretch sm:self-auto justify-between sm:justify-start">
-            <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-10 h-10 bg-[#8B9D83] rounded-2xl flex items-center justify-center text-white shadow-xs shrink-0">
-                <Brain className="w-5.5 h-5.5" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4">
+
+          {/* 🌟 Protected Branding Card (Zero-Occlusion, shrink-0) */}
+          <div className="flex items-center space-x-2.5 sm:space-x-3 space-x-reverse shrink-0 select-none">
+            <div className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 bg-[#8B9D83] rounded-2xl flex items-center justify-center text-white shadow-xs shrink-0">
+              <Brain className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-baseline space-x-1.5 space-x-reverse">
+                <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-[#3A3A3A] truncate">
+                  {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
+                </h1>
+                <span className="text-[10px] sm:text-xs font-black bg-[#8B9D83] text-white px-1.5 py-0.5 rounded-md leading-none shrink-0">
+                  AI
+                </span>
               </div>
-              <div>
-                <div className="flex items-baseline space-x-1.5 space-x-reverse">
-                  <h1 className="text-base font-extrabold tracking-tight text-[#3A3A3A]">{t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}</h1>
-                  <span className="text-xs font-black bg-[#8B9D83] text-white px-1.5 py-0.5 rounded-md leading-none">AI</span>
-                </div>
-                <p className="text-[9px] text-gray-500 font-bold mt-0.5 flex flex-wrap items-center gap-1.5 max-w-full">
-                  <span>{t('nav.subtitle')}</span>
-                  <span className="text-gray-300 hidden sm:inline">•</span>
-                  <span className={`inline-flex items-center space-x-1 space-x-reverse text-[9px] font-extrabold px-2 py-0.5 rounded-full border transition-all ${
-                    autoSaveStatus === 'saving'
-                      ? 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></span>
-                    <span>{autoSaveStatus === 'saving' ? t('nav.saving') : `${t('nav.auto_saved')} ${lastAutoSaveTime ? `(${lastAutoSaveTime})` : '💾'}`}</span>
-                  </span>
-                </p>
-              </div>
+              <p className="text-[9px] text-gray-500 font-bold mt-0.5 flex items-center gap-1.5 max-w-full">
+                <span className="truncate hidden lg:inline">{t('nav.subtitle')}</span>
+                <span className="text-gray-300 hidden lg:inline">•</span>
+                <span className={`inline-flex items-center space-x-1 space-x-reverse text-[9px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full border transition-all shrink-0 ${
+                  autoSaveStatus === 'saving'
+                    ? 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></span>
+                  <span className="truncate">{autoSaveStatus === 'saving' ? t('nav.saving') : `${t('nav.auto_saved')} ${lastAutoSaveTime ? `(${lastAutoSaveTime})` : '💾'}`}</span>
+                </span>
+              </p>
             </div>
           </div>
 
-          {/* Quick Action Badges matching the requested screenshot EXACTLY 'balmilli' */}
-          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto scrollbar-none snap-x max-w-full w-full sm:w-auto justify-start sm:justify-end px-1 sm:px-0 pb-1.5 sm:pb-0">
+          {/* 🎯 Navigation Action Bar: Responsive Layout with Zero-Occlusion & Accessibility */}
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 justify-end flex-1">
             
-            {/* 📿 Direct Athkar Button (أذكار) */}
+            {/* 1. 📿 Direct Athkar Button (أذكار) */}
             <button
+              type="button"
               onClick={() => {
                 setIsFullAthkarModalOpen(true);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0 snap-start"
+              className="flex items-center space-x-1 space-x-reverse px-2.5 sm:px-3 py-1.5 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0"
               title={t('nav.dhikr_title')}
+              aria-label={t('nav.dhikr') || 'Dhikr'}
             >
               <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
-              <span>{t('nav.dhikr') || (isEn ? 'Dhikr' : 'أذكار')}</span>
+              <span className="hidden xs:inline">{t('nav.dhikr') || (isEn ? 'Dhikr' : 'أذكار')}</span>
             </button>
 
-            {/* 🌐 Language Switcher Button */}
+            {/* 2. 📋 Habits & Tasks Button (المهام اليومية) */}
             <button
               type="button"
-              onClick={() => setShowLanguagesModal(true)}
-              className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-2 bg-amber-50/90 text-amber-950 border border-amber-300 rounded-xl text-xs font-black shadow-3xs hover:bg-amber-100 active:scale-95 transition-all cursor-pointer shrink-0"
-              title={t('nav.switch_language')}
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-700" />
-              <span className="text-sm leading-none">{langInfo.flag}</span>
-              <span className="text-[11px] font-extrabold">{langInfo.nativeName}</span>
-            </button>
-            
-            {/* 🖥️ Fullscreen / Hide Browser Address Bar Toggle Button */}
-            <button
-              type="button"
-              onClick={async () => {
-                if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
-                  try {
-                    if (document.documentElement.requestFullscreen) {
-                      await document.documentElement.requestFullscreen();
-                    } else if ((document.documentElement as any).webkitRequestFullscreen) {
-                      await (document.documentElement as any).webkitRequestFullscreen();
-                    }
-                  } catch (e) {
-                    console.error(e);
-                  }
-                } else {
-                  try {
-                    if (document.exitFullscreen) {
-                      await document.exitFullscreen();
-                    }
-                  } catch (e) {
-                    console.error(e);
-                  }
-                }
-              }}
-              className="flex items-center space-x-1 space-x-reverse px-2.5 py-2 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-black shadow-3xs hover:bg-blue-100 active:scale-95 transition-all cursor-pointer shrink-0"
-              title={t('nav.fullscreen_title')}
-            >
-              <Maximize className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
-              <span className="text-[11px]">{t('nav.fullscreen')}</span>
-            </button>
-
-            {/* 2. Habits and Tasks Button (المهام اليومية) with red circular badge containing incomplete count on the left */}
-            <button
               onClick={() => {
                 setActiveTab('diaries');
                 setActiveDiariesSubTab('tasks');
                 setEditingDiary(null);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs hover:bg-[#E2E9DF] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3 py-1.5 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs hover:bg-[#E2E9DF] active:scale-95 transition-all cursor-pointer shrink-0"
+              title={t('nav.daily_tasks')}
+              aria-label={t('nav.daily_tasks')}
             >
               <span className="flex items-center justify-center bg-[#C5221F] text-white text-[10px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
                 {incompleteTasksCount}
               </span>
-              <span>{t('nav.daily_tasks')}</span>
+              <span className="hidden sm:inline">{t('nav.daily_tasks')}</span>
             </button>
 
-            {/* 3. My Diary Thoughts Button (خواطري) */}
+            {/* 3. ✍️ My Diary Thoughts Button (خواطري) */}
             <button
+              type="button"
               onClick={() => {
                 setActiveTab('diaries');
                 setActiveDiariesSubTab('journal');
@@ -4973,25 +4983,30 @@ export default function App() {
                 setEditingDiary(null);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs hover:bg-[#F9ECC4] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3 py-1.5 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs hover:bg-[#F9ECC4] active:scale-95 transition-all cursor-pointer shrink-0"
+              title={t('nav.my_thoughts')}
+              aria-label={t('nav.my_thoughts')}
             >
-              <span>{t('nav.my_thoughts')}</span>
+              <span className="hidden md:inline">{t('nav.my_thoughts')}</span>
               <span className="flex items-center justify-center w-5 h-5 bg-[#F8ECB8] text-[#8C6418] rounded-full border border-[#E1D39D] shrink-0">
                 <PenTool className="w-3 h-3 text-[#8C6418]" />
               </span>
             </button>
 
-            {/* 4. Therapist Session Button (جلسة العلاج 🎓) with dark slate/green background and white text */}
+            {/* 4. 🎓 Therapy Session Button (جلسة العلاج) */}
             <button
+              type="button"
               onClick={() => {
                 setActiveTab('analytics');
                 setAnalyticsSubTab('report');
                 setEditingDiary(null);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#446A5E] hover:bg-[#3B5A50] text-white rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3.5 py-1.5 bg-[#446A5E] hover:bg-[#3B5A50] text-white rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0"
+              title={t('nav.therapy_session')}
+              aria-label={t('nav.therapy_session')}
             >
-              <span>{t('nav.therapy_session')}</span>
+              <span className="hidden lg:inline">{t('nav.therapy_session')}</span>
               <span className="flex items-center justify-center w-5 h-5 bg-[#FCF5DE] border border-[#E9E1C4] rounded-full shrink-0 shadow-3xs animate-pulse">
                 <svg className="w-3 h-3 text-[#A67E2E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
@@ -4999,43 +5014,180 @@ export default function App() {
               </span>
             </button>
 
-            {/* 5. Personal Account & Cloud Sync Login Button */}
+            {/* 5. 🌐 Language Switcher Button (Direct on XL+ screens, accessible in More menu on all screens) */}
             <button
+              type="button"
+              onClick={() => setShowLanguagesModal(true)}
+              className="hidden xl:flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 bg-amber-50/90 text-amber-950 border border-amber-300 rounded-xl text-xs font-black shadow-3xs hover:bg-amber-100 active:scale-95 transition-all cursor-pointer shrink-0"
+              title={t('nav.switch_language')}
+              aria-label={t('nav.switch_language')}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+              <span className="text-xs leading-none">{langInfo.flag}</span>
+              <span className="text-[11px] font-extrabold">{langInfo.nativeName}</span>
+            </button>
+
+            {/* 6. 🖥️ Fullscreen Toggle Button (Direct on XL+ screens, accessible in More menu on all screens) */}
+            <button
+              type="button"
+              onClick={handleToggleFullscreen}
+              className="hidden xl:flex items-center space-x-1 space-x-reverse px-2.5 py-1.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-black shadow-3xs hover:bg-blue-100 active:scale-95 transition-all cursor-pointer shrink-0"
+              title={t('nav.fullscreen_title')}
+              aria-label={t('nav.fullscreen')}
+            >
+              <Maximize className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
+              <span className="text-[11px]">{t('nav.fullscreen')}</span>
+            </button>
+
+            {/* 7. 👤 Personal Account / Cloud Sync Login Button */}
+            <button
+              type="button"
               onClick={() => {
                 setIsAuthModalOpen(true);
                 collapseHeaderOnMobile();
               }}
-              className={`flex items-center space-x-1.5 space-x-reverse px-3 py-2 border rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3 py-1.5 border rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 ${
                 currentUser
                   ? 'bg-teal-700 text-white border-teal-800 hover:bg-teal-800'
                   : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
               }`}
               title={t('nav.account_title')}
+              aria-label={t('nav.account_title')}
             >
               {currentUser ? (
                 <>
-                  <Cloud className="w-3.5 h-3.5 text-teal-200" />
-                  <span className="truncate max-w-[90px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
+                  <Cloud className="w-3.5 h-3.5 text-teal-200 shrink-0" />
+                  <span className="truncate max-w-[70px] sm:max-w-[90px] hidden xs:inline">{currentUser.name || currentUser.email.split('@')[0]}</span>
                 </>
               ) : (
                 <>
-                  <User className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{t('nav.sign_in')}</span>
+                  <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="hidden xs:inline">{t('nav.sign_in')}</span>
                 </>
               )}
             </button>
 
-            {/* 6. Lock Button (🔒) with grey-brown background and border */}
+            {/* 8. 🔒 Lock Button (Direct on XL+ screens, accessible in More menu on all screens) */}
             <button
+              type="button"
               onClick={() => {
                 setSettings(prev => ({ ...prev, isAppLocked: true }));
                 collapseHeaderOnMobile();
               }}
-              className="p-2.5 bg-[#EEECDF] border border-[#D1CCBA] text-[#5A5A40] rounded-xl hover:bg-[#DDD8C3] active:scale-95 transition-all cursor-pointer shadow-3xs shrink-0 flex items-center justify-center"
+              className="hidden xl:flex p-2 bg-[#EEECDF] border border-[#D1CCBA] text-[#5A5A40] rounded-xl hover:bg-[#DDD8C3] active:scale-95 transition-all cursor-pointer shadow-3xs shrink-0 items-center justify-center"
               title={t('nav.lock_app')}
+              aria-label={t('nav.lock_app')}
             >
               <Lock className="w-4 h-4 text-[#4A4A30]" />
             </button>
+
+            {/* --- ⚙️ SMART OVERFLOW "MORE" MENU DROPDOWN --- */}
+            <div className="relative shrink-0" ref={navMoreMenuRef}>
+              <button
+                type="button"
+                onClick={() => setShowNavMoreMenu(prev => !prev)}
+                className={`p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center ${
+                  showNavMoreMenu
+                    ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
+                    : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
+                }`}
+                title={isEn ? 'More options & tools' : 'المزيد من الخيارات والأدوات'}
+                aria-label={isEn ? 'More options & tools' : 'المزيد من الخيارات والأدوات'}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+
+              {/* Overflow Menu Popover */}
+              {showNavMoreMenu && (
+                <div
+                  className={`absolute top-full mt-2 ${isRtl ? 'left-0' : 'right-0'} w-56 sm:w-64 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1 font-sans text-right`}
+                >
+                  {/* Language */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNavMoreMenu(false);
+                      setShowLanguagesModal(true);
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>{t('nav.switch_language')}</span>
+                    </div>
+                    <span className="text-xs font-normal">{langInfo.flag} {langInfo.nativeName}</span>
+                  </button>
+
+                  {/* Fullscreen */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNavMoreMenu(false);
+                      handleToggleFullscreen();
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Maximize className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span>{t('nav.fullscreen')}</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400">F11</span>
+                  </button>
+
+                  {/* Smart Reminders */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNavMoreMenu(false);
+                      setShowSmartRemindersModal(true);
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BellRing className="w-4 h-4 text-[#8B9D83] shrink-0" />
+                      <span>{isEn ? 'Smart Reminders' : 'التنبيهات الذكية'}</span>
+                    </div>
+                    <span className="text-[10px] bg-[#8B9D83]/20 text-[#5A5A40] px-1.5 py-0.5 rounded-md font-bold">
+                      {settings.reminders?.length || 0}
+                    </span>
+                  </button>
+
+                  {/* Rating / Feedback */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNavMoreMenu(false);
+                      setShowRatingModal(true);
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>{isEn ? 'Rate & Feedback' : 'التقييم والملاحظات'}</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400">★ ★ ★ ★ ★</span>
+                  </button>
+
+                  {/* App Lock */}
+                  <div className="border-t border-[#F0EDE4] pt-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNavMoreMenu(false);
+                        setSettings(prev => ({ ...prev, isAppLocked: true }));
+                      }}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-amber-50 text-xs font-extrabold text-[#5A5A40] transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-[#4A4A30] shrink-0" />
+                        <span>{t('nav.lock_app')}</span>
+                      </div>
+                      <span className="text-[10px] bg-[#EEECDF] px-2 py-0.5 rounded-md text-[#5A5A40]">🔒 PIN</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
           </div>
         </div>
@@ -5044,12 +5196,12 @@ export default function App() {
       {/* 🔙 Universal Back Navigation: Desktop Sticky Bar vs Mobile Draggable Floating Pill */}
       {(activeTab !== 'dashboard' || editingDiary !== null || navHistory.length > 0) && (
         <>
-          {/* Mobile Floating Draggable Back Button (سهم وعدّد فقط ويمكن سحبه لأي مكان في الشاشة) */}
+          {/* Mobile Floating Draggable Back Button */}
           <motion.div
             drag
             dragMomentum={false}
             dragElastic={0.1}
-            className="fixed top-[72px] left-4 z-40 sm:hidden cursor-grab active:cursor-grabbing"
+            className="fixed top-16 left-4 z-40 sm:hidden cursor-grab active:cursor-grabbing"
           >
             <button
               type="button"
@@ -5066,8 +5218,8 @@ export default function App() {
             </button>
           </motion.div>
 
-          {/* Desktop Sticky Navigation Bar */}
-          <div className="hidden sm:block bg-[#F9F7F2]/95 backdrop-blur-md border-b border-[#E2DCC8]/80 py-2 px-4 sticky top-[65px] z-20 transition-all duration-300 shadow-3xs" dir={isRtl ? 'rtl' : 'ltr'}>
+          {/* Desktop Sticky Navigation Bar (Aligned with header without overlapping) */}
+          <div className="hidden sm:block bg-[#F9F7F2]/95 backdrop-blur-md border-b border-[#E2DCC8]/80 py-2 px-4 sticky top-[53px] sm:top-[57px] z-20 transition-all duration-300 shadow-3xs" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-4xl mx-auto flex items-center justify-between">
               <button
                 type="button"
