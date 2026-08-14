@@ -221,8 +221,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const generalMessagesEndRef = useRef<HTMLDivElement>(null);
 
-  const langInfo = getLanguageInfo(appLanguage);
-
   useEffect(() => {
     try {
       const savedVoice = localStorage.getItem('yawmiyati_advisor_voice');
