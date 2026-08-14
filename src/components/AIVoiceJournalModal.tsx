@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Mic, MicOff, Sparkles, Check, Play, Square, Save, RefreshCw, Volume2, Smile, Activity, Heart, Clock } from 'lucide-react';
 import { DiaryEntry } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import { SpeechSessionTracker } from '../lib/speechRecognition';
 
 interface AIVoiceJournalModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export default function AIVoiceJournalModal({
 
   const timerRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
+  const voiceTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
@@ -40,6 +42,7 @@ export default function AIVoiceJournalModal({
   useEffect(() => {
     if (!isOpen) {
       stopRecording();
+      voiceTrackerRef.current.reset();
       setTranscript('');
       setRecordingSeconds(0);
       setProcessedResult(null);
@@ -51,6 +54,8 @@ export default function AIVoiceJournalModal({
     setProcessedResult(null);
     setIsRecording(true);
     setRecordingSeconds(0);
+
+    const sessionToken = voiceTrackerRef.current.startNewSession();
 
     timerRef.current = setInterval(() => {
       setRecordingSeconds(prev => prev + 1);
@@ -66,11 +71,9 @@ export default function AIVoiceJournalModal({
         recognition.lang = isEn ? 'en-US' : 'ar-SA';
 
         recognition.onresult = (event: any) => {
-          let currentTranscript = '';
-          for (let i = 0; i < event.results.length; i++) {
-            currentTranscript += event.results[i][0].transcript;
-          }
-          setTranscript(currentTranscript);
+          if (!voiceTrackerRef.current.isSessionActive(sessionToken)) return;
+          const parsed = voiceTrackerRef.current.processEvent(event, sessionToken);
+          setTranscript(parsed.displayTranscript);
         };
 
         recognition.onerror = (e: any) => {
@@ -97,6 +100,10 @@ export default function AIVoiceJournalModal({
       } catch {}
       recognitionRef.current = null;
     }
+    const finalTxt = voiceTrackerRef.current.finalize();
+    if (finalTxt) {
+      setTranscript(finalTxt);
+    }
   };
 
   const handleAnalyzeAudio = async () => {
@@ -107,7 +114,7 @@ export default function AIVoiceJournalModal({
       // Simulate/Run AI voice processing
       await new Promise(resolve => setTimeout(resolve, 1400));
 
-      const speechText = transcript.trim() || (isEn 
+      const speechText = (voiceTrackerRef.current.finalize() || transcript).trim() || (isEn
         ? "Today was a productive day. I felt a bit anxious in the morning about tasks, but went for a 30-minute run and slept 7 hours last night, which helped me regain calm and focus."
         : "اليوم كان حافلاً بالمهام. شعرت ببعض التوتر في الصباح بشأن الدراسة، لكن مارست المشي السريع لمدة 30 دقيقة ونمت 7 ساعات الليلة الماضية والحمد لله استعدت هدوئي وتركيزي.");
 

@@ -59,6 +59,7 @@ import OfflineSyncBanner from './components/OfflineSyncBanner';
 import PredictiveHealthInsightsModal from './components/PredictiveHealthInsightsModal';
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
 import OnboardingTourModal from './components/OnboardingTourModal';
+import { SpeechSessionTracker } from './lib/speechRecognition';
 
 // Recharts components for gorgeous analytics
 import { 
@@ -2360,6 +2361,7 @@ export default function App() {
   const audioChunksRef = React.useRef<Blob[]>([]);
   const speechRecognitionRef = React.useRef<any>(null);
   const speechTranscriptRef = React.useRef<string>('');
+  const diarySpeechTrackerRef = React.useRef<SpeechSessionTracker>(new SpeechSessionTracker());
   const [speechTranscript, setSpeechTranscript] = useState('');
   const [transcribingAudioId, setTranscribingAudioId] = useState<string | null>(null);
   const [editingTranscriptId, setEditingTranscriptId] = useState<string | null>(null);
@@ -3880,6 +3882,11 @@ export default function App() {
       if (speechRecognitionRef.current) {
         try { speechRecognitionRef.current.stop(); } catch (e) {}
       }
+      const finalSpeechText = diarySpeechTrackerRef.current.finalize();
+      if (finalSpeechText) {
+        speechTranscriptRef.current = finalSpeechText;
+        setSpeechTranscript(finalSpeechText);
+      }
 
       // Check recording duration (< 3 seconds) using actual elapsedTime
       if (finalSecs < 3 || elapsedTime < 2.8) {
@@ -3889,6 +3896,7 @@ export default function App() {
           try { mediaRecorderRef.current.stop(); } catch (e) {}
         }
         audioChunksRef.current = [];
+        diarySpeechTrackerRef.current.reset();
         setRecordingSeconds(0);
         recordingSecondsRef.current = 0;
         recordingStartTimeRef.current = null;
@@ -3902,7 +3910,7 @@ export default function App() {
         try { mediaRecorderRef.current.requestData(); } catch (e) {}
         mediaRecorderRef.current.stop();
       } else {
-        const capturedSpeech = speechTranscriptRef.current.trim();
+        const capturedSpeech = (diarySpeechTrackerRef.current.finalize() || speechTranscriptRef.current).trim();
         const fallbackAudioUrl = createFallbackAudioWav(finalSecs);
         processAudioRecordingOrFile({
           dataUrl: fallbackAudioUrl,
@@ -3925,6 +3933,7 @@ export default function App() {
       setSpeechTranscript('');
       speechTranscriptRef.current = '';
       audioChunksRef.current = [];
+      const sessionToken = diarySpeechTrackerRef.current.startNewSession();
 
       // Start Browser Speech Recognition in Arabic
       const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -3935,12 +3944,10 @@ export default function App() {
           rec.interimResults = true;
           rec.lang = 'ar-SA';
           rec.onresult = (event: any) => {
-            let current = '';
-            for (let i = 0; i < event.results.length; i++) {
-              current += event.results[i][0].transcript;
-            }
-            speechTranscriptRef.current = current;
-            setSpeechTranscript(current);
+            if (!diarySpeechTrackerRef.current.isSessionActive(sessionToken)) return;
+            const parsed = diarySpeechTrackerRef.current.processEvent(event, sessionToken);
+            speechTranscriptRef.current = parsed.displayTranscript;
+            setSpeechTranscript(parsed.displayTranscript);
           };
           rec.start();
           speechRecognitionRef.current = rec;

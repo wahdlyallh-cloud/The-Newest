@@ -213,59 +213,60 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Chat Attachments states
-  const [chatAttachments, setChatAttachments] = useState<{
-    links: string[];
-    videos: string[];
-    pdfs: { name: string; url: string }[];
-  }>(() => {
-    const saved = localStorage.getItem('yawmiyati_chat_attachments');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
+  const [attachments, setAttachments] = useState<MultimodalAttachment[]>([]);
+  const [isProcessingAttachment, setIsProcessingAttachment] = useState(false);
+  const [tempPdfName, setTempPdfName] = useState<string>('');
+  const [tempPdfUrl, setTempPdfUrl] = useState<string>('');
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const generalMessagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const langInfo = getLanguageInfo(appLanguage);
+
+  // Speech Trackers for clean, idempotent, non-repeating speech recognition
+  const voiceSessionTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
+
+  useEffect(() => {
+    try {
+      const savedVoice = localStorage.getItem('yawmiyati_advisor_voice');
+      if (savedVoice) setSelectedVoice(savedVoice as any);
+      const savedConsent = localStorage.getItem('yawmiyati_advisor_consent');
+      if (savedConsent !== null) setHasConsent(savedConsent === 'true');
+      const savedPerms = localStorage.getItem('yawmiyati_advisor_permissions');
+      if (savedPerms) setAdvisorPermissions(JSON.parse(savedPerms));
+      const savedTherapist = localStorage.getItem('yawmiyati_therapist_chat_history');
+      if (savedTherapist) setMessages(JSON.parse(savedTherapist));
+      const savedGeneral = localStorage.getItem('yawmiyati_general_chat_history');
+      if (savedGeneral) setGeneralMessages(JSON.parse(savedGeneral));
+      const savedPdfName = localStorage.getItem('yawmiyati_chat_temp_pdf_name');
+      if (savedPdfName) setTempPdfName(savedPdfName);
+      const savedPdfUrl = localStorage.getItem('yawmiyati_chat_temp_pdf_url');
+      if (savedPdfUrl) setTempPdfUrl(savedPdfUrl);
+    } catch (e) {
+      console.error(e);
     }
-    return { links: [], videos: [], pdfs: [] };
-  });
-  const [activeAttachmentType, setActiveAttachmentType] = useState<'none' | 'link' | 'video' | 'pdf'>(() => {
-    return (localStorage.getItem('yawmiyati_chat_active_attachment_type') as any) || 'none';
-  });
-  const [tempLink, setTempLink] = useState(() => localStorage.getItem('yawmiyati_chat_temp_link') || '');
-  const [tempVideo, setTempVideo] = useState(() => localStorage.getItem('yawmiyati_chat_temp_video') || '');
-  const [tempPdfName, setTempPdfName] = useState(() => localStorage.getItem('yawmiyati_chat_temp_pdf_name') || '');
-  const [tempPdfUrl, setTempPdfUrl] = useState(() => localStorage.getItem('yawmiyati_chat_temp_pdf_url') || '');
+  }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Persist states to local storage on change immediately (to handle sudden closure/power loss)
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(messages));
-  }, [messages]);
+    localStorage.setItem('yawmiyati_advisor_voice', selectedVoice);
+  }, [selectedVoice]);
 
   useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_input', input);
-  }, [input]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_has_consent', String(hasConsent));
+    localStorage.setItem('yawmiyati_advisor_consent', hasConsent.toString());
   }, [hasConsent]);
 
   useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_attachments', JSON.stringify(chatAttachments));
-  }, [chatAttachments]);
+    localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(advisorPermissions));
+  }, [advisorPermissions]);
 
   useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_active_attachment_type', activeAttachmentType);
-  }, [activeAttachmentType]);
+    localStorage.setItem('yawmiyati_therapist_chat_history', JSON.stringify(messages));
+  }, [messages]);
 
   useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_temp_link', tempLink);
-  }, [tempLink]);
-
-  useEffect(() => {
-    localStorage.setItem('yawmiyati_chat_temp_video', tempVideo);
-  }, [tempVideo]);
+    localStorage.setItem('yawmiyati_general_chat_history', JSON.stringify(generalMessages));
+  }, [generalMessages]);
 
   useEffect(() => {
     localStorage.setItem('yawmiyati_chat_temp_pdf_name', tempPdfName);
@@ -276,7 +277,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   }, [tempPdfUrl]);
 
   // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
-  // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
@@ -284,6 +284,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const voiceRecognitionRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
   const voiceStatusRef = useRef<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
+
+  // Speech Trackers for clean, idempotent, non-repeating speech recognition
+  const voiceSessionTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
+  const dictationTrackerRef = useRef<SpeechSessionTracker>(new SpeechSessionTracker());
 
   // Keep ref synchronized to prevent closure stale states in callbacks
   useEffect(() => {
@@ -298,6 +302,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   const endVoiceChatSession = () => {
     stopVoiceChatSpeech();
+    voiceSessionTrackerRef.current.reset();
     if (voiceRecognitionRef.current) {
       try {
         voiceRecognitionRef.current.onstart = null;
@@ -312,12 +317,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
     setShowVoiceModal(false);
     setVoiceStatus('idle');
+    setVoiceTranscript('');
   };
 
   // Clean up on component unmount
   useEffect(() => {
     return () => {
       stopVoiceChatSpeech();
+      voiceSessionTrackerRef.current.reset();
       if (voiceRecognitionRef.current) {
         try { voiceRecognitionRef.current.abort(); } catch (e) {}
       }
@@ -327,7 +334,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const startListeningVoiceChat = () => {
     stopVoiceChatSpeech();
 
-    // Prevent starting listening while AI is speaking to avoid feedback echo loop
+    // Prevent starting listening while AI is speaking
     if (voiceStatusRef.current === 'speaking' || voiceStatusRef.current === 'analyzing') {
       return;
     }
@@ -336,8 +343,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     if (!SpeechRecognition) {
       setVoiceStatus('idle');
       setVoiceTranscript(appLanguage === 'ar'
-        ? 'المتصفح لا يدعم ميزة التعرف التلقائي على الصوت. سأقوم بالرد كتابياً فقط.'
-        : 'Browser does not support Speech Recognition. Will respond in text format.');
+        ? 'المتصفح لا يدعم ميزة التعرف التلقائي على الصوت.'
+        : 'Browser does not support Speech Recognition.');
       return;
     }
 
@@ -345,6 +352,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     if (voiceRecognitionRef.current) {
       try { voiceRecognitionRef.current.abort(); } catch (e) {}
     }
+
+    // Start fresh session with unique token
+    const sessionToken = voiceSessionTrackerRef.current.startNewSession();
 
     const rec = new SpeechRecognition();
     rec.lang = langInfo.speechLang;
@@ -358,9 +368,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
     rec.onresult = (event: any) => {
       if (voiceStatusRef.current === 'analyzing' || voiceStatusRef.current === 'speaking') return;
-      const currentResult = event.results[0];
-      const text = currentResult[0].transcript;
-      setVoiceTranscript(text);
+      if (!voiceSessionTrackerRef.current.isSessionActive(sessionToken)) return;
+
+      const parsed = voiceSessionTrackerRef.current.processEvent(event, sessionToken);
+      if (parsed.displayTranscript) {
+        setVoiceTranscript(parsed.displayTranscript);
+      }
     };
 
     rec.onerror = (event: any) => {
@@ -368,8 +381,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
         setVoiceStatus('idle');
         setVoiceTranscript(appLanguage === 'ar'
-          ? '⚠️ تم رفض إذن الميكروفون. يرجى سماح المتصفح بدخول الميكروفون لإجراء المحادثة الصوتية.'
-          : '⚠️ Microphone permission denied. Please allow microphone access in your browser settings.');
+          ? '⚠️ تم رفض إذن الميكروفون.'
+          : '⚠️ Microphone permission denied.');
         return;
       }
       if (event.error !== 'no-speech' && voiceStatusRef.current === 'listening') {
@@ -377,23 +390,18 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       }
     };
 
-    rec.onend = () => {
-      // Completed recognition round
-    };
-
     // Auto-submit when user finishes talking
     rec.onspeechend = () => {
       try { rec.stop(); } catch (e) {}
       setTimeout(() => {
-        setVoiceTranscript(prev => {
-          if (prev && !prev.includes('جاري الاستماع') && !prev.includes('Listening...') && prev.trim().length > 0) {
-            if (voiceStatusRef.current === 'listening') {
-              handleVoiceChatSubmit(prev);
-            }
+        if (voiceStatusRef.current === 'listening' && voiceSessionTrackerRef.current.isSessionActive(sessionToken)) {
+          const finalQuery = voiceSessionTrackerRef.current.finalize();
+          if (finalQuery && finalQuery.trim().length > 0) {
+            setVoiceTranscript(finalQuery);
+            handleVoiceChatSubmit(finalQuery);
           }
-          return prev;
-        });
-      }, 500);
+        }
+      }, 350);
     };
 
     voiceRecognitionRef.current = rec;
@@ -980,25 +988,31 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const handleDictation = () => {
     if (isRecording) {
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try { recognitionRef.current.stop(); } catch (e) {}
       }
       setIsRecording(false);
     } else {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
+        const dictationToken = dictationTrackerRef.current.startNewSession();
         const rec = new SpeechRecognition();
         rec.lang = langInfo.speechLang;
         rec.continuous = false;
-        rec.interimResults = false;
+        rec.interimResults = true;
         
         rec.onstart = () => {
           setIsRecording(true);
         };
         
         rec.onresult = (event: any) => {
-          const resultText = event.results[0][0].transcript;
-          if (resultText) {
-            setInput(prev => prev ? prev + ' ' + resultText : resultText);
+          if (!dictationTrackerRef.current.isSessionActive(dictationToken)) return;
+          const parsed = dictationTrackerRef.current.processEvent(event, dictationToken);
+          const finalOrCurrent = parsed.finalTranscript || parsed.displayTranscript;
+          if (finalOrCurrent) {
+            setInput(prev => {
+              const base = prev ? prev.trim() : '';
+              return base ? `${base} ${finalOrCurrent}` : finalOrCurrent;
+            });
           }
         };
         
@@ -1021,7 +1035,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         };
         
         recognitionRef.current = rec;
-        rec.start();
+        try {
+          rec.start();
+        } catch (e) {
+          console.error('Dictation start error:', e);
+        }
       } else {
         // Fallback for browsers without speech support (e.g. some web views)
         setIsRecording(true);
