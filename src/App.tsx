@@ -1179,20 +1179,6 @@ export default function App() {
   // --- Pure Event-Driven File Picker Guard & Synchronous Draft Persistence ---
   const isFilePickerActiveRef = useRef<boolean>(false);
 
-  const markFilePickerActive = useCallback(() => {
-    isFilePickerActiveRef.current = true;
-    // Instant sync: Ensure current editor DOM content is persisted to localStorage immediately before picker opens
-    if (editorRef.current && editingDiary) {
-      const htmlContent = editorRef.current.innerHTML;
-      const currentDraft = { ...editingDiary, content: htmlContent };
-      saveDraftSynchronously(currentDraft);
-    }
-  }, [editingDiary]);
-
-  const resetFilePickerGuard = useCallback(() => {
-    isFilePickerActiveRef.current = false;
-  }, []);
-
   const saveDraftSynchronously = useCallback((draft: DiaryEntry | null) => {
     if (draft) {
       try {
@@ -1218,6 +1204,20 @@ export default function App() {
         localStorage.removeItem('yawmiyati_draft_editing_diary');
       } catch (e) {}
     }
+  }, []);
+
+  const markFilePickerActive = useCallback(() => {
+    isFilePickerActiveRef.current = true;
+    // Instant sync: Ensure current editor DOM content is persisted to localStorage immediately before picker opens
+    if (editorRef.current && editingDiary) {
+      const htmlContent = editorRef.current.innerHTML;
+      const currentDraft = { ...editingDiary, content: htmlContent };
+      saveDraftSynchronously(currentDraft);
+    }
+  }, [editingDiary, saveDraftSynchronously]);
+
+  const resetFilePickerGuard = useCallback(() => {
+    isFilePickerActiveRef.current = false;
   }, []);
 
   // Auto-lock when user leaves tab/window, hides page, or switches applications
