@@ -1,4 +1,10 @@
 import { t } from '../lib/languages';
+import {
+  getActiveApiKeyFromSettings,
+  rotateToNextKey,
+  recordKeySuccess,
+  classifyGeminiError
+} from './apiKeyManager';
 
 function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
@@ -105,7 +111,10 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         const candidate = resJson.candidates?.[0];
         if (candidate) {
           const candidateText = candidate?.content?.parts?.[0]?.text;
-          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') return candidateText;
+          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
+            recordKeySuccess(keyToUse);
+            return candidateText;
+          }
         }
       }
 
@@ -182,21 +191,15 @@ try {
 
 // Handle client-side simulation of express endpoints
 async function handleClientSideFallback(url: string, init?: RequestInit): Promise<Response> {
-  // Extract custom API Key
+  // Extract custom API Key with Key Pool resolution
   let keyToUse = '';
   const reqHeaders = init?.headers ? new Headers(init.headers) : new Headers();
   if (init?.headers) {
     keyToUse = reqHeaders.get('x-gemini-key') || '';
   }
 
-  if (!keyToUse) {
-    try {
-      const savedSettings = localStorage.getItem('yawmiyati_settings');
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        keyToUse = parsed?.userApiKey || '';
-      }
-    } catch (e) {}
+  if (!keyToUse || keyToUse.trim() === '') {
+    keyToUse = getActiveApiKeyFromSettings();
   }
 
   let requestBody: any = {};
@@ -855,10 +858,11 @@ Return pure JSON only in the following format:
 
           if (res.ok) {
             const responseText = await res.text();
-      if (!responseText || !responseText.trim()) {
-        throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
-      }
-      const resJson = JSON.parse(responseText);
+            if (!responseText || !responseText.trim()) {
+              throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
+            }
+            recordKeySuccess(key);
+            const resJson = JSON.parse(responseText);
             const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
             const parsed = JSON.parse(rawText.trim());
             return createSuccessResponse({
@@ -875,7 +879,14 @@ Return pure JSON only in the following format:
             });
           } else {
             const errJson = await res.json().catch(() => ({}));
-            lastError = errJson?.error?.message || res.statusText;
+            lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
+            const errType = classifyGeminiError(res.status, lastError);
+            if (errType === 'quota_exhausted' || errType === 'invalid_key') {
+              const rotation = rotateToNextKey(key, errType);
+              if (rotation.hasNextKey && rotation.newKey) {
+                key = rotation.newKey;
+              }
+            }
           }
         }
         return createErrorResponse(lastError || "فشل تفريغ الصوت عبر طرازات Gemini.");

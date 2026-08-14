@@ -24,6 +24,7 @@ import TypographySettingsSection from './components/TypographySettingsSection';
 import { getFontCss, getLineHeightCss } from './lib/fonts';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
 import { cleanDiaryText, generateGeminiContentDirect } from './lib/gemini';
+import { migrateSettingsApiKeys } from './lib/apiKeyManager';
 import SmartAdvisor from './components/SmartAdvisor';
 import GratitudeJournal from './components/GratitudeJournal';
 import LifeMap from './components/LifeMap';
@@ -942,7 +943,11 @@ export default function App() {
       if (savedCredId && !parsed.biometricCredentialId) {
         parsed.biometricCredentialId = savedCredId;
       }
-      return parsed || DEFAULT_SETTINGS;
+      const migrated = migrateSettingsApiKeys(parsed || DEFAULT_SETTINGS);
+      try {
+        localStorage.setItem('yawmiyati_settings', JSON.stringify(migrated));
+      } catch (_) {}
+      return migrated;
     } catch (e) {
       console.error('Error loading saved settings:', e);
       return DEFAULT_SETTINGS;
@@ -9718,8 +9723,19 @@ export default function App() {
         isOpen={showGeminiKeyModal}
         onClose={() => setShowGeminiKeyModal(false)}
         apiKey={settings.userApiKey || ''}
+        apiKeys={settings.apiKeys}
+        activeKeyId={settings.activeKeyId}
+        onSavePool={(keys, activeId) => {
+          const activeKeyObj = keys.find(k => k.id === activeId);
+          setSettings(prev => ({
+            ...prev,
+            apiKeys: keys,
+            activeKeyId: activeId,
+            userApiKey: activeKeyObj ? activeKeyObj.key : (keys[0]?.key || '')
+          }));
+        }}
         onSave={(key) => setSettings(prev => ({ ...prev, userApiKey: key }))}
-        onClear={() => setSettings(prev => ({ ...prev, userApiKey: '' }))}
+        onClear={() => setSettings(prev => ({ ...prev, userApiKey: '', apiKeys: [], activeKeyId: undefined }))}
         appLanguage={settings?.appLanguage || 'ar'}
       />
 

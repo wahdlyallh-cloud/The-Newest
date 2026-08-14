@@ -168,6 +168,24 @@ export type AppLanguage = 'ar' | 'en';
 export type AppFontFamily = 'cairo' | 'tajawal' | 'almarai' | 'amiri' | 'noto_naskh' | 'jakarta' | 'system';
 export type AppLineHeight = 'compact' | 'normal' | 'relaxed' | 'spacious';
 
+export type ApiKeyStatus = 'ready' | 'rate_limited' | 'quota_exhausted' | 'invalid' | 'standby';
+
+export interface ApiKeyPoolEntry {
+  id: string;
+  name: string;
+  key: string;
+  status: ApiKeyStatus;
+  isEnabled: boolean;
+  priority: number; // 1 to 5
+  requestsToday: number;
+  successfulRequests: number;
+  failedRequests: number;
+  lastUsedAt?: string;
+  lastErrorMsg?: string;
+  rateLimitResetAt?: number; // timestamp ms
+  createdAt: string;
+}
+
 export interface AppSettings {
   isDarkMode: boolean;
   notificationsEnabled: boolean;
@@ -183,7 +201,9 @@ export interface AppSettings {
   biometricCredentialId?: string; // WebAuthn Passkey Credential ID
   isBiometricEnabled?: boolean; // Toggle for Biometrics (Fingerprint / Face ID)
   backupSettings: BackupSettings;
-  userApiKey?: string; // Custom client API Key for standalone / APK usage
+  userApiKey?: string; // Custom client API Key for standalone / APK usage (legacy single key)
+  apiKeys?: ApiKeyPoolEntry[]; // Gemini API Key Pool (up to 5 keys)
+  activeKeyId?: string; // Selected active API Key ID
   reminders?: AppReminder[]; // Added scheduled reminders
   habitSettings?: HabitSettings;
 }
