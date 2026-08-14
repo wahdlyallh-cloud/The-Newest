@@ -32,8 +32,6 @@ export function getLanguageInfo(code?: AppLanguage | string | null): LanguageInf
 }
 
 const AR_DICT: Record<string, any> = {
-  predictiveSub: 'تنبؤ بالذكاء الاصطناعي',
-  voiceJournalSub: 'تكلم وسينظمها الذكاء الاصطناعي',
   interactiveTourTitle: 'الدليل التعليمي التفاعلي 🧭',
   interactiveTourSub: 'كيفية الاستخدام بالتفصيل',
   safeEncryptedSpace: 'مساحتك النفسية الآمنة والمشفرة بالكامل',
@@ -805,8 +803,6 @@ const AR_DICT: Record<string, any> = {
 };
 
 const EN_DICT: Record<string, any> = {
-  predictiveSub: 'AI early warning',
-  voiceJournalSub: 'Speak freely to auto-organize',
   interactiveTourTitle: 'Interactive Tour 🧭',
   interactiveTourSub: 'Step-by-step usage guide',
   safeEncryptedSpace: 'Your Safe & Fully Encrypted Psychological Space',
@@ -1578,8 +1574,6 @@ const EN_DICT: Record<string, any> = {
 };
 
 const FR_DICT: Record<string, any> = {
-  predictiveSub: 'Alerte précoce par IA',
-  voiceJournalSub: 'Parlez librement, l\'IA organise',
   interactiveTourTitle: 'Visite interactive 🧭',
   interactiveTourSub: 'Guide d\'utilisation étape par étape',
   safeEncryptedSpace: 'Votre espace psychologique sécurisé et entièrement crypté',
@@ -2351,8 +2345,6 @@ const FR_DICT: Record<string, any> = {
 };
 
 const DE_DICT: Record<string, any> = {
-  predictiveSub: 'Frühwarnung durch KI',
-  voiceJournalSub: 'Sprechen Sie frei, KI organisiert',
   interactiveTourTitle: 'Interaktive Tour 🧭',
   interactiveTourSub: 'Schritt-für-Schritt-Anleitung',
   safeEncryptedSpace: 'Ihr sicherer und vollständig verschlüsselter psychologischer Raum',
@@ -3124,8 +3116,6 @@ const DE_DICT: Record<string, any> = {
 };
 
 const ES_DICT: Record<string, any> = {
-  predictiveSub: 'Alerta temprana con IA',
-  voiceJournalSub: 'Habla libremente, la IA organiza',
   interactiveTourTitle: 'Guía interactiva 🧭',
   interactiveTourSub: 'Guía de uso paso a paso',
   safeEncryptedSpace: 'Tu espacio psicológico seguro y completamente encriptado',
@@ -3897,8 +3887,6 @@ const ES_DICT: Record<string, any> = {
 };
 
 const RU_DICT: Record<string, any> = {
-  predictiveSub: 'Раннее предупреждение ИИ',
-  voiceJournalSub: 'Говорите свободно, ИИ организует',
   interactiveTourTitle: 'Интерактивный тур 🧭',
   interactiveTourSub: 'Пошаговое руководство',
   safeEncryptedSpace: 'Ваше безопасное и полностью зашифрованное психологическое пространство',
@@ -4670,8 +4658,6 @@ const RU_DICT: Record<string, any> = {
 };
 
 const ZH_DICT: Record<string, any> = {
-  predictiveSub: '人工智能预警',
-  voiceJournalSub: '自由语音输入，AI自动整理',
   interactiveTourTitle: '互动式功能指南 🧭',
   interactiveTourSub: '详细的使用说明指南',
   safeEncryptedSpace: '您完全加密的专属心理安全空间',
@@ -5443,8 +5429,6 @@ const ZH_DICT: Record<string, any> = {
 };
 
 const TR_DICT: Record<string, any> = {
-  predictiveSub: 'Yapay zeka erken uyarı',
-  voiceJournalSub: 'Serbestçe konuşun, YZ düzenlesin',
   interactiveTourTitle: 'Etkileşimli Tur 🧭',
   interactiveTourSub: 'Adım adım kullanım kılavuzu',
   safeEncryptedSpace: 'Güvenli ve Tamamen Şifrelenmiş Psikolojik Alanınız',
@@ -6216,8 +6200,6 @@ const TR_DICT: Record<string, any> = {
 };
 
 const HI_DICT: Record<string, any> = {
-  predictiveSub: 'एआई प्रारंभिक चेतावनी',
-  voiceJournalSub: 'स्वतंत्र रूप से बोलें, एआई व्यवस्थित करेगा',
   interactiveTourTitle: 'इंटरएक्टिव टूर 🧭',
   interactiveTourSub: 'चरण-दर-चरण उपयोग गाइड',
   safeEncryptedSpace: 'आपका सुरक्षित और पूरी तरह से एनक्रिप्टेड मनोवैज्ञानिक स्थान',
@@ -6989,8 +6971,6 @@ const HI_DICT: Record<string, any> = {
 };
 
 const IT_DICT: Record<string, any> = {
-  predictiveSub: 'Avviso precoce dell\'IA',
-  voiceJournalSub: 'Parla liberamente, l\'IA organizza',
   interactiveTourTitle: 'Tour interattivo 🧭',
   interactiveTourSub: 'Guida all\'uso passo passo',
   safeEncryptedSpace: 'Il tuo spazio psicologico sicuro e completamente crittografato',
