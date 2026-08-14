@@ -3600,7 +3600,9 @@ export default function App() {
     setTranscribingAudioId(newRecId);
 
     try {
-      const payloadAudio = validDataUrl !== '#' ? validDataUrl : (blobUrl || '#');
+      const rawAudio = validDataUrl !== '#' ? validDataUrl : (blobUrl || '#');
+      const payloadAudio = await convertAudioTargetToBase64(rawAudio);
+
       const res = await fetch('/api/gemini/transcribe-audio', {
         method: 'POST',
         headers: {
@@ -3609,7 +3611,7 @@ export default function App() {
         },
         body: JSON.stringify({
           audioData: payloadAudio,
-          mimeType: mimeType || 'audio/webm',
+          mimeType: (mimeType || 'audio/webm').split(';')[0].trim(),
           fileName: fileName
         })
       });
@@ -3637,10 +3639,38 @@ export default function App() {
     }
   };
 
+  // --- Helper to ensure audio Payload is converted from blob: URL to Base64 ---
+  const convertAudioTargetToBase64 = async (audioPayload: string): Promise<string> => {
+    if (!audioPayload || audioPayload === '#') return '';
+    if (audioPayload.startsWith('data:')) return audioPayload;
+    if (audioPayload.startsWith('blob:')) {
+      try {
+        const res = await fetch(audioPayload);
+        const blob = await res.blob();
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              resolve(reader.result);
+            } else {
+              reject(new Error('Failed to convert Blob URL to Base64 Data URL'));
+            }
+          };
+          reader.onerror = (e) => reject(e);
+          reader.readAsDataURL(blob);
+        });
+      } catch (err) {
+        console.error('[AudioBase64] Exception fetching blob URL:', err);
+        return '';
+      }
+    }
+    return audioPayload;
+  };
+
   // --- Transcribe Audio Item manually ---
   const handleTranscribeAudioItem = async (rec: AudioRecording) => {
-    const audioPayload = (rec.dataUrl && rec.dataUrl !== '#') ? rec.dataUrl : rec.blobUrl;
-    if (!audioPayload) {
+    const rawAudio = (rec.dataUrl && rec.dataUrl !== '#') ? rec.dataUrl : rec.blobUrl;
+    if (!rawAudio) {
       alert('لا يوجد تسجيل صوتي صالح للتفريغ النصي.');
       return;
     }
@@ -3648,6 +3678,7 @@ export default function App() {
     setTranscribingAudioId(rec.id);
     updateAudioTranscriptionAtomic(rec.id, '⏳ جاري التفريغ النصي بذكاء Gemini...');
     try {
+      const audioPayload = await convertAudioTargetToBase64(rawAudio);
       const res = await fetch('/api/gemini/transcribe-audio', {
         method: 'POST',
         headers: {

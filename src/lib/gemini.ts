@@ -457,15 +457,25 @@ export async function transcribeAudioWithGemini(
   }
 
   let pureBase64 = audioBase64;
-  let resolvedMime = mimeType;
+  let resolvedMime = (mimeType || 'audio/webm').split(';')[0].trim().toLowerCase();
   if (audioBase64.startsWith('data:')) {
     const parts = audioBase64.split(';base64,');
     if (parts.length === 2) {
       const mimeMatch = parts[0].match(/data:(.*?)$/);
-      if (mimeMatch) resolvedMime = mimeMatch[1];
+      if (mimeMatch) resolvedMime = mimeMatch[1].split(';')[0].trim().toLowerCase();
       pureBase64 = parts[1];
     }
   }
+
+  let cleanMime = resolvedMime;
+  if (cleanMime.includes("webm") || cleanMime.includes("opus")) cleanMime = "audio/webm";
+  else if (cleanMime.includes("mp3") || cleanMime.includes("mpeg")) cleanMime = "audio/mp3";
+  else if (cleanMime.includes("wav") || cleanMime.includes("x-wav")) cleanMime = "audio/wav";
+  else if (cleanMime.includes("ogg")) cleanMime = "audio/ogg";
+  else if (cleanMime.includes("mp4") || cleanMime.includes("m4a") || cleanMime.includes("aac")) cleanMime = "audio/mp4";
+  else if (cleanMime.includes("flac")) cleanMime = "audio/flac";
+  else if (cleanMime.includes("3gp") || cleanMime.includes("amr")) cleanMime = "audio/3gpp";
+  else cleanMime = "audio/webm";
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
 
@@ -476,7 +486,7 @@ export async function transcribeAudioWithGemini(
         parts: [
           {
             inlineData: {
-              mimeType: resolvedMime || 'audio/webm',
+              mimeType: cleanMime,
               data: pureBase64
             }
           },

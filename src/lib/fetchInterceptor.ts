@@ -826,9 +826,15 @@ Return pure JSON only in the following format:
   "recommendedColor": "teal"
 }`;
 
-          let reqMime = "audio/webm";
-          if (mimeType && mimeType.includes("wav")) reqMime = "audio/wav";
-          else if (mimeType && (mimeType.includes("mp3") || mimeType.includes("mpeg"))) reqMime = "audio/mp3";
+          // Normalize and strip parameters (like ;codecs=opus) from MIME type
+          let reqMime = (mimeType || 'audio/webm').split(';')[0].trim().toLowerCase();
+          if (reqMime.includes("webm") || reqMime.includes("opus")) reqMime = "audio/webm";
+          else if (reqMime.includes("mp3") || reqMime.includes("mpeg")) reqMime = "audio/mp3";
+          else if (reqMime.includes("wav") || reqMime.includes("x-wav")) reqMime = "audio/wav";
+          else if (reqMime.includes("ogg")) reqMime = "audio/ogg";
+          else if (reqMime.includes("mp4") || reqMime.includes("m4a") || reqMime.includes("aac")) reqMime = "audio/mp4";
+          else if (reqMime.includes("flac")) reqMime = "audio/flac";
+          else if (reqMime.includes("3gp") || reqMime.includes("amr")) reqMime = "audio/3gpp";
           else reqMime = "audio/webm";
 
           const reqBody = {
