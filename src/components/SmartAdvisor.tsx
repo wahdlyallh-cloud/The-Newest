@@ -1,7 +1,7 @@
 import { generateGeminiContentDirect } from '../lib/gemini';
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X } from 'lucide-react';
-import { DiaryEntry, AppLanguage } from '../types';
+import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload } from 'lucide-react';
+import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { getAthkarContextForAI, getFormattedAthkarPromptContext } from '../services/aiAthkarSync';
 
@@ -73,6 +73,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const permissionsConfig = getPermissionsConfig(appLanguage);
   const isAr = appLanguage === 'ar';
 
+  // Dual Tab State
+  const [activeAdvisorTab, setActiveAdvisorTab] = useState<'diary' | 'general'>('diary');
+
+  // Diary Pro Advisor Chat History
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem('yawmiyati_chat_messages');
     if (saved) {
@@ -93,6 +97,33 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       }
     ];
   });
+
+  // General AI Advisor Chat History (Independent Storage)
+  const [generalMessages, setGeneralMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('yawmiyati_general_chat_messages');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing general chat messages:', e);
+      }
+    }
+    return [
+      {
+        id: 'welcome_general',
+        sender: 'ai',
+        text: isAr
+          ? 'أهلاً بك في **المستشار الذكي العام (Hayat AI General AI)** 🌐.\n\nأنا مساعدك الشامل غير المرتبط بيومياتك الشخصية. يمكنك سؤالي عن المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو إرفاق ملفات وصور ومستندات PDF وتسجيلات صوتية ومقاطع فيديو لتحليلها بكل دقة.'
+          : 'Welcome to **General AI Advisor (Hayat AI)** 🌐.\n\nI am your general assistant independent of your private diary notes. Ask me about general knowledge, programming, science, translation, or attach images, PDF files, audio, and videos for instant analysis.',
+        createdAt: new Date().toISOString()
+      }
+    ];
+  });
+
+  // Multimodal File Attachments for General Mode
+  const [multimodalFiles, setMultimodalFiles] = useState<MultimodalAttachment[]>([]);
+  const [fileErrorToast, setFileErrorToast] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState(() => {
     return localStorage.getItem('yawmiyati_chat_input') || '';
   });
@@ -408,7 +439,132 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     t('advisorQuickQ5')
   ];
 
+  // File Upload Handler for Multimodal General AI Mode
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setFileErrorToast(null);
+    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB limit per file
+
+    Array.from(files).forEach(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        setFileErrorToast(`الملف "${file.name}" يتجاوز الحد الأقصى المسموح به (15MB).`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (!result) return;
+
+        const base64Data = result.split(',')[1] || '';
+        let fileType: MultimodalAttachment['type'] = 'file';
+        if (file.type.startsWith('image/')) fileType = 'image';
+        else if (file.type === 'application/pdf') fileType = 'pdf';
+        else if (file.type.startsWith('audio/')) fileType = 'audio';
+        else if (file.type.startsWith('video/')) fileType = 'video';
+
+        const newAtt: MultimodalAttachment = {
+          id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+          name: file.name,
+          type: fileType,
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          base64Data,
+          previewUrl: fileType === 'image' ? result : undefined
+        };
+
+        setMultimodalFiles(prev => [...prev, newAtt]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeMultimodalFile = (id: string) => {
+    setMultimodalFiles(prev => prev.filter(f => f.id !== id));
+  };
+
   const handleSend = async (textToSend: string) => {
+    // Mode Switcher Branching
+    if (activeAdvisorTab === 'general') {
+      if (!textToSend.trim() && multimodalFiles.length === 0) return;
+      if (loading) return;
+
+      let sendText = textToSend;
+      if (multimodalFiles.length > 0) {
+        sendText += `\n📎 المرفقات: ${multimodalFiles.map(f => f.name).join(' ، ')}`;
+      }
+
+      const userMsg: Message = {
+        id: Date.now().toString(),
+        sender: 'user',
+        text: sendText,
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedMsgs = [...generalMessages, userMsg];
+      setGeneralMessages(updatedMsgs);
+      localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(updatedMsgs));
+
+      const filesToSend = [...multimodalFiles];
+      setInput('');
+      setMultimodalFiles([]);
+      setLoading(true);
+
+      try {
+        const response = await fetch('/api/gemini/smart-advisor', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-gemini-key': userApiKey || '',
+            'x-app-language': appLanguage
+          },
+          body: JSON.stringify({
+            mode: 'general',
+            query: textToSend,
+            attachments: filesToSend,
+            diaries: [],
+            habits: [],
+            gratitudeCards: [],
+            books: [],
+            appLanguage
+          })
+        });
+
+        const responseText = await response.text();
+        let data: any = null;
+        if (responseText && responseText.trim()) {
+          try { data = JSON.parse(responseText); } catch (e) {}
+        }
+
+        const answerText = data?.answer || 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع تعبيري أو معرفي.';
+
+        const aiMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          sender: 'ai',
+          text: answerText,
+          createdAt: new Date().toISOString()
+        };
+
+        setGeneralMessages(prev => {
+          const finalArr = [...prev, aiMsg];
+          localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(finalArr));
+          return finalArr;
+        });
+      } catch (e: any) {
+        console.error('General Advisor Error:', e);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Diary Pro Advisor Mode Logic
     if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0) return;
     if (loading) return;
 
@@ -492,12 +648,16 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         );
       }
 
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        sender: 'ai',
-        text: finalAnswer || 'أهلاً بك في المستشار الذكي! أنا رفيقك للتحليل والاستشارة والتطوير الذاتي في أي وقت.',
-        createdAt: new Date().toISOString()
-      }]);
+      setMessages(prev => {
+        const updated = [...prev, {
+          id: (Date.now() + 1).toString(),
+          sender: 'ai' as const,
+          text: finalAnswer || 'أهلاً بك في المستشار الذكي! أنا رفيقك للتحليل والاستشارة والتطوير الذاتي في أي وقت.',
+          createdAt: new Date().toISOString()
+        }];
+        localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(updated));
+        return updated;
+      });
     } catch (e: any) {
       console.error("SmartAdvisor Execution Error:", e);
       const errorMsg = e?.message || 'تعذر الاتصال بـ Gemini API';
@@ -577,80 +737,145 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   };
 
   const handleClearHistory = () => {
-    if (window.confirm(isAr ? "هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار الذكي؟" : "Are you sure you want to clear the AI advisor chat history?")) {
-      setMessages([
-        {
+    const isGeneral = activeAdvisorTab === 'general';
+    const confirmMsg = isGeneral
+      ? (isAr ? "هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار العام؟" : "Are you sure you want to clear General AI chat history?")
+      : (isAr ? "هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار الذكي؟" : "Are you sure you want to clear the AI advisor chat history?");
+
+    if (window.confirm(confirmMsg)) {
+      if (isGeneral) {
+        const welcomeGen: Message[] = [{
+          id: 'welcome_general',
+          sender: 'ai',
+          text: isAr
+            ? 'تم مسح سجل المستشار العام. كيف يمكنني مساعدتك اليوم في الأسئلة والمعرفة؟ 🌐'
+            : 'General AI history cleared. How can I help you today? 🌐',
+          createdAt: new Date().toISOString()
+        }];
+        setGeneralMessages(welcomeGen);
+        localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(welcomeGen));
+      } else {
+        const welcomeDiary: Message[] = [{
           id: 'welcome',
           sender: 'ai',
           text: isAr ? 'تم مسح سجل المحادثة. كيف يمكنني مساعدتك اليوم في تصفح وتحليل يومياتك؟ 🧠' : 'Chat history cleared. How can I help you today in reviewing and analyzing your diary? 🧠',
           createdAt: new Date().toISOString()
-        }
-      ]);
+        }];
+        setMessages(welcomeDiary);
+        localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(welcomeDiary));
+      }
     }
   };
+
+  const activeMessages = activeAdvisorTab === 'diary' ? messages : generalMessages;
 
   return (
     <div className="bg-white border border-[#E2DCC8] rounded-3xl overflow-hidden shadow-sm h-[550px] flex flex-col font-sans" dir={langInfo.dir}>
       
-      {/* Top Bar Info & Consent Switch */}
-      <div className="p-4 bg-[#F0EDE4] border-b border-[#E2DCC8] flex flex-col md:flex-row md:items-center md:justify-between gap-3 shrink-0">
-        <div className="flex items-center space-x-2.5 space-x-reverse">
-          <div className="bg-[#8B9D83]/15 p-2 rounded-xl text-[#8B9D83]">
-            <Brain className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-[#5A5A40] text-sm">{appLanguage === 'ar' ? 'المستشار الذكي لليوميات Pro' : 'AI Smart Advisor Pro'}</h3>
-            <p className="text-[10px] text-gray-500">{appLanguage === 'ar' ? 'تحليل الأنماط السلوكية، التغير المزاجي والعلاقات الزمنية' : 'Analyze behavioral patterns, mood trends & timeline correlations'}</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* 🎙️ Continuous Voice Mode Button */}
-          <button
-            onClick={() => {
-              setShowVoiceModal(true);
-              startListeningVoiceChat();
-            }}
-            className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
-          >
-            <span className="animate-pulse">🎙️</span>
-            <span className="break-words">{appLanguage === 'ar' ? 'بدء محادثة صوتية مستمرة' : 'Start Voice Chat'}</span>
-          </button>
-
-          {/* 🛡️ Advisor Access Permissions Button */}
-          <button
-            onClick={() => setShowPermissionsModal(true)}
-            className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
-          >
-            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="break-words">{appLanguage === 'ar' ? 'صلاحية وصول المستشار' : 'Access Permissions'}</span>
-          </button>
-
-          {/* User Consent Quick Toggle */}
-          <div className="flex items-center justify-between md:justify-end bg-white p-2 rounded-xl border border-[#E2DCC8] shadow-xs gap-3">
-            <span className="text-[11px] font-bold text-gray-500 flex items-center space-x-1 space-x-reverse">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#8B9D83]" />
-              <span className="break-words">{appLanguage === 'ar' ? 'صلاحية الوصول لليوميات:' : 'Diaries Access:'}</span>
-            </span>
-            <button
-              onClick={toggleDiariesConsent}
-              className={`w-10 h-6 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer ${
-                hasConsent && advisorPermissions.diaries ? 'bg-[#8B9D83]' : 'bg-[#E2DCC8]'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
-                  hasConsent && advisorPermissions.diaries ? 'translate-x-0' : '-translate-x-4'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
+      {/* Top Dual-Tab Switcher */}
+      <div className="bg-[#FAF8F5] border-b border-[#E2DCC8] p-2 flex items-center justify-between gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={() => setActiveAdvisorTab('diary')}
+          className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeAdvisorTab === 'diary'
+              ? 'bg-[#3F5449] text-white shadow-xs'
+              : 'bg-white text-[#5A4F41] border border-[#E2DCC8] hover:bg-[#F0EDE4]'
+          }`}
+        >
+          <Brain className="w-4 h-4" />
+          <span>{isAr ? 'المستشار لليوميات Pro' : 'Diary Pro Advisor'}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveAdvisorTab('general')}
+          className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeAdvisorTab === 'general'
+              ? 'bg-[#2B3E50] text-white shadow-xs'
+              : 'bg-white text-[#5A4F41] border border-[#E2DCC8] hover:bg-[#F0EDE4]'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>{isAr ? 'المستشار الذكي العام 🌐' : 'General AI Advisor 🌐'}</span>
+        </button>
       </div>
+
+      {/* Top Bar Info & Consent Switch (Diary Pro Mode Only) */}
+      {activeAdvisorTab === 'diary' && (
+        <div className="p-3 bg-[#F0EDE4] border-b border-[#E2DCC8] flex flex-col md:flex-row md:items-center md:justify-between gap-3 shrink-0">
+          <div className="flex items-center space-x-2.5 space-x-reverse">
+            <div className="bg-[#8B9D83]/15 p-2 rounded-xl text-[#8B9D83]">
+              <Brain className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-[#5A5A40] text-sm">{appLanguage === 'ar' ? 'المستشار الذكي لليوميات Pro' : 'AI Smart Advisor Pro'}</h3>
+              <p className="text-[10px] text-gray-500">{appLanguage === 'ar' ? 'تحليل الأنماط السلوكية، التغير المزاجي والعلاقات الزمنية' : 'Analyze behavioral patterns, mood trends & timeline correlations'}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                setShowVoiceModal(true);
+                startListeningVoiceChat();
+              }}
+              className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
+            >
+              <span className="animate-pulse">🎙️</span>
+              <span className="break-words">{appLanguage === 'ar' ? 'بدء محادثة صوتية مستمرة' : 'Start Voice Chat'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowPermissionsModal(true)}
+              className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="break-words">{appLanguage === 'ar' ? 'صلاحية وصول المستشار' : 'Access Permissions'}</span>
+            </button>
+
+            <div className="flex items-center justify-between md:justify-end bg-white p-2 rounded-xl border border-[#E2DCC8] shadow-xs gap-3">
+              <span className="text-[11px] font-bold text-gray-500 flex items-center space-x-1 space-x-reverse">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#8B9D83]" />
+                <span className="break-words">{appLanguage === 'ar' ? 'صلاحية الوصول لليوميات:' : 'Diaries Access:'}</span>
+              </span>
+              <button
+                onClick={toggleDiariesConsent}
+                className={`w-10 h-6 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer ${
+                  hasConsent && advisorPermissions.diaries ? 'bg-[#8B9D83]' : 'bg-[#E2DCC8]'
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+                    hasConsent && advisorPermissions.diaries ? 'translate-x-0' : '-translate-x-4'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Bar Info (General AI Mode Banner) */}
+      {activeAdvisorTab === 'general' && (
+        <div className="p-3 bg-[#2B3E50] text-white border-b border-[#E2DCC8] flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center space-x-2.5 space-x-reverse">
+            <div className="bg-amber-400/20 p-2 rounded-xl text-amber-300">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-sm">{isAr ? 'المستشار الذكي العام (General AI)' : 'General AI Advisor'}</h3>
+              <p className="text-[10px] text-gray-200">{isAr ? 'إجابات عامة، برمجة، علوم، تحليل الصور والمستندات والصوتيات' : 'General answers, coding, science & multimodal attachments'}</p>
+            </div>
+          </div>
+          <span className="text-[10px] bg-white/10 px-2.5 py-1 rounded-full border border-white/20 font-bold">
+            {isAr ? 'مستقل عن اليوميات' : 'Independent Context'}
+          </span>
+        </div>
+      )}
 
       {/* Chat Messages */}
       <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-[#F9F7F2]/50">
-        {messages.map((msg) => (
+        {activeMessages.map((msg) => (
           <div
             key={msg.id}
             className={`flex ${msg.sender === 'user' ? 'justify-start' : 'justify-end'}`}
@@ -708,8 +933,39 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Active Chat Attachments Preview Area */}
-      {(chatAttachments.links.length > 0 || chatAttachments.videos.length > 0 || chatAttachments.pdfs.length > 0) && (
+      {/* File Size Error Toast */}
+      {fileErrorToast && (
+        <div className="px-4 py-2 bg-red-50 text-red-700 border-t border-red-200 text-xs font-bold flex items-center justify-between shrink-0">
+          <span>⚠️ {fileErrorToast}</span>
+          <button onClick={() => setFileErrorToast(null)} className="text-red-500 hover:text-red-700">✕</button>
+        </div>
+      )}
+
+      {/* Multimodal Attached Files Preview Bar (General AI Mode) */}
+      {activeAdvisorTab === 'general' && multimodalFiles.length > 0 && (
+        <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
+          {multimodalFiles.map(att => (
+            <div key={att.id} className="bg-white border border-[#E2DCC8] text-[#2B3E50] text-[10px] font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-2 shadow-3xs">
+              {att.type === 'image' && <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />}
+              {att.type === 'pdf' && <FileText className="w-3.5 h-3.5 text-red-500" />}
+              {att.type === 'audio' && <Music className="w-3.5 h-3.5 text-blue-500" />}
+              {att.type === 'video' && <Video className="w-3.5 h-3.5 text-purple-500" />}
+              {att.type === 'file' && <Paperclip className="w-3.5 h-3.5 text-gray-500" />}
+              <span className="truncate max-w-[120px]">{att.name}</span>
+              <button
+                type="button"
+                onClick={() => removeMultimodalFile(att.id)}
+                className="text-red-500 hover:text-red-700 text-xs font-black p-0.5 rounded-full hover:bg-red-50"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Active Chat Attachments Preview Area (Diary Pro Mode) */}
+      {activeAdvisorTab === 'diary' && (chatAttachments.links.length > 0 || chatAttachments.videos.length > 0 || chatAttachments.pdfs.length > 0) && (
         <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
           {chatAttachments.links.map((link, idx) => (
             <div key={idx} className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-blue-200 flex items-center space-x-1.5 space-x-reverse">
@@ -734,8 +990,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         </div>
       )}
 
-      {/* Attachment Inputs Drawer */}
-      {activeAttachmentType !== 'none' && (
+      {/* Attachment Inputs Drawer (Diary Pro Mode) */}
+      {activeAdvisorTab === 'diary' && activeAttachmentType !== 'none' && (
         <div className="p-3 bg-[#F0EDE4] border-t border-[#E2DCC8] space-y-2 shrink-0">
           {activeAttachmentType === 'link' && (
             <div className="space-y-1">
@@ -826,51 +1082,77 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         </div>
       )}
 
-      {/* Suggested Prompt Capsules */}
-      <div className="p-2 bg-[#F0EDE4] border-t border-[#E2DCC8] overflow-x-auto whitespace-nowrap scrollbar-none shrink-0 flex gap-2">
-        {quickQuestions.map((q, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleSend(q)}
-            className="inline-block bg-white hover:bg-[#F9F7F2] active:bg-[#E2DCC8] text-[#3A3A3A] hover:text-[#5A5A40] text-xs py-1.5 px-3 rounded-full border border-[#E2DCC8] shadow-xs transition-colors cursor-pointer shrink-0"
-          >
-            {q}
-          </button>
-        ))}
-      </div>
+      {/* Suggested Prompt Capsules (Diary Pro Mode Only) */}
+      {activeAdvisorTab === 'diary' && (
+        <div className="p-2 bg-[#F0EDE4] border-t border-[#E2DCC8] overflow-x-auto whitespace-nowrap scrollbar-none shrink-0 flex gap-2">
+          {quickQuestions.map((q, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSend(q)}
+              className="inline-block bg-white hover:bg-[#F9F7F2] active:bg-[#E2DCC8] text-[#3A3A3A] hover:text-[#5A5A40] text-xs py-1.5 px-3 rounded-full border border-[#E2DCC8] shadow-xs transition-colors cursor-pointer shrink-0"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Bottom Input Area */}
       <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0">
-        {/* Fast toggle buttons for attachment types */}
-        <div className="flex items-center space-x-2 space-x-reverse text-xs">
-          <span className="text-[10px] text-gray-400">{isAr ? 'إرفاق بالشات:' : 'Attach to Chat:'}</span>
-          <button
-            onClick={() => setActiveAttachmentType(activeAttachmentType === 'link' ? 'none' : 'link')}
-            className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
-              activeAttachmentType === 'link' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50/50'
-            }`}
-          >
-            {isAr ? '🌐 رابط ويب' : '🌐 Web Link'}
-          </button>
-          <button
-            onClick={() => setActiveAttachmentType(activeAttachmentType === 'video' ? 'none' : 'video')}
-            className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
-              activeAttachmentType === 'video' ? 'bg-purple-500 text-white border-purple-500' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50/50'
-            }`}
-          >
-            {isAr ? '🎥 فيديو مرجعي' : '🎥 Video'}
-          </button>
-          <button
-            onClick={() => setActiveAttachmentType(activeAttachmentType === 'pdf' ? 'none' : 'pdf')}
-            className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
-              activeAttachmentType === 'pdf' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50/50'
-            }`}
-          >
-            {isAr ? '📄 ملف PDF' : '📄 PDF File'}
-          </button>
-        </div>
+        {/* Fast toggle buttons for attachment types (Diary Pro Mode Only) */}
+        {activeAdvisorTab === 'diary' && (
+          <div className="flex items-center space-x-2 space-x-reverse text-xs">
+            <span className="text-[10px] text-gray-400">{isAr ? 'إرفاق بالشات:' : 'Attach to Chat:'}</span>
+            <button
+              onClick={() => setActiveAttachmentType(activeAttachmentType === 'link' ? 'none' : 'link')}
+              className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
+                activeAttachmentType === 'link' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50/50'
+              }`}
+            >
+              {isAr ? '🌐 رابط ويب' : '🌐 Web Link'}
+            </button>
+            <button
+              onClick={() => setActiveAttachmentType(activeAttachmentType === 'video' ? 'none' : 'video')}
+              className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
+                activeAttachmentType === 'video' ? 'bg-purple-500 text-white border-purple-500' : 'bg-white text-purple-600 border-purple-200 hover:bg-purple-50/50'
+              }`}
+            >
+              {isAr ? '🎥 فيديو مرجعي' : '🎥 Video'}
+            </button>
+            <button
+              onClick={() => setActiveAttachmentType(activeAttachmentType === 'pdf' ? 'none' : 'pdf')}
+              className={`px-2.5 py-1 rounded-lg border text-[10px] font-semibold transition-all cursor-pointer ${
+                activeAttachmentType === 'pdf' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50/50'
+              }`}
+            >
+              {isAr ? '📄 ملف PDF' : '📄 PDF File'}
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center space-x-2 space-x-reverse">
+          {/* Universal Attachment Button (+) in General AI Mode */}
+          {activeAdvisorTab === 'general' && (
+            <>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*,application/pdf,audio/*,video/*"
+                multiple
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2.5 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center"
+                title={isAr ? "إرفاق صورة، PDF، صوت، أو فيديو" : "Attach Image, PDF, Audio, or Video"}
+              >
+                <Plus className="w-4.5 h-4.5 text-amber-300" />
+              </button>
+            </>
+          )}
+
           <button
             onClick={handleClearHistory}
             className="p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0"
@@ -896,14 +1178,22 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
-            placeholder={isRecording ? (isAr ? 'جاري الاستماع لصوتك...' : 'Listening to your voice...') : (isAr ? 'اسأل المستشار عن يومياتك وحالتك النفسية...' : 'Ask advisor about your diary and mental state...')}
+            placeholder={
+              isRecording
+                ? (isAr ? 'جاري الاستماع لصوتك...' : 'Listening to your voice...')
+                : activeAdvisorTab === 'general'
+                ? (isAr ? 'اسأل المستشار العام أو أرفق صورة/PDF/صوت/فيديو...' : 'Ask General AI or attach image/PDF/audio/video...')
+                : (isAr ? 'اسأل المستشار عن يومياتك وحالتك النفسية...' : 'Ask advisor about your diary and mental state...')
+            }
             disabled={isRecording}
             className="flex-grow bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8]/60 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] rounded-xl px-3.5 py-2.5 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none transition-colors"
           />
 
           <button
             onClick={() => handleSend(input)}
-            className="p-2.5 bg-[#8B9D83] hover:bg-[#5A5A40] active:scale-95 text-white rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
+            className={`p-2.5 text-white rounded-xl shadow-xs transition-all cursor-pointer shrink-0 ${
+              activeAdvisorTab === 'general' ? 'bg-[#2B3E50] hover:bg-[#1E2B38]' : 'bg-[#8B9D83] hover:bg-[#5A5A40]'
+            }`}
           >
             <Send className="w-4 h-4 rotate-180" />
           </button>

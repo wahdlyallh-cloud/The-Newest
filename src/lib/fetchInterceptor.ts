@@ -58,16 +58,10 @@ function getLanguageInstruction(langCode?: string): string {
 const originalFetch = window.fetch;
 
 // Helper to make a direct REST call to Google's official Gemini API
-async function generateWithGeminiREST(prompt: string, systemInstruction?: string, isJson?: boolean, userApiKey?: string) {
+async function generateWithGeminiREST(prompt: string, systemInstruction?: string, isJson?: boolean, userApiKey?: string, extraParts?: any[]) {
   let keyToUse = userApiKey;
   if (!keyToUse || keyToUse.trim() === '') {
-    keyToUse = (window as any).__GEMINI_KEY__ || '';
-  }
-  if (!keyToUse || keyToUse.trim() === '') {
-    try {
-      const saved = localStorage.getItem('yawmiyati_settings');
-      if (saved) { keyToUse = JSON.parse(saved)?.userApiKey || ''; }
-    } catch (e) {}
+    keyToUse = getActiveApiKeyFromSettings();
   }
   if (!keyToUse || keyToUse.trim() === '') {
     throw new Error('يرجى التحقق من مفتاح API في الإعدادات');
@@ -79,8 +73,12 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
   for (const model of modelsToTry) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyToUse.trim()}`;
 
+    const userParts = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
+      ? [...extraParts, { text: prompt }]
+      : [{ text: prompt }];
+
     const requestBody: any = {
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: [{ role: 'user', parts: userParts }],
       safetySettings: [
         { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
         { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
@@ -442,7 +440,37 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
 
   if (url.includes('/api/gemini/smart-advisor')) {
     const reqLang = reqHeaders.get('x-app-language') || requestBody.appLanguage || requestBody.langCode || 'ar';
-    const { diaries, query, reportType, gratitudeCards, habits, books } = requestBody;
+    const { diaries, query, reportType, gratitudeCards, habits, books, mode, attachments } = requestBody;
+
+    // Handle General AI Advisor mode (independent context + multimodal attachments)
+    if (mode === 'general') {
+      const generalSystemInstruction = `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح، حكمة، وذكاء، سواء كانت في المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو تحليل المرفقات المرفقة (صور، مستندات PDF، تسجيلات صوتية، مقاطع فيديو).
+أنت مساعد عام شامل وإجاباتك مستقلة عن بيانات ومذكرات المستخدم الشخصية.` + getLanguageInstruction(reqLang);
+
+      let extraParts: any[] = [];
+      if (attachments && Array.isArray(attachments)) {
+        extraParts = attachments
+          .filter((att: any) => att && att.base64Data && att.mimeType)
+          .map((att: any) => ({
+            inlineData: {
+              mimeType: att.mimeType,
+              data: att.base64Data
+            }
+          }));
+      }
+
+      try {
+        const answer = await generateWithGeminiREST(query || 'يرجى تحليل المحتوى المرفق', generalSystemInstruction, false, keyToUse, extraParts);
+        return createSuccessResponse({ success: true, answer, source: 'gemini-general' });
+      } catch (err: any) {
+        return createSuccessResponse({
+          success: true,
+          answer: `أهلاً بك في المستشار الذكي العام! يسعدني الإجابة على استفسارك حول "${query || 'موضوعك'}" وتقديم التحليلات والمساعدة والمعرفة الشاملة.`,
+          source: 'general-fallback'
+        });
+      }
+    }
+
     const fallbackAnswer = getDynamicSmartAdvisorFallback(query, reportType, diaries, books, gratitudeCards, habits);
 
     try {

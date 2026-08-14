@@ -277,5 +277,12 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
-
-
+export interface MultimodalAttachment {
+  id: string;
+  name: string;
+  type: 'image' | 'pdf' | 'audio' | 'video' | 'file';
+  mimeType: string;
+  sizeBytes: number;
+  base64Data: string;
+  previewUrl?: string;
+}
