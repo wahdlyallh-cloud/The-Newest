@@ -570,12 +570,24 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const handleSend = async (textToSend: string) => {
     // Mode Switcher Branching
     if (activeAdvisorTab === 'general') {
-      if (!textToSend.trim() && generalMultimodalFiles.length === 0) return;
+      const isUploadingOrProcessing = generalMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
+      if (isUploadingOrProcessing) {
+        setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل إرسال الرسالة.');
+        return;
+      }
+
+      const readyFiles = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
+      if (!textToSend.trim() && readyFiles.length === 0) {
+        if (generalMultimodalFiles.some(f => f.status === 'failed')) {
+          setFileErrorToast('تعذر إرسال الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
+        }
+        return;
+      }
       if (loading) return;
 
       let sendText = textToSend;
-      if (generalMultimodalFiles.length > 0) {
-        sendText += `\n📎 المرفقات: ${generalMultimodalFiles.map(f => f.name).join(' ، ')}`;
+      if (readyFiles.length > 0) {
+        sendText += `\n📎 المرفقات: ${readyFiles.map(f => f.name).join(' ، ')}`;
       }
 
       const userMsg: Message = {
@@ -589,8 +601,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       setGeneralMessages(updatedMsgs);
       localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(updatedMsgs));
 
-      const filesToSend = [...generalMultimodalFiles];
-      console.log('[ATTACHMENT ROOT DEBUG] sending payload for GENERAL advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType })));
+      const filesToSend = [...readyFiles];
+      console.log('[ATTACHMENT ROOT DEBUG] sending payload for GENERAL advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType, fileUri: f.fileUri })));
       setInput('');
       setGeneralMultimodalFiles([]);
       setLoading(true);
@@ -644,14 +656,26 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     // Diary Pro Advisor Mode Logic
-    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && diaryMultimodalFiles.length === 0) return;
+    const isUploadingOrProcessing = diaryMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
+    if (isUploadingOrProcessing) {
+      setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل إرسال الرسالة.');
+      return;
+    }
+
+    const readyFiles = diaryMultimodalFiles.filter(f => !f.status || f.status === 'ready');
+    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && readyFiles.length === 0) {
+      if (diaryMultimodalFiles.some(f => f.status === 'failed')) {
+        setFileErrorToast('تعذر إرسال الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
+      }
+      return;
+    }
     if (loading) return;
 
     // Format prompt text with active chat attachments to pass transparently to AI model
     let textWithAttachments = textToSend;
     const attachmentsText: string[] = [];
-    if (diaryMultimodalFiles.length > 0) {
-      attachmentsText.push(`\n📎 الملفات المرفقة: ${diaryMultimodalFiles.map(f => f.name).join(' ، ')}`);
+    if (readyFiles.length > 0) {
+      attachmentsText.push(`\n📎 الملفات المرفقة: ${readyFiles.map(f => f.name).join(' ، ')}`);
     }
     if (chatAttachments.links.length > 0) {
       attachmentsText.push(`\n🔗 الروابط المرفقة بالشات: ${chatAttachments.links.join(' ، ')}`);
@@ -674,8 +698,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     };
 
     setMessages(prev => [...prev, userMsg]);
-    const filesToSend = [...diaryMultimodalFiles];
-    console.log('[ATTACHMENT ROOT DEBUG] sending payload for DIARY PRO advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType })));
+    const filesToSend = [...readyFiles];
+    console.log('[ATTACHMENT ROOT DEBUG] sending payload for DIARY PRO advisor:', filesToSend.map(f => ({ name: f.name, mimeType: f.mimeType, fileUri: f.fileUri })));
     setInput('');
     setDiaryMultimodalFiles([]);
     setChatAttachments({ links: [], videos: [], pdfs: [] });
