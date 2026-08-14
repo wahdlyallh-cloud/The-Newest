@@ -4,7 +4,7 @@ import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip,
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { getAthkarContextForAI, getFormattedAthkarPromptContext } from '../services/aiAthkarSync';
-import { processAttachmentUnified } from '../services/attachmentService';
+import { processAttachmentUnified, sniffMimeType, getAttachmentTypeCategory } from '../services/attachmentService';
 
 export interface AdvisorPermissions {
   diaries: boolean;
@@ -445,19 +445,17 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   ];
 
   const triggerFilePicker = () => {
-    console.log('[FILE DEBUG] triggerFilePicker called');
-    console.log('[FILE DEBUG] ref exists:', !!fileInputRef.current);
-    console.log('[FILE DEBUG] input:', fileInputRef.current);
-    console.log('[FILE DEBUG] input type:', fileInputRef.current?.type);
-    console.log('[FILE DEBUG] input connected:', fileInputRef.current?.isConnected);
-
+    const ts = new Date().toISOString();
+    console.log(`[ATTACHMENT TRACE] timestamp: ${ts} | stage: TRIGGER_FILE_PICKER_CALLED`);
     onFilePickerOpen?.();
 
     if (fileInputRef.current) {
-      console.log('[FILE DEBUG] calling input.click()');
+      // Reset input value BEFORE opening picker so re-selecting same file fires onChange cleanly,
+      // without detaching native file handle during upload!
+      fileInputRef.current.value = '';
       fileInputRef.current.click();
     } else {
-      console.error('[FILE DEBUG] fileInputRef.current is null!');
+      console.error('[ATTACHMENT TRACE] fileInputRef.current is null!');
     }
 
     setTimeout(() => {
@@ -475,76 +473,90 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowAttachmentMenu(false);
     const files = e.target.files;
-    console.log('[PRO FILE DEBUG] change fired. Active tab:', activeAdvisorTab);
-    console.log('[PRO FILE DEBUG] files count:', files ? files.length : 0);
+    const currentTab = activeAdvisorTab; // Snapshot active tab to ensure state stability across async ticks
+    const ts = () => new Date().toISOString();
 
-    if (!files || files.length === 0) {
-      console.log('[PRO FILE DEBUG] No files selected or picker cancelled');
-      onFilePickerClose?.();
-      return;
-    }
+    try {
+      console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | stage: 1_FILE_SELECTED | activeTab: ${currentTab} | count: ${files ? files.length : 0}`);
 
-    setFileErrorToast(null);
-    const selectedFiles = Array.from(files);
-
-    // Immediately reset input value so re-selecting the exact same file fires onChange cleanly
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-
-    console.log(`[ATTACHMENT DEBUG] batch file processing started -> advisor: ${activeAdvisorTab}, count: ${selectedFiles.length}`);
-
-    // Step 1: Create placeholder attachments with status 'uploading' so they appear in the UI immediately
-    const pendingAtts: MultimodalAttachment[] = selectedFiles.map(file => {
-      const mimeType = sniffMimeType(file);
-      const category = getAttachmentTypeCategory(mimeType);
-      return {
-        id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-        name: file.name,
-        type: category,
-        mimeType,
-        sizeBytes: file.size,
-        status: 'uploading'
-      };
-    });
-
-    if (activeAdvisorTab === 'general') {
-      setGeneralMultimodalFiles(prev => [...prev, ...pendingAtts]);
-    } else {
-      setDiaryMultimodalFiles(prev => [...prev, ...pendingAtts]);
-    }
-
-    // Step 2: Upload files progressively and update their status in real-time
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
-      const pendingId = pendingAtts[i].id;
-
-      try {
-        const att = await processAttachmentUnified(file, userApiKey, (status) => {
-          const updateFn = (prev: MultimodalAttachment[]) =>
-            prev.map(item => item.id === pendingId ? { ...item, status } : item);
-          if (activeAdvisorTab === 'general') setGeneralMultimodalFiles(updateFn);
-          else setDiaryMultimodalFiles(updateFn);
-        });
-
-        // Mark as ready
-        const updateFn = (prev: MultimodalAttachment[]) =>
-          prev.map(item => item.id === pendingId ? { ...att, id: pendingId, status: 'ready' } : item);
-        if (activeAdvisorTab === 'general') setGeneralMultimodalFiles(updateFn);
-        else setDiaryMultimodalFiles(updateFn);
-
-      } catch (err: any) {
-        console.error(`[ATTACHMENT DEBUG] upload error for ${file.name}:`, err);
-        const errMsg = err?.message || String(err);
-        setFileErrorToast(`فشل رفع/تجهيز الملف "${file.name}": ${errMsg}`);
-
-        const updateFn = (prev: MultimodalAttachment[]) =>
-          prev.map(item => item.id === pendingId ? { ...item, status: 'failed', errorMessage: errMsg } : item);
-        if (activeAdvisorTab === 'general') setGeneralMultimodalFiles(updateFn);
-        else setDiaryMultimodalFiles(updateFn);
+      if (!files || files.length === 0) {
+        console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | stage: FILE_SELECTION_CANCELLED`);
+        onFilePickerClose?.();
+        return;
       }
+
+      setFileErrorToast(null);
+
+      // Read files safely without resetting input.value here to prevent mobile browsers from detaching file handles!
+      const selectedFiles = Array.from(files);
+
+      selectedFiles.forEach((file) => {
+        const mimeType = sniffMimeType(file);
+        const lastMod = file.lastModified || Date.now();
+        console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | actualSizeBytes: ${file.size} | mimeType: ${mimeType} | lastModified: ${lastMod} | stage: 2_FILE_METADATA`);
+      });
+
+      // Step 1: Create placeholder attachments with status 'uploading' so they appear in the UI IMMEDIATELY
+      const pendingAtts: MultimodalAttachment[] = selectedFiles.map(file => {
+        const mimeType = sniffMimeType(file);
+        const category = getAttachmentTypeCategory(mimeType);
+        const attId = 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | actualSizeBytes: ${file.size} | mimeType: ${mimeType} | id: ${attId} | stage: 3_ATTACHMENT_STATE_CREATED`);
+        return {
+          id: attId,
+          name: file.name,
+          type: category,
+          mimeType,
+          sizeBytes: file.size,
+          status: 'uploading'
+        };
+      });
+
+      if (currentTab === 'general') {
+        setGeneralMultimodalFiles(prev => [...prev, ...pendingAtts]);
+      } else {
+        setDiaryMultimodalFiles(prev => [...prev, ...pendingAtts]);
+      }
+      console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | stage: 13_ATTACHMENT_RENDERED -> ${pendingAtts.length} items rendered in UI with status 'uploading'`);
+
+      // Step 2: Upload files progressively and update their status in real-time
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const pendingId = pendingAtts[i].id;
+
+        try {
+          const att = await processAttachmentUnified(file, userApiKey, (status) => {
+            console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | id: ${pendingId} | stage: 12_ATTACHMENT_STATE_UPDATED -> ${status}`);
+            const updateFn = (prev: MultimodalAttachment[]) =>
+              prev.map(item => item.id === pendingId ? { ...item, status } : item);
+            if (currentTab === 'general') setGeneralMultimodalFiles(updateFn);
+            else setDiaryMultimodalFiles(updateFn);
+          });
+
+          // Mark as ready
+          console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | id: ${pendingId} | stage: 12_ATTACHMENT_STATE_UPDATED -> ready`);
+          const updateFn = (prev: MultimodalAttachment[]) =>
+            prev.map(item => item.id === pendingId ? { ...att, id: pendingId, status: 'ready' } : item);
+          if (currentTab === 'general') setGeneralMultimodalFiles(updateFn);
+          else setDiaryMultimodalFiles(updateFn);
+
+        } catch (err: any) {
+          console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | id: ${pendingId} | stage: UPLOAD_ERROR ->`, err);
+          const errMsg = err?.message || String(err);
+          setFileErrorToast(`فشل رفع/تجهيز الملف "${file.name}": ${errMsg}`);
+
+          const updateFn = (prev: MultimodalAttachment[]) =>
+            prev.map(item => item.id === pendingId ? { ...item, status: 'failed', errorMessage: errMsg } : item);
+          if (currentTab === 'general') setGeneralMultimodalFiles(updateFn);
+          else setDiaryMultimodalFiles(updateFn);
+        }
+      }
+    } catch (outerErr: any) {
+      console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | stage: TOP_LEVEL_HANDLE_FILE_UPLOAD_ERROR ->`, outerErr);
+      setFileErrorToast(`حدث خطأ أثناء قراءة الملف: ${outerErr?.message || String(outerErr)}`);
+    } finally {
+      onFilePickerClose?.();
     }
-    onFilePickerClose?.();
   };
 
   const removeMultimodalFile = (id: string) => {
@@ -1198,14 +1210,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('[SmartAdvisor Mobile] Image/Doc option clicked - invoking triggerFilePicker synchronously');
+                console.log('[SmartAdvisor Mobile] Image/Video/Doc option clicked - invoking triggerFilePicker synchronously');
                 triggerFilePicker();
                 setShowAttachmentMenu(false);
               }}
               className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
-              <span className="text-base">📷</span>
-              <span className="font-bold">{isAr ? 'صورة / مستند / صوت' : 'Image / Document / Audio'}</span>
+              <span className="text-base">📁</span>
+              <span className="font-bold">{isAr ? 'صورة / فيديو / مستند / صوت' : 'Image / Video / Document / Audio'}</span>
             </button>
 
             <button
@@ -1262,7 +1274,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               console.log('[SmartAdvisor Mobile] File input onChange fired:', e.target.files?.length);
               handleFileUpload(e);
             }}
-            accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/csv,audio/*,video/*"
+            accept="image/*,video/*,audio/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/csv,.mp4,.webm,.mov,.avi,.mkv,.mp3,.wav,.m4a,.aac,.flac,.ogg,.pdf,.doc,.docx,.txt,.csv,.json"
             multiple
             className="hidden"
           />

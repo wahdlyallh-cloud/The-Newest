@@ -98,12 +98,10 @@ export async function uploadToGeminiFilesAPI(
 
   onStatusChange?.('uploading');
 
-  console.log(`[ATTACHMENT DEBUG]
-filename: ${file.name}
-actualSizeBytes: ${file.size}
-mimeType: ${mimeType}
-selectedStrategy: GEMINI FILES API RESUMABLE
-uploadStarted: true`);
+  const ts = () => new Date().toISOString();
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | actualSizeBytes: ${file.size} | mimeType: ${mimeType} | stage: 4_UPLOAD_FUNCTION_ENTERED`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | actualSizeBytes: ${file.size} | mimeType: ${mimeType} | stage: 5_STRATEGY_SELECTED -> GEMINI_FILES_API_RESUMABLE`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | actualSizeBytes: ${file.size} | mimeType: ${mimeType} | stage: 6_UPLOAD_STARTED`);
 
   // Step 1: Initiate Resumable Upload Session (sends tiny JSON metadata)
   const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${keyToUse.trim()}`;
@@ -122,10 +120,11 @@ uploadStarted: true`);
     });
   } catch (netErr: any) {
     onStatusChange?.('failed');
+    console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 6_UPLOAD_STARTED_NETWORK_ERROR -> ${netErr?.message || String(netErr)}`);
     throw new Error(`تعذر الاتصال بـ Google Gemini Files API لرفع الملف: ${netErr?.message || String(netErr)}`);
   }
 
-  console.log(`[ATTACHMENT DEBUG] uploadStartHTTPStatus: ${initRes.status}`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 7_UPLOAD_RESPONSE -> HTTP ${initRes.status}`);
 
   if (!initRes.ok) {
     onStatusChange?.('failed');
@@ -138,8 +137,6 @@ uploadStarted: true`);
     onStatusChange?.('failed');
     throw new Error('لم ترجع خوادم Google رابط جلسة الرفع X-Goog-Upload-URL.');
   }
-
-  console.log(`[ATTACHMENT DEBUG] resumable session created -> streaming binary bytes directly from browser to Google...`);
 
   // Step 2: Stream raw file bytes directly from browser to Google's Upload Session URL
   let uploadRes: Response;
@@ -155,10 +152,11 @@ uploadStarted: true`);
     });
   } catch (putErr: any) {
     onStatusChange?.('failed');
+    console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: BINARY_PUT_FAILED -> ${putErr?.message || String(putErr)}`);
     throw new Error(`فشل نقل بيانات البايتات المباشر لـ Gemini Files API: ${putErr?.message || String(putErr)}`);
   }
 
-  console.log(`[ATTACHMENT DEBUG] binaryUploadHTTPStatus: ${uploadRes.status}`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: BINARY_PUT_SUCCESS -> HTTP ${uploadRes.status}`);
 
   if (!uploadRes.ok) {
     onStatusChange?.('failed');
@@ -175,18 +173,18 @@ uploadStarted: true`);
     throw new Error('لم يرجع خادم Gemini رابط الملف النهائي (fileUri).');
   }
 
-  console.log(`[ATTACHMENT DEBUG]
-fileUriPresent: true
-fileState: ${initialState}`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 8_FILE_URI_CREATED`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 9_PROCESSING_STATE -> ${initialState}`);
 
   // Video and Audio files require polling when Gemini API returns state: "PROCESSING"
   if (initialState === 'PROCESSING' || mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
     onStatusChange?.('processing');
-    console.log(`[ATTACHMENT DEBUG] video/audio processing in state ${initialState}. Polling Gemini file readiness...`);
+    console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 10_POLL_STARTED`);
     await pollGeminiFileState(fileUri, keyToUse);
   }
 
   onStatusChange?.('ready');
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 11_FILE_ACTIVE`);
   return { fileUri, mimeType };
 }
 
@@ -209,20 +207,21 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
     keyToUse = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
   }
 
+  const ts = () => new Date().toISOString();
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    console.log(`[ATTACHMENT DEBUG] pollAttempt: ${attempt}/${maxAttempts} for ${fileName}`);
+    console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | file: ${fileName} | pollAttempt: ${attempt}/${maxAttempts}`);
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${keyToUse.trim()}`, {
         method: 'GET'
       });
-      console.log(`[ATTACHMENT DEBUG] pollHTTPStatus: ${res.status}`);
+      console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | file: ${fileName} | pollHTTPStatus: ${res.status}`);
 
       if (res.ok) {
         const data = await res.json();
         const state = data?.state || data?.file?.state || 'ACTIVE';
-        console.log(`[ATTACHMENT DEBUG] finalFileState: ${state}`);
+        console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | file: ${fileName} | fileState: ${state}`);
         if (state === 'ACTIVE') {
-          console.log(`[ATTACHMENT DEBUG] video file state is now ACTIVE! Ready for generation.`);
+          console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | file: ${fileName} | stage: 11_FILE_ACTIVE -> ACTIVE`);
           return true;
         }
         if (state === 'FAILED') {
@@ -231,13 +230,13 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
       }
     } catch (e: any) {
       if (e?.message?.includes('فشلت خوادم')) throw e;
-      console.warn(`[ATTACHMENT DEBUG] poll attempt ${attempt} warning:`, e);
+      console.warn(`[ATTACHMENT TRACE] poll attempt ${attempt} warning:`, e);
     }
     // Wait 2 seconds between poll attempts
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  console.log(`[ATTACHMENT DEBUG] max polling attempts reached for ${fileName}, proceeding...`);
+  console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | file: ${fileName} | max polling attempts reached, proceeding...`);
   return true;
 }
 
