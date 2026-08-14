@@ -766,33 +766,33 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const activeMessages = activeAdvisorTab === 'diary' ? messages : generalMessages;
 
   return (
-    <div className="bg-white border border-[#E2DCC8] rounded-3xl overflow-hidden shadow-sm h-[550px] flex flex-col font-sans" dir={langInfo.dir}>
+    <div className="bg-white border border-[#E2DCC8] rounded-3xl overflow-hidden shadow-sm h-[580px] sm:h-[620px] flex flex-col font-sans relative" dir={langInfo.dir}>
       
       {/* Top Dual-Tab Switcher */}
-      <div className="bg-[#FAF8F5] border-b border-[#E2DCC8] p-2 flex items-center justify-between gap-2 shrink-0">
+      <div className="bg-[#FAF8F5] border-b border-[#E2DCC8] p-1.5 sm:p-2 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0 z-10">
         <button
           type="button"
           onClick={() => setActiveAdvisorTab('diary')}
-          className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeAdvisorTab === 'diary'
               ? 'bg-[#3F5449] text-white shadow-xs'
               : 'bg-white text-[#5A4F41] border border-[#E2DCC8] hover:bg-[#F0EDE4]'
           }`}
         >
-          <Brain className="w-4 h-4" />
-          <span>{isAr ? 'المستشار لليوميات Pro' : 'Diary Pro Advisor'}</span>
+          <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <span className="truncate">{isAr ? 'المستشار لليوميات Pro' : 'Diary Pro Advisor'}</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveAdvisorTab('general')}
-          className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeAdvisorTab === 'general'
               ? 'bg-[#2B3E50] text-white shadow-xs'
               : 'bg-white text-[#5A4F41] border border-[#E2DCC8] hover:bg-[#F0EDE4]'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-300" />
-          <span>{isAr ? 'المستشار الذكي العام 🌐' : 'General AI Advisor 🌐'}</span>
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
+          <span className="truncate">{isAr ? 'المستشار الذكي العام 🌐' : 'General AI Advisor 🌐'}</span>
         </button>
       </div>
 
@@ -853,17 +853,17 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* Top Bar Info (General AI Mode Banner) */}
       {activeAdvisorTab === 'general' && (
-        <div className="p-3 bg-[#2B3E50] text-white border-b border-[#E2DCC8] flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center space-x-2.5 space-x-reverse">
-            <div className="bg-amber-400/20 p-2 rounded-xl text-amber-300">
-              <Sparkles className="w-5 h-5" />
+        <div className="p-2.5 sm:p-3 bg-[#2B3E50] text-white border-b border-[#E2DCC8] flex items-center justify-between gap-2 shrink-0 z-10">
+          <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
+            <div className="bg-amber-400/20 p-1.5 sm:p-2 rounded-xl text-amber-300 shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h3 className="font-bold text-white text-sm">{isAr ? 'المستشار الذكي العام (General AI)' : 'General AI Advisor'}</h3>
-              <p className="text-[10px] text-gray-200">{isAr ? 'إجابات عامة، برمجة، علوم، تحليل الصور والمستندات والصوتيات' : 'General answers, coding, science & multimodal attachments'}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-white text-xs sm:text-sm truncate">{isAr ? 'المستشار الذكي العام (General AI)' : 'General AI Advisor'}</h3>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-200 truncate">{isAr ? 'إجابات عامة، علوم، تحليل الصور والمستندات والصوتيات' : 'General answers, science & multimodal attachments'}</p>
             </div>
           </div>
-          <span className="text-[10px] bg-white/10 px-2.5 py-1 rounded-full border border-white/20 font-bold">
+          <span className="text-[9px] sm:text-[10px] bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-white/20 font-bold shrink-0 whitespace-nowrap">
             {isAr ? 'مستقل عن اليوميات' : 'Independent Context'}
           </span>
         </div>
@@ -1126,7 +1126,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           </div>
         )}
 
-        <div className="flex items-center space-x-2 space-x-reverse">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Universal Attachment Button (+) in General AI Mode */}
           {activeAdvisorTab === 'general' && (
             <>
@@ -1141,32 +1141,32 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <button
                 type="button"
                 onClick={triggerFilePicker}
-                className="p-2.5 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center"
+                className="p-2 sm:p-2.5 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center"
                 title={isAr ? "إرفاق صورة، PDF، صوت، أو فيديو" : "Attach Image, PDF, Audio, or Video"}
               >
-                <Plus className="w-4.5 h-4.5 text-amber-300" />
+                <Plus className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-300" />
               </button>
             </>
           )}
 
           <button
             onClick={handleClearHistory}
-            className="p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0"
+            className="p-2 sm:p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0"
             title={isAr ? "مسح سجل المحادثة" : "Clear Chat History"}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           <button
             onClick={handleDictation}
-            className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer shrink-0 ${
+            className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 cursor-pointer shrink-0 ${
               isRecording
                 ? 'bg-[#D4A373] text-white animate-pulse ring-4 ring-[#D4A373]/20'
                 : 'bg-[#F0EDE4] text-[#3A3A3A] hover:bg-[#E2DCC8]'
             }`}
             title={isRecording ? (isAr ? 'اضغط لإنهاء الإملاء' : 'Click to stop dictation') : (isAr ? 'إملاء صوتي ذكي للرسالة' : 'Smart Voice Dictation')}
           >
-            <Mic className="w-4.5 h-4.5" />
+            <Mic className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
           </button>
 
           <input
@@ -1176,22 +1176,22 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
             placeholder={
               isRecording
-                ? (isAr ? 'جاري الاستماع لصوتك...' : 'Listening to your voice...')
+                ? (isAr ? 'جاري الاستماع لصوتك...' : 'Listening...')
                 : activeAdvisorTab === 'general'
-                ? (isAr ? 'اسأل المستشار العام أو أرفق صورة/PDF/صوت/فيديو...' : 'Ask General AI or attach image/PDF/audio/video...')
-                : (isAr ? 'اسأل المستشار عن يومياتك وحالتك النفسية...' : 'Ask advisor about your diary and mental state...')
+                ? (isAr ? 'اسأل المستشار العام أو أرفق ملفاً...' : 'Ask General AI or attach files...')
+                : (isAr ? 'اسأل المستشار عن يومياتك...' : 'Ask advisor about your diary...')
             }
             disabled={isRecording}
-            className="flex-grow bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8]/60 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] rounded-xl px-3.5 py-2.5 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none transition-colors"
+            className="min-w-0 flex-1 bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8]/60 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none transition-colors truncate"
           />
 
           <button
             onClick={() => handleSend(input)}
-            className={`p-2.5 text-white rounded-xl shadow-xs transition-all cursor-pointer shrink-0 ${
+            className={`p-2 sm:p-2.5 text-white rounded-xl shadow-xs transition-all cursor-pointer shrink-0 ${
               activeAdvisorTab === 'general' ? 'bg-[#2B3E50] hover:bg-[#1E2B38]' : 'bg-[#8B9D83] hover:bg-[#5A5A40]'
             }`}
           >
-            <Send className="w-4 h-4 rotate-180" />
+            <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-180" />
           </button>
         </div>
       </div>
