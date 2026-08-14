@@ -163,9 +163,56 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const toggleDiariesConsent = () => {
     const nextVal = !advisorPermissions.diaries;
     setHasConsent(nextVal);
+    setAdvisorPermissions(prev => {
+      const updated = { ...prev, diaries: nextVal };
+      try {
+        localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(updated));
+        localStorage.setItem('yawmiyati_chat_has_consent', String(nextVal));
+      } catch (e) { console.warn(e); }
+      return updated;
+    });
+  };
+
+  const toggleAllPermissions = () => {
+    const nextVal = !isAllEnabled;
+    const updated: AdvisorPermissions = {
+      diaries: nextVal,
+      moodLogs: nextVal,
+      habits: nextVal,
+      tasks: nextVal,
+      cbtExercises: nextVal,
+      therapyReports: nextVal,
+      voiceNotes: nextVal,
+      books: nextVal,
+      gratitude: nextVal,
+      lifeMap: nextVal,
+      prosCons: nextVal,
+    };
+    setAdvisorPermissions(updated);
+    setHasConsent(nextVal);
+    try {
+      localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(updated));
+      localStorage.setItem('yawmiyati_chat_has_consent', String(nextVal));
+    } catch (e) { console.warn(e); }
+  };
+
+  const toggleSinglePermission = (key: keyof AdvisorPermissions) => {
+    setAdvisorPermissions(prev => {
+      const updated = { ...prev, [key]: !prev[key] };
+      if (key === 'diaries') {
+        setHasConsent(updated.diaries);
+      }
+      try {
+        localStorage.setItem('yawmiyati_advisor_permissions', JSON.stringify(updated));
+      } catch (e) { console.warn(e); }
+      return updated;
+    });
+  };
+
   const [activeAnalysisTopic, setActiveAnalysisTopic] = useState<'all' | 'mood' | 'habits' | 'cbt' | 'gratitude'>('all');
   const [selectedVoice, setSelectedVoice] = useState<'female_calm' | 'male_wise' | 'female_energetic'>('female_calm');
   const [isRecording, setIsRecording] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [attachments, setAttachments] = useState<MultimodalAttachment[]>([]);
   const [isProcessingAttachment, setIsProcessingAttachment] = useState(false);
   const [tempPdfName, setTempPdfName] = useState<string>('');
@@ -173,7 +220,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const generalMessagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const langInfo = getLanguageInfo(appLanguage);
 
@@ -245,28 +291,45 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       return;
     }
 
-    };
+    setVoiceStatus('listening');
+    setVoiceTranscript(appLanguage === 'ar' ? 'جاري الاستماع... تفضل بالتحدث معي...' : 'Listening... Speak freely...');
 
-    // Auto-submit when user finishes talking
-    rec.onspeechend = () => {
-      try { rec.stop(); } catch (e) {}
-      setTimeout(() => {
-        if (voiceStatusRef.current === 'listening' && voiceSessionTrackerRef.current.isSessionActive(sessionToken)) {
-          const finalQuery = voiceSessionTrackerRef.current.finalize();
-          if (finalQuery && finalQuery.trim().length > 0) {
-            setVoiceTranscript(finalQuery);
-            handleVoiceChatSubmit(finalQuery);
+    manager.startSession({
+      lang: langInfo.speechLang,
+      continuous: false,
+      callbacks: {
+        onTranscriptChange: (state) => {
+          if (voiceStatusRef.current === 'analyzing' || voiceStatusRef.current === 'speaking') return;
+          if (state.displayTranscript) {
+            setVoiceTranscript(state.displayTranscript);
           }
+        },
+        onError: (err) => {
+          console.error('Voice chat speech recognition error:', err);
+          if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
+            setVoiceStatus('idle');
+            setVoiceTranscript(appLanguage === 'ar'
+              ? '⚠️ تم رفض إذن الميكروفون.'
+              : '⚠️ Microphone permission denied.');
+            return;
+          }
+          if (err.error !== 'no-speech' && voiceStatusRef.current === 'listening') {
+            setVoiceStatus('idle');
+          }
+        },
+        onSpeechEnd: () => {
+          setTimeout(() => {
+            if (voiceStatusRef.current === 'listening') {
+              const finalQuery = manager.finalize();
+              if (finalQuery && finalQuery.trim().length > 0) {
+                setVoiceTranscript(finalQuery);
+                handleVoiceChatSubmit(finalQuery);
+              }
+            }
+          }, 350);
         }
-      }, 350);
-    };
-
-    voiceRecognitionRef.current = rec;
-    try {
-      rec.start();
-    } catch (e) {
-      console.error('Speech recognition start error:', e);
-    }
+      }
+    });
   };
 
   const handleVoiceChatSubmit = async (queryText: string) => {
@@ -275,9 +338,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     stopVoiceChatSpeech();
 
     // Stop speech recognition while analyzing to prevent echo
-    if (voiceRecognitionRef.current) {
-      try { voiceRecognitionRef.current.stop(); } catch (e) {}
-    }
+    SpeechRecognitionManager.getInstance().destroyActiveRecognition();
 
     const isGeneralMode = activeAdvisorTab === 'general';
 
