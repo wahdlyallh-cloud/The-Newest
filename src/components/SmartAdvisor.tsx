@@ -347,6 +347,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     setVoiceStatus('analyzing');
     const isGeneralMode = activeAdvisorTab === 'general';
 
+    // Format recent conversation context (last 6 messages) to preserve voice conversation memory for follow-up questions
+    const activeHistory = (isGeneralMode ? generalMessages : messages).slice(-6);
+    let contextualQuery = queryText;
+    if (activeHistory.length > 0) {
+      const historySummary = activeHistory.map(m => `${m.sender === 'user' ? 'المستخدم' : 'المستشار'}: ${m.text}`).join('\n');
+      contextualQuery = `سياق المحادثة السابقة بينك وبين المستخدم:\n${historySummary}\n\nسؤال المستخدم الحالي:\n${queryText}`;
+    }
+
     try {
       let bodyData: any = {};
       if (isGeneralMode) {
@@ -354,7 +362,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         const readyAttachments = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
         bodyData = {
           mode: 'general',
-          query: queryText,
+          query: contextualQuery,
           attachments: readyAttachments,
           diaries: [],
           habits: [],
@@ -375,7 +383,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           habits: habitsToPass,
           gratitudeCards: gratitudeCardsToPass,
           books: booksToPass,
-          query: queryText,
+          query: contextualQuery,
           attachments: readyAttachments,
           appLanguage,
           athkarContext: getAthkarContextForAI(),
