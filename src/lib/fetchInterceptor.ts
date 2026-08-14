@@ -446,9 +446,12 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       }
 
       const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${activeKey.trim()}`;
+      const reqHeaders = new Headers(init?.headers);
+      reqHeaders.set('X-Goog-Upload-Protocol', 'multipart');
+
       const uploadRes = await originalFetch(uploadUrl, {
         method: 'POST',
-        headers: init?.headers,
+        headers: reqHeaders,
         body: init?.body
       });
 

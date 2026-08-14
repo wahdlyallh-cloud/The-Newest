@@ -831,6 +831,36 @@ ${formattedHabits}
   });
 });
 
+// API Endpoint 1.5: Gemini Files API Direct Upload Proxy
+app.post("/api/gemini/upload-file", async (req, res) => {
+  try {
+    const customKey = (req.headers["x-gemini-key"] as string) || process.env.GEMINI_API_KEY;
+    if (!customKey || !customKey.trim()) {
+      return res.status(400).json({ success: false, error: "لا يوجد مفتاح Gemini API صالح لاستخدامه في الرفع.", requiresKey: true });
+    }
+
+    const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${customKey.trim()}`;
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'X-Goog-Upload-Protocol': 'multipart',
+        'Content-Type': req.headers['content-type'] || 'multipart/form-data'
+      },
+      body: req as any
+    });
+
+    if (!uploadRes.ok) {
+      const errText = await uploadRes.text().catch(() => '');
+      return res.status(uploadRes.status).json({ success: false, error: `فشل رفع الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errText}` });
+    }
+
+    const uploadData = await uploadRes.json();
+    return res.json({ success: true, file: uploadData.file });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: `خطأ أثناء رفع الملف: ${err?.message || String(err)}` });
+  }
+});
+
 // API Endpoint 2: Smart Advisor (🧠 المستشار الذكي العام والعبقري الشامل)
 app.post("/api/gemini/smart-advisor", async (req, res) => {
   const { diaries, query, reportType, startDate, endDate, gratitudeCards, habits, books, athkarContext, athkarPromptText, attachments } = req.body;

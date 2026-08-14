@@ -1219,7 +1219,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               console.log('[SmartAdvisor Mobile] File input onChange fired:', e.target.files?.length);
               handleFileUpload(e);
             }}
-            accept="image/*,application/pdf,audio/*,video/*"
+            accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/csv,audio/*,video/*"
             multiple
             className="hidden"
           />

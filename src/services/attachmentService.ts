@@ -2,22 +2,12 @@ import { getActiveApiKeyFromSettings } from '../lib/apiKeyManager';
 import { MultimodalAttachment } from '../types';
 
 /**
- * Sniff correct MIME type from file extension if Android / browser returns empty or generic octet-stream
+ * Sniff correct MIME type using extension-first lookup for maximum Gemini API compatibility
  */
 export function sniffMimeType(file: File): string {
-  let detectedType = file.type;
-
-  // Normalize non-standard browser MIME types
-  if (detectedType === 'audio/mp3') {
-    detectedType = 'audio/mpeg';
-  }
-
-  if (detectedType && detectedType !== '' && detectedType !== 'application/octet-stream') {
-    return detectedType;
-  }
-
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
-  const mimeMap: Record<string, string> = {
+
+  const extMap: Record<string, string> = {
     // Images
     jpg: 'image/jpeg',
     jpeg: 'image/jpeg',
@@ -25,6 +15,8 @@ export function sniffMimeType(file: File): string {
     webp: 'image/webp',
     gif: 'image/gif',
     svg: 'image/svg+xml',
+    heic: 'image/heic',
+    heif: 'image/heif',
 
     // Documents
     pdf: 'application/pdf',
@@ -32,26 +24,44 @@ export function sniffMimeType(file: File): string {
     csv: 'text/csv',
     doc: 'application/msword',
     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    json: 'application/json',
+    html: 'text/html',
 
     // Audio
     mp3: 'audio/mpeg',
     mpga: 'audio/mpeg',
-    wav: 'audio/wav',
     m4a: 'audio/mp4',
-    ogg: 'audio/ogg',
+    wav: 'audio/wav',
     aac: 'audio/aac',
+    ogg: 'audio/ogg',
+    oga: 'audio/ogg',
     flac: 'audio/flac',
 
     // Video
     mp4: 'video/mp4',
-    mkv: 'video/x-matroska',
+    m4v: 'video/mp4',
+    webm: 'video/webm',
     mov: 'video/quicktime',
-    avi: 'video/x-msvideo',
+    qt: 'video/quicktime',
     '3gp': 'video/3gpp',
-    webm: 'video/webm'
+    mkv: 'video/x-matroska',
+    avi: 'video/x-msvideo'
   };
 
-  return mimeMap[ext] || 'application/octet-stream';
+  if (ext && extMap[ext]) {
+    return extMap[ext];
+  }
+
+  let detectedType = file.type;
+  if (detectedType === 'audio/mp3' || detectedType === 'audio/x-mp3') return 'audio/mpeg';
+  if (detectedType === 'audio/x-m4a') return 'audio/mp4';
+  if (detectedType === 'video/x-m4v') return 'video/mp4';
+
+  if (detectedType && detectedType !== '' && detectedType !== 'application/octet-stream') {
+    return detectedType;
+  }
+
+  return 'application/octet-stream';
 }
 
 /**
@@ -82,7 +92,7 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    throw new Error(`فشل رفع الملف (HTTP ${res.status}): ${errText}`);
+    throw new Error(`فشل رفع الملف لـ Gemini (HTTP ${res.status}): ${errText}`);
   }
 
   const data = await res.json();
@@ -95,17 +105,16 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
 }
 
 /**
- * Unified Attachment Processor:
- * - If file <= 2MB: converts to clean Base64 inlineData
- * - If file > 2MB: uploads to Gemini Files API and returns fileUri
+ * Production-Grade Unified Attachment Processor:
+ * - If file <= 8MB: converts to clean Base64 inlineData (fastest, no extra storage roundtrip)
+ * - If file > 8MB: uploads to Gemini Files API and returns fileUri (supports up to 2GB)
  */
 export async function processAttachmentUnified(file: File, apiKey?: string): Promise<MultimodalAttachment> {
   const mimeType = sniffMimeType(file);
   const category = getAttachmentTypeCategory(mimeType);
-  const INLINE_SIZE_THRESHOLD = 2 * 1024 * 1024; // 2MB
+  const INLINE_SIZE_THRESHOLD = 8 * 1024 * 1024; // 8MB
 
   if (file.size <= INLINE_SIZE_THRESHOLD) {
-    // Convert to inline Base64
     const base64Data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -128,7 +137,7 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
     };
   }
 
-  // Upload to Gemini Files API for large files or videos
+  // Large files (> 8MB) are uploaded to Gemini Files API
   const { fileUri } = await uploadToGeminiFilesAPI(file, apiKey);
 
   return {
