@@ -5,7 +5,7 @@ import {
   SpeechRecognitionManager,
   reconcileWordOverlap,
   stitchFinalSegment
-} from '../lib/speechRecognition';
+} from '../src/lib/speechRecognition';
 
 function createMockEvent(results: Array<{ transcript: string; isFinal: boolean }>) {
   const resultList = results.map(r => {
@@ -20,7 +20,7 @@ function createMockEvent(results: Array<{ transcript: string; isFinal: boolean }
   };
 }
 
-function runComprehensiveTests() {
+export function runComprehensiveTests() {
   console.log('=== Running Speech Recognition Core Tests ===\n');
   let passed = 0;
   let failed = 0;
@@ -160,5 +160,3 @@ function runComprehensiveTests() {
 
   return failed === 0;
 }
-
-export { runComprehensiveTests };
