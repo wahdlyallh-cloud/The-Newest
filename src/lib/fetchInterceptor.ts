@@ -151,10 +151,10 @@ const customFetch = async function (input: RequestInfo | URL, init?: RequestInit
     const response = await originalFetch(input, init);
     const contentType = response.headers.get('content-type');
     
-    // If we are on Vercel, a missing route might return a 404 with HTML contents,
-    // or just a standard 404/500 code. Let's redirect those to our client fallback.
-    if (response.status === 404 || (contentType && contentType.includes('text/html'))) {
-      throw new Error('Backend endpoint not found (404), falling back to client-side handler');
+    // If we are on Vercel (static SPA hosting), a missing/unsupported backend route might return 404 or 405 with HTML/text contents.
+    // Let's redirect all 404/405/non-OK responses to our client-side AI fallback handler.
+    if (response.status === 404 || response.status === 405 || !response.ok || (contentType && contentType.includes('text/html'))) {
+      throw new Error(`Backend endpoint not reachable (${response.status}), falling back to client-side handler`);
     }
     
     return response;
