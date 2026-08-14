@@ -492,37 +492,57 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       fileInputRef.current.value = '';
     }
 
-    console.log(`[ATTACHMENT TEST] batch file processing started -> advisor: ${activeAdvisorTab}, count: ${selectedFiles.length}`);
+    console.log(`[ATTACHMENT DEBUG] batch file processing started -> advisor: ${activeAdvisorTab}, count: ${selectedFiles.length}`);
 
-    const results = await Promise.allSettled(
-      selectedFiles.map(file => processAttachmentUnified(file, userApiKey))
-    );
-
-    const successfulAtts: MultimodalAttachment[] = [];
-    const failedNames: string[] = [];
-
-    results.forEach((res, idx) => {
-      if (res.status === 'fulfilled') {
-        successfulAtts.push(res.value);
-        console.log(`[ATTACHMENT TEST] upload success for ${selectedFiles[idx].name} ->`, res.value.fileUri ? `fileUri: ${res.value.fileUri}` : `inlineData (${res.value.base64Data?.length} chars)`);
-      } else {
-        failedNames.push(selectedFiles[idx].name);
-        console.error(`[ATTACHMENT TEST] upload failed for ${selectedFiles[idx].name}:`, res.reason);
-      }
+    // Step 1: Create placeholder attachments with status 'uploading' so they appear in the UI immediately
+    const pendingAtts: MultimodalAttachment[] = selectedFiles.map(file => {
+      const mimeType = sniffMimeType(file);
+      const category = getAttachmentTypeCategory(mimeType);
+      return {
+        id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        name: file.name,
+        type: category,
+        mimeType,
+        sizeBytes: file.size,
+        status: 'uploading'
+      };
     });
 
-    if (successfulAtts.length > 0) {
-      if (activeAdvisorTab === 'general') {
-        setGeneralMultimodalFiles(prev => [...prev, ...successfulAtts]);
-        console.log(`[ATTACHMENT TEST] stored ${successfulAtts.length} files in generalMultimodalFiles`);
-      } else {
-        setDiaryMultimodalFiles(prev => [...prev, ...successfulAtts]);
-        console.log(`[ATTACHMENT TEST] stored ${successfulAtts.length} files in diaryMultimodalFiles`);
-      }
+    if (activeAdvisorTab === 'general') {
+      setGeneralMultimodalFiles(prev => [...prev, ...pendingAtts]);
+    } else {
+      setDiaryMultimodalFiles(prev => [...prev, ...pendingAtts]);
     }
 
-    if (failedNames.length > 0) {
-      setFileErrorToast(`تعذر معالجة أو رفع بعض الملفات: ${failedNames.join(' ، ')}`);
+    // Step 2: Upload files progressively and update their status in real-time
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      const pendingId = pendingAtts[i].id;
+
+      try {
+        const att = await processAttachmentUnified(file, userApiKey, (status) => {
+          const updateFn = (prev: MultimodalAttachment[]) =>
+            prev.map(item => item.id === pendingId ? { ...item, status } : item);
+          if (activeAdvisorTab === 'general') setGeneralMultimodalFiles(updateFn);
+          else setDiaryMultimodalFiles(updateFn);
+        });
+
+        // Mark as ready
+        const updateFn = (prev: MultimodalAttachment[]) =>
+          prev.map(item => item.id === pendingId ? { ...att, id: pendingId, status: 'ready' } : item);
+        if (activeAdvisorTab === 'general') setGeneralMultimodalFiles(updateFn);
+        else setDiaryMultimodalFiles(updateFn);
+
+      } catch (err: any) {
+        console.error(`[ATTACHMENT DEBUG] upload error for ${file.name}:`, err);
+        const errMsg = err?.message || String(err);
+        setFileErrorToast(`فشل رفع/تجهيز الملف "${file.name}": ${errMsg}`);
+
+        const updateFn = (prev: MultimodalAttachment[]) =>
+          prev.map(item => item.id === pendingId ? { ...item, status: 'failed', errorMessage: errMsg } : item);
+        if (activeAdvisorTab === 'general') setGeneralMultimodalFiles(updateFn);
+        else setDiaryMultimodalFiles(updateFn);
+      }
     }
     onFilePickerClose?.();
   };
@@ -1001,17 +1021,27 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       {((activeAdvisorTab === 'general' ? generalMultimodalFiles : diaryMultimodalFiles).length > 0) && (
         <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
           {(activeAdvisorTab === 'general' ? generalMultimodalFiles : diaryMultimodalFiles).map(att => (
-            <div key={att.id} className="bg-white border border-[#E2DCC8] text-[#2B3E50] text-[10px] font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-2 shadow-3xs">
-              {att.type === 'image' && <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />}
-              {att.type === 'pdf' && <FileText className="w-3.5 h-3.5 text-red-500" />}
-              {att.type === 'audio' && <Music className="w-3.5 h-3.5 text-blue-500" />}
-              {att.type === 'video' && <Video className="w-3.5 h-3.5 text-purple-500" />}
-              {att.type === 'file' && <Paperclip className="w-3.5 h-3.5 text-gray-500" />}
-              <span className="truncate max-w-[120px]">{att.name}</span>
+            <div key={att.id} className={`border text-[10px] font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-2 shadow-3xs transition-all ${
+              att.status === 'failed' ? 'bg-red-50 border-red-200 text-red-700' :
+              att.status === 'uploading' || att.status === 'processing' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+              'bg-white border-[#E2DCC8] text-[#2B3E50]'
+            }`}>
+              {att.type === 'image' && <ImageIcon className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+              {att.type === 'pdf' && <FileText className="w-3.5 h-3.5 text-red-500 shrink-0" />}
+              {att.type === 'audio' && <Music className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
+              {att.type === 'video' && <Video className="w-3.5 h-3.5 text-purple-500 shrink-0" />}
+              {att.type === 'file' && <Paperclip className="w-3.5 h-3.5 text-gray-500 shrink-0" />}
+              <span className="truncate max-w-[110px]">{att.name}</span>
+
+              {att.status === 'uploading' && <span className="text-[9px] text-amber-600 animate-pulse shrink-0">جاري الرفع...</span>}
+              {att.status === 'processing' && <span className="text-[9px] text-amber-600 animate-pulse shrink-0">جاري التجهيز...</span>}
+              {att.status === 'failed' && <span className="text-[9px] text-red-600 font-bold shrink-0">فشل الرفع</span>}
+              {(!att.status || att.status === 'ready') && <span className="text-[9px] text-emerald-600 font-bold shrink-0">✓</span>}
+
               <button
                 type="button"
                 onClick={() => removeMultimodalFile(att.id)}
-                className="text-red-500 hover:text-red-700 text-xs font-black p-0.5 rounded-full hover:bg-red-50 cursor-pointer"
+                className="text-red-500 hover:text-red-700 text-xs font-black p-0.5 rounded-full hover:bg-red-50 cursor-pointer shrink-0"
               >
                 ✕
               </button>

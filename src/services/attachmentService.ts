@@ -79,7 +79,11 @@ export function getAttachmentTypeCategory(mimeType: string): MultimodalAttachmen
  * Upload file directly from browser to Google Gemini Files API using Resumable Upload Protocol
  * Bypasses Vercel Serverless Function body limits (4.5MB) completely for files up to 2GB!
  */
-export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promise<{ fileUri: string; mimeType: string }> {
+export async function uploadToGeminiFilesAPI(
+  file: File,
+  apiKey?: string,
+  onStatusChange?: (status: 'uploading' | 'processing' | 'ready' | 'failed') => void
+): Promise<{ fileUri: string; mimeType: string }> {
   const mimeType = sniffMimeType(file);
   let keyToUse = apiKey || getActiveApiKeyFromSettings() || '';
 
@@ -92,10 +96,17 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
     keyToUse = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
   }
 
-  console.log(`[ATTACHMENT TEST] initiating resumable upload -> filename: ${file.name}, actual size: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)}MB), mimeType: ${mimeType}`);
+  onStatusChange?.('uploading');
+
+  console.log(`[ATTACHMENT DEBUG]
+filename: ${file.name}
+actualSizeBytes: ${file.size}
+mimeType: ${mimeType}
+selectedStrategy: GEMINI FILES API RESUMABLE
+uploadStarted: true`);
 
   // Step 1: Initiate Resumable Upload Session (sends tiny JSON metadata)
-  const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${(keyToUse || 'AIzaSy_default_key').trim()}`;
+  const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${keyToUse.trim()}`;
   let initRes: Response;
   try {
     initRes = await fetch(initUrl, {
@@ -110,39 +121,47 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
       body: JSON.stringify({ file: { display_name: file.name } })
     });
   } catch (netErr: any) {
+    onStatusChange?.('failed');
     throw new Error(`تعذر الاتصال بـ Google Gemini Files API لرفع الملف: ${netErr?.message || String(netErr)}`);
   }
 
+  console.log(`[ATTACHMENT DEBUG] uploadStartHTTPStatus: ${initRes.status}`);
+
   if (!initRes.ok) {
+    onStatusChange?.('failed');
     const errText = await initRes.text().catch(() => '');
-    // In mock/test environments without live Google API keys, fallback gracefully to mock fileUri
-    if (initRes.status === 400 || initRes.status === 401 || initRes.status === 403) {
-      console.warn(`[ATTACHMENT TEST] Google Gemini Files API returned HTTP ${initRes.status}. Using mock fileUri for test environment.`);
-      const mockUri = `https://generativelanguage.googleapis.com/v1beta/files/file_${Date.now()}`;
-      return { fileUri: mockUri, mimeType };
-    }
     throw new Error(`فشل بدء جلسة الرفع لـ Gemini Files API (HTTP ${initRes.status}): ${errText}`);
   }
 
   const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
   if (!uploadUrl) {
+    onStatusChange?.('failed');
     throw new Error('لم ترجع خوادم Google رابط جلسة الرفع X-Goog-Upload-URL.');
   }
 
-  console.log(`[ATTACHMENT TEST] resumable session created -> upload URL received, streaming binary bytes directly from browser to Google...`);
+  console.log(`[ATTACHMENT DEBUG] resumable session created -> streaming binary bytes directly from browser to Google...`);
 
   // Step 2: Stream raw file bytes directly from browser to Google's Upload Session URL
-  const uploadRes = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'X-Goog-Upload-Offset': '0',
-      'X-Goog-Upload-Command': 'upload, finalize',
-      'Content-Length': file.size.toString()
-    },
-    body: file
-  });
+  let uploadRes: Response;
+  try {
+    uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'X-Goog-Upload-Offset': '0',
+        'X-Goog-Upload-Command': 'upload, finalize',
+        'Content-Length': file.size.toString()
+      },
+      body: file
+    });
+  } catch (putErr: any) {
+    onStatusChange?.('failed');
+    throw new Error(`فشل نقل بيانات البايتات المباشر لـ Gemini Files API: ${putErr?.message || String(putErr)}`);
+  }
+
+  console.log(`[ATTACHMENT DEBUG] binaryUploadHTTPStatus: ${uploadRes.status}`);
 
   if (!uploadRes.ok) {
+    onStatusChange?.('failed');
     const errText = await uploadRes.text().catch(() => '');
     throw new Error(`فشل نقل بيانات الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errText}`);
   }
@@ -152,17 +171,22 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
   const initialState = uploadData?.file?.state || uploadData?.state || 'ACTIVE';
 
   if (!fileUri) {
+    onStatusChange?.('failed');
     throw new Error('لم يرجع خادم Gemini رابط الملف النهائي (fileUri).');
   }
 
-  console.log(`[ATTACHMENT TEST] resumable upload completed -> filename: ${file.name}, fileUri: ${fileUri}, initialState: ${initialState}`);
+  console.log(`[ATTACHMENT DEBUG]
+fileUriPresent: true
+fileState: ${initialState}`);
 
   // Video and Audio files require polling when Gemini API returns state: "PROCESSING"
   if (initialState === 'PROCESSING' || mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
-    console.log(`[ATTACHMENT VIDEO PIPELINE] video/audio file detected in state ${initialState}. Polling Gemini processing readiness state...`);
+    onStatusChange?.('processing');
+    console.log(`[ATTACHMENT DEBUG] video/audio processing in state ${initialState}. Polling Gemini file readiness...`);
     await pollGeminiFileState(fileUri, keyToUse);
   }
 
+  onStatusChange?.('ready');
   return { fileUri, mimeType };
 }
 
@@ -170,14 +194,10 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
  * Poll Google Gemini Files API until file state changes from PROCESSING to ACTIVE
  * Required for Video & Audio files uploaded via Files API before sending to generateContent!
  */
-export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string, maxAttempts = 15): Promise<boolean> {
+export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string, maxAttempts = 150): Promise<boolean> {
   const fileName = fileNameOrUri.includes('/files/')
     ? 'files/' + fileNameOrUri.split('/files/').pop()
     : fileNameOrUri;
-
-  if (fileNameOrUri.includes('file_') || fileNameOrUri.includes('mock_')) {
-    return true;
-  }
 
   let keyToUse = apiKey || getActiveApiKeyFromSettings() || '';
   if (!keyToUse) {
@@ -188,22 +208,21 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
   if (!keyToUse && typeof process !== 'undefined' && process.env) {
     keyToUse = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
   }
-  if (!keyToUse) {
-    keyToUse = 'AIzaSy_default_key';
-  }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    console.log(`[ATTACHMENT VIDEO POLL] checking readiness -> ${fileName} (attempt ${attempt}/${maxAttempts})...`);
+    console.log(`[ATTACHMENT DEBUG] pollAttempt: ${attempt}/${maxAttempts} for ${fileName}`);
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${keyToUse.trim()}`, {
         method: 'GET'
       });
+      console.log(`[ATTACHMENT DEBUG] pollHTTPStatus: ${res.status}`);
+
       if (res.ok) {
         const data = await res.json();
         const state = data?.state || data?.file?.state || 'ACTIVE';
-        console.log(`[ATTACHMENT VIDEO POLL] file readiness state -> ${fileName}: ${state}`);
+        console.log(`[ATTACHMENT DEBUG] finalFileState: ${state}`);
         if (state === 'ACTIVE') {
-          console.log(`[ATTACHMENT VIDEO POLL] video state is now ACTIVE! Ready for Gemini generation.`);
+          console.log(`[ATTACHMENT DEBUG] video file state is now ACTIVE! Ready for generation.`);
           return true;
         }
         if (state === 'FAILED') {
@@ -212,13 +231,13 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
       }
     } catch (e: any) {
       if (e?.message?.includes('فشلت خوادم')) throw e;
-      console.warn(`[ATTACHMENT VIDEO POLL] check attempt ${attempt} warning:`, e);
+      console.warn(`[ATTACHMENT DEBUG] poll attempt ${attempt} warning:`, e);
     }
-    // Wait 2 seconds between polls
+    // Wait 2 seconds between poll attempts
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  console.log(`[ATTACHMENT VIDEO POLL] max polling attempts reached for ${fileName}, proceeding with generation...`);
+  console.log(`[ATTACHMENT DEBUG] max polling attempts reached for ${fileName}, proceeding...`);
   return true;
 }
 
@@ -229,20 +248,29 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
  * - Files <= 3MB: Base64 inlineData
  * - Files > 3MB: Direct Browser → Gemini Files API Resumable Upload returning fileUri (supports 3MB to 2GB!)
  */
-export async function processAttachmentUnified(file: File, apiKey?: string): Promise<MultimodalAttachment> {
+export async function processAttachmentUnified(
+  file: File,
+  apiKey?: string,
+  onStatusChange?: (status: 'uploading' | 'processing' | 'ready' | 'failed') => void
+): Promise<MultimodalAttachment> {
   const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB (Gemini Files API official max limit)
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error(`حجم الملف "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) يتجاوز الحد الأقصى المسموح به في Gemini وهو 2 جيجابايت.`);
+    onStatusChange?.('failed');
+    throw new Error(`حجم الملف "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) يتجاوز الحد الأقصى المسموح به وهو 2 جيجابايت.`);
   }
 
   const mimeType = sniffMimeType(file);
   const category = getAttachmentTypeCategory(mimeType);
   const INLINE_SIZE_THRESHOLD = 3 * 1024 * 1024; // Safe 3MB threshold for Vercel 4.5MB limit
 
-  console.log(`[ATTACHMENT TEST] selected file -> name: ${file.name}, actual size: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)}MB), ext MIME: ${mimeType}, category: ${category}`);
-
   if (file.size <= INLINE_SIZE_THRESHOLD) {
-    console.log(`[ATTACHMENT TEST] selected strategy -> INLINE BASE64 (size <= 3MB)`);
+    onStatusChange?.('uploading');
+    console.log(`[ATTACHMENT DEBUG]
+filename: ${file.name}
+actualSizeBytes: ${file.size}
+mimeType: ${mimeType}
+selectedStrategy: INLINE BASE64`);
+
     const base64Data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -254,7 +282,7 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
       reader.readAsDataURL(file);
     });
 
-    console.log(`[ATTACHMENT TEST] inline Base64 encoding complete for ${file.name} (${base64Data.length} chars)`);
+    onStatusChange?.('ready');
 
     return {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
@@ -263,14 +291,13 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
       mimeType,
       sizeBytes: file.size,
       base64Data,
+      status: 'ready',
       previewUrl: category === 'image' ? `data:${mimeType};base64,${base64Data}` : undefined
     };
   }
 
   // Large files (> 3MB up to 2GB) use Direct Browser → Gemini Files API Resumable Upload
-  console.log(`[ATTACHMENT TEST] selected strategy -> GEMINI FILES API RESUMABLE UPLOAD (size > 3MB)`);
-  const { fileUri } = await uploadToGeminiFilesAPI(file, apiKey);
-  console.log(`[ATTACHMENT TEST] Gemini Files API resumable upload complete for ${file.name} -> fileUri: ${fileUri}`);
+  const { fileUri } = await uploadToGeminiFilesAPI(file, apiKey, onStatusChange);
 
   return {
     id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
@@ -278,6 +305,7 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
     type: category,
     mimeType,
     sizeBytes: file.size,
-    fileUri
+    fileUri,
+    status: 'ready'
   };
 }
