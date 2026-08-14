@@ -1176,6 +1176,17 @@ export default function App() {
     } catch (e) { console.warn(e); }
   }, [settings]);
 
+  // --- Active Diary Editing State ---
+  const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(() => {
+    const saved = localStorage.getItem('yawmiyati_draft_editing_diary');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return null;
+  });
+
   // --- Pure Event-Driven File Picker Guard & Synchronous Draft Persistence ---
   const isFilePickerActiveRef = useRef<boolean>(false);
 
@@ -1920,17 +1931,6 @@ export default function App() {
       setHabitEvaluationLoading(false);
     }
   };
-
-  // --- Active Diary Editing State ---
-  const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(() => {
-    const saved = localStorage.getItem('yawmiyati_draft_editing_diary');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return null;
-  });
 
   // --- Restore IndexedDB Attachment Blobs into ObjectURLs on Mount ---
   useEffect(() => {
