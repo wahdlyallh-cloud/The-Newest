@@ -23,6 +23,7 @@ import LanguagesModal from './components/LanguagesModal';
 import TypographySettingsSection from './components/TypographySettingsSection';
 import { getFontCss, getLineHeightCss } from './lib/fonts';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
+import { uploadToGeminiFilesAPI } from './services/attachmentService';
 import { cleanDiaryText, generateGeminiContentDirect } from './lib/gemini';
 import { migrateSettingsApiKeys } from './lib/apiKeyManager';
 import SmartAdvisor from './components/SmartAdvisor';
@@ -3672,7 +3673,7 @@ export default function App() {
     return audioPayload;
   };
 
-  // --- Transcribe Audio Item manually ---
+  // --- Transcribe Audio Item manually using Unified Key-Pooled Pipeline ---
   const handleTranscribeAudioItem = async (rec: AudioRecording) => {
     const rawAudio = (rec.dataUrl && rec.dataUrl !== '#') ? rec.dataUrl : rec.blobUrl;
     if (!rawAudio) {
@@ -3683,14 +3684,41 @@ export default function App() {
     setTranscribingAudioId(rec.id);
     updateAudioTranscriptionAtomic(rec.id, '⏳ جاري التفريغ النصي بذكاء Gemini...');
     try {
-      const audioPayload = await convertAudioTargetToBase64(rawAudio);
+      let audioBlob: Blob | null = null;
+      if (rawAudio.startsWith('blob:')) {
+        const fetchRes = await fetch(rawAudio);
+        audioBlob = await fetchRes.blob();
+      } else if (rawAudio.startsWith('data:')) {
+        const parts = rawAudio.split(';base64,');
+        if (parts.length === 2) {
+          const byteChars = atob(parts[1]);
+          const byteNumbers = new Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) {
+            byteNumbers[i] = byteChars.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          audioBlob = new Blob([byteArray], { type: rec.mimeType || 'audio/webm' });
+        }
+      }
+
+      let payloadBody: any = {};
+      const INLINE_LIMIT = 2 * 1024 * 1024; // 2MB threshold
+
+      if (audioBlob && audioBlob.size > INLINE_LIMIT) {
+        const audioFile = new File([audioBlob], rec.name || 'audio_recording.webm', { type: rec.mimeType || 'audio/webm' });
+        const { fileUri } = await uploadToGeminiFilesAPI(audioFile);
+        payloadBody = { fileUri, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name };
+      } else {
+        const audioPayload = await convertAudioTargetToBase64(rawAudio);
+        payloadBody = { audioData: audioPayload, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name };
+      }
+
       const res = await fetch('/api/gemini/transcribe-audio', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-gemini-key': settings.userApiKey || ''
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ audioData: audioPayload, fileName: rec.name })
+        body: JSON.stringify(payloadBody)
       });
       const data = await res.json();
       if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية')) {

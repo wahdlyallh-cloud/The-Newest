@@ -438,6 +438,35 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
   return `أهلاً بك في **المستشار الذكي لليوميات**! سؤالك حول "${rawQuery}" هو بداية رائعة. لا توجد تدوينات كافية مسجلة بعد في التطبيق. ابدأ بتدوين أفكارك وعاداتك ليتمكن المستشار من إعطائك تحليلات شخصية دقيقة ومليئة بالرؤى والتعاطف!`;
 }
 
+  if (url.includes('/api/gemini/upload-file')) {
+    try {
+      const activeKey = getActiveApiKeyFromSettings();
+      if (!activeKey) {
+        return createErrorResponse('لا يوجد مفتاح Gemini API صالح لاستخدامه في الرفع.', 400);
+      }
+
+      const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${activeKey.trim()}`;
+      const uploadRes = await originalFetch(uploadUrl, {
+        method: 'POST',
+        headers: init?.headers,
+        body: init?.body
+      });
+
+      if (!uploadRes.ok) {
+        if (uploadRes.status === 429 || uploadRes.status === 403) {
+          rotateToNextKey('quota_exhausted', `Gemini Files Upload HTTP ${uploadRes.status}`);
+        }
+        const errTxt = await uploadRes.text().catch(() => '');
+        return createErrorResponse(`فشل رفع الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}`, uploadRes.status);
+      }
+
+      const uploadData = await uploadRes.json();
+      return createSuccessResponse({ success: true, file: uploadData.file });
+    } catch (err: any) {
+      return createErrorResponse(`خطأ شبكة أثناء رفع الملف: ${err?.message || String(err)}`, 500);
+    }
+  }
+
   if (url.includes('/api/gemini/smart-advisor')) {
     const reqLang = reqHeaders.get('x-app-language') || requestBody.appLanguage || requestBody.langCode || 'ar';
     const { diaries, query, reportType, gratitudeCards, habits, books, mode, attachments } = requestBody;
@@ -450,13 +479,23 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       let extraParts: any[] = [];
       if (attachments && Array.isArray(attachments)) {
         extraParts = attachments
-          .filter((att: any) => att && att.base64Data && att.mimeType)
-          .map((att: any) => ({
-            inlineData: {
-              mimeType: att.mimeType,
-              data: att.base64Data
+          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType)
+          .map((att: any) => {
+            if (att.fileUri) {
+              return {
+                fileData: {
+                  mimeType: att.mimeType,
+                  fileUri: att.fileUri
+                }
+              };
             }
-          }));
+            return {
+              inlineData: {
+                mimeType: att.mimeType,
+                data: att.base64Data
+              }
+            };
+          });
       }
 
       try {
@@ -803,7 +842,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
 
   // Backup & Sync endpoints client-side simulation
   if (url.includes('/api/gemini/transcribe-audio')) {
-    const { audioData, mimeType: providedMime } = requestBody;
+    const { audioData, mimeType: providedMime, fileUri } = requestBody;
     let mimeType = providedMime || "audio/webm";
     let base64Data = audioData || "";
 
@@ -831,7 +870,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
         return createErrorResponse("يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لتفريغ التسجيلات الصوتية بالذكاء الاصطناعي.");
       }
 
-      if (key && base64Data) {
+      if (key && (base64Data || fileUri)) {
         const modelsToTry = ['gemini-3.5-flash-lite'];
         let lastError = "";
 
@@ -868,10 +907,14 @@ Return pure JSON only in the following format:
           else if (reqMime.includes("3gp") || reqMime.includes("amr")) reqMime = "audio/3gpp";
           else reqMime = "audio/webm";
 
+          const audioPart = fileUri
+            ? { fileData: { mimeType: reqMime, fileUri: fileUri } }
+            : { inlineData: { mimeType: reqMime, data: base64Data } };
+
           const reqBody = {
             contents: [{
               parts: [
-                { inlineData: { mimeType: reqMime, data: base64Data } },
+                audioPart,
                 { text: promptText }
               ]
             }],

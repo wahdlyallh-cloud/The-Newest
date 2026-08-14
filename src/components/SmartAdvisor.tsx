@@ -4,6 +4,7 @@ import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip,
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { getAthkarContextForAI, getFormattedAthkarPromptContext } from '../services/aiAthkarSync';
+import { processAttachmentUnified } from '../services/attachmentService';
 
 export interface AdvisorPermissions {
   diaries: boolean;
@@ -439,49 +440,26 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     t('advisorQuickQ5')
   ];
 
-  // File Upload Handler for Multimodal General AI Mode
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // File Upload Handler for Multimodal General AI Mode using Unified Attachment Service
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setFileErrorToast(null);
-    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB limit per file
+    const selectedFiles = Array.from(files);
 
-    Array.from(files).forEach(file => {
-      if (file.size > MAX_FILE_SIZE) {
-        setFileErrorToast(`الملف "${file.name}" يتجاوز الحد الأقصى المسموح به (15MB).`);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (!result) return;
-
-        const base64Data = result.split(',')[1] || '';
-        let fileType: MultimodalAttachment['type'] = 'file';
-        if (file.type.startsWith('image/')) fileType = 'image';
-        else if (file.type === 'application/pdf') fileType = 'pdf';
-        else if (file.type.startsWith('audio/')) fileType = 'audio';
-        else if (file.type.startsWith('video/')) fileType = 'video';
-
-        const newAtt: MultimodalAttachment = {
-          id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
-          name: file.name,
-          type: fileType,
-          mimeType: file.type || 'application/octet-stream',
-          sizeBytes: file.size,
-          base64Data,
-          previewUrl: fileType === 'image' ? result : undefined
-        };
-
-        setMultimodalFiles(prev => [...prev, newAtt]);
-      };
-      reader.readAsDataURL(file);
-    });
-
+    // Immediately reset input value so re-selecting the exact same file fires onChange cleanly
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+
+    for (const file of selectedFiles) {
+      try {
+        const att = await processAttachmentUnified(file, userApiKey);
+        setMultimodalFiles(prev => [...prev, att]);
+      } catch (err: any) {
+        setFileErrorToast(`فشل معالجة أو رفع الملف "${file.name}": ${err?.message || String(err)}`);
+      }
     }
   };
 
