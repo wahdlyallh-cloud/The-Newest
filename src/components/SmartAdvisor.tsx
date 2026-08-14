@@ -59,6 +59,8 @@ interface SmartAdvisorProps {
   books?: any[];
   userApiKey?: string;
   appLanguage?: AppLanguage;
+  onFilePickerOpen?: () => void;
+  onFilePickerClose?: () => void;
 }
 
 interface Message {
@@ -68,7 +70,7 @@ interface Message {
   createdAt: string;
 }
 
-export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar' }: SmartAdvisorProps) {
+export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar', onFilePickerOpen, onFilePickerClose }: SmartAdvisorProps) {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const permissionsConfig = getPermissionsConfig(appLanguage);
@@ -440,10 +442,25 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     t('advisorQuickQ5')
   ];
 
+  const triggerFilePicker = () => {
+    onFilePickerOpen?.();
+    fileInputRef.current?.click();
+    const handleWindowFocus = () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      setTimeout(() => {
+        onFilePickerClose?.();
+      }, 500);
+    };
+    window.addEventListener('focus', handleWindowFocus);
+  };
+
   // File Upload Handler for Multimodal General AI Mode using Unified Attachment Service
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {
+      onFilePickerClose?.();
+      return;
+    }
 
     setFileErrorToast(null);
     const selectedFiles = Array.from(files);
@@ -461,6 +478,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         setFileErrorToast(`فشل معالجة أو رفع الملف "${file.name}": ${err?.message || String(err)}`);
       }
     }
+    onFilePickerClose?.();
   };
 
   const removeMultimodalFile = (id: string) => {
@@ -1122,7 +1140,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               />
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={triggerFilePicker}
                 className="p-2.5 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center"
                 title={isAr ? "إرفاق صورة، PDF، صوت، أو فيديو" : "Attach Image, PDF, Audio, or Video"}
               >

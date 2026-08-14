@@ -8564,7 +8564,16 @@ export default function App() {
         {/* --- TAB VIEW 3: FLAGSHIP SMART ADVISOR --- */}
         {activeTab === 'advisor' && (
           <div className="space-y-6">
-            <SmartAdvisor diaries={diaries} habits={habits} gratitudeCards={gratitudeCards} books={books} userApiKey={settings.userApiKey} appLanguage={settings?.appLanguage || 'ar'} />
+            <SmartAdvisor
+              diaries={diaries}
+              habits={habits}
+              gratitudeCards={gratitudeCards}
+              books={books}
+              userApiKey={settings.userApiKey}
+              appLanguage={settings?.appLanguage || 'ar'}
+              onFilePickerOpen={markFilePickerActive}
+              onFilePickerClose={resetFilePickerGuard}
+            />
           </div>
         )}
 
