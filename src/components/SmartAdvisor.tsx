@@ -310,13 +310,20 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
     rec.onerror = (event: any) => {
       console.error('Voice chat speech recognition error:', event);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setVoiceStatus('idle');
+        setVoiceTranscript(appLanguage === 'ar'
+          ? '⚠️ تم رفض إذن الميكروفون. يرجى سماح المتصفح بدخول الميكروفون لإجراء المحادثة الصوتية.'
+          : '⚠️ Microphone permission denied. Please allow microphone access in your browser settings.');
+        return;
+      }
       if (event.error !== 'no-speech') {
         setVoiceStatus('idle');
       }
     };
 
     rec.onend = () => {
-      // Completed recognition
+      // Completed recognition round
     };
 
     // Auto-submit when user finishes talking
@@ -324,7 +331,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       rec.stop();
       setTimeout(() => {
         setVoiceTranscript(prev => {
-          if (prev && prev !== 'جاري الاستماع... تفضل بالفضفضة والتحدث معي...' && prev.trim().length > 0) {
+          if (prev && !prev.includes('جاري الاستماع') && prev.trim().length > 0) {
             handleVoiceChatSubmit(prev);
           }
           return prev;
@@ -338,11 +345,44 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   const handleVoiceChatSubmit = async (queryText: string) => {
     setVoiceStatus('analyzing');
+    const isGeneralMode = activeAdvisorTab === 'general';
+
     try {
-      const diariesToPass = (hasConsent && advisorPermissions.diaries) ? diaries : [];
-      const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
-      const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
-      const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
+      let bodyData: any = {};
+      if (isGeneralMode) {
+        // General AI Advisor Voice Mode: 100% General Purpose AI Conversation (Science, History, Programming, News, Math, Travel, etc.)
+        const readyAttachments = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
+        bodyData = {
+          mode: 'general',
+          query: queryText,
+          attachments: readyAttachments,
+          diaries: [],
+          habits: [],
+          gratitudeCards: [],
+          books: [],
+          appLanguage
+        };
+      } else {
+        // Diary Pro Advisor Voice Mode: Behavioral, mood & diary entries analysis
+        const diariesToPass = (hasConsent && advisorPermissions.diaries) ? diaries : [];
+        const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
+        const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
+        const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
+        const readyAttachments = diaryMultimodalFiles.filter(f => !f.status || f.status === 'ready');
+        bodyData = {
+          mode: 'diary',
+          diaries: diariesToPass,
+          habits: habitsToPass,
+          gratitudeCards: gratitudeCardsToPass,
+          books: booksToPass,
+          query: queryText,
+          attachments: readyAttachments,
+          appLanguage,
+          athkarContext: getAthkarContextForAI(),
+          athkarPromptText: getFormattedAthkarPromptContext()
+        };
+      }
+
       const response = await fetch('/api/gemini/smart-advisor', {
         method: 'POST',
         headers: { 
@@ -350,56 +390,63 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           'x-gemini-key': userApiKey || '',
           'x-app-language': appLanguage
         },
-        body: JSON.stringify({
-          diaries: diariesToPass,
-          habits: habitsToPass,
-          gratitudeCards: gratitudeCardsToPass,
-          books: booksToPass,
-          query: queryText,
-          appLanguage: appLanguage
-        })
+        body: JSON.stringify(bodyData)
       });
 
-      const data = await response.json();
-      if (data.success) {
-        setVoiceStatus('speaking');
-        setVoiceTranscript(data.answer);
+      const responseText = await response.text();
+      let data: any = null;
+      if (responseText && responseText.trim()) {
+        try { data = JSON.parse(responseText); } catch (e) {}
+      }
 
-        // Save messages in history so we do not lose them
-        const userMsgId = Date.now().toString();
-        const aiMsgId = (Date.now() + 1).toString();
-        const newMsgs = [
-          ...messages,
-          { id: userMsgId, sender: 'user' as const, text: queryText, createdAt: new Date().toISOString() },
-          { id: aiMsgId, sender: 'ai' as const, text: data.answer, createdAt: new Date().toISOString() }
-        ];
-        setMessages(newMsgs);
-        localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(newMsgs));
+      const answerText = data?.answer || (isGeneralMode 
+        ? 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع عام أو معرفي.' 
+        : 'أهلاً بك! أنا المستشار الذكي لليوميات.');
 
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const cleanText = data.answer.replace(/[*#_`~•]/g, '').replace(/🔗|🎥|📄/g, '');
-          const utterance = new SpeechSynthesisUtterance(cleanText);
-          utterance.lang = langInfo.speechLang;
-          
-          const voices = window.speechSynthesis.getVoices();
-          const langVoice = voices.find(v => v.lang.toLowerCase().startsWith(langInfo.code.toLowerCase()));
-          if (langVoice) utterance.voice = langVoice;
+      setVoiceStatus('speaking');
+      setVoiceTranscript(answerText);
 
-          utterance.onend = () => {
-            // Once speaking finishes, automatically resume listening!
-            setVoiceStatus('listening');
-            startListeningVoiceChat();
-          };
-          utterance.onerror = () => {
-            setVoiceStatus('idle');
-          };
-          window.speechSynthesis.speak(utterance);
-        } else {
-          setVoiceStatus('idle');
-        }
+      // Save user & AI messages into the active tab chat history
+      const userMsgId = Date.now().toString();
+      const aiMsgId = (Date.now() + 1).toString();
+      const userMsg = { id: userMsgId, sender: 'user' as const, text: queryText, createdAt: new Date().toISOString() };
+      const aiMsg = { id: aiMsgId, sender: 'ai' as const, text: answerText, createdAt: new Date().toISOString() };
+
+      if (isGeneralMode) {
+        setGeneralMessages(prev => {
+          const nextArr = [...prev, userMsg, aiMsg];
+          localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(nextArr));
+          return nextArr;
+        });
       } else {
-        throw new Error(data?.error || 'يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق.');
+        setMessages(prev => {
+          const nextArr = [...prev, userMsg, aiMsg];
+          localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(nextArr));
+          return nextArr;
+        });
+      }
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const cleanText = answerText.replace(/[*#_`~•]/g, '').replace(/🔗|🎥|📄/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = langInfo.speechLang;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const langVoice = voices.find(v => v.lang.toLowerCase().startsWith(langInfo.code.toLowerCase()));
+        if (langVoice) utterance.voice = langVoice;
+
+        utterance.onend = () => {
+          // Continuous Voice Conversation Loop: Automatically resume listening!
+          setVoiceStatus('listening');
+          startListeningVoiceChat();
+        };
+        utterance.onerror = () => {
+          setVoiceStatus('idle');
+        };
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setVoiceStatus('idle');
       }
     } catch (e: any) {
       setVoiceStatus('idle');
@@ -979,9 +1026,23 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <p className="text-[9.5px] sm:text-[10px] text-gray-200 truncate">{isAr ? 'إجابات عامة، علوم، تحليل الصور والمستندات والصوتيات' : 'General answers, science & multimodal attachments'}</p>
             </div>
           </div>
-          <span className="text-[9px] sm:text-[10px] bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-white/20 font-bold shrink-0 whitespace-nowrap">
-            {isAr ? 'مستقل عن اليوميات' : 'Independent Context'}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => {
+                setShowVoiceModal(true);
+                startListeningVoiceChat();
+              }}
+              className="flex items-center space-x-1 space-x-reverse px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-300/30 text-[10px] sm:text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
+              title={appLanguage === 'ar' ? 'بدء محادثة صوتية عامة مستمرة' : 'Start Voice Chat'}
+            >
+              <span className="animate-pulse">🎙️</span>
+              <span className="truncate">{appLanguage === 'ar' ? 'محادثة صوتية' : 'Voice Chat'}</span>
+            </button>
+
+            <span className="text-[9px] sm:text-[10px] bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-white/20 font-bold shrink-0 whitespace-nowrap hidden xs:inline-block">
+              {isAr ? 'مستقل عن اليوميات' : 'Independent Context'}
+            </span>
+          </div>
         </div>
       )}
 
@@ -1381,12 +1442,17 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
             {/* Header Status */}
             <div className="space-y-1.5 pt-4">
-              <span className="text-xs bg-[#8B9D83]/15 text-[#8B9D83] px-3 py-1 rounded-full font-bold">
-                {t.voiceCompanionTitle || 'المساعد الصوتي العيادي المستمر'}
+              <span className={`text-xs px-3 py-1 rounded-full font-bold ${
+                activeAdvisorTab === 'general' ? 'bg-[#2B3E50]/15 text-[#2B3E50]' : 'bg-[#8B9D83]/15 text-[#8B9D83]'
+              }`}>
+                {activeAdvisorTab === 'general' 
+                  ? (isAr ? 'المساعد الصوتي الذكي العام 🌐' : 'General Voice Companion 🌐')
+                  : (t.voiceCompanionTitle || 'المساعد الصوتي العيادي المستمر')
+                }
               </span>
               <h3 className="font-extrabold text-[#3A3A3A] text-lg">
                 {voiceStatus === 'listening' && `🎤 ${t.voiceStatusListening || 'جاري الاستماع بإنصات...'}`}
-                {voiceStatus === 'analyzing' && `🧠 ${t.voiceStatusAnalyzing || 'جاري التفكير وصياغة الدعم...'}`}
+                {voiceStatus === 'analyzing' && `🧠 ${t.voiceStatusAnalyzing || 'جاري التفكير وصياغة الرد...'}`}
                 {voiceStatus === 'speaking' && `🔊 ${t.voiceStatusSpeaking || 'يتحدث الآن...'}`}
                 {voiceStatus === 'idle' && `💤 ${t.voiceStatusIdle || 'مستعد للبدء'}`}
               </h3>
