@@ -214,9 +214,11 @@ export class SpeechRecognitionManager {
 
     speechLog(`Starting session #${sessionToken} (lang: ${this.lang}, continuous: ${this.continuous})`);
 
-    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRec = typeof window !== 'undefined'
+      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+      : null;
     if (!SpeechRec) {
-      speechLog('SpeechRecognition not supported in browser');
+      speechLog('SpeechRecognition not supported in browser or running in non-browser environment');
       if (this.callbacks.onError) {
         this.callbacks.onError({ error: 'not-supported' });
       }

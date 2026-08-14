@@ -161,4 +161,4 @@ function runComprehensiveTests() {
   return failed === 0;
 }
 
-runComprehensiveTests();
+export { runComprehensiveTests };
