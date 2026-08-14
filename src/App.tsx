@@ -4905,39 +4905,41 @@ export default function App() {
           }
         }}
       >
-        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-6 py-2.5 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
 
-          {/* 🌟 Protected Branding Card (Zero-Occlusion, shrink-0) */}
-          <div className="flex items-center space-x-2.5 sm:space-x-3 space-x-reverse shrink-0 select-none">
-            <div className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 bg-[#8B9D83] rounded-2xl flex items-center justify-center text-white shadow-xs shrink-0">
-              <Brain className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-baseline space-x-1.5 space-x-reverse">
-                <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-[#3A3A3A] truncate">
-                  {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
-                </h1>
-                <span className="text-[10px] sm:text-xs font-black bg-[#8B9D83] text-white px-1.5 py-0.5 rounded-md leading-none shrink-0">
-                  AI
-                </span>
+          {/* 🌟 Zone 1: Protected Branding Card (Zero-Occlusion, full size) */}
+          <div className="flex items-center space-x-3 space-x-reverse shrink-0 select-none w-full md:w-auto justify-between md:justify-start">
+            <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="w-10 h-10 bg-[#8B9D83] rounded-2xl flex items-center justify-center text-white shadow-xs shrink-0">
+                <Brain className="w-5.5 h-5.5" />
               </div>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5 flex items-center gap-1.5 max-w-full">
-                <span className="truncate hidden lg:inline">{t('nav.subtitle')}</span>
-                <span className="text-gray-300 hidden lg:inline">•</span>
-                <span className={`inline-flex items-center space-x-1 space-x-reverse text-[9px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full border transition-all shrink-0 ${
-                  autoSaveStatus === 'saving'
-                    ? 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'
-                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></span>
-                  <span className="truncate">{autoSaveStatus === 'saving' ? t('nav.saving') : `${t('nav.auto_saved')} ${lastAutoSaveTime ? `(${lastAutoSaveTime})` : '💾'}`}</span>
-                </span>
-              </p>
+              <div>
+                <div className="flex items-baseline space-x-1.5 space-x-reverse">
+                  <h1 className="text-base font-extrabold tracking-tight text-[#3A3A3A]">
+                    {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
+                  </h1>
+                  <span className="text-xs font-black bg-[#8B9D83] text-white px-1.5 py-0.5 rounded-md leading-none">
+                    AI
+                  </span>
+                </div>
+                <p className="text-[9px] text-gray-500 font-bold mt-0.5 flex flex-wrap items-center gap-1.5 max-w-full">
+                  <span>{t('nav.subtitle')}</span>
+                  <span className="text-gray-300 hidden sm:inline">•</span>
+                  <span className={`inline-flex items-center space-x-1 space-x-reverse text-[9px] font-extrabold px-2 py-0.5 rounded-full border transition-all ${
+                    autoSaveStatus === 'saving'
+                      ? 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></span>
+                    <span>{autoSaveStatus === 'saving' ? t('nav.saving') : `${t('nav.auto_saved')} ${lastAutoSaveTime ? `(${lastAutoSaveTime})` : '💾'}`}</span>
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* 🎯 Navigation Action Bar: Responsive Layout with Zero-Occlusion & Accessibility */}
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 justify-end flex-1">
+          {/* 🎯 Zones 2 & 3: Navigation Action Bar & Utility Controls */}
+          <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end w-full md:w-auto">
             
             {/* 1. 📿 Direct Athkar Button (أذكار) */}
             <button
@@ -4946,12 +4948,12 @@ export default function App() {
                 setIsFullAthkarModalOpen(true);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1 space-x-reverse px-2.5 sm:px-3 py-1.5 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               title={t('nav.dhikr_title')}
               aria-label={t('nav.dhikr') || 'Dhikr'}
             >
               <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
-              <span className="hidden xs:inline">{t('nav.dhikr') || (isEn ? 'Dhikr' : 'أذكار')}</span>
+              <span>{t('nav.dhikr') || (isEn ? 'Dhikr' : 'أذكار')}</span>
             </button>
 
             {/* 2. 📋 Habits & Tasks Button (المهام اليومية) */}
@@ -4963,14 +4965,14 @@ export default function App() {
                 setEditingDiary(null);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3 py-1.5 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs hover:bg-[#E2E9DF] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs hover:bg-[#E2E9DF] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               title={t('nav.daily_tasks')}
               aria-label={t('nav.daily_tasks')}
             >
               <span className="flex items-center justify-center bg-[#C5221F] text-white text-[10px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
                 {incompleteTasksCount}
               </span>
-              <span className="hidden sm:inline">{t('nav.daily_tasks')}</span>
+              <span>{t('nav.daily_tasks')}</span>
             </button>
 
             {/* 3. ✍️ My Diary Thoughts Button (خواطري) */}
@@ -4983,17 +4985,17 @@ export default function App() {
                 setEditingDiary(null);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3 py-1.5 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs hover:bg-[#F9ECC4] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs hover:bg-[#F9ECC4] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               title={t('nav.my_thoughts')}
               aria-label={t('nav.my_thoughts')}
             >
-              <span className="hidden md:inline">{t('nav.my_thoughts')}</span>
+              <span>{t('nav.my_thoughts')}</span>
               <span className="flex items-center justify-center w-5 h-5 bg-[#F8ECB8] text-[#8C6418] rounded-full border border-[#E1D39D] shrink-0">
                 <PenTool className="w-3 h-3 text-[#8C6418]" />
               </span>
             </button>
 
-            {/* 4. 🎓 Therapy Session Button (جلسة العلاج) */}
+            {/* 4. 🎓 Therapist Session Button (جلسة العلاج) */}
             <button
               type="button"
               onClick={() => {
@@ -5002,11 +5004,11 @@ export default function App() {
                 setEditingDiary(null);
                 collapseHeaderOnMobile();
               }}
-              className="flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3.5 py-1.5 bg-[#446A5E] hover:bg-[#3B5A50] text-white rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#446A5E] hover:bg-[#3B5A50] text-white rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               title={t('nav.therapy_session')}
               aria-label={t('nav.therapy_session')}
             >
-              <span className="hidden lg:inline">{t('nav.therapy_session')}</span>
+              <span>{t('nav.therapy_session')}</span>
               <span className="flex items-center justify-center w-5 h-5 bg-[#FCF5DE] border border-[#E9E1C4] rounded-full shrink-0 shadow-3xs animate-pulse">
                 <svg className="w-3 h-3 text-[#A67E2E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
@@ -5014,39 +5016,14 @@ export default function App() {
               </span>
             </button>
 
-            {/* 5. 🌐 Language Switcher Button (Direct on XL+ screens, accessible in More menu on all screens) */}
-            <button
-              type="button"
-              onClick={() => setShowLanguagesModal(true)}
-              className="hidden xl:flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 bg-amber-50/90 text-amber-950 border border-amber-300 rounded-xl text-xs font-black shadow-3xs hover:bg-amber-100 active:scale-95 transition-all cursor-pointer shrink-0"
-              title={t('nav.switch_language')}
-              aria-label={t('nav.switch_language')}
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              <span className="text-xs leading-none">{langInfo.flag}</span>
-              <span className="text-[11px] font-extrabold">{langInfo.nativeName}</span>
-            </button>
-
-            {/* 6. 🖥️ Fullscreen Toggle Button (Direct on XL+ screens, accessible in More menu on all screens) */}
-            <button
-              type="button"
-              onClick={handleToggleFullscreen}
-              className="hidden xl:flex items-center space-x-1 space-x-reverse px-2.5 py-1.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-black shadow-3xs hover:bg-blue-100 active:scale-95 transition-all cursor-pointer shrink-0"
-              title={t('nav.fullscreen_title')}
-              aria-label={t('nav.fullscreen')}
-            >
-              <Maximize className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
-              <span className="text-[11px]">{t('nav.fullscreen')}</span>
-            </button>
-
-            {/* 7. 👤 Personal Account / Cloud Sync Login Button */}
+            {/* 5. 👤 Personal Account / Cloud Sync Login Button */}
             <button
               type="button"
               onClick={() => {
                 setIsAuthModalOpen(true);
                 collapseHeaderOnMobile();
               }}
-              className={`flex items-center space-x-1.5 space-x-reverse px-2.5 sm:px-3 py-1.5 border rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center space-x-1.5 space-x-reverse px-3 py-2 border rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px] ${
                 currentUser
                   ? 'bg-teal-700 text-white border-teal-800 hover:bg-teal-800'
                   : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
@@ -5057,24 +5034,49 @@ export default function App() {
               {currentUser ? (
                 <>
                   <Cloud className="w-3.5 h-3.5 text-teal-200 shrink-0" />
-                  <span className="truncate max-w-[70px] sm:max-w-[90px] hidden xs:inline">{currentUser.name || currentUser.email.split('@')[0]}</span>
+                  <span className="truncate max-w-[90px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
                 </>
               ) : (
                 <>
                   <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="hidden xs:inline">{t('nav.sign_in')}</span>
+                  <span>{t('nav.sign_in')}</span>
                 </>
               )}
             </button>
 
-            {/* 8. 🔒 Lock Button (Direct on XL+ screens, accessible in More menu on all screens) */}
+            {/* 6. 🌐 Language Switcher Button */}
+            <button
+              type="button"
+              onClick={() => setShowLanguagesModal(true)}
+              className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-2 bg-amber-50/90 text-amber-950 border border-amber-300 rounded-xl text-xs font-black shadow-3xs hover:bg-amber-100 active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
+              title={t('nav.switch_language')}
+              aria-label={t('nav.switch_language')}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+              <span className="text-sm leading-none">{langInfo.flag}</span>
+              <span className="text-[11px] font-extrabold">{langInfo.nativeName}</span>
+            </button>
+
+            {/* 7. 🖥️ Fullscreen Toggle Button */}
+            <button
+              type="button"
+              onClick={handleToggleFullscreen}
+              className="flex items-center space-x-1 space-x-reverse px-2.5 py-2 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-black shadow-3xs hover:bg-blue-100 active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
+              title={t('nav.fullscreen_title')}
+              aria-label={t('nav.fullscreen')}
+            >
+              <Maximize className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
+              <span className="text-[11px]">{t('nav.fullscreen')}</span>
+            </button>
+
+            {/* 8. 🔒 Lock Button */}
             <button
               type="button"
               onClick={() => {
                 setSettings(prev => ({ ...prev, isAppLocked: true }));
                 collapseHeaderOnMobile();
               }}
-              className="hidden xl:flex p-2 bg-[#EEECDF] border border-[#D1CCBA] text-[#5A5A40] rounded-xl hover:bg-[#DDD8C3] active:scale-95 transition-all cursor-pointer shadow-3xs shrink-0 items-center justify-center"
+              className="p-2.5 bg-[#EEECDF] border border-[#D1CCBA] text-[#5A5A40] rounded-xl hover:bg-[#DDD8C3] active:scale-95 transition-all cursor-pointer shadow-3xs shrink-0 min-h-[38px] min-w-[38px] flex items-center justify-center"
               title={t('nav.lock_app')}
               aria-label={t('nav.lock_app')}
             >
@@ -5086,7 +5088,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setShowNavMoreMenu(prev => !prev)}
-                className={`p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center ${
+                className={`p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[38px] min-w-[38px] ${
                   showNavMoreMenu
                     ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
                     : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
@@ -5100,7 +5102,7 @@ export default function App() {
               {/* Overflow Menu Popover */}
               {showNavMoreMenu && (
                 <div
-                  className={`absolute top-full mt-2 ${isRtl ? 'left-0' : 'right-0'} w-56 sm:w-64 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1 font-sans text-right`}
+                  className={`absolute top-full mt-2 ${isRtl ? 'left-0' : 'right-0'} w-60 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1 font-sans text-right`}
                 >
                   {/* Language */}
                   <button
@@ -5219,7 +5221,7 @@ export default function App() {
           </motion.div>
 
           {/* Desktop Sticky Navigation Bar (Aligned with header without overlapping) */}
-          <div className="hidden sm:block bg-[#F9F7F2]/95 backdrop-blur-md border-b border-[#E2DCC8]/80 py-2 px-4 sticky top-[53px] sm:top-[57px] z-20 transition-all duration-300 shadow-3xs" dir={isRtl ? 'rtl' : 'ltr'}>
+          <div className="hidden sm:block bg-[#F9F7F2]/95 backdrop-blur-md border-b border-[#E2DCC8]/80 py-2 px-4 sticky top-[64px] z-20 transition-all duration-300 shadow-3xs" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-4xl mx-auto flex items-center justify-between">
               <button
                 type="button"
