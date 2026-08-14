@@ -106,15 +106,24 @@ export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promi
 
 /**
  * Production-Grade Unified Attachment Processor:
+ * - Validates file size <= 2GB (Gemini official max file limit)
  * - If file <= 8MB: converts to clean Base64 inlineData (fastest, no extra storage roundtrip)
  * - If file > 8MB: uploads to Gemini Files API and returns fileUri (supports up to 2GB)
  */
 export async function processAttachmentUnified(file: File, apiKey?: string): Promise<MultimodalAttachment> {
+  const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB (Gemini Files API limit)
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`حجم الملف "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) يتجاوز الحد الأقصى المسموح به في Gemini وهو 2 جيجابايت.`);
+  }
+
   const mimeType = sniffMimeType(file);
   const category = getAttachmentTypeCategory(mimeType);
   const INLINE_SIZE_THRESHOLD = 8 * 1024 * 1024; // 8MB
 
+  console.log(`[ATTACHMENT FORENSIC] selected file -> name: ${file.name}, size: ${file.size} bytes, ext MIME: ${mimeType}, category: ${category}`);
+
   if (file.size <= INLINE_SIZE_THRESHOLD) {
+    console.log(`[ATTACHMENT FORENSIC] strategy -> INLINE BASE64 (size <= 8MB)`);
     const base64Data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -125,6 +134,8 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
       reader.onerror = (e) => reject(e);
       reader.readAsDataURL(file);
     });
+
+    console.log(`[ATTACHMENT FORENSIC] inline Base64 processing complete for ${file.name} (${base64Data.length} base64 chars)`);
 
     return {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
@@ -138,7 +149,9 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
   }
 
   // Large files (> 8MB) are uploaded to Gemini Files API
+  console.log(`[ATTACHMENT FORENSIC] strategy -> GEMINI FILES API (size > 8MB)`);
   const { fileUri } = await uploadToGeminiFilesAPI(file, apiKey);
+  console.log(`[ATTACHMENT FORENSIC] Gemini Files API upload success for ${file.name} -> fileUri: ${fileUri}`);
 
   return {
     id: Date.now().toString() + Math.random().toString(36).substring(2, 5),

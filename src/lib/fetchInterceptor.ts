@@ -499,6 +499,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
               }
             };
           });
+        console.log(`[ATTACHMENT FORENSIC] GENERAL mode -> attachments count: ${attachments.length}, extraParts constructed: ${extraParts.length}`);
       }
 
       try {
@@ -621,6 +622,7 @@ ${formattedBooks || "لا توجد كتب مسجلة بعد."}
               }
             };
           });
+        console.log(`[ATTACHMENT FORENSIC] DIARY PRO mode -> attachments count: ${attachments.length}, extraParts constructed: ${extraParts.length}`);
       }
 
       const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse, extraParts);
