@@ -76,54 +76,93 @@ export function getAttachmentTypeCategory(mimeType: string): MultimodalAttachmen
 }
 
 /**
- * Upload file to Google Gemini Files API via key-pooled upload endpoint
+ * Upload file directly from browser to Google Gemini Files API using Resumable Upload Protocol
+ * Bypasses Vercel Serverless Function body limits (4.5MB) completely for files up to 2GB!
  */
 export async function uploadToGeminiFilesAPI(file: File, apiKey?: string): Promise<{ fileUri: string; mimeType: string }> {
   const mimeType = sniffMimeType(file);
-  const metadata = { file: { displayName: file.name } };
-  const formData = new FormData();
-  formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  formData.append('file', file);
+  const keyToUse = apiKey || getActiveApiKeyFromSettings() || '';
 
-  const res = await fetch('/api/gemini/upload-file', {
+  if (!keyToUse) {
+    throw new Error('لا يوجد مفتاح Gemini API صالح لاستخدامه في رفع الملفات الكبيرة.');
+  }
+
+  console.log(`[ATTACHMENT TEST] initiating resumable upload -> filename: ${file.name}, actual size: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)}MB), mimeType: ${mimeType}`);
+
+  // Step 1: Initiate Resumable Upload Session (sends tiny JSON metadata)
+  const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${keyToUse.trim()}`;
+  const initRes = await fetch(initUrl, {
     method: 'POST',
-    body: formData
+    headers: {
+      'X-Goog-Upload-Protocol': 'resumable',
+      'X-Goog-Upload-Command': 'start',
+      'X-Goog-Upload-Header-Content-Length': file.size.toString(),
+      'X-Goog-Upload-Header-Content-Type': mimeType,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ file: { display_name: file.name } })
   });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`فشل رفع الملف لـ Gemini (HTTP ${res.status}): ${errText}`);
+  if (!initRes.ok) {
+    const errText = await initRes.text().catch(() => '');
+    throw new Error(`فشل بدء جلسة الرفع لـ Gemini Files API (HTTP ${initRes.status}): ${errText}`);
   }
 
-  const data = await res.json();
-  const fileUri = data?.file?.uri || data?.fileUri;
-  if (!fileUri) {
-    throw new Error('لم يرجع خادم Gemini رابط الملف (fileUri).');
+  const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
+  if (!uploadUrl) {
+    throw new Error('لم ترجع خوادم Google رابط جلسة الرفع X-Goog-Upload-URL.');
   }
+
+  console.log(`[ATTACHMENT TEST] resumable session created -> upload URL received, streaming binary bytes directly from browser to Google...`);
+
+  // Step 2: Stream raw file bytes directly from browser to Google's Upload Session URL
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'X-Goog-Upload-Offset': '0',
+      'X-Goog-Upload-Command': 'upload, finalize',
+      'Content-Length': file.size.toString()
+    },
+    body: file
+  });
+
+  if (!uploadRes.ok) {
+    const errText = await uploadRes.text().catch(() => '');
+    throw new Error(`فشل نقل بيانات الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errText}`);
+  }
+
+  const uploadData = await uploadRes.json();
+  const fileUri = uploadData?.file?.uri;
+  if (!fileUri) {
+    throw new Error('لم يرجع خادم Gemini رابط الملف النهائي (fileUri).');
+  }
+
+  console.log(`[ATTACHMENT TEST] resumable upload completed successfully -> filename: ${file.name}, returned fileUri: ${fileUri}`);
 
   return { fileUri, mimeType };
 }
 
 /**
- * Production-Grade Unified Attachment Processor:
+ * Production-Grade Universal Attachment Processor:
  * - Validates file size <= 2GB (Gemini official max file limit)
- * - If file <= 8MB: converts to clean Base64 inlineData (fastest, no extra storage roundtrip)
- * - If file > 8MB: uploads to Gemini Files API and returns fileUri (supports up to 2GB)
+ * - Safe Inline Threshold: 3MB (to strictly prevent Vercel Serverless Function 4.5MB HTTP 413 errors)
+ * - Files <= 3MB: Base64 inlineData
+ * - Files > 3MB: Direct Browser → Gemini Files API Resumable Upload returning fileUri (supports 3MB to 2GB!)
  */
 export async function processAttachmentUnified(file: File, apiKey?: string): Promise<MultimodalAttachment> {
-  const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB (Gemini Files API limit)
+  const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB (Gemini Files API official max limit)
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(`حجم الملف "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) يتجاوز الحد الأقصى المسموح به في Gemini وهو 2 جيجابايت.`);
   }
 
   const mimeType = sniffMimeType(file);
   const category = getAttachmentTypeCategory(mimeType);
-  const INLINE_SIZE_THRESHOLD = 8 * 1024 * 1024; // 8MB
+  const INLINE_SIZE_THRESHOLD = 3 * 1024 * 1024; // Safe 3MB threshold for Vercel 4.5MB limit
 
-  console.log(`[ATTACHMENT FORENSIC] selected file -> name: ${file.name}, size: ${file.size} bytes, ext MIME: ${mimeType}, category: ${category}`);
+  console.log(`[ATTACHMENT TEST] selected file -> name: ${file.name}, actual size: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)}MB), ext MIME: ${mimeType}, category: ${category}`);
 
   if (file.size <= INLINE_SIZE_THRESHOLD) {
-    console.log(`[ATTACHMENT FORENSIC] strategy -> INLINE BASE64 (size <= 8MB)`);
+    console.log(`[ATTACHMENT TEST] selected strategy -> INLINE BASE64 (size <= 3MB)`);
     const base64Data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -135,7 +174,7 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
       reader.readAsDataURL(file);
     });
 
-    console.log(`[ATTACHMENT FORENSIC] inline Base64 processing complete for ${file.name} (${base64Data.length} base64 chars)`);
+    console.log(`[ATTACHMENT TEST] inline Base64 encoding complete for ${file.name} (${base64Data.length} chars)`);
 
     return {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
@@ -148,10 +187,10 @@ export async function processAttachmentUnified(file: File, apiKey?: string): Pro
     };
   }
 
-  // Large files (> 8MB) are uploaded to Gemini Files API
-  console.log(`[ATTACHMENT FORENSIC] strategy -> GEMINI FILES API (size > 8MB)`);
+  // Large files (> 3MB up to 2GB) use Direct Browser → Gemini Files API Resumable Upload
+  console.log(`[ATTACHMENT TEST] selected strategy -> GEMINI FILES API RESUMABLE UPLOAD (size > 3MB)`);
   const { fileUri } = await uploadToGeminiFilesAPI(file, apiKey);
-  console.log(`[ATTACHMENT FORENSIC] Gemini Files API upload success for ${file.name} -> fileUri: ${fileUri}`);
+  console.log(`[ATTACHMENT TEST] Gemini Files API resumable upload complete for ${file.name} -> fileUri: ${fileUri}`);
 
   return {
     id: Date.now().toString() + Math.random().toString(36).substring(2, 5),
