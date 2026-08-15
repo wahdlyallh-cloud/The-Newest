@@ -56,6 +56,15 @@ export interface DiaryEdit {
   timestamp: string; // ISO String or custom formatted timestamp
 }
 
+export type JournalEntryType =
+  | 'diary'      // 📔 يوميات
+  | 'thought'    // 💭 خواطر وأفكار
+  | 'gratitude'  // ❤️ امتنانات
+  | 'wisdom'     // 💡 حكم قصيرة
+  | 'quote'      // 📌 اقتباسات
+  | 'idea'       // 🧠 أفكار سريعة
+  | 'goal';      // 🎯 أهداف قصيرة
+
 export interface DiaryEntry {
   id: string;
   title: string;
@@ -97,7 +106,8 @@ export interface DiaryEntry {
   fastMoodScore?: number; // Daily fast mood score (1-10)
   symptomsChecklist?: string[]; // Logged physical symptoms
   cbtWorksheets?: CBTWorksheet[]; // CBT exercises attached to this day
-  diaryType?: 'diary' | 'thought'; // Type of entry (diary or thought)
+  diaryType?: JournalEntryType; // Expanded Unified Journal Entry Type
+  isFavorite?: boolean; // Direct explicit Favorite flag
 }
 
 export interface CBTWorksheet {

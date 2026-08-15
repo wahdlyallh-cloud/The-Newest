@@ -13,8 +13,12 @@ import { getAttachmentBlob } from '../lib/attachmentStore';
 export type KnowledgeSourceType =
   | 'diary'
   | 'thought'
-  | 'habit'
   | 'gratitude'
+  | 'wisdom'
+  | 'quote'
+  | 'idea'
+  | 'goal'
+  | 'habit'
   | 'book'
   | 'cbt_worksheet'
   | 'audio_recording'
@@ -281,11 +285,34 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
 
       const dateStr = normalizeDateToYMD(d.createdAt);
       const timestamp = parseTimestampSafe(d.createdAt);
-      const title = d.title || (d.diaryType === 'thought' ? 'خاطرة سريعة' : 'يومية بدون عنوان');
       const cleanContent = stripHtmlAndClean(d.content);
-      const isThought = d.diaryType === 'thought';
+      const entryType: KnowledgeSourceType = (d.diaryType as KnowledgeSourceType) || 'diary';
+      const typeLabelMapAr: Record<string, string> = {
+        diary: 'يومية',
+        thought: 'خاطرة',
+        gratitude: 'امتنان',
+        wisdom: 'حكمة',
+        quote: 'اقتباس',
+        idea: 'فكرة',
+        goal: 'هدف'
+      };
+      const typeLabelMapEn: Record<string, string> = {
+        diary: 'Diary',
+        thought: 'Thought',
+        gratitude: 'Gratitude',
+        wisdom: 'Wisdom',
+        quote: 'Quote',
+        idea: 'Idea',
+        goal: 'Goal'
+      };
+      const labelAr = typeLabelMapAr[entryType] || 'تدوينة';
+      const labelEn = typeLabelMapEn[entryType] || 'Entry';
+      const title = d.title || `${labelAr} بدون عنوان`;
 
-      const relKeys: string[] = [`date:${dateStr}`];
+      const relKeys: string[] = [`date:${dateStr}`, `type:${entryType}`];
+      if (d.isFavorite) {
+        relKeys.push('favorite:true');
+      }
       if (d.tags && Array.isArray(d.tags)) {
         d.tags.forEach(t => relKeys.push(`tag:${t.toLowerCase().trim()}`));
       }
@@ -300,12 +327,13 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       if (d.waterCups !== undefined) metrics.waterCups = d.waterCups;
       if (d.fastMoodScore !== undefined) metrics.fastMoodScore = d.fastMoodScore;
       if (d.importance !== undefined) metrics.importance = d.importance;
+      if (d.isFavorite !== undefined) metrics.isFavorite = d.isFavorite;
 
-      // Base Diary / Thought Entity
+      // Base Unified Journal Entity
       entities.push({
         id: `diary_${d.id}`,
-        sourceType: isThought ? 'thought' : 'diary',
-        memoryCategory: 'episodic',
+        sourceType: entryType,
+        memoryCategory: entryType === 'goal' ? 'semantic' : 'episodic',
         dateStr,
         timestamp,
         title,
@@ -314,8 +342,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         moods: d.moods || [],
         metrics,
         relationshipKeys: relKeys,
-        sourceLabelAr: `${isThought ? 'خاطرة' : 'يومية'} (${dateStr}) - "${title}"`,
-        sourceLabelEn: `${isThought ? 'Thought' : 'Diary'} (${dateStr}) - "${title}"`,
+        sourceLabelAr: `${labelAr} (${dateStr}) - "${title}"`,
+        sourceLabelEn: `${labelEn} (${dateStr}) - "${title}"`,
         rawRef: d
       });
 
@@ -793,14 +821,29 @@ export function analyzeQueryIntent(rawQuery: string, appLanguage = 'ar'): QueryI
 
   // Detect Targeted Sources
   const targetSources: KnowledgeSourceType[] = [];
-  if (cleaned.includes('يومي') || cleaned.includes('مذكر') || cleaned.includes('تدوين') || cleaned.includes('خاطر') || cleaned.includes('diary') || cleaned.includes('journal')) {
-    targetSources.push('diary', 'thought');
+  if (cleaned.includes('يومي') || cleaned.includes('مذكر') || cleaned.includes('تدوين') || cleaned.includes('diary') || cleaned.includes('journal')) {
+    targetSources.push('diary');
+  }
+  if (cleaned.includes('خاطر') || cleaned.includes('خواطر') || cleaned.includes('thought') || cleaned.includes('reflection')) {
+    targetSources.push('thought');
   }
   if (cleaned.includes('عادات') || cleaned.includes('عادة') || cleaned.includes('روتين') || cleaned.includes('habit')) {
     targetSources.push('habit');
   }
-  if (cleaned.includes('امتنان') || cleaned.includes('نعم') || cleaned.includes('شاكر') || cleaned.includes('gratitude')) {
+  if (cleaned.includes('امتنان') || cleaned.includes('نعم') || cleaned.includes('شاكر') || cleaned.includes('ممتن') || cleaned.includes('الحمد لله') || cleaned.includes('gratitude') || cleaned.includes('thankful')) {
     targetSources.push('gratitude');
+  }
+  if (cleaned.includes('حكم') || cleaned.includes('حكمة') || cleaned.includes('عبرة') || cleaned.includes('درس') || cleaned.includes('wisdom') || cleaned.includes('lesson')) {
+    targetSources.push('wisdom');
+  }
+  if (cleaned.includes('اقتباس') || cleaned.includes('مقتبس') || cleaned.includes('مقولة') || cleaned.includes('quote') || cleaned.includes('saying')) {
+    targetSources.push('quote');
+  }
+  if (cleaned.includes('فكر') || cleaned.includes('أفكار') || cleaned.includes('افكار') || cleaned.includes('فكرة') || cleaned.includes('ابتكار') || cleaned.includes('idea') || cleaned.includes('brainstorm')) {
+    targetSources.push('idea');
+  }
+  if (cleaned.includes('هدف') || cleaned.includes('أهداف') || cleaned.includes('اهداف') || cleaned.includes('خطة') || cleaned.includes('إنجاز') || cleaned.includes('goal') || cleaned.includes('target') || cleaned.includes('milestone')) {
+    targetSources.push('goal');
   }
   if (cleaned.includes('كتاب') || cleaned.includes('كتب') || cleaned.includes('مكتب') || cleaned.includes('قراء') || cleaned.includes('book') || cleaned.includes('reading')) {
     targetSources.push('book');

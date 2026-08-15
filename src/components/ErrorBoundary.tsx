@@ -24,16 +24,21 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("Uncaught app error caught by ErrorBoundary:", error, errorInfo);
   }
 
-  private handleClearCacheAndReload = () => {
+  private handleClearCacheAndReload = async () => {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.clear();
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
       }
     } catch (e) {
-      console.error("Failed to clear localStorage:", e);
+      console.error("Failed to clear caches/SW in ErrorBoundary:", e);
     }
     if (typeof window !== 'undefined') {
-      window.location.reload();
+      window.location.href = window.location.pathname + '?cacheBust=' + Date.now();
     }
   };
 
@@ -56,7 +61,7 @@ export class ErrorBoundary extends Component<Props, State> {
           title = "استعادة الواجهة والأمان 🛡️";
           desc = "حدث تنبيه غير متوقع أثناء التشغيل. تم الحفاظ على بياناتك، يمكنك إعادة التحميل أو مسح التخزين المؤقت لاستعادة التطبيق فوراً.";
           reloadBtn = "إعادة تحميل الصفحة 🔄";
-          clearCacheBtn = "مسح التخزين وإعادة التشغيل 🧹";
+          clearCacheBtn = "تحديث عميق وتفريغ الكاش 🧹";
         }
       } catch (err) {
         console.error("Error reading language in ErrorBoundary render:", err);
@@ -78,9 +83,15 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   this.setState({ hasError: false, error: null });
-                  window.location.reload();
+                  if (typeof window !== 'undefined' && 'caches' in window) {
+                    try {
+                      const keys = await caches.keys();
+                      await Promise.all(keys.map(k => caches.delete(k)));
+                    } catch (_) {}
+                  }
+                  window.location.href = window.location.pathname + '?reload=' + Date.now();
                 }}
                 className="px-5 py-2.5 bg-[#8B9D83] text-white rounded-xl font-bold text-xs hover:bg-[#7A8C72] transition-colors shadow-sm cursor-pointer"
               >

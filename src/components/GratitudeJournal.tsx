@@ -27,7 +27,7 @@ interface GratitudeJournalProps {
   setDiaries?: React.Dispatch<React.SetStateAction<DiaryEntry[]>>;
   setActiveTab?: (tab: 'dashboard' | 'diaries' | 'advisor' | 'analytics' | 'settings') => void;
   setActiveDiariesSubTab?: (subTab: 'journal' | 'gratitude') => void;
-  setDiaryTypeFilter?: (filter: 'all' | 'diary' | 'thought') => void;
+  setDiaryTypeFilter?: (filter: any) => void;
   triggerGratitudeNotificationNow?: () => void;
   onOpenShareModal?: (data?: { text?: string; category?: string }) => void;
 }

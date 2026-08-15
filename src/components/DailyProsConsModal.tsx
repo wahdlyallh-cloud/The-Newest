@@ -139,8 +139,16 @@ export default function DailyProsConsModal({
     if (targetDiaries && targetDiaries.length > 0) {
       contextLines.push(`=== 1) المذكرات والخواطر والفضفضة (${targetDiaries.length} مذكرات) ===`);
       targetDiaries.forEach((d, idx) => {
-        contextLines.push(`[مذكرة #${idx + 1}]`);
-        contextLines.push(`- النوع: ${d.diaryType === 'thought' ? 'خاطرة' : 'مذكرة يومية'}`);
+        const typeMapAr: Record<string, string> = {
+          diary: 'مذكرة يومية',
+          thought: 'خاطرة',
+          gratitude: 'امتنان',
+          wisdom: 'حكمة',
+          quote: 'اقتباس',
+          idea: 'فكرة',
+          goal: 'هدف'
+        };
+        contextLines.push(`- النوع: ${typeMapAr[d.diaryType || 'diary'] || 'مذكرة'}`);
         contextLines.push(`- العنوان: ${d.title || 'بدون عنوان'}`);
         contextLines.push(`- المحتوى: ${d.content || 'لا يوجد نص'}`);
         
