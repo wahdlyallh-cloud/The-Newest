@@ -4379,6 +4379,7 @@ export default function App() {
                             contentStr.toLowerCase().includes(q) ||
                             tagsArr.some(tagItem => typeof tagItem === 'string' && tagItem.toLowerCase().includes(q));
                             
+      const matchesTag = selectedTagFilter ? tagsArr.includes(selectedTagFilter) : true;
       const isFav = d.isFavorite === true || (d.isFavorite === undefined && (d.importance || 0) >= 4);
       const matchesFavorites = (showFavoritesOnly || diaryTypeFilter === 'favorites') ? isFav : true;
       
