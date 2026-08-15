@@ -10,8 +10,8 @@ import {
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
   MoreVertical, MoreHorizontal
 } from 'lucide-react';
-import { motion } from 'motion/react';
-import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage } from './types';
+import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
+import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig } from './lib/journalTypes';
 import StaticNotification from './components/StaticNotification';
 import FloatingBall from './components/FloatingBall';
 import DrawingCanvas from './components/DrawingCanvas';
@@ -1019,7 +1019,7 @@ export default function App() {
 
   const [activeDiariesSubTab, setActiveDiariesSubTab] = useState<'journal' | 'gratitude' | 'cbt' | 'tasks'>('journal');
   const [analyticsSubTab, setAnalyticsSubTab] = useState<'report' | 'charts' | 'pros_cons'>('report');
-  const [diaryTypeFilter, setDiaryTypeFilter] = useState<'all' | 'diary' | 'thought'>('all');
+  const [diaryTypeFilter, setDiaryTypeFilter] = useState<'all' | JournalEntryType | 'favorites'>('all');
   const [diaryChatMessage, setDiaryChatMessage] = useState('');
   const [diaryChatLoading, setDiaryChatLoading] = useState(false);
 
@@ -2062,7 +2062,7 @@ export default function App() {
     activeDiariesSubTab: 'journal' | 'gratitude' | 'cbt' | 'tasks';
     analyticsSubTab: 'report' | 'charts' | 'pros_cons';
     editingDiaryId: string | null;
-    diaryTypeFilter: 'all' | 'diary' | 'thought';
+    diaryTypeFilter: 'all' | JournalEntryType | 'favorites';
   }
 
   const [navHistory, setNavHistory] = useState<NavState[]>([]);
@@ -2823,7 +2823,7 @@ export default function App() {
   };
 
   // --- Initialize blank or default diary entry ---
-  const startNewDiary = () => {
+  const startNewDiary = (initialType: JournalEntryType = 'diary') => {
     const todayStr = new Date().toISOString();
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}`,
@@ -2831,7 +2831,8 @@ export default function App() {
       content: '',
       createdAt: todayStr,
       updatedAt: todayStr,
-      diaryType: 'diary',
+      diaryType: initialType,
+      isFavorite: false,
       moods: ['طبيعي'],
       importance: 3,
       color: 'bg-white border-[#E2DCC8]',
@@ -2854,6 +2855,23 @@ export default function App() {
     setIsNewEntry(true);
     setDiaryAiAnswer('');
     setActiveTab('diaries');
+  };
+
+  // --- Toggle Favorite for Any Entry (Instant Save) ---
+  const toggleFavoriteDiary = (diaryId: string) => {
+    setDiaries(prev => {
+      const next = prev.map(d => {
+        if (d.id === diaryId) {
+          const isCurrentlyFav = d.isFavorite === true || (d.isFavorite === undefined && (d.importance || 0) >= 4);
+          return { ...d, isFavorite: !isCurrentlyFav };
+        }
+        return d;
+      });
+      try {
+        localStorage.setItem('yawmiyati_diaries', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
   };
 
   // --- Save / Update the Active Diary ---
@@ -4361,14 +4379,13 @@ export default function App() {
                             contentStr.toLowerCase().includes(q) ||
                             tagsArr.some(tagItem => typeof tagItem === 'string' && tagItem.toLowerCase().includes(q));
                             
-      const matchesTag = selectedTagFilter ? tagsArr.includes(selectedTagFilter) : true;
-      const matchesFavorites = showFavoritesOnly ? ((d.importance || 0) >= 4) : true;
+      const isFav = d.isFavorite === true || (d.isFavorite === undefined && (d.importance || 0) >= 4);
+      const matchesFavorites = (showFavoritesOnly || diaryTypeFilter === 'favorites') ? isFav : true;
       
-      const matchesType = diaryTypeFilter === 'all' 
-        ? true 
-        : (diaryTypeFilter === 'diary' 
-           ? d.diaryType === 'diary' || !d.diaryType
-           : d.diaryType === 'thought');
+      const effectiveType = d.diaryType || 'diary';
+      const matchesType = (diaryTypeFilter === 'all' || diaryTypeFilter === 'favorites')
+        ? true
+        : effectiveType === diaryTypeFilter;
 
       return matchesSearch && matchesTag && matchesFavorites && matchesType;
     });
@@ -6330,35 +6347,48 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* تصنيف التدوينة الأساسي (يومياتي vs خواطري) */}
-                <div>
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-2">{t.entryClassificationLabel}</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setEditingDiary(prev => prev ? { ...prev, diaryType: 'diary' } : null)}
-                      className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center space-x-2 space-x-reverse ${
-                        (editingDiary.diaryType || 'diary') === 'diary'
-                          ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-3xs font-extrabold scale-[1.01]'
-                          : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4]'
-                      }`}
-                    >
-                      <span>📝</span>
-                      <span>{t.myNormalDiariesChoice}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingDiary(prev => prev ? { ...prev, diaryType: 'thought' } : null)}
-                      className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center space-x-2 space-x-reverse ${
-                        editingDiary.diaryType === 'thought'
-                          ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-3xs font-extrabold scale-[1.01]'
-                          : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4]'
-                      }`}
-                    >
-                      <span>✍️</span>
-                      <span>{t.myPrivateThoughtsChoice}</span>
-                    </button>
+                {/* شريط اختيار نوع التدوينة الموحد (Horizontal Scrollable Type Selector) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-[#5A5A40]">{t.entryClassificationLabel || (isEn ? "Entry Classification:" : "تصنيف ونوع التدوينة:")}</label>
+                    <span className="text-[10px] font-bold text-gray-400">
+                      {isEn ? "Scroll ↔" : "اسحب يميناً ويساراً ↔"}
+                    </span>
                   </div>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full max-w-full">
+                    {ALL_JOURNAL_TYPES.map((typeKey) => {
+                      const cfg = getJournalTypeConfig(typeKey);
+                      const isSelected = (editingDiary.diaryType || 'diary') === typeKey;
+                      const label = isAr ? cfg.labelAr : cfg.labelEn;
+
+                      return (
+                        <button
+                          key={typeKey}
+                          type="button"
+                          onClick={() => setEditingDiary(prev => prev ? { ...prev, diaryType: typeKey } : null)}
+                          className={`shrink-0 py-2.5 px-3.5 rounded-2xl text-xs font-black border transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
+                            isSelected
+                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-3xs font-extrabold scale-[1.02]'
+                              : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4] hover:border-[#8B9D83]/50'
+                          }`}
+                        >
+                          <span className="text-sm sm:text-base">{cfg.icon}</span>
+                          <span className="whitespace-nowrap">{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Subtle guidance of the selected type */}
+                  {(() => {
+                    const activeCfg = getJournalTypeConfig(editingDiary.diaryType);
+                    const desc = isAr ? activeCfg.descriptionAr : activeCfg.descriptionEn;
+                    return (
+                      <p className="text-[11px] text-[#5A5A40]/80 font-bold bg-[#FBFBFA] border border-[#E2DCC8]/60 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
+                        <span>✨</span>
+                        <span>{desc}</span>
+                      </p>
+                    );
+                  })()}
                 </div>
 
                 <div>
@@ -8287,48 +8317,54 @@ export default function App() {
                 {activeDiariesSubTab === 'journal' ? (
                   <div className="space-y-4">
                     
-                    {/* Filter Tabs: اليوميات vs الخواطر */}
-                    <div className="flex border-b border-[#E2DCC8]/40 pb-1.5 gap-6">
+                    {/* Horizontal Scrollable Filter Bar (All Types + Favorites) */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E2DCC8]/40 scrollbar-none w-full max-w-full">
+                      {/* All Button */}
                       <button
                         onClick={() => setDiaryTypeFilter('all')}
-                        className={`pb-2 text-xs font-black transition-all relative cursor-pointer ${
+                        className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
                           diaryTypeFilter === 'all'
-                            ? 'text-[#5A5A40]'
-                            : 'text-gray-400 hover:text-gray-600'
+                            ? 'bg-[#5A5A40] text-white shadow-3xs font-extrabold scale-[1.02]'
+                            : 'bg-white text-gray-500 hover:text-[#5A5A40] border border-[#E2DCC8]/80 hover:bg-[#F0EDE4]'
                         }`}
                       >
-                        {t.allFilterTab || (isEn ? "All" : "الكل")}
-                        {diaryTypeFilter === 'all' && (
-                          <span className="absolute bottom-[-6px] left-0 right-0 h-0.5 bg-[#8B9D83] rounded-full" />
-                        )}
+                        <span>🌐</span>
+                        <span>{t.allFilterTab || (isEn ? "All" : "الكل")}</span>
                       </button>
+
+                      {/* 7 Journal Types */}
+                      {ALL_JOURNAL_TYPES.map((typeKey) => {
+                        const cfg = getJournalTypeConfig(typeKey);
+                        const isSelected = diaryTypeFilter === typeKey;
+                        const label = isAr ? cfg.labelAr : cfg.labelEn;
+
+                        return (
+                          <button
+                            key={typeKey}
+                            onClick={() => setDiaryTypeFilter(typeKey)}
+                            className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
+                              isSelected
+                                ? 'bg-[#8B9D83] text-white shadow-3xs font-extrabold scale-[1.02]'
+                                : 'bg-white text-gray-500 hover:text-[#5A5A40] border border-[#E2DCC8]/80 hover:bg-[#F0EDE4]'
+                            }`}
+                          >
+                            <span>{cfg.icon}</span>
+                            <span className="whitespace-nowrap">{label}</span>
+                          </button>
+                        );
+                      })}
+
+                      {/* Favorites Button */}
                       <button
-                        onClick={() => setDiaryTypeFilter('diary')}
-                        className={`pb-2 text-xs font-black transition-all relative cursor-pointer flex items-center space-x-1 space-x-reverse ${
-                          diaryTypeFilter === 'diary'
-                            ? 'text-[#5A5A40]'
-                            : 'text-gray-400 hover:text-gray-600'
+                        onClick={() => setDiaryTypeFilter('favorites')}
+                        className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
+                          diaryTypeFilter === 'favorites'
+                            ? 'bg-amber-600 text-white shadow-3xs font-extrabold scale-[1.02]'
+                            : 'bg-amber-50/70 text-amber-800 border border-amber-200/80 hover:bg-amber-100'
                         }`}
                       >
-                        <span>📓</span>
-                        <span>{t.diariesFilterTab || (isEn ? "Diaries" : "اليوميات")}</span>
-                        {diaryTypeFilter === 'diary' && (
-                          <span className="absolute bottom-[-6px] left-0 right-0 h-0.5 bg-[#8B9D83] rounded-full" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setDiaryTypeFilter('thought')}
-                        className={`pb-2 text-xs font-black transition-all relative cursor-pointer flex items-center space-x-1 space-x-reverse ${
-                          diaryTypeFilter === 'thought'
-                            ? 'text-[#5A5A40]'
-                            : 'text-gray-400 hover:text-gray-600'
-                        }`}
-                      >
-                        <span>✍️</span>
-                        <span>{t.thoughtsFilterTab || (isEn ? "Thoughts" : "الخواطر")}</span>
-                        {diaryTypeFilter === 'thought' && (
-                          <span className="absolute bottom-[-6px] left-0 right-0 h-0.5 bg-[#8B9D83] rounded-full" />
-                        )}
+                        <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                        <span className="whitespace-nowrap">{isEn ? "Favorites ⭐" : "المفضلة ⭐"}</span>
                       </button>
                     </div>
                     
@@ -8517,6 +8553,27 @@ export default function App() {
                                     <div className="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-gray-500 w-full max-w-full" dir="rtl">
                                       {/* Star Ratings & Actions on the Right in RTL */}
                                       <div className="flex flex-wrap items-center gap-1.5 max-w-full">
+                                        {/* Direct Favorite Toggle Button */}
+                                        <button
+                                          type="button"
+                                          title={diary.isFavorite ? (isEn ? "Remove from Favorites ⭐" : "إزالة من المفضلة ⭐") : (isEn ? "Add to Favorites ⭐" : "إضافة للمفضلة ⭐")}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFavoriteDiary(diary.id);
+                                          }}
+                                          className={`p-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center shrink-0 hover:scale-110 active:scale-95 shadow-3xs ${
+                                            (diary.isFavorite === true || (diary.isFavorite === undefined && (diary.importance || 0) >= 4))
+                                              ? 'bg-amber-100/95 text-amber-600 border-amber-300 font-bold'
+                                              : 'bg-white/90 text-gray-400 border-gray-200 hover:text-amber-500 hover:border-amber-300'
+                                          }`}
+                                        >
+                                          <Star className={`w-3.5 h-3.5 ${
+                                            (diary.isFavorite === true || (diary.isFavorite === undefined && (diary.importance || 0) >= 4))
+                                              ? 'fill-amber-500 text-amber-500'
+                                              : 'text-gray-400'
+                                          }`} />
+                                        </button>
+
                                         {/* Importance Rating Stars */}
                                         <div className="flex items-center space-x-0.5 space-x-reverse shrink-0">
                                           {[1, 2, 3, 4, 5].map((s) => (
@@ -8572,15 +8629,16 @@ export default function App() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                      {/* Title with type badge */}
+                                      {/* Title with dynamic type badge */}
                                       <div className="flex items-center space-x-1.5 space-x-reverse">
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 ${
-                                          diary.diaryType === 'thought'
-                                            ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]'
-                                            : 'bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8]'
-                                        }`}>
-                                          {diary.diaryType === 'thought' ? (t.thoughtBadge || (isEn ? "✍️ Thought" : "✍️ خاطرة")) : (t.diaryBadge || (isEn ? "📓 Journal" : "📓 يومية"))}
-                                        </span>
+                                        {(() => {
+                                          const typeCfg = getJournalTypeConfig(diary.diaryType);
+                                          return (
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 border ${typeCfg.pillBadgeClass}`}>
+                                              {isAr ? typeCfg.badgeAr : typeCfg.badgeEn}
+                                            </span>
+                                          );
+                                        })()}
                                         <h4 className="font-extrabold text-[#3A3A3A] text-xs md:text-sm line-clamp-1">
                                           {diary.title || (t.subNoteDefaultTitle || (isEn ? "Sub-entry" : "مذكرة فرعية"))}
                                         </h4>
