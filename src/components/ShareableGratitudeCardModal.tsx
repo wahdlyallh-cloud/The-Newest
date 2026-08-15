@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, Share2, Sparkles, Copy, Check, Heart, Quote, Image as ImageIcon, Layout, Palette } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -20,6 +20,11 @@ interface ShareableGratitudeCardModalProps {
 
 export type CardThemeId = 'emerald' | 'golden' | 'midnight' | 'parchment' | 'lavender';
 export type CardFormat = '1:1' | '9:16';
+
+interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
 
 export default function ShareableGratitudeCardModal({
   isOpen,
@@ -43,8 +48,19 @@ export default function ShareableGratitudeCardModal({
   const [showWatermark, setShowWatermark] = useState(true);
 
   const [isExporting, setIsExporting] = useState(false);
+  const [exportAction, setExportAction] = useState<'download' | 'share' | null>(null);
   const [copied, setCopied] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const toastTimerRef = useRef<any>(null);
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ message, type });
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -94,76 +110,212 @@ export default function ShareableGratitudeCardModal({
 
   const currentTheme = THEMES[selectedTheme];
 
+  // Helper for cross-platform clipboard copy
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof document !== 'undefined') {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        textArea.setAttribute('readonly', '');
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+      }
+    } catch (err) {
+      console.error('Fallback clipboard error:', err);
+    }
+    return false;
+  };
+
+  // High quality canvas & blob generation
+  const generateCardBlob = async (): Promise<{ blob: Blob; dataUrl: string }> => {
+    if (!cardRef.current) {
+      throw new Error('Card container element not found.');
+    }
+
+    // Ensure web fonts are rendered
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (_) {}
+    }
+
+    const canvas = await html2canvas(cardRef.current, {
+      scale: 3, // High DPI crisp retina export
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+    });
+
+    const dataUrl = canvas.toDataURL('image/png');
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((b) => {
+        if (b) resolve(b);
+        else reject(new Error('Failed to convert canvas to PNG blob.'));
+      }, 'image/png');
+    });
+
+    return { blob, dataUrl };
+  };
+
   // Download card as image using html2canvas
   const handleDownloadImage = async () => {
-    if (!cardRef.current) return;
+    if (isExporting || !cardRef.current) return;
     try {
       setIsExporting(true);
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2, // high DPI crisp rendering
-        useCORS: true,
-        backgroundColor: null,
-      });
+      setExportAction('download');
 
-      const dataUrl = canvas.toDataURL('image/png');
+      const { blob, dataUrl } = await generateCardBlob();
+      const filename = `yawmiyati-gratitude-${Date.now()}.png`;
+
+      // Trigger download
       const link = document.createElement('a');
-      link.download = `gratitude_card_${Date.now()}.png`;
+      link.download = filename;
       link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
 
       setDownloadSuccess(true);
+      showToast(isRtl ? '✅ تم تحميل بطاقة الامتنان بنجاح' : '✅ Gratitude card downloaded successfully', 'success');
       setTimeout(() => setDownloadSuccess(false), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error generating image export:', err);
+      showToast(isRtl ? '⚠️ تعذر تحميل الصورة، يرجى المحاولة ثانية' : '⚠️ Failed to download image, please retry', 'error');
     } finally {
       setIsExporting(false);
+      setExportAction(null);
     }
   };
 
-  // Native Web Share API
+  // Native Web Share API with intelligent fallbacks
   const handleShareCard = async () => {
-    if (!cardRef.current) return;
+    if (isExporting || !cardRef.current) return;
     try {
       setIsExporting(true);
-      const canvas = await html2canvas(cardRef.current, { scale: 2, useCORS: true });
-      
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], 'gratitude_card.png', { type: 'image/png' });
+      setExportAction('share');
 
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: cardCategory,
-            text: cardText,
-            files: [file],
-          });
-        } else if (navigator.clipboard) {
-          await navigator.clipboard.writeText(`"${cardText}" - ${authorName}`);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2500);
+      const { blob } = await generateCardBlob();
+      const filename = `yawmiyati-gratitude-${Date.now()}.png`;
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      const shareTitle = isRtl ? 'بطاقة امتنان' : 'Gratitude Card';
+      const shareText = `«${cardText}» - ${authorName}\n${isRtl ? 'عبر تطبيق حياة AI 🌿' : 'via Hayat AI 🌿'}`;
+
+      let sharedSuccess = false;
+
+      // 1. Try Native Web Share with Image File
+      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+        try {
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: shareTitle,
+              text: shareText,
+              files: [file],
+            });
+            sharedSuccess = true;
+          }
+        } catch (shareErr: any) {
+          // Gracefully ignore user cancellation
+          if (shareErr?.name === 'AbortError' || String(shareErr).includes('AbortError')) {
+            return;
+          }
         }
-        setIsExporting(false);
-      });
-    } catch (err) {
+      }
+
+      // 2. Fallback: Native Text Share
+      if (!sharedSuccess && typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text: shareText,
+          });
+          sharedSuccess = true;
+        } catch (shareErr: any) {
+          if (shareErr?.name === 'AbortError' || String(shareErr).includes('AbortError')) {
+            return;
+          }
+        }
+      }
+
+      // 3. Fallback: Copy to clipboard
+      if (!sharedSuccess) {
+        const copiedOk = await copyToClipboard(`"${cardText}" - ${authorName}`);
+        if (copiedOk) {
+          setCopied(true);
+          showToast(isRtl ? '📋 تم نسخ النص للمشاركة' : '📋 Text copied for sharing', 'info');
+          setTimeout(() => setCopied(false), 2500);
+        } else {
+          showToast(isRtl ? '⚠️ تعذر فتح نافذة المشاركة على هذا المتصفح' : '⚠️ Sharing not supported on this browser', 'error');
+        }
+      }
+    } catch (err: any) {
       console.error('Share error:', err);
+      showToast(isRtl ? '⚠️ تعذر تجهيز المشاركة' : '⚠️ Failed to prepare share', 'error');
+    } finally {
       setIsExporting(false);
+      setExportAction(null);
     }
   };
 
-  // Copy text fallback
+  // Copy text handler
   const handleCopyText = async () => {
-    await navigator.clipboard.writeText(`"${cardText}" - ${authorName}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    if (isExporting) return;
+    const fullText = `«${cardText}» - ${authorName}\n${isRtl ? 'تطبيق حياة AI' : 'Hayat AI App'}`;
+    const ok = await copyToClipboard(fullText);
+    if (ok) {
+      setCopied(true);
+      showToast(isRtl ? '📋 تم نسخ النص إلى الحافظة' : '📋 Text copied to clipboard', 'success');
+      setTimeout(() => setCopied(false), 2500);
+    } else {
+      showToast(isRtl ? '⚠️ تعذر النسخ للحافظة' : '⚠️ Failed to copy to clipboard', 'error');
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[55] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      {/* Floating Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs flex items-center gap-2 backdrop-blur-md border ${
+              toast.type === 'success'
+                ? 'bg-emerald-900/90 text-emerald-100 border-emerald-500/40'
+                : toast.type === 'error'
+                ? 'bg-rose-900/90 text-rose-100 border-rose-500/40'
+                : 'bg-slate-900/90 text-slate-100 border-slate-500/40'
+            }`}
+          >
+            <span>{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[#FAF8F5] border-2 border-[#D4A373]/40 rounded-[32px] w-full max-w-2xl my-auto flex flex-col overflow-hidden shadow-2xl transition-all"
+        className="bg-[#FAF8F5] border-2 border-[#D4A373]/40 rounded-[32px] w-full max-w-2xl my-auto flex flex-col overflow-hidden shadow-2xl transition-all relative"
         dir={isRtl ? 'rtl' : 'ltr'}
       >
         {/* Modal Header */}
@@ -367,34 +519,52 @@ export default function ShareableGratitudeCardModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="w-full mt-5 flex flex-col sm:flex-row gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadImage}
-                disabled={isExporting}
-                className="flex-1 py-3 bg-[#4E685B] hover:bg-[#3F5449] text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50"
-              >
-                <Download className="w-4 h-4 text-amber-300" />
-                <span>{downloadSuccess ? (isRtl ? 'تم التحميل! 💾' : 'Downloaded! 💾') : (isRtl ? 'تحميل صورة PNG' : 'Download PNG')}</span>
-              </button>
+            <div className="w-full mt-5 flex flex-col gap-2.5">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadImage}
+                  disabled={isExporting}
+                  className="flex-1 py-3 bg-[#4E685B] hover:bg-[#3F5449] text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Download className="w-4 h-4 text-amber-300" />
+                  <span>
+                    {isExporting && exportAction === 'download'
+                      ? (isRtl ? '⏳ جاري تجهيز الصورة...' : '⏳ Preparing Image...')
+                      : downloadSuccess
+                      ? (isRtl ? 'تم التحميل! 💾' : 'Downloaded! 💾')
+                      : (isRtl ? 'تحميل صورة PNG' : 'Download PNG')}
+                  </span>
+                </button>
 
-              <button
-                type="button"
-                onClick={handleShareCard}
-                disabled={isExporting}
-                className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50"
-              >
-                <Share2 className="w-4 h-4" />
-                <span>{isRtl ? 'مشاركة مباشرة' : 'Share Card'}</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={handleShareCard}
+                  disabled={isExporting}
+                  className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>
+                    {isExporting && exportAction === 'share'
+                      ? (isRtl ? '⏳ جاري تجهيز المشاركة...' : '⏳ Preparing Share...')
+                      : (isRtl ? 'مشاركة مباشرة' : 'Share Card')}
+                  </span>
+                </button>
+              </div>
 
+              {/* Bottom White Copy Button */}
               <button
                 type="button"
                 onClick={handleCopyText}
-                className="p-3 bg-white hover:bg-gray-100 border border-[#E2DCC8] text-gray-700 font-black text-xs rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-xs"
-                title="Copy text"
+                disabled={isExporting}
+                className="w-full py-2.5 bg-white hover:bg-[#F5EFE6] border border-[#E2DCC8] text-[#4E685B] font-extrabold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#4E685B]" />}
+                <span>
+                  {copied
+                    ? (isRtl ? 'تم النسخ بنجاح! ✨' : 'Copied successfully! ✨')
+                    : (isRtl ? '📋 نسخ النص إلى الحافظة' : '📋 Copy text to clipboard')}
+                </span>
               </button>
             </div>
 
