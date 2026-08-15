@@ -122,6 +122,8 @@ export class SpeechRecognitionManager {
 
   private currentSessionId: number = 0;
   private activeRecognition: any = null;
+  private isExplicitlyStopped: boolean = true;
+  private baseTranscript: string = '';
   private finalTranscript: string = '';
   private interimTranscript: string = '';
   private isListening: boolean = false;
@@ -178,17 +180,18 @@ export class SpeechRecognitionManager {
   public destroyActiveRecognition(): void {
     if (this.activeRecognition) {
       try {
-        this.activeRecognition.onstart = null;
-        this.activeRecognition.onresult = null;
-        this.activeRecognition.onerror = null;
-        this.activeRecognition.onend = null;
-        this.activeRecognition.onspeechend = null;
-        this.activeRecognition.stop();
-        this.activeRecognition.abort();
+        const rec = this.activeRecognition;
+        this.activeRecognition = null;
+        rec.onstart = null;
+        rec.onresult = null;
+        rec.onerror = null;
+        rec.onend = null;
+        rec.onspeechend = null;
+        rec.stop();
+        rec.abort();
       } catch (e) {
         // ignore already aborted errors
       }
-      this.activeRecognition = null;
     }
     this.isListening = false;
   }
@@ -206,6 +209,8 @@ export class SpeechRecognitionManager {
     this.currentSessionId += 1;
     const sessionToken = this.currentSessionId;
 
+    this.isExplicitlyStopped = false;
+    this.baseTranscript = '';
     this.finalTranscript = '';
     this.interimTranscript = '';
     this.callbacks = options.callbacks || {};
@@ -213,6 +218,18 @@ export class SpeechRecognitionManager {
     this.continuous = options.continuous ?? false;
 
     speechLog(`Starting session #${sessionToken} (lang: ${this.lang}, continuous: ${this.continuous})`);
+
+    this.spawnRecognition(sessionToken);
+    return sessionToken;
+  }
+
+  /**
+   * Spawns an active browser SpeechRecognition instance for the specified session.
+   */
+  private spawnRecognition(sessionToken: number): void {
+    if (this.isExplicitlyStopped || sessionToken !== this.currentSessionId) {
+      return;
+    }
 
     const SpeechRec = typeof window !== 'undefined'
       ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
@@ -222,7 +239,7 @@ export class SpeechRecognitionManager {
       if (this.callbacks.onError) {
         this.callbacks.onError({ error: 'not-supported' });
       }
-      return sessionToken;
+      return;
     }
 
     try {
@@ -232,7 +249,7 @@ export class SpeechRecognitionManager {
       rec.interimResults = true;
 
       rec.onstart = () => {
-        if (this.currentSessionId !== sessionToken) return;
+        if (this.currentSessionId !== sessionToken || this.isExplicitlyStopped) return;
         this.isListening = true;
         speechLog(`Session #${sessionToken} started listening`);
         if (this.callbacks.onStatusChange) {
@@ -242,7 +259,7 @@ export class SpeechRecognitionManager {
       };
 
       rec.onresult = (event: any) => {
-        if (this.currentSessionId !== sessionToken) {
+        if (this.currentSessionId !== sessionToken || this.isExplicitlyStopped) {
           speechLog(`Discarding stale onresult from older session`);
           return;
         }
@@ -250,15 +267,18 @@ export class SpeechRecognitionManager {
       };
 
       rec.onerror = (event: any) => {
-        if (this.currentSessionId !== sessionToken) return;
+        if (this.currentSessionId !== sessionToken || this.isExplicitlyStopped) return;
         speechLog(`Session #${sessionToken} error:`, event.error);
+        if (event.error === 'no-speech' && this.continuous && !this.isExplicitlyStopped) {
+          return;
+        }
         if (this.callbacks.onError) {
           this.callbacks.onError(event);
         }
       };
 
       rec.onspeechend = () => {
-        if (this.currentSessionId !== sessionToken) return;
+        if (this.currentSessionId !== sessionToken || this.isExplicitlyStopped) return;
         speechLog(`Session #${sessionToken} speech ended`);
         if (this.callbacks.onSpeechEnd) {
           this.callbacks.onSpeechEnd();
@@ -269,6 +289,19 @@ export class SpeechRecognitionManager {
         if (this.currentSessionId !== sessionToken) return;
         this.isListening = false;
         speechLog(`Session #${sessionToken} recognition ended`);
+
+        // Seamless auto-restart on mobile silence timeout if session is still active
+        if (!this.isExplicitlyStopped && this.continuous) {
+          this.baseTranscript = this.finalTranscript;
+          this.interimTranscript = '';
+          this.emitState();
+          this.destroyActiveRecognition();
+          setTimeout(() => {
+            if (!this.isExplicitlyStopped && this.currentSessionId === sessionToken) {
+              this.spawnRecognition(sessionToken);
+            }
+          }, 60);
+        }
       };
 
       this.activeRecognition = rec;
@@ -279,18 +312,17 @@ export class SpeechRecognitionManager {
         this.callbacks.onError(err);
       }
     }
-
-    return sessionToken;
   }
 
   /**
-   * Processes incoming Web Speech API results with overlap reconciliation.
+   * Processes incoming Web Speech API results with intra-event stitch folding and clean final/interim separation.
    */
   public processRecognitionEvent(event: any, sessionToken: number): void {
-    if (!event || !event.results || sessionToken !== this.currentSessionId) {
+    if (!event || !event.results || sessionToken !== this.currentSessionId || this.isExplicitlyStopped) {
       return;
     }
 
+    let currentCycleFinal = '';
     let rawInterim = '';
 
     for (let i = 0; i < event.results.length; i++) {
@@ -300,11 +332,18 @@ export class SpeechRecognitionManager {
       if (!chunk) continue;
 
       if (res.isFinal) {
-        // Stitch final chunk into accumulated final transcript safely
-        this.finalTranscript = stitchFinalSegment(this.finalTranscript, chunk);
+        currentCycleFinal = stitchFinalSegment(currentCycleFinal, chunk);
       } else {
         rawInterim = chunk;
       }
+    }
+
+    if (currentCycleFinal) {
+      this.finalTranscript = this.baseTranscript
+        ? stitchFinalSegment(this.baseTranscript, currentCycleFinal)
+        : currentCycleFinal;
+    } else {
+      this.finalTranscript = this.baseTranscript;
     }
 
     this.interimTranscript = rawInterim;
@@ -316,6 +355,7 @@ export class SpeechRecognitionManager {
    * Returns ONLY the clean, final transcript (never unconfirmed interim garbage).
    */
   public finalize(): string {
+    this.isExplicitlyStopped = true;
     this.destroyActiveRecognition();
 
     let result = normalizeSpeechWhitespace(this.finalTranscript);
@@ -325,6 +365,7 @@ export class SpeechRecognitionManager {
     }
 
     this.finalTranscript = result;
+    this.baseTranscript = result;
     this.interimTranscript = '';
     this.emitState();
 
@@ -343,7 +384,9 @@ export class SpeechRecognitionManager {
    * Aborts and resets without keeping transcripts.
    */
   public abortSession(): void {
+    this.isExplicitlyStopped = true;
     this.destroyActiveRecognition();
+    this.baseTranscript = '';
     this.finalTranscript = '';
     this.interimTranscript = '';
     this.emitState();

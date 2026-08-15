@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark } from 'lucide-react';
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
+import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { getAthkarContextForAI, getFormattedAthkarPromptContext } from '../services/aiAthkarSync';
 import { processAttachmentUnified, sniffMimeType, getAttachmentTypeCategory } from '../services/attachmentService';
 import {
