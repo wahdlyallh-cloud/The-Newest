@@ -8056,24 +8056,24 @@ export default function App() {
                 )}
 
                 {/* 🧠 Flagship AI Assistant Panel - Real-time Psychological Chat */}
-                <div className="border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-5 space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-3">
+                <div className="border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-3.5 sm:p-4 space-y-3 flex flex-col">
+                  <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-2.5">
                     <div className="flex items-center space-x-2 space-x-reverse">
                       <span className="p-1.5 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl text-sm">🧠</span>
                       <span className="text-xs font-black text-[#5A5A40]">
                         {t.aiChatSessionTitle || (isEn ? "Interactive AI Venting & Psychological Analysis Session" : "جلسة الفضفضة والتحليل النفسي التفاعلية (AI)")}
                       </span>
                     </div>
-                    <span className="text-[10px] bg-[#8B9D83] text-white px-3 py-1 rounded-full font-bold">{t.liveInteractionBadge || (isEn ? "Live Interaction" : "تفاعل مباشر")}</span>
+                    <span className="text-[10px] bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full font-bold">{t.liveInteractionBadge || (isEn ? "Live Interaction" : "تفاعل مباشر")}</span>
                   </div>
 
                   {/* Chat Messages Log Box */}
-                  <div className="max-h-[320px] overflow-y-auto space-y-3 p-3 bg-white border border-[#E2DCC8]/80 rounded-2xl" id="diary-chat-log-box">
+                  <div className="flex-1 min-h-[380px] max-h-[55vh] overflow-y-auto space-y-3 p-3.5 bg-white border border-[#E2DCC8]/80 rounded-2xl scroll-smooth" id="diary-chat-log-box">
                     {(editingDiary.chatLogs || []).length === 0 ? (
-                      <div className="text-center py-6 px-4 space-y-2">
-                        <span className="text-2xl block">💬</span>
-                        <p className="text-xs font-bold text-[#5A5A40]">{t.welcomeSafeSpace || (isEn ? "Welcome to your safe therapeutic space!" : "مرحباً بك في مساحتك العلاجية الآمنة!")}</p>
-                        <p className="text-[10px] text-gray-400 leading-relaxed max-w-sm mx-auto">
+                      <div className="text-center py-10 px-4 space-y-2.5">
+                        <span className="text-3xl block">💬</span>
+                        <p className="text-xs font-black text-[#5A5A40]">{t.welcomeSafeSpace || (isEn ? "Welcome to your safe therapeutic space!" : "مرحباً بك في مساحتك العلاجية الآمنة!")}</p>
+                        <p className="text-[11px] text-gray-500 leading-relaxed max-w-md mx-auto font-medium">
                           {t.safeSpaceDesc || (isEn ? "Express what's on your mind or ask a question about this entry. I will listen attentively, analyze your emotions, and help you overcome challenges." : "فضفض عما بداخلك، أو اطرح سؤالاً حول هذه المذكرة. سأستمع إليك بإنصات تام وأحلل مشاعرك وأساعدك في التغلب على الصعاب.")}
                         </p>
                       </div>
@@ -8081,12 +8081,12 @@ export default function App() {
                       (editingDiary.chatLogs || []).map((msg, idx) => (
                         <div
                           key={idx}
-                          className={`flex flex-col max-w-[85%] ${
+                          className={`flex flex-col max-w-[90%] sm:max-w-[85%] ${
                             msg.sender === 'user' ? 'mr-auto items-start' : 'ml-auto items-end'
                           }`}
                         >
                           <div
-                            className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                            className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words whitespace-pre-wrap ${
                               msg.sender === 'user'
                                 ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50'
                                 : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
@@ -8120,7 +8120,7 @@ export default function App() {
                   </div>
 
                   {/* Input Chat Messages */}
-                  <div className="flex w-full max-w-full overflow-hidden flex-wrap sm:flex-nowrap gap-2 items-center pb-nav-safe">
+                  <div className="flex w-full max-w-full overflow-hidden flex-nowrap gap-2 items-center">
                     <input
                       type="text"
                       value={diaryChatMessage}
@@ -8132,13 +8132,13 @@ export default function App() {
                         }
                       }}
                       placeholder={t.expressMindPlaceholder || (isEn ? "Express your feelings or ask here..." : "فضفض عما ببالك أو اسألني هنا...")}
-                      className="flex-1 min-w-0 w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-2xl px-3 sm:px-4 py-2.5 text-xs text-[#3A3A3A] font-medium"
+                      className="flex-1 min-w-0 w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-2xl px-3.5 py-2.5 text-xs text-[#3A3A3A] font-medium placeholder:text-gray-400"
                     />
                     <button
                       type="button"
                       disabled={diaryChatLoading || !diaryChatMessage.trim()}
                       onClick={() => handleSendDiaryChatMessage()}
-                      className="px-3.5 sm:px-4 py-2.5 bg-[#8B9D83] hover:bg-[#72856A] disabled:opacity-50 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center justify-center space-x-1.5 space-x-reverse shrink-0 whitespace-nowrap"
+                      className="px-4 py-2.5 bg-[#8B9D83] hover:bg-[#72856A] disabled:opacity-50 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center justify-center space-x-1.5 space-x-reverse shrink-0 whitespace-nowrap"
                     >
                       <span>{t.sendBtnLabel || (isEn ? "Send" : "إرسال")}</span>
                       <span>🚀</span>
@@ -8146,29 +8146,32 @@ export default function App() {
                   </div>
 
                   {/* Built-in quick psychologist suggestions */}
-                  <div className="space-y-1.5 pt-1">
-                    <p className="text-[10px] text-gray-400 font-bold">{t('quickOneClickActions')}</p>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="space-y-1.5 pt-0.5">
+                    <p className="text-[10px] text-gray-400 font-extrabold">{t('quickOneClickActions')}</p>
+                    <div className="flex flex-wrap sm:flex-nowrap gap-1.5 overflow-x-auto pb-0.5">
                       <button
                         type="button"
                         onClick={() => handleSendDiaryChatMessage(t('promptSummarizeEntry'))}
-                        className="px-2.5 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/60 rounded-xl text-[10px] font-bold cursor-pointer transition-all shadow-3xs"
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
                       >
-                        📝 {t('summarizeEntryBtn')}
+                        <span>📝</span>
+                        <span>{t('summarizeEntryBtn')}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSendDiaryChatMessage(t('promptExtractCognitiveErrors'))}
-                        className="px-2.5 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/60 rounded-xl text-[10px] font-bold cursor-pointer transition-all shadow-3xs"
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
                       >
-                        💡 {t('extractCognitiveErrorsBtn')}
+                        <span>💡</span>
+                        <span>{t('extractCognitiveErrorsBtn')}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSendDiaryChatMessage(t('promptPracticalPlanTomorrow'))}
-                        className="px-2.5 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/60 rounded-xl text-[10px] font-bold cursor-pointer transition-all shadow-3xs"
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
                       >
-                        🎯 {t('practicalPlanTomorrowBtn')}
+                        <span>🎯</span>
+                        <span>{t('practicalPlanTomorrowBtn')}</span>
                       </button>
                     </div>
                   </div>
