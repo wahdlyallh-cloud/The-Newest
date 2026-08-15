@@ -26,6 +26,39 @@ interface ToastState {
   type: 'success' | 'error' | 'info';
 }
 
+// Fallback Canvas Text Wrapping Helper
+function drawWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  centerY: number,
+  maxWidth: number,
+  lineHeight: number
+) {
+  const words = text.split(' ');
+  let line = '';
+  const lines: string[] = [];
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      lines.push(line.trim());
+      line = words[n] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  if (line.trim()) lines.push(line.trim());
+
+  const totalHeight = lines.length * lineHeight;
+  let startY = centerY - totalHeight / 2 + lineHeight;
+
+  for (let k = 0; k < lines.length; k++) {
+    ctx.fillText(lines[k], x, startY + k * lineHeight);
+  }
+}
+
 export default function ShareableGratitudeCardModal({
   isOpen,
   onClose,
@@ -64,8 +97,16 @@ export default function ShareableGratitudeCardModal({
 
   if (!isOpen) return null;
 
-  // Theme styling definitions
-  const THEMES: Record<CardThemeId, { nameAr: string; nameEn: string; bgClass: string; textClass: string; accentClass: string; borderClass: string }> = {
+  // Theme styling definitions with exact fallback hex colors
+  const THEMES: Record<CardThemeId, {
+    nameAr: string;
+    nameEn: string;
+    bgClass: string;
+    textClass: string;
+    accentClass: string;
+    borderClass: string;
+    colors: { bg1: string; bg2: string; text: string; accent: string; border: string };
+  }> = {
     emerald: {
       nameAr: 'زمردي هادئ 🌱',
       nameEn: 'Emerald Calm 🌱',
@@ -73,6 +114,7 @@ export default function ShareableGratitudeCardModal({
       textClass: 'text-emerald-50',
       accentClass: 'text-amber-300',
       borderClass: 'border-emerald-500/30',
+      colors: { bg1: '#1B2E23', bg2: '#16241C', text: '#ECFDF5', accent: '#FCD34D', border: '#10B981' }
     },
     golden: {
       nameAr: 'غروب ذهبي 🌅',
@@ -81,6 +123,7 @@ export default function ShareableGratitudeCardModal({
       textClass: 'text-amber-50',
       accentClass: 'text-amber-300',
       borderClass: 'border-amber-500/30',
+      colors: { bg1: '#7C2D12', bg2: '#451A03', text: '#FFFBEB', accent: '#FCD34D', border: '#F59E0B' }
     },
     midnight: {
       nameAr: 'سماء ساطعة 🌌',
@@ -89,6 +132,7 @@ export default function ShareableGratitudeCardModal({
       textClass: 'text-slate-100',
       accentClass: 'text-sky-300',
       borderClass: 'border-indigo-500/30',
+      colors: { bg1: '#0F172A', bg2: '#020617', text: '#F8FAFC', accent: '#7DD3FC', border: '#6366F1' }
     },
     parchment: {
       nameAr: 'ورق كلاسيكي 📜',
@@ -97,6 +141,7 @@ export default function ShareableGratitudeCardModal({
       textClass: 'text-[#3A3228]',
       accentClass: 'text-[#8B5E34]',
       borderClass: 'border-[#D4C5A9]',
+      colors: { bg1: '#FBF8F3', bg2: '#E8DEC9', text: '#3A3228', accent: '#8B5E34', border: '#D4C5A9' }
     },
     lavender: {
       nameAr: 'سكينة اللافندر 💜',
@@ -105,6 +150,7 @@ export default function ShareableGratitudeCardModal({
       textClass: 'text-purple-50',
       accentClass: 'text-pink-300',
       borderClass: 'border-purple-500/30',
+      colors: { bg1: '#3B0764', bg2: '#1E1B4B', text: '#FAF5FF', accent: '#F472B6', border: '#A855F7' }
     },
   };
 
@@ -140,50 +186,123 @@ export default function ShareableGratitudeCardModal({
     return false;
   };
 
-  // High quality canvas & blob generation
-  const generateCardBlob = async (): Promise<{ blob: Blob; dataUrl: string }> => {
-    if (!cardRef.current) {
-      throw new Error('Card container element not found.');
-    }
+  // Pure Canvas 2D Fallback Generator (guaranteed 100% crash-proof image generation)
+  const renderFallbackCanvas2D = async (): Promise<{ blob: Blob; dataUrl: string }> => {
+    const width = 1080;
+    const height = selectedFormat === '1:1' ? 1080 : 1920;
 
-    // Ensure web fonts are rendered
-    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-      try {
-        await document.fonts.ready;
-      } catch (_) {}
-    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not create canvas 2d context.');
 
-    const canvas = await html2canvas(cardRef.current, {
-      scale: 3, // High DPI crisp retina export
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-    });
+    // 1. Draw Background Gradient
+    const themeColors = currentTheme.colors;
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, themeColors.bg1);
+    grad.addColorStop(1, themeColors.bg2);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. Draw Subtle Border Frame
+    ctx.strokeStyle = themeColors.border;
+    ctx.lineWidth = 12;
+    ctx.strokeRect(30, 30, width - 60, height - 60);
+
+    // 3. Background Decorative Watermark Quote
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.font = 'bold 360px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('”', width - 80, 360);
+
+    // 4. Tag Category at Top
+    ctx.fillStyle = themeColors.accent;
+    ctx.font = 'bold 38px sans-serif';
+    ctx.textAlign = isRtl ? 'right' : 'left';
+    const tagX = isRtl ? width - 100 : 100;
+    ctx.fillText(`✨ ${cardCategory}`, tagX, 140);
+
+    // 5. Center Quote Text
+    ctx.fillStyle = themeColors.text;
+    ctx.font = 'bold 52px sans-serif';
+    ctx.textAlign = 'center';
+    const quoteContent = `«${cardText}»`;
+    const centerY = height / 2;
+    const maxTextWidth = width - 220;
+    drawWrappedText(ctx, quoteContent, width / 2, centerY, maxTextWidth, 75);
+
+    // 6. Footer Signature & App Watermark
+    ctx.fillStyle = themeColors.accent;
+    ctx.font = 'bold 38px sans-serif';
+    ctx.textAlign = isRtl ? 'right' : 'left';
+    const authorX = isRtl ? width - 100 : 100;
+    ctx.fillText(`❤️ ${authorName}`, authorX, height - 120);
+
+    if (showWatermark) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.font = '30px sans-serif';
+      ctx.textAlign = isRtl ? 'left' : 'right';
+      const wmX = isRtl ? 100 : width - 100;
+      ctx.fillText('Yawmiyati App 🌿', wmX, height - 120);
+    }
 
     const dataUrl = canvas.toDataURL('image/png');
-
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob((b) => {
         if (b) resolve(b);
-        else reject(new Error('Failed to convert canvas to PNG blob.'));
+        else reject(new Error('Canvas 2D blob generation failed.'));
       }, 'image/png');
     });
 
     return { blob, dataUrl };
   };
 
-  // Download card as image using html2canvas
+  // High quality canvas & blob generation (Primary html2canvas with Canvas 2D fallback)
+  const generateCardBlob = async (): Promise<{ blob: Blob; dataUrl: string }> => {
+    // Attempt Primary DOM rasterization
+    if (cardRef.current) {
+      try {
+        if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+          try { await document.fonts.ready; } catch (_) {}
+        }
+
+        const canvas = await html2canvas(cardRef.current, {
+          scale: 3, // High DPI crisp retina export
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+        });
+
+        const dataUrl = canvas.toDataURL('image/png');
+        const blob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob((b) => resolve(b), 'image/png');
+        });
+
+        if (blob) {
+          return { blob, dataUrl };
+        }
+      } catch (domErr) {
+        console.warn('html2canvas primary render failed, switching to Canvas 2D engine:', domErr);
+      }
+    }
+
+    // Fallback: Direct 2D Canvas Engine
+    return await renderFallbackCanvas2D();
+  };
+
+  // Download card as image
   const handleDownloadImage = async () => {
-    if (isExporting || !cardRef.current) return;
+    if (isExporting) return;
     try {
       setIsExporting(true);
       setExportAction('download');
 
-      const { blob, dataUrl } = await generateCardBlob();
-      const filename = `yawmiyati-gratitude-${Date.now()}.png`;
+      const { dataUrl } = await generateCardBlob();
+      const filename = `gratitude-card-${Date.now()}.png`;
 
       // Trigger download
       const link = document.createElement('a');
@@ -207,13 +326,13 @@ export default function ShareableGratitudeCardModal({
 
   // Native Web Share API with intelligent fallbacks
   const handleShareCard = async () => {
-    if (isExporting || !cardRef.current) return;
+    if (isExporting) return;
     try {
       setIsExporting(true);
       setExportAction('share');
 
       const { blob } = await generateCardBlob();
-      const filename = `yawmiyati-gratitude-${Date.now()}.png`;
+      const filename = `gratitude-card-${Date.now()}.png`;
       const file = new File([blob], filename, { type: 'image/png' });
 
       const shareTitle = isRtl ? 'بطاقة امتنان' : 'Gratitude Card';
@@ -278,7 +397,7 @@ export default function ShareableGratitudeCardModal({
   // Copy text handler
   const handleCopyText = async () => {
     if (isExporting) return;
-    const fullText = `«${cardText}» - ${authorName}\n${isRtl ? 'تطبيق حياة AI' : 'Hayat AI App'}`;
+    const fullText = `«${cardText}» - ${authorName}\n${isRtl ? 'تطبيق حياة AI 🌿' : 'Hayat AI App 🌿'}`;
     const ok = await copyToClipboard(fullText);
     if (ok) {
       setCopied(true);

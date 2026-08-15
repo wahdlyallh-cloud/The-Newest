@@ -4,9 +4,10 @@ import {
   Heart, Sparkles, Plus, Trash2, Bell, Calendar, Award, 
   Lightbulb, Smile, Check, RefreshCw, Search, Filter, 
   Brain, HelpCircle, ArrowRight, Zap, Play, Volume2, Copy, Printer, Shuffle,
-  Send, Edit3, MessageSquare
+  Send, Edit3, MessageSquare, BookmarkPlus, X
 } from 'lucide-react';
-import { GratitudeCard, AppSettings, DiaryEntry } from '../types';
+import { GratitudeCard, AppSettings, DiaryEntry, JournalEntryType } from '../types';
+import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig } from '../lib/journalTypes';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 
 export interface AIGratitudeHistoryItem {
@@ -90,6 +91,9 @@ export default function GratitudeJournal({
   // Single Card AI Analysis State
   const [analyzingCardId, setAnalyzingCardId] = useState<string | null>(null);
   const [cardAnalysisResults, setCardAnalysisResults] = useState<Record<string, string>>({});
+
+  // Export to Journal state
+  const [cardToExport, setCardToExport] = useState<GratitudeCard | null>(null);
 
   // Generated Card Proposal
   const [proposedCard, setProposedCard] = useState<{ text: string; colorClass: string } | null>(null);
@@ -349,6 +353,53 @@ export default function GratitudeJournal({
       setActiveDiariesSubTab('journal');
       if (setDiaryTypeFilter) setDiaryTypeFilter('diary');
     }
+  };
+
+  const handleExportCardToDiaryType = (card: GratitudeCard, chosenType: JournalEntryType) => {
+    if (!card || !card.text.trim()) return;
+    const cfg = getJournalTypeConfig(chosenType);
+
+    const newEntry: DiaryEntry = {
+      id: `diary-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      title: `${cfg.icon} ${isEn ? cfg.labelEn : cfg.labelAr} - ${card.category || (isEn ? 'Gratitude Moment' : 'لحظة امتنان')}`,
+      content: card.text.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      moods: isEn ? ['Grateful ❤️', 'Peaceful 🌿'] : ['ممتن ❤️', 'سكينة 🌿'],
+      importance: 4,
+      color: 'bg-white',
+      images: [],
+      videos: [],
+      audioRecordings: [],
+      files: [],
+      tasks: [],
+      tags: isEn ? ['gratitude', chosenType] : ['امتنان', cfg.labelAr],
+      chatLogs: [],
+      isLocked: false,
+      diaryType: chosenType,
+      isFavorite: false,
+    };
+
+    if (setDiaries) {
+      setDiaries(prev => [newEntry, ...prev]);
+    } else {
+      try {
+        const saved = localStorage.getItem('yawmiyati_diaries');
+        const list = saved ? JSON.parse(saved) : [];
+        localStorage.setItem('yawmiyati_diaries', JSON.stringify([newEntry, ...list]));
+      } catch (e) {
+        console.error('Failed to save diary entry:', e);
+      }
+    }
+
+    const typeLabel = isEn ? cfg.labelEn : cfg.labelAr;
+    showToast(
+      isEn
+        ? `🌿 Gratitude successfully added to [${typeLabel}] section in Journal!`
+        : `🌿 تمت إضافة الامتنان بنجاح إلى قسم [${typeLabel}] في اليوميات!`
+    );
+
+    setCardToExport(null);
   };
 
   const handleExportToThoughts = (title: string, bodyText: string) => {
@@ -1214,6 +1265,16 @@ export default function GratitudeJournal({
                           <Volume2 className="w-3 h-3" />
                         </button>
 
+                        {/* Add to Diary Button */}
+                        <button
+                          type="button"
+                          onClick={() => setCardToExport(card)}
+                          className="p-1.5 bg-white/85 hover:bg-emerald-50 text-[#4E685B] hover:text-emerald-700 rounded-lg transition-colors cursor-pointer border border-[#E2DCC8]/40 shadow-3xs"
+                          title={isEn ? "Add to Journal" : "إضافة إلى اليوميات"}
+                        >
+                          <BookmarkPlus className="w-3 h-3 text-[#4E685B]" />
+                        </button>
+
                         {/* Export Shareable Card Image Button */}
                         <button
                           type="button"
@@ -1374,6 +1435,89 @@ export default function GratitudeJournal({
                     {isEn ? "Close" : "إغلاق"}
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 📖 Export to Journal Modal */}
+      <AnimatePresence>
+        {cardToExport && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[70] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-[#E2DCC8] space-y-4"
+              dir={isEn ? 'ltr' : 'rtl'}
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-[#4E685B]/10 text-[#4E685B] rounded-xl">
+                    <BookmarkPlus className="w-5 h-5 text-[#4E685B]" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-[#2B3E50] text-sm sm:text-base">
+                      {isEn ? "Add to Journal" : "اختر القسم لإضافة هذا الامتنان إلى اليوميات"}
+                    </h4>
+                    <p className="text-[10px] text-gray-500 font-bold">
+                      {isEn ? "Select section to save as a new journal entry" : "حدد النوع لحفظ الامتنان في الخط الزمني مع بقاء الأصل"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCardToExport(null)}
+                  className="p-1.5 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Card Preview Snippet */}
+              <div className="p-3 bg-amber-50/60 border border-amber-200/50 rounded-2xl text-xs font-bold text-gray-800 leading-relaxed max-h-24 overflow-y-auto">
+                «{cardToExport.text}»
+              </div>
+
+              {/* 7 Journal Types Options */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black text-gray-600 block">
+                  {isEn ? "Choose Entry Type:" : "اختر نوع التدوينة:"}
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[40vh] overflow-y-auto pr-0.5">
+                  {ALL_JOURNAL_TYPES.map((typeKey) => {
+                    const cfg = JOURNAL_TYPES_CONFIG[typeKey];
+                    return (
+                      <button
+                        key={typeKey}
+                        type="button"
+                        onClick={() => handleExportCardToDiaryType(cardToExport, typeKey)}
+                        className={`p-2.5 rounded-2xl border text-right transition-all cursor-pointer flex items-center gap-2.5 hover:shadow-xs ${cfg.colorBg} ${cfg.colorBorder} hover:scale-[1.02]`}
+                      >
+                        <span className="text-xl shrink-0">{cfg.icon}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-xs font-black truncate ${cfg.colorText}`}>
+                            {isEn ? cfg.labelEn : cfg.labelAr}
+                          </p>
+                          <p className="text-[9px] text-gray-500 font-medium truncate">
+                            {isEn ? cfg.descriptionEn : cfg.descriptionAr}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCardToExport(null)}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  {isEn ? "Cancel" : "إلغاء"}
+                </button>
               </div>
             </motion.div>
           </div>
