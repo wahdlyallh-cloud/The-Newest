@@ -284,13 +284,14 @@ export class SpeechRecognitionManager {
   }
 
   /**
-   * Processes incoming Web Speech API results with overlap reconciliation.
+   * Processes incoming Web Speech API results with intra-event stitch folding and clean final/interim separation.
    */
   public processRecognitionEvent(event: any, sessionToken: number): void {
     if (!event || !event.results || sessionToken !== this.currentSessionId) {
       return;
     }
 
+    let accumulatedFinal = '';
     let rawInterim = '';
 
     for (let i = 0; i < event.results.length; i++) {
@@ -300,13 +301,13 @@ export class SpeechRecognitionManager {
       if (!chunk) continue;
 
       if (res.isFinal) {
-        // Stitch final chunk into accumulated final transcript safely
-        this.finalTranscript = stitchFinalSegment(this.finalTranscript, chunk);
+        accumulatedFinal = stitchFinalSegment(accumulatedFinal, chunk);
       } else {
         rawInterim = chunk;
       }
     }
 
+    this.finalTranscript = accumulatedFinal;
     this.interimTranscript = rawInterim;
     this.emitState();
   }
