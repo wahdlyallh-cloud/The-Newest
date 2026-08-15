@@ -181,7 +181,7 @@ export default function ShareableGratitudeCardModal({
         return successful;
       }
     } catch (err) {
-      console.error('Fallback clipboard error:', err);
+      console.error('[GratitudeExport] Fallback clipboard error:', err);
     }
     return false;
   };
@@ -250,7 +250,7 @@ export default function ShareableGratitudeCardModal({
     const dataUrl = canvas.toDataURL('image/png');
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob((b) => {
-        if (b) resolve(b);
+        if (b && b.size > 0) resolve(b);
         else reject(new Error('Canvas 2D blob generation failed.'));
       }, 'image/png');
     });
@@ -260,7 +260,7 @@ export default function ShareableGratitudeCardModal({
 
   // High quality canvas & blob generation (Primary html2canvas with Canvas 2D fallback)
   const generateCardBlob = async (): Promise<{ blob: Blob; dataUrl: string }> => {
-    // Attempt Primary DOM rasterization
+    console.log('[GratitudeExport] render:start');
     if (cardRef.current) {
       try {
         if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
@@ -268,7 +268,7 @@ export default function ShareableGratitudeCardModal({
         }
 
         const canvas = await html2canvas(cardRef.current, {
-          scale: 3, // High DPI crisp retina export
+          scale: 2.5,
           useCORS: true,
           allowTaint: true,
           backgroundColor: null,
@@ -282,41 +282,59 @@ export default function ShareableGratitudeCardModal({
           canvas.toBlob((b) => resolve(b), 'image/png');
         });
 
-        if (blob) {
+        if (blob && blob.size > 0) {
+          console.log('[GratitudeExport] blob:created via html2canvas, size:', blob.size);
           return { blob, dataUrl };
         }
       } catch (domErr) {
-        console.warn('html2canvas primary render failed, switching to Canvas 2D engine:', domErr);
+        console.warn('[GratitudeExport] primary render failed, switching to Canvas 2D fallback:', domErr);
       }
     }
 
-    // Fallback: Direct 2D Canvas Engine
-    return await renderFallbackCanvas2D();
+    console.log('[GratitudeExport] executing fallback renderFallbackCanvas2D');
+    const fallbackRes = await renderFallbackCanvas2D();
+    console.log('[GratitudeExport] fallback blob:created, size:', fallbackRes.blob.size);
+    return fallbackRes;
   };
 
-  // Download card as image
+  // Download card as image (Mobile-safe Blob URL download)
   const handleDownloadImage = async () => {
     if (isExporting) return;
     try {
       setIsExporting(true);
       setExportAction('download');
+      console.log('[GratitudeExport] download:start');
 
-      const { dataUrl } = await generateCardBlob();
+      const { blob } = await generateCardBlob();
+      if (!blob || !(blob instanceof Blob) || blob.size === 0) {
+        throw new Error('Failed to generate valid PNG blob');
+      }
+
+      console.log('[GratitudeExport] blob:size', blob.size);
       const filename = `gratitude-card-${Date.now()}.png`;
+      const blobUrl = URL.createObjectURL(blob);
 
-      // Trigger download
+      // Mobile-safe trigger using Blob URL
       const link = document.createElement('a');
+      link.href = blobUrl;
       link.download = filename;
-      link.href = dataUrl;
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      // Clean up object URL after download cycle
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(blobUrl);
+        } catch (_) {}
+      }, 30000);
 
       setDownloadSuccess(true);
       showToast(isRtl ? '✅ تم تحميل بطاقة الامتنان بنجاح' : '✅ Gratitude card downloaded successfully', 'success');
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err: any) {
-      console.error('Error generating image export:', err);
+      console.error('[GratitudeExport] error during download:', err?.message, err?.stack);
       showToast(isRtl ? '⚠️ تعذر تحميل الصورة، يرجى المحاولة ثانية' : '⚠️ Failed to download image, please retry', 'error');
     } finally {
       setIsExporting(false);
@@ -324,69 +342,81 @@ export default function ShareableGratitudeCardModal({
     }
   };
 
-  // Native Web Share API with intelligent fallbacks
+  // Native Web Share API with instant user-gesture execution
   const handleShareCard = async () => {
     if (isExporting) return;
     try {
       setIsExporting(true);
       setExportAction('share');
+      console.log('[GratitudeExport] share:start');
 
       const { blob } = await generateCardBlob();
+      if (!blob || !(blob instanceof Blob) || blob.size === 0) {
+        throw new Error('Failed to generate valid PNG blob for sharing');
+      }
+
+      console.log('[GratitudeExport] blob:size for share:', blob.size);
       const filename = `gratitude-card-${Date.now()}.png`;
       const file = new File([blob], filename, { type: 'image/png' });
 
-      const shareTitle = isRtl ? 'بطاقة امتنان' : 'Gratitude Card';
+      const shareTitle = isRtl ? 'بطاقة امتنان 🌸' : 'Gratitude Card 🌸';
       const shareText = `«${cardText}» - ${authorName}\n${isRtl ? 'عبر تطبيق حياة AI 🌿' : 'via Hayat AI 🌿'}`;
 
-      let sharedSuccess = false;
+      let shareHandled = false;
 
       // 1. Try Native Web Share with Image File
-      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+      if (typeof navigator !== 'undefined' && navigator.share) {
         try {
-          if (navigator.canShare({ files: [file] })) {
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            console.log('[GratitudeExport] invoking navigator.share with files');
             await navigator.share({
               title: shareTitle,
               text: shareText,
               files: [file],
             });
-            sharedSuccess = true;
+            shareHandled = true;
           }
         } catch (shareErr: any) {
-          // Gracefully ignore user cancellation
-          if (shareErr?.name === 'AbortError' || String(shareErr).includes('AbortError')) {
+          if (shareErr?.name === 'AbortError' || String(shareErr).includes('AbortError') || shareErr?.message?.toLowerCase().includes('cancel')) {
+            console.log('[GratitudeExport] user closed share sheet');
             return;
           }
+          console.warn('[GratitudeExport] file share threw error:', shareErr);
         }
       }
 
       // 2. Fallback: Native Text Share
-      if (!sharedSuccess && typeof navigator !== 'undefined' && navigator.share) {
+      if (!shareHandled && typeof navigator !== 'undefined' && navigator.share) {
         try {
+          console.log('[GratitudeExport] invoking navigator.share text fallback');
           await navigator.share({
             title: shareTitle,
             text: shareText,
           });
-          sharedSuccess = true;
+          shareHandled = true;
         } catch (shareErr: any) {
-          if (shareErr?.name === 'AbortError' || String(shareErr).includes('AbortError')) {
+          if (shareErr?.name === 'AbortError' || String(shareErr).includes('AbortError') || shareErr?.message?.toLowerCase().includes('cancel')) {
+            console.log('[GratitudeExport] user closed share sheet');
             return;
           }
+          console.warn('[GratitudeExport] text share threw error:', shareErr);
         }
       }
 
       // 3. Fallback: Copy to clipboard
-      if (!sharedSuccess) {
-        const copiedOk = await copyToClipboard(`"${cardText}" - ${authorName}`);
+      if (!shareHandled) {
+        console.log('[GratitudeExport] share:unsupported, falling back to clipboard copy');
+        const copiedOk = await copyToClipboard(`«${cardText}» - ${authorName}`);
         if (copiedOk) {
           setCopied(true);
-          showToast(isRtl ? '📋 تم نسخ النص للمشاركة' : '📋 Text copied for sharing', 'info');
+          showToast(isRtl ? '📋 تم نسخ نص البطاقة للمشاركة' : '📋 Card text copied for sharing', 'info');
           setTimeout(() => setCopied(false), 2500);
         } else {
-          showToast(isRtl ? '⚠️ تعذر فتح نافذة المشاركة على هذا المتصفح' : '⚠️ Sharing not supported on this browser', 'error');
+          showToast(isRtl ? '⚠️ تعذر فتح المشاركة على هذا الجهاز' : '⚠️ Sharing not supported on this device', 'error');
         }
       }
     } catch (err: any) {
-      console.error('Share error:', err);
+      console.error('[GratitudeExport] error during share:', err?.message, err?.stack);
       showToast(isRtl ? '⚠️ تعذر تجهيز المشاركة' : '⚠️ Failed to prepare share', 'error');
     } finally {
       setIsExporting(false);
