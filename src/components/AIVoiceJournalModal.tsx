@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Mic, Sparkles, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
-import { DiaryEntry, JournalEntryType } from '../types';
+import { DiaryEntry, JournalEntryType, AudioRecording } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig } from '../lib/journalTypes';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { generateGeminiContentDirect } from '../lib/gemini';
+import { saveAttachmentBlob } from '../lib/attachmentStore';
 
 interface AIVoiceJournalModalProps {
   isOpen: boolean;
@@ -40,6 +41,11 @@ export default function AIVoiceJournalModal({
 
   const timerRef = useRef<any>(null);
   const transcriptRef = useRef<string>('');
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioBlobRef = useRef<Blob | null>(null);
+  const recordingStartTimeRef = useRef<number | null>(null);
+  const recordingEndTimeRef = useRef<number | null>(null);
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
@@ -56,15 +62,28 @@ export default function AIVoiceJournalModal({
       setShowCategoryPicker(false);
       setIsSaving(false);
       setMicPermissionError(null);
+      audioChunksRef.current = [];
+      audioBlobRef.current = null;
+      recordingStartTimeRef.current = null;
+      recordingEndTimeRef.current = null;
     }
   }, [isOpen]);
 
   const stopRecordingSession = () => {
     setIsRecording(false);
+    recordingEndTimeRef.current = Date.now();
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.requestData();
+        mediaRecorderRef.current.stop();
+      } catch (_) {}
+    }
+
     const manager = SpeechRecognitionManager.getInstance();
     const finalTxt = manager.finalize();
     if (finalTxt) {
@@ -82,6 +101,10 @@ export default function AIVoiceJournalModal({
     setMicPermissionError(null);
     setIsRecording(true);
     setRecordingSeconds(0);
+    audioChunksRef.current = [];
+    audioBlobRef.current = null;
+    recordingStartTimeRef.current = Date.now();
+    recordingEndTimeRef.current = null;
 
     // Timer
     if (timerRef.current) clearInterval(timerRef.current);
@@ -89,7 +112,37 @@ export default function AIVoiceJournalModal({
       setRecordingSeconds(prev => prev + 1);
     }, 1000);
 
-    // Shared Speech Engine
+    // Concurrently capture MediaRecorder audio stream for persistent playback
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        try {
+          const mime = (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm')) ? 'audio/webm' : 'audio/mp4';
+          const mr = new MediaRecorder(stream, { mimeType: mime });
+          mr.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              audioChunksRef.current.push(e.data);
+            }
+          };
+          mr.onstop = () => {
+            if (audioChunksRef.current.length > 0) {
+              const blob = new Blob(audioChunksRef.current, { type: mime });
+              audioBlobRef.current = blob;
+            }
+            try {
+              stream.getTracks().forEach((t) => t.stop());
+            } catch (_) {}
+          };
+          mediaRecorderRef.current = mr;
+          mr.start(250);
+        } catch (e) {
+          console.warn('MediaRecorder init note:', e);
+        }
+      }).catch((err) => {
+        console.warn('getUserMedia note for audio recording:', err);
+      });
+    }
+
+    // Shared Speech Engine (Protected)
     const manager = SpeechRecognitionManager.getInstance();
     if (manager.isSupported()) {
       manager.startSession({
@@ -211,6 +264,30 @@ Return pure JSON only in the following schema:
 
       const formattedContent = `${voiceBadge}\n\n${processedResult.content}`;
 
+      // Calculate exact real recording duration
+      const startTime = recordingStartTimeRef.current || Date.now();
+      const endTime = recordingEndTimeRef.current || Date.now();
+      const exactDuration = Math.max(1, Math.round((endTime - startTime) / 1000), recordingSeconds || 0);
+
+      // Save raw audio blob to IndexedDB for persistent audio playback across reloads
+      const attachmentId = `att-vj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      let audioRecordingsList: AudioRecording[] = [];
+
+      if (audioBlobRef.current) {
+        await saveAttachmentBlob(attachmentId, audioBlobRef.current, audioBlobRef.current.type || 'audio/webm');
+        const blobUrl = URL.createObjectURL(audioBlobRef.current);
+        const newAudioRec: AudioRecording = {
+          id: `rec-${Date.now()}`,
+          name: `تسجيل صوتي ${timeStr}.webm`,
+          dataUrl: blobUrl,
+          blobUrl: blobUrl,
+          duration: exactDuration,
+          transcription: processedResult.content,
+          attachmentId: attachmentId
+        };
+        audioRecordingsList = [newAudioRec];
+      }
+
       const newEntryData: Partial<DiaryEntry> = {
         title: processedResult.title || `${typeConfig.labelAr} - ${dayName} ${timeStr}`,
         content: formattedContent,
@@ -222,7 +299,7 @@ Return pure JSON only in the following schema:
         updatedAt: now.toISOString(),
         tags: [isAr ? 'مذكرة صوتية' : 'Voice Journal', isAr ? 'مساعد ذكي' : 'AI Assistant', typeConfig.labelAr],
         importance: 4,
-        audioRecordings: [],
+        audioRecordings: audioRecordingsList,
         isLocked: false
       };
 

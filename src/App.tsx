@@ -933,6 +933,57 @@ function localizeHabit(habit: Habit, isAr: boolean): Habit {
   }
 }
 
+const AudioPlayerWithIndexedDBFallback: React.FC<{
+  rec: AudioRecording;
+  onToggleRecording: () => void;
+}> = ({ rec, onToggleRecording }) => {
+  const [resolvedSrc, setResolvedSrc] = useState<string | null>(() => {
+    return (rec.dataUrl && rec.dataUrl !== '#') ? rec.dataUrl : (rec.blobUrl && rec.blobUrl !== '#' ? rec.blobUrl : null);
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    if ((!resolvedSrc || resolvedSrc === '#' || resolvedSrc.startsWith('blob:')) && rec.attachmentId) {
+      getAttachmentObjectUrl(rec.attachmentId).then((url) => {
+        if (isMounted && url) {
+          setResolvedSrc(url);
+        }
+      });
+    }
+    return () => { isMounted = false; };
+  }, [rec.attachmentId, rec.dataUrl, rec.blobUrl]);
+
+  if (resolvedSrc && resolvedSrc !== '#') {
+    return (
+      <div className="bg-white p-3 rounded-xl border border-[#D0C8B0] shadow-2xs space-y-1.5 my-1.5">
+        <div className="flex items-center justify-between text-[11px] font-bold text-[#5A5A40]">
+          <span className="flex items-center gap-1.5">
+            <span>🎧</span>
+            <span>مشغل الصوت التسجيلي:</span>
+          </span>
+          <span className="text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] border border-emerald-200">
+            جاهز للتشغيل والاستماع
+          </span>
+        </div>
+        <audio controls src={resolvedSrc} className="w-full h-9 rounded-lg cursor-pointer bg-gray-50" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-center justify-between my-1">
+      <span>⚠️ يتعذر تشغيل الصوت (لم يتم حفظ الملف الصوتي بالكامل).</span>
+      <button
+        type="button"
+        onClick={() => onToggleRecording()}
+        className="px-2.5 py-1 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded-lg font-bold cursor-pointer transition-colors text-[10px] shrink-0"
+      >
+        إعادة التسجيل 🎙️
+      </button>
+    </div>
+  );
+};
+
 export default function App() {
   // --- Persistent State Hooks ---
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -3740,8 +3791,24 @@ export default function App() {
 
   // --- Transcribe Audio Item manually using Unified Key-Pooled Pipeline ---
   const handleTranscribeAudioItem = async (rec: AudioRecording) => {
-    const rawAudio = (rec.dataUrl && rec.dataUrl !== '#') ? rec.dataUrl : rec.blobUrl;
-    if (!rawAudio) {
+    let rawAudio = (rec.dataUrl && rec.dataUrl !== '#') ? rec.dataUrl : rec.blobUrl;
+    let audioBlob: Blob | null = null;
+
+    if (rec.attachmentId) {
+      try {
+        const storedBlob = await getAttachmentBlob(rec.attachmentId);
+        if (storedBlob) {
+          audioBlob = storedBlob;
+          if (!rawAudio || rawAudio === '#' || rawAudio.startsWith('blob:')) {
+            rawAudio = URL.createObjectURL(storedBlob);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch audio blob from attachmentId:', e);
+      }
+    }
+
+    if (!rawAudio && !audioBlob) {
       alert('لا يوجد تسجيل صوتي صالح للتفريغ النصي.');
       return;
     }
@@ -3749,15 +3816,15 @@ export default function App() {
     setTranscribingAudioId(rec.id);
     updateAudioTranscriptionAtomic(rec.id, '⏳ جاري التفريغ النصي بذكاء Gemini...');
     try {
-      let audioBlob: Blob | null = null;
-      if (rawAudio.startsWith('blob:')) {
-        const fetchRes = await fetch(rawAudio);
-        audioBlob = await fetchRes.blob();
-      } else if (rawAudio.startsWith('data:')) {
-        const parts = rawAudio.split(';base64,');
-        if (parts.length === 2) {
-          const byteChars = atob(parts[1]);
-          const byteNumbers = new Array(byteChars.length);
+      if (!audioBlob && rawAudio) {
+        if (rawAudio.startsWith('blob:')) {
+          const fetchRes = await fetch(rawAudio);
+          audioBlob = await fetchRes.blob();
+        } else if (rawAudio.startsWith('data:')) {
+          const parts = rawAudio.split(';base64,');
+          if (parts.length === 2) {
+            const byteChars = atob(parts[1]);
+            const byteNumbers = new Array(byteChars.length);
           for (let i = 0; i < byteChars.length; i++) {
             byteNumbers[i] = byteChars.charCodeAt(i);
           }
@@ -3799,19 +3866,34 @@ export default function App() {
     }
   };
 
-  // --- Append AI Transcript directly into Diary Writing Area ---
-  const handleAppendTranscriptToContent = (transcriptText: string) => {
-    if (!transcriptText) return;
-    const cleanText = transcriptText.trim();
-    if (!cleanText || cleanText.includes('جاري تفريغ')) return;
-
-    const addition = `\n\n🎙️ [تفريغ صوتي]:\n${cleanText}`;
+  // --- Append AI Transcript directly into Diary Writing Area (Attachment-Scoped Deduplication) ---
+  const handleAppendTranscriptToContent = (rec: AudioRecording) => {
+    if (!rec || !rec.transcription) return;
+    const cleanText = rec.transcription.trim();
+    if (!cleanText || cleanText.includes('جاري تفريغ') || cleanText.includes('جاري التفريغ') || cleanText.includes('انقر على زر')) return;
 
     setEditingDiary(prev => {
       if (!prev) return null;
+
+      // Check if this exact audio attachment was already appended
+      const currentRec = prev.audioRecordings?.find(r => r.id === rec.id || (rec.attachmentId && r.attachmentId === rec.attachmentId));
+      if (currentRec && currentRec.isAppendedToContent) {
+        return prev;
+      }
+
+      const separator = prev.content && prev.content.trim() ? '\n\n' : '';
+      const addition = `${separator}🎙️ [تفريغ صوتي]:\n${cleanText}`;
       const updatedContent = (prev.content || '') + addition;
-      setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent } : d));
-      return { ...prev, content: updatedContent };
+
+      const updatedAudioRecordings = (prev.audioRecordings || []).map(r => {
+        if (r.id === rec.id || (rec.attachmentId && r.attachmentId === rec.attachmentId)) {
+          return { ...r, isAppendedToContent: true };
+        }
+        return r;
+      });
+
+      setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent, audioRecordings: updatedAudioRecordings } : d));
+      return { ...prev, content: updatedContent, audioRecordings: updatedAudioRecordings };
     });
   };
 
@@ -7465,40 +7547,7 @@ export default function App() {
                             </div>
 
                             {/* Prominent Audio Player Component */}
-                            {(() => {
-                              const audioSrc = (rec.dataUrl && rec.dataUrl !== '#') 
-                                ? rec.dataUrl 
-                                : (rec.blobUrl && rec.blobUrl !== '#' ? rec.blobUrl : null);
-                              
-                              if (audioSrc) {
-                                return (
-                                  <div className="bg-white p-3 rounded-xl border border-[#D0C8B0] shadow-2xs space-y-1.5 my-1.5">
-                                    <div className="flex items-center justify-between text-[11px] font-bold text-[#5A5A40]">
-                                      <span className="flex items-center gap-1.5">
-                                        <span>🎧</span>
-                                        <span>مشغل الصوت التسجيلي:</span>
-                                      </span>
-                                      <span className="text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] border border-emerald-200">
-                                        جاهز للتشغيل والاستماع
-                                      </span>
-                                    </div>
-                                    <audio controls src={audioSrc} className="w-full h-9 rounded-lg cursor-pointer bg-gray-50" />
-                                  </div>
-                                );
-                              }
-                              return (
-                                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-center justify-between my-1">
-                                  <span>⚠️ يتعذر تشغيل الصوت (لم يتم حفظ الملف الصوتي بالكامل).</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleRecording()}
-                                    className="px-2.5 py-1 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded-lg font-bold cursor-pointer transition-colors text-[10px] shrink-0"
-                                  >
-                                    إعادة التسجيل 🎙️
-                                  </button>
-                                </div>
-                              );
-                            })()}
+                            <AudioPlayerWithIndexedDBFallback rec={rec} onToggleRecording={handleToggleRecording} />
 
                             {/* Transcription & Dynamic Colored Background Container for SER */}
                             <div className={`p-3.5 rounded-2xl border transition-all duration-300 space-y-2.5 ${emoStyle.containerBg}`}>
@@ -7554,12 +7603,16 @@ export default function App() {
                                   {rec.transcription && rec.transcription.trim() && !rec.transcription.includes('جاري') && !rec.transcription.includes('انقر على زر') && (
                                     <button
                                       type="button"
-                                      onClick={() => handleAppendTranscriptToContent(rec.transcription!)}
-                                      className="px-2.5 py-1 bg-white/90 hover:bg-white text-[#8C661D] border border-black/10 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 shadow-3xs"
-                                      title="نسخ النص المفرغ وإضافته مباشرة لمضمون اليومية"
+                                      onClick={() => handleAppendTranscriptToContent(rec)}
+                                      className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 shadow-3xs ${
+                                        rec.isAppendedToContent
+                                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                          : 'bg-white/90 hover:bg-white text-[#8C661D] border border-black/10'
+                                      }`}
+                                      title={rec.isAppendedToContent ? 'تمت إضافة هذا التفريغ إلى نص اليومية' : 'نسخ النص المفرغ وإضافته مباشرة لمضمون اليومية'}
                                     >
-                                      <span>✍️</span>
-                                      <span>إضافة للنص</span>
+                                      <span>{rec.isAppendedToContent ? '✓' : '✍️'}</span>
+                                      <span>{rec.isAppendedToContent ? 'تمت الإضافة' : 'إضافة للنص'}</span>
                                     </button>
                                   )}
                                 </div>

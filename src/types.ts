@@ -12,6 +12,7 @@ export interface AudioRecording {
   duration: number; // in seconds
   transcription?: string;
   attachmentId?: string;
+  isAppendedToContent?: boolean;
   speechEmotion?: {
     primaryEmotion: 'joy' | 'anxiety' | 'sadness' | 'anger' | 'calm' | 'normal' | string;
     intensity: 'high' | 'medium' | 'low' | string;
