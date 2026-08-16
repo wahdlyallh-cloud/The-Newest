@@ -10132,6 +10132,10 @@ export default function App() {
         onNavigateTab={(tab) => {
           setActiveTab(tab);
         }}
+        onOpenVoiceJournal={() => {
+          setShowOnboardingTour(false);
+          setShowVoiceJournalModal(true);
+        }}
         appLanguage={settings?.appLanguage || 'ar'}
       />
 

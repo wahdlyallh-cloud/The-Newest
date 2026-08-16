@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  Brain, 
-  TrendingUp, 
-  ShieldCheck, 
-  Sparkles, 
-  X, 
-  ChevronRight, 
-  ChevronLeft, 
-  CheckCircle2, 
+import React, { useState, useEffect } from 'react';
+import {
+  BookOpen,
+  Brain,
+  TrendingUp,
+  ShieldCheck,
+  Sparkles,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
   Compass,
   Smile,
   Mic,
-  Lock
+  Lock,
+  FileText,
+  Image,
+  TreePine,
+  Play
 } from 'lucide-react';
-import { useLanguage, getLanguageInfo } from '../lib/languages';
 
-interface OnboardingTourModalProps {
+export interface OnboardingTourModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateTab?: (tab: 'dashboard' | 'diaries' | 'advisor' | 'analytics' | 'settings') => void;
+  onOpenVoiceJournal?: () => void;
   appLanguage?: string;
 }
 
@@ -27,136 +31,328 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
   isOpen,
   onClose,
   onNavigateTab,
-  appLanguage
+  onOpenVoiceJournal,
+  appLanguage = 'ar'
 }) => {
-  const { t, currentLanguage } = useLanguage();
-  const activeLang = appLanguage || currentLanguage;
-  const langInfo = getLanguageInfo(activeLang);
-  const isEn = activeLang === 'en';
-  const isRtl = langInfo.dir === 'rtl';
-
   const [currentStep, setCurrentStep] = useState(0);
+  const isEn = appLanguage === 'en';
+  const isRtl = !isEn;
+
+  // Keyboard navigation & accessibility
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowRight') {
+        if (isRtl) {
+          handlePrev();
+        } else {
+          handleNext();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (isRtl) {
+          handleNext();
+        } else {
+          handlePrev();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, currentStep, isRtl]);
 
   if (!isOpen) return null;
 
   const steps = [
+    // 1. مرحباً بك في حياة AI
     {
       id: 'welcome',
       icon: Compass,
-      color: 'from-amber-500 to-amber-700',
-      bgColor: 'bg-amber-500/10 text-amber-600',
-      tabTarget: 'dashboard',
-      title: isEn ? 'Welcome to Hayat AI 👋' : 'مرحباً بك في حياة AI 👋',
-      subtitle: isEn ? 'Your Smart Psychological Companion & Journal' : 'رفيقك النفسي الذكي ومساحتك الآمنة للتدوين',
-      description: isEn 
-        ? 'Discover how Hayat AI empowers your mental wellness, diary reflections, and habit tracking with privacy-first AI features.' 
-        : 'اكتشف كيف يساعدك تطبيق حياة AI في تعزيز صحتك النفسية، وتدوين يومياتك، وتتبع عاداتك مع خصائص الذكاء الاصطناعي المشفرة.',
-      highlights: [
-        isEn ? '100% Private & Locally Encrypted' : 'خاص ومُشفر 100% على جهازك',
-        isEn ? 'CBT-powered AI Psychological Advisor' : 'مستشار نفسي ذكي مدعوم بالعلاج المعرفي',
-        isEn ? 'Voice Journaling & Mood Analytics' : 'تدوين صوتي وتحليل متقدم للمزاج'
-      ]
+      badge: isEn ? 'Step 1 of 7' : 'الخطوة 1 من 7',
+      accentColor: 'from-[#2B3E50] to-[#3A506B]',
+      iconBg: 'bg-[#2B3E50]/10 text-[#2B3E50]',
+      title: isEn ? '🌿 Welcome to Hayat AI' : '🌿 مرحبًا بك في حياة AI',
+      subtitle: isEn
+        ? 'Your safe psychological space to write, express, and grow with smart AI guidance.'
+        : 'مساحتك الخاصة للكتابة، والتعبير عن مشاعرك، وفهم ذاتك، وتنظيم يومك بمساعدة الذكاء الاصطناعي.',
+      description: isEn
+        ? 'You do not need to learn everything at once. We will accompany you step-by-step to discover what you can do.'
+        : 'لا تحتاج إلى معرفة كل شيء الآن. سنرافقك خطوة بخطوة لتكتشف أهم ما يمكنك القيام به بكل هدوء وبساطة.',
+      interactiveWidget: (
+        <div className="grid grid-cols-3 gap-2 sm:gap-2.5 py-1">
+          <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
+            <span className="text-lg sm:text-xl">✍️</span>
+            <span className="text-xs font-black text-[#2B3E50]">{isEn ? 'Express' : 'عبّر'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{isEn ? 'Write freely' : 'اكتب ما يدور في ذهنك بحرية'}</span>
+          </div>
+          <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
+            <span className="text-lg sm:text-xl">🧠</span>
+            <span className="text-xs font-black text-[#2B3E50]">{isEn ? 'Understand' : 'افهم'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{isEn ? 'Explore feelings' : 'استكشف مشاعرك بأدوات ذكية'}</span>
+          </div>
+          <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
+            <span className="text-lg sm:text-xl">🌱</span>
+            <span className="text-xs font-black text-[#2B3E50]">{isEn ? 'Grow' : 'تطوّر'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{isEn ? 'Track progress' : 'تابع عاداتك ومزاجك مع الوقت'}</span>
+          </div>
+        </div>
+      ),
+      actionButton: null
     },
+
+    // 2. اليوميات والخواطر
     {
       id: 'diaries',
       icon: BookOpen,
-      color: 'from-emerald-500 to-teal-700',
-      bgColor: 'bg-emerald-500/10 text-emerald-600',
-      tabTarget: 'diaries',
-      title: t.onboardingStep1Title || (isEn ? 'Diaries & Reflections 📝' : 'قسم اليوميات والخواطر 📝'),
-      subtitle: isEn ? 'Express your thoughts freely every day' : 'سجّل تفاصيل يومك ومواقفك بحرية تامة',
-      description: t.onboardingStep1Desc || (isEn 
-        ? 'Journal freely with real-time AI mood analysis, voice recordings, attachments, and passcode lock.' 
-        : 'سجّل تفاصيل يومك ومواقفك بحرية تامة مع تحليل فوري للمزاج وإرفاق التسجيلات والصور والتشفير.'),
-      demoWidget: (
-        <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2 text-start">
-          <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
-            <span className="flex items-center gap-1.5"><Smile className="w-4 h-4 text-emerald-600" /> {isEn ? 'Happy & Rested' : 'مرتاح وسعيد'}</span>
-            <span className="text-[10px] bg-emerald-200/60 text-emerald-800 px-2 py-0.5 rounded-full">{isEn ? 'AI Mood Analysis' : 'تحليل المزاج الذكي'}</span>
+      badge: isEn ? 'Step 2 of 7' : 'الخطوة 2 من 7',
+      accentColor: 'from-[#4F772D] to-[#31572E]',
+      iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
+      title: isEn ? '✍️ Express What Lies Within' : '✍️ عبّر عمّا بداخلك',
+      subtitle: isEn
+        ? 'Write your reflections freely, record daily moments, and keep life memories in one safe spot.'
+        : 'اكتب يومياتك وخواطرك بحرية، وسجّل ما حدث في يومك، وما شعرت به، وما يدور في ذهنك.',
+      description: isEn
+        ? 'You can easily attach photos and audio recordings to keep all your experiences together.'
+        : 'يمكنك أيضًا إرفاق الصور والتسجيلات الصوتية لتحتفظ بتفاصيل تجربتك في مكان واحد مرتب وآمن.',
+      interactiveWidget: (
+        <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#2B3E50]">
+              <Smile className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{isEn ? 'Calm & Grateful' : 'شعور بالاطمئنان والامتنان'}</span>
+            </div>
+            <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+              {isEn ? 'Mood Analysis' : 'تحليل المزاج'}
+            </span>
           </div>
-          <p className="text-xs text-gray-700 leading-relaxed">
-            {isEn ? '"Today I completed my goals and enjoyed a peaceful walk."' : '"اليوم أنجزت مهامي وشعرت بطمأنينة عالية أثناء المشي المسائي..."'}
+          <p className="text-xs text-gray-700 leading-relaxed font-medium bg-white/80 p-2.5 rounded-xl border border-gray-100">
+            {isEn
+              ? '"Today I took time to breathe and reflect on my day calmly..."'
+              : '"أخذت اليوم وقتاً مستقطعاً للتنفس بهدوء وترتيب أولوياتي مع بداية المساء..."'}
           </p>
+          <div className="flex items-center gap-3 pt-0.5 text-[11px] text-gray-500 font-semibold">
+            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {isEn ? 'Rich Text' : 'كتابة منسقة'}</span>
+            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {isEn ? 'Photo' : 'صور'}</span>
+            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {isEn ? 'Audio' : 'تسجيل صوتي'}</span>
+          </div>
         </div>
-      )
+      ),
+      actionButton: {
+        text: isEn ? 'Try Diaries' : 'جرّب اليوميات',
+        onClick: () => {
+          onClose();
+          if (onNavigateTab) onNavigateTab('diaries');
+        }
+      }
     },
+
+    // 3. التسجيل الصوتي
+    {
+      id: 'voice',
+      icon: Mic,
+      badge: isEn ? 'Step 3 of 7' : 'الخطوة 3 من 7',
+      accentColor: 'from-[#6B4E71] to-[#3B1F47]',
+      iconBg: 'bg-[#6B4E71]/10 text-[#6B4E71]',
+      title: isEn ? '🎙️ Prefer Speaking? Just Talk' : '🎙️ لا ترغب في الكتابة؟ تحدّث فقط',
+      subtitle: isEn
+        ? 'Speak naturally, pause whenever you wish to think, and continue talking comfortably.'
+        : 'تحدّث بطبيعتك، وخذ وقتك في التفكير أو التوقف، ثم واصل حديثك متى شئت.',
+      description: isEn
+        ? 'Voice journaling allows you to express your thoughts and feelings without typing a single word.'
+        : 'يساعدك التسجيل الصوتي على التعبير عن أفكارك ومشاعرك دون الحاجة إلى الكتابة، مع تفريغ فوري دقيق.',
+      interactiveWidget: (
+        <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-bold text-[#6B4E71]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>{isEn ? 'Live Voice Journaling' : 'المساعد الصوتي التفاعلي'}</span>
+            </span>
+            <span className="text-[10px] font-extrabold bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
+              {isEn ? 'Continuous Recording' : 'تفريغ لحظي مستمر'}
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-extrabold text-[#2B3E50]">
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {isEn ? 'Speak' : 'تحدّث'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {isEn ? 'Pause' : 'توقّف'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {isEn ? 'Continue' : 'واصل'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {isEn ? 'Save' : 'احفظ'}</div>
+          </div>
+        </div>
+      ),
+      actionButton: {
+        text: isEn ? 'Try Voice Journal' : 'جرّب التسجيل الصوتي',
+        onClick: () => {
+          onClose();
+          if (onOpenVoiceJournal) {
+            onOpenVoiceJournal();
+          } else if (onNavigateTab) {
+            onNavigateTab('diaries');
+          }
+        }
+      }
+    },
+
+    // 4. المستشار الذكي
     {
       id: 'advisor',
       icon: Brain,
-      color: 'from-purple-600 to-indigo-800',
-      bgColor: 'bg-purple-500/10 text-purple-600',
-      tabTarget: 'advisor',
-      title: t.onboardingStep2Title || (isEn ? 'Smart AI Advisor 🧠' : 'المستشار النفسي الذكي 🧠'),
-      subtitle: isEn ? 'Instant CBT Guidance & Emotional Support' : 'دعم نفسي وإرشاد معارفي سلوكي على مدار الساعة',
-      description: t.onboardingStep2Desc || (isEn 
-        ? 'Chat with your AI psychological advisor based on CBT principles for personalized support and clarity.' 
-        : 'تحدث مع المستشار الذكي الداعم القائم على العلاج المعرفي السلوكي (CBT) للحصول على نصائح وتفريغ نفسي.'),
-      demoWidget: (
-        <div className="bg-purple-50/70 border border-purple-200/80 rounded-2xl p-3.5 space-y-2 text-start">
-          <div className="flex items-center gap-2 text-xs font-bold text-purple-900">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <span>{isEn ? 'Hayat AI Advisor:' : 'المستشار الذكي (حياة AI):'}</span>
+      badge: isEn ? 'Step 4 of 7' : 'الخطوة 4 من 7',
+      accentColor: 'from-[#5C4D7D] to-[#3B2C5C]',
+      iconBg: 'bg-[#5C4D7D]/10 text-[#5C4D7D]',
+      title: isEn ? '🧠 Your Smart Companion' : '🧠 مستشارك الذكي',
+      subtitle: isEn
+        ? 'When you need to organize your thoughts or understand your emotions, talk with the AI advisor.'
+        : 'عندما تحتاج إلى ترتيب أفكارك أو فهم مشاعرك، يمكنك التحدث مع المستشار الذكي ومناقشة ما يشغلك بطريقة هادئة ومنظمة.',
+      description: isEn
+        ? 'A supportive space based on cognitive guidance to offer clarity and practical emotional support.'
+        : 'مساحة داعمة مستندة إلى مبادئ الإرشاد المعرفي لمساعدتك على رؤية الأمور بوضوح واستعادة هدوئك.',
+      interactiveWidget: (
+        <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
+          <div className="bg-white/90 p-2 rounded-xl border border-gray-100 text-xs text-gray-800">
+            <span className="font-black text-[#2B3E50] block text-[10px] mb-0.5">{isEn ? 'You:' : 'المستخدم:'}</span>
+            <span className="leading-snug">{isEn ? '"I feel a bit anxious and do not know why."' : '«أشعر بالقلق ولا أعرف السبب بالضبط.»'}</span>
           </div>
-          <p className="text-xs text-purple-900/90 leading-relaxed">
-            {isEn ? '"Let us reframe this anxious thought together using CBT grounding exercises."' : '"دعنا نفكك هذا الشعور بالقلق معاً باستخدام تمرين التفكيك المعرفي والاطمئنان..."'}
-          </p>
+          <div className="bg-purple-50/90 p-2 rounded-xl border border-purple-100 text-xs text-purple-950">
+            <span className="font-black text-purple-900 flex items-center gap-1 text-[10px] mb-0.5">
+              <Sparkles className="w-3 h-3 text-purple-600 shrink-0" />
+              <span>{isEn ? 'Hayat AI Advisor:' : 'المستشار الذكي:'}</span>
+            </span>
+            <span className="leading-snug">
+              {isEn
+                ? '"Let us explore what you feel step by step. What occupies your mind most right now?"'
+                : '«لنحاول فهم ما تشعر به خطوة بخطوة. ما أكثر شيء يشغل ذهنك في هذه اللحظة؟»'}
+            </span>
+          </div>
         </div>
-      )
+      ),
+      actionButton: {
+        text: isEn ? 'Start a Conversation' : 'ابدأ محادثة',
+        onClick: () => {
+          onClose();
+          if (onNavigateTab) onNavigateTab('advisor');
+        }
+      }
     },
+
+    // 5. العادات والمزاج وشجرة النمو
     {
       id: 'analytics',
       icon: TrendingUp,
-      color: 'from-blue-600 to-cyan-700',
-      bgColor: 'bg-blue-500/10 text-blue-600',
-      tabTarget: 'analytics',
-      title: t.onboardingStep3Title || (isEn ? 'Habit & Growth Tracking 📊' : 'تتبع العادات وشجرة النمو 📊'),
-      subtitle: isEn ? 'Visualize your mental progress' : 'شاهد تطورك النفسي ونمو شجرتك الذهنية',
-      description: t.onboardingStep3Desc || (isEn 
-        ? 'Track daily habits, sleep, and sports while watching your mental growth tree flourish as you journal.' 
-        : 'تابع عاداتك اليومية وجودة نومك ورياضتك، واشهد نمو شجرتك النفسية كلما واظبت على التدوين.'),
-      demoWidget: (
-        <div className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 space-y-2">
-          <div className="flex justify-between items-center text-xs font-bold text-blue-900">
-            <span>{isEn ? 'Mental Growth Tree 🌳' : 'شجرة النمو النفسي 🌳'}</span>
-            <span className="text-blue-600">Level 4</span>
+      badge: isEn ? 'Step 5 of 7' : 'الخطوة 5 من 7',
+      accentColor: 'from-[#197278] to-[#124E52]',
+      iconBg: 'bg-[#197278]/10 text-[#197278]',
+      title: isEn ? '🌱 Track Your Growth' : '🌱 تابع رحلتك ونموك',
+      subtitle: isEn
+        ? 'Monitor your daily habits, mood, and progress to discover how your journey evolves over time.'
+        : 'راقب عاداتك ومزاجك وتقدمك اليومي، واكتشف كيف تتغير رحلتك مع مرور الوقت.',
+      description: isEn
+        ? 'Every small step you achieve today can be the beginning of a greater positive change tomorrow.'
+        : 'كل خطوة صغيرة تحرزها اليوم يمكن أن تكون بداية لتغيير أكبر غدًا، مع شجرة نمو نفسي تزدهر مع التزامك.',
+      interactiveWidget: (
+        <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2">
+          <div className="flex justify-between items-center text-xs font-extrabold text-[#2B3E50]">
+            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {isEn ? 'Psychological Growth Tree' : 'شجرة النمو النفسي 🌳'}</span>
+            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{isEn ? 'Flourishing' : 'في مرحلة النمو'}</span>
           </div>
-          <div className="w-full bg-blue-200/50 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full w-[78%]"></div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full w-[85%] transition-all"></div>
+          </div>
+          <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 pt-0.5">
+            <span>✅ {isEn ? 'Daily Habits' : 'العادات اليومية'}</span>
+            <span>📊 {isEn ? 'Mood Trends' : 'تتبع المزاج'}</span>
+            <span>🎯 {isEn ? 'Achievements' : 'الإنجازات'}</span>
           </div>
         </div>
-      )
+      ),
+      actionButton: {
+        text: isEn ? 'Discover Your Progress' : 'اكتشف تقدّمك',
+        onClick: () => {
+          onClose();
+          if (onNavigateTab) onNavigateTab('analytics');
+        }
+      }
     },
+
+    // 6. الخصوصية والأمان
     {
-      id: 'security',
+      id: 'privacy',
       icon: ShieldCheck,
-      color: 'from-slate-700 to-gray-900',
-      bgColor: 'bg-slate-500/10 text-slate-700',
-      tabTarget: 'settings',
-      title: t.onboardingStep4Title || (isEn ? 'Privacy & Security 🔒' : 'الخصوصية والأمان التام 🔒'),
-      subtitle: isEn ? 'Your data stays on your device' : 'بياناتك ملكك وحده وتظل مشفرة على جهازك',
-      description: t.onboardingStep4Desc || (isEn 
-        ? 'Your entries are encrypted and stored safely on your device with biometric lock and cloud backup options.' 
-        : 'بياناتك مشفرة ومحفوظة على جهازك بأمان مع دعم القفل بالبصمة والنسخ الاحتياطي.'),
-      demoWidget: (
-        <div className="bg-slate-100 border border-slate-200 rounded-2xl p-3.5 flex items-center gap-3 text-slate-800">
-          <Lock className="w-5 h-5 text-slate-700 shrink-0" />
-          <p className="text-xs leading-relaxed">
-            {isEn ? 'AES-256 Bit Encryption + PIN & Biometrics Protection' : 'تشفير AES-256 مع حماية البصمة ورمز PIN الشخصي'}
+      badge: isEn ? 'Step 6 of 7' : 'الخطوة 6 من 7',
+      accentColor: 'from-[#3A506B] to-[#1C2541]',
+      iconBg: 'bg-[#3A506B]/10 text-[#3A506B]',
+      title: isEn ? '🔒 Your Privacy First' : '🔒 خصوصيتك أولًا',
+      subtitle: isEn
+        ? 'This is your private sanctuary. Protection tools are crafted to keep you in total control of your data.'
+        : 'هذه مساحتك الخاصة، ولذلك صُممت أدوات الحماية في حياة AI لمساعدتك على التحكم الكامل في بياناتك وحمايتها.',
+      description: isEn
+        ? 'Your entries are saved locally on your device with PIN passcode protection, biometric lock, and private cloud backup.'
+        : 'تبقى بياناتك محفوظة محلياً على جهازك، مع إمكانية قفل التطبيق برمز PIN وبصمة الإصبع أو الوجه ونسخ احتياطي مشفر.',
+      interactiveWidget: (
+        <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#2B3E50]">
+            <Lock className="w-4 h-4 text-[#3A506B] shrink-0" />
+            <span>{isEn ? 'Local Device Storage & Security' : 'حفظ محلي آمن على جهازك'}</span>
+          </div>
+          <ul className="text-[11px] text-gray-700 space-y-1 font-medium">
+            <li className="flex items-center gap-1.5">
+              <span className="text-emerald-600">✓</span> {isEn ? 'Passcode & Biometrics App Lock' : 'قفل التطبيق برمز PIN وبصمة الإصبع والوجه'}
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="text-emerald-600">✓</span> {isEn ? 'Offline-first Local Database' : 'قاعدة بيانات محلية على هاتفك لا تغادره إلا بطلبك'}
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="text-emerald-600">✓</span> {isEn ? 'Encrypted Cloud Backup options' : 'إمكانية أخذ نسخ احتياطية مشفرة واسترجاعها بسهولة'}
+            </li>
+          </ul>
+        </div>
+      ),
+      actionButton: {
+        text: isEn ? 'Privacy Settings' : 'تعرّف إلى إعدادات الخصوصية',
+        onClick: () => {
+          onClose();
+          if (onNavigateTab) onNavigateTab('settings');
+        }
+      }
+    },
+
+    // 7. شاشة النهاية والانطلاق
+    {
+      id: 'ready',
+      icon: Sparkles,
+      badge: isEn ? 'Step 7 of 7' : 'الخطوة 7 من 7',
+      accentColor: 'from-[#4F772D] to-[#1B4332]',
+      iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
+      title: isEn ? '🚀 You Are All Set' : '🚀 أنت مستعد الآن',
+      subtitle: isEn
+        ? 'You have now discovered the core essence of Hayat AI.'
+        : 'لقد تعرّفت الآن إلى أهم ما يقدمه تطبيق حياة AI.',
+      description: isEn
+        ? 'Write what you feel, speak about what is on your mind, follow your habits, and enjoy your journey step by step.'
+        : 'اكتب ما تشعر به، تحدّث عمّا يشغلك، تابع عاداتك، واكتشف رحلتك خطوة بخطوة.',
+      interactiveWidget: (
+        <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-4 text-center space-y-2">
+          <span className="text-3xl animate-bounce inline-block">✨</span>
+          <p className="text-xs font-black text-[#2B3E50] leading-relaxed">
+            {isEn
+              ? 'There is no single correct way to use Hayat AI. Start in whatever way suits you best.'
+              : '«لا توجد طريقة صحيحة واحدة لاستخدام حياة AI. ابدأ بالطريقة التي تناسبك.»'}
           </p>
         </div>
-      )
+      ),
+      actionButton: null
     }
   ];
 
   const currentStepData = steps[currentStep];
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === steps.length - 1;
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      const nextIdx = currentStep + 1;
-      setCurrentStep(nextIdx);
-      if (onNavigateTab && steps[nextIdx].tabTarget) {
-        onNavigateTab(steps[nextIdx].tabTarget as any);
-      }
+      setCurrentStep(prev => prev + 1);
     } else {
       handleComplete();
     }
@@ -164,11 +360,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
 
   const handlePrev = () => {
     if (currentStep > 0) {
-      const prevIdx = currentStep - 1;
-      setCurrentStep(prevIdx);
-      if (onNavigateTab && steps[prevIdx].tabTarget) {
-        onNavigateTab(steps[prevIdx].tabTarget as any);
-      }
+      setCurrentStep(prev => prev - 1);
     }
   };
 
@@ -182,132 +374,141 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-lg w-full overflow-hidden flex flex-col transition-all duration-300">
-        
-        {/* Header Bar */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-fadeIn"
+      dir={isRtl ? 'rtl' : 'ltr'}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-modal-title"
+    >
+      <div className="bg-white rounded-3xl shadow-2xl border border-[#E2DCC8] max-w-md w-full overflow-hidden flex flex-col transition-all duration-300 max-h-[92vh]">
+
+        {/* Top Navigation & Status Bar */}
+        <div className="flex items-center justify-between px-4 sm:px-6 pt-4 pb-2 border-b border-gray-100 bg-[#FAF8F5]/80">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
-              {t.onboardingStepIndicator
-                ? t.onboardingStepIndicator.replace('{step}', String(currentStep + 1)).replace('{total}', String(steps.length))
-                : (isEn ? `Step ${currentStep + 1} of ${steps.length}` : `الخطوة ${currentStep + 1} من ${steps.length}`)}
+            <span className="text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full bg-white text-[#2B3E50] border border-[#E2DCC8] shadow-2xs">
+              {currentStepData.badge}
             </span>
           </div>
 
-          <button
-            onClick={handleComplete}
-            className="text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 flex items-center gap-1 cursor-pointer"
-          >
-            <span>{t.onboardingSkip || (isEn ? 'Skip' : 'تخطي')}</span>
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-100 h-1">
-          <div 
-            className="bg-gradient-to-r from-[#2B3E50] to-[#6D5D6E] h-1 transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-          />
-        </div>
-
-        {/* Main Content Body */}
-        <div className="p-6 space-y-5 text-start flex-1">
-          {/* Step Icon Badge */}
-          <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-2xl ${currentStepData.bgColor}`}>
-              <currentStepData.icon className="w-7 h-7" />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-gray-900">{currentStepData.title}</h3>
-              <p className="text-xs font-medium text-gray-500 mt-0.5">{currentStepData.subtitle}</p>
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="text-sm text-gray-700 leading-relaxed font-normal">
-            {currentStepData.description}
-          </p>
-
-          {/* Highlights or Interactive Demo Widget */}
-          {currentStepData.highlights && (
-            <div className="space-y-2 bg-amber-50/50 p-4 rounded-2xl border border-amber-100">
-              {currentStepData.highlights.map((h, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-amber-900">
-                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>{h}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {currentStepData.demoWidget && currentStepData.demoWidget}
-
-          {/* Quick Navigation Action Button to test live tab switch */}
-          {currentStepData.tabTarget && currentStep > 0 && (
+          <div className="flex items-center gap-1.5">
+            {!isLastStep && (
+              <button
+                type="button"
+                onClick={handleComplete}
+                className="text-[11px] sm:text-xs font-bold text-gray-500 hover:text-[#2B3E50] transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 cursor-pointer"
+              >
+                {isEn ? 'Skip' : 'تخطي الجولة'}
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => {
-                if (onNavigateTab) onNavigateTab(currentStepData.tabTarget as any);
-              }}
-              className="text-xs font-bold text-[#2B3E50] hover:text-[#1E2D3B] underline flex items-center gap-1 transition-all cursor-pointer"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100 cursor-pointer"
+              aria-label={isEn ? 'Close guide' : 'إغلاق الدليل'}
             >
-              <span>{isEn ? `Try exploring ${currentStepData.tabTarget} section now` : `تجربة الانتقال إلى قسم ${currentStepData.title.split(' ')[0]} الآن`}</span>
+              <X className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+
+        {/* Modal Scrollable Body */}
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-4">
+
+          {/* Header Icon and Title */}
+          <div className="space-y-1.5 text-start">
+            <div className="flex items-center gap-2.5">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0 ${currentStepData.iconBg}`}>
+                <currentStepData.icon className="w-5 h-5" />
+              </div>
+              <h2 id="onboarding-modal-title" className="text-base sm:text-lg font-black text-[#2B3E50] leading-snug">
+                {currentStepData.title}
+              </h2>
+            </div>
+
+            <p className="text-xs sm:text-sm font-bold text-gray-800 leading-relaxed pt-1">
+              {currentStepData.subtitle}
+            </p>
+            <p className="text-[11px] sm:text-xs text-gray-600 leading-relaxed">
+              {currentStepData.description}
+            </p>
+          </div>
+
+          {/* Interactive Step Widget */}
+          <div className="pt-1">
+            {currentStepData.interactiveWidget}
+          </div>
+
+          {/* Action Button to try the actual live feature */}
+          {currentStepData.actionButton && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={currentStepData.actionButton.onClick}
+                className="w-full py-2.5 px-4 rounded-2xl bg-white border-2 border-dashed border-[#2B3E50]/30 hover:border-[#2B3E50] text-[#2B3E50] font-black text-xs flex items-center justify-center gap-2 transition-all hover:bg-[#FAF8F5] cursor-pointer shadow-2xs"
+              >
+                <Play className="w-3.5 h-3.5 text-[#2B3E50] fill-[#2B3E50]" />
+                <span>{currentStepData.actionButton.text}</span>
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Footer Navigation Buttons */}
-        <div className="p-5 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={handlePrev}
-            disabled={currentStep === 0}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              currentStep === 0
-                ? 'opacity-0 pointer-events-none'
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 cursor-pointer'
-            }`}
-          >
-            {isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            <span>{t.onboardingPrev || (isEn ? 'Previous' : 'السابق')}</span>
-          </button>
+        {/* Footer Controls & Progress Bar */}
+        <div className="p-4 sm:px-6 sm:py-4 border-t border-gray-100 bg-[#FAF8F5]/90 space-y-3">
 
           {/* Dots Indicator */}
-          <div className="flex items-center gap-1.5">
-            {steps.map((_, idx) => (
+          <div className="flex items-center justify-center gap-1.5" aria-label="Tour progress">
+            {steps.map((s, idx) => (
               <button
-                key={idx}
-                onClick={() => {
-                  setCurrentStep(idx);
-                  if (onNavigateTab && steps[idx].tabTarget) {
-                    onNavigateTab(steps[idx].tabTarget as any);
-                  }
-                }}
+                key={s.id}
+                type="button"
+                onClick={() => setCurrentStep(idx)}
+                aria-label={`الانتقال إلى ${s.title}`}
                 className={`h-2 rounded-full transition-all cursor-pointer ${
-                  currentStep === idx 
-                    ? 'w-6 bg-[#2B3E50]' 
+                  idx === currentStep
+                    ? 'w-6 bg-[#2B3E50]'
                     : 'w-2 bg-gray-300 hover:bg-gray-400'
                 }`}
               />
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={handleNext}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-[#2B3E50] hover:bg-[#1E2D3B] shadow-md transition-all flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
-          >
-            <span>
-              {currentStep === steps.length - 1 
-                ? (t.onboardingFinish || (isEn ? 'Start Journey 🚀' : 'ابدأ رحلتك الآن 🚀'))
-                : (t.onboardingNext || (isEn ? 'Next ➔' : 'التالي ➔'))}
-            </span>
-            {currentStep < steps.length - 1 && (
-              isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between gap-2.5">
+            {!isFirstStep ? (
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="py-2.5 px-4 rounded-2xl border border-[#E2DCC8] bg-white text-[#2B3E50] font-bold text-xs hover:bg-gray-50 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                {isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                <span>{isEn ? 'Previous' : 'السابق'}</span>
+              </button>
+            ) : (
+              <div />
             )}
-          </button>
+
+            {isLastStep ? (
+              <button
+                type="button"
+                onClick={handleComplete}
+                className="py-2.5 px-6 rounded-2xl bg-gradient-to-r from-[#4F772D] to-[#31572E] text-white font-black text-xs hover:opacity-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
+              >
+                <span>{isEn ? 'Start My Journey Now' : 'ابدأ رحلتي الآن'}</span>
+                <CheckCircle2 className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="py-2.5 px-5 rounded-2xl bg-[#2B3E50] text-white font-bold text-xs hover:bg-[#1C2541] transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
+              >
+                <span>{isFirstStep ? (isEn ? 'Start Tour' : 'ابدأ الجولة') : (isEn ? 'Next' : 'التالي')}</span>
+                {isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
       </div>

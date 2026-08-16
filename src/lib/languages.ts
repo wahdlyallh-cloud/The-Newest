@@ -32,8 +32,8 @@ export function getLanguageInfo(code?: AppLanguage | string | null): LanguageInf
 }
 
 const AR_DICT: Record<string, any> = {
-  interactiveTourTitle: 'الدليل التعليمي التفاعلي 🧭',
-  interactiveTourSub: 'كيفية الاستخدام بالتفصيل',
+  interactiveTourTitle: 'اكتشف حياة AI 🧭',
+  interactiveTourSub: 'جولة سريعة للتعرّف إلى أهم إمكانيات التطبيق',
   safeEncryptedSpace: 'مساحتك النفسية الآمنة والمشفرة بالكامل',
   streakActiveMsg: 'رائع! لقد دوّنت أفكارك اليوم وحافظت على توهج شعلتك. استمر في رعاية صحتك النفسية غداً!',
   streakInactiveZero: 'اكتب تدوينة اليوم لتفعيل شعلة الالتزام والبدء في رصد أنماطك السلوكية!',
@@ -803,8 +803,8 @@ const AR_DICT: Record<string, any> = {
 };
 
 const EN_DICT: Record<string, any> = {
-  interactiveTourTitle: 'Interactive Tour 🧭',
-  interactiveTourSub: 'Step-by-step usage guide',
+  interactiveTourTitle: 'Discover Hayat AI 🧭',
+  interactiveTourSub: 'A quick tour to explore key capabilities',
   safeEncryptedSpace: 'Your Safe & Fully Encrypted Psychological Space',
   streakActiveMsg: 'Great job! You logged your thoughts today and kept your streak alive!',
   streakInactiveZero: 'Write a log today to activate your daily streak!',
