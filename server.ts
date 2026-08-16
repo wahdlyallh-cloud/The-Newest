@@ -589,8 +589,8 @@ app.post("/api/gemini/transcribe-audio", async (req, res) => {
       try {
         const prompt = `You are an expert audio transcription specialist and speech emotion recognition analyst.
 Listen to the attached audio recording: "${fileName || 'audio recording'}" and do the following:
-1. Provide a accurate and full text transcription of all spoken words in the language spoken in the audio.
-2. Analyze the speech emotion and vocal tone based on pitch, rate, and frequency.
+1. قم بتفريغ هذا التسجيل الصوتي بدقة عالية إلى نص عربي منظم، حافظ على جميع الكلمات والتفاصيل دون حذف أو اختصار، صحح الأخطاء الواضحة الناتجة عن التعرف الصوتي، وأضف علامات الترقيم المناسبة مع الحفاظ على المعنى الأصلي وعدم اختلاق أي كلام غير موجود في التسجيل.
+2. Analyze the speech emotion and vocal tone based on pitch, cadence, and expression.
 3. Determine the primary emotion.
 4. Rate the emotion intensity score from 0 to 100%.
 5. Write a concise note explaining the vocal tone details.
@@ -599,7 +599,7 @@ ${getLanguageInstruction(req.body.appLanguage)}
 
 Return pure JSON only in the following format:
 {
-  "transcription": "Full transcribed text...",
+  "transcription": "Full accurate transcribed text...",
   "emotion": "Anxious" | "Joyful" | "Sad" | "Angry" | "Calm" | "Normal",
   "intensityScore": 85,
   "intensityLabel": "High" | "Medium" | "Low",

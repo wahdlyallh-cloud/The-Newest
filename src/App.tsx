@@ -2362,6 +2362,8 @@ export default function App() {
   const audioChunksRef = React.useRef<Blob[]>([]);
   const speechTranscriptRef = React.useRef<string>('');
   const [speechTranscript, setSpeechTranscript] = useState('');
+  const [speechInterim, setSpeechInterim] = useState('');
+  const [audioUploadLoading, setAudioUploadLoading] = useState(false);
   const [transcribingAudioId, setTranscribingAudioId] = useState<string | null>(null);
   const [editingTranscriptId, setEditingTranscriptId] = useState<string | null>(null);
   const [editingTranscriptText, setEditingTranscriptText] = useState<string>('');
@@ -3812,33 +3814,88 @@ export default function App() {
     });
   };
 
-  // --- Audio File Uploader (من جهاز المستخدم) ---
+  // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري ---
   const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
-        const audioUrl = URL.createObjectURL(file);
-
-        processAudioRecordingOrFile({
-          dataUrl: audioUrl,
-          blobUrl: audioUrl,
-          mimeType: file.type || 'audio/mp3',
-          fileName: file.name || 'ملف صوتي مرفق.mp3',
-          duration: Math.round(file.size / 16000) || 12,
-          attachmentId
-        });
-        setActiveInputSection('none');
-      } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
-      } finally {
-        resetFilePickerGuard();
-      }
-      e.target.value = '';
-    } else {
+    if (!file) {
       resetFilePickerGuard();
+      return;
+    }
+
+    setAudioUploadLoading(true);
+    const newRecId = `rec-${Date.now()}`;
+
+    try {
+      const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
+      const audioUrl = URL.createObjectURL(file);
+
+      // Create and attach AudioRecording with initial processing state
+      const newRec: AudioRecording = {
+        id: newRecId,
+        name: file.name || 'ملف صوتي مرفق.mp3',
+        dataUrl: audioUrl,
+        blobUrl: audioUrl,
+        duration: Math.round(file.size / 16000) || 15,
+        transcription: '⏳ جاري تفريغ التسجيل بالذكاء الاصطناعي بدقة عالية...',
+        attachmentId
+      };
+
+      addAudioToDiaryAtomic(newRec);
+      setTranscribingAudioId(newRecId);
+      setActiveInputSection('none');
+
+      // Convert audio file to Base64
+      const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Failed to read audio file'));
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Send to existing secure API pipeline
+      const res = await fetch('/api/gemini/transcribe-audio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-key': settings.userApiKey || ''
+        },
+        body: JSON.stringify({
+          audioData: base64Audio,
+          mimeType: (file.type || 'audio/mp3').split(';')[0].trim(),
+          fileName: file.name
+        })
+      });
+
+      const data = await res.json();
+      if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية') && !data.transcription.includes('مفقود')) {
+        const finalTrans = data.transcription.trim();
+        updateAudioTranscriptionAtomic(newRecId, finalTrans, data.speechEmotion);
+
+        // Cleanly append transcription into diary editor content without overwriting
+        setEditingDiary(prev => {
+          if (!prev) return null;
+          const separator = prev.content && prev.content.trim() ? '\n\n' : '';
+          const updatedContent = `${prev.content || ''}${separator}🎙️ [تفريغ المرفق الصوتي - ${file.name}]:\n${finalTrans}`;
+          setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent } : d));
+          return { ...prev, content: updatedContent };
+        });
+      } else {
+        const errMsg = data.error || 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
+        updateAudioTranscriptionAtomic(newRecId, errMsg);
+      }
+    } catch (err: any) {
+      console.error('Audio upload & transcribe error:', err);
+      updateAudioTranscriptionAtomic(newRecId, 'عذراً، تعذر التفريغ النصي للملف الصوتي.');
+    } finally {
+      setAudioUploadLoading(false);
+      setTranscribingAudioId(null);
+      resetFilePickerGuard();
+      e.target.value = '';
     }
   };
 
@@ -3881,192 +3938,179 @@ export default function App() {
     }
   };
 
-  // --- Voice Recorder Trigger with Real Mic Capture & AI Auto-Transcription ---
+  // --- Voice Recorder Start Handler ---
+  const handleStartRecording = async () => {
+    const startTime = Date.now();
+    recordingStartTimeRef.current = startTime;
+    setIsRecording(true);
+    setRecordingSeconds(0);
+    recordingSecondsRef.current = 0;
+    setSpeechTranscript('');
+    setSpeechInterim('');
+    speechTranscriptRef.current = '';
+    audioChunksRef.current = [];
+
+    // Start interval timer
+    if (recordingIntervalId) clearInterval(recordingIntervalId);
+    const intId = window.setInterval(() => {
+      setRecordingSeconds(prev => {
+        const next = prev + 1;
+        recordingSecondsRef.current = next;
+        return next;
+      });
+    }, 1000);
+    setRecordingIntervalId(intId);
+
+    // Start centralized speech recognition with separate final and interim transcripts
+    const manager = SpeechRecognitionManager.getInstance();
+    if (manager.isSupported()) {
+      manager.startSession({
+        lang: 'ar-SA',
+        continuous: true,
+        callbacks: {
+          onTranscriptChange: (state) => {
+            speechTranscriptRef.current = state.finalTranscript;
+            setSpeechTranscript(state.finalTranscript);
+            setSpeechInterim(state.interimTranscript);
+          },
+          onError: (e) => {
+            console.error("Speech Recognition setup error:", e);
+          }
+        }
+      });
+    }
+
+    // Try MediaRecorder for microphone audio recording
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        let options: MediaRecorderOptions = { mimeType: 'audio/webm;codecs=opus' };
+        if (typeof MediaRecorder !== 'undefined' && !MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          if (MediaRecorder.isTypeSupported('audio/webm')) {
+            options = { mimeType: 'audio/webm' };
+          } else {
+            options = {};
+          }
+        }
+
+        const mediaRecorder = new MediaRecorder(stream, options);
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        mediaRecorder.start(250);
+      } catch (micErr) {
+        console.warn('Microphone stream access error:', micErr);
+      }
+    }
+  };
+
+  // --- Voice Recorder Stop & Insert Handler ---
+  const handleStopAndInsertRecording = () => {
+    if (recordingIntervalId) {
+      clearInterval(recordingIntervalId);
+      setRecordingIntervalId(null);
+    }
+
+    const stopTime = Date.now();
+    const startTime = recordingStartTimeRef.current || stopTime;
+    const elapsedTime = (stopTime - startTime) / 1000;
+    const finalSecs = Math.max(Math.round(elapsedTime), recordingSecondsRef.current || 0, 1);
+
+    setIsRecording(false);
+
+    const manager = SpeechRecognitionManager.getInstance();
+    const finalSpeechText = manager.finalize();
+    const combinedTranscript = (finalSpeechText || speechTranscriptRef.current || speechTranscript || speechInterim).trim();
+
+    // Insert into diary editor without overwriting existing content
+    if (combinedTranscript) {
+      setEditingDiary(prev => {
+        if (!prev) return null;
+        const separator = prev.content && prev.content.trim() ? '\n\n' : '';
+        const updatedContent = `${prev.content || ''}${separator}🎙️ [فضفضة صوتية]:\n${combinedTranscript}`;
+        setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent } : d));
+        return { ...prev, content: updatedContent };
+      });
+    }
+
+    // Save audio stream if mediaRecorder is active
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      const rec = mediaRecorderRef.current;
+      rec.onstop = () => {
+        const hasChunks = audioChunksRef.current.length > 0;
+        const audioBlob = hasChunks ? new Blob(audioChunksRef.current, { type: 'audio/webm' }) : null;
+        const blobUrl = audioBlob ? URL.createObjectURL(audioBlob) : undefined;
+        if (audioBlob) {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const dataUrl = (typeof reader.result === 'string' && reader.result.startsWith('data:')) ? reader.result : (blobUrl || createFallbackAudioWav(finalSecs));
+            processAudioRecordingOrFile({
+              dataUrl,
+              blobUrl,
+              mimeType: 'audio/webm',
+              fileName: `فضفضة صوتية ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}.webm`,
+              duration: finalSecs,
+              liveSpeechText: combinedTranscript
+            });
+          };
+          reader.readAsDataURL(audioBlob);
+        }
+        try {
+          rec.stream?.getTracks().forEach(t => t.stop());
+        } catch (_) {}
+      };
+      try { rec.requestData(); } catch (_) {}
+      try { rec.stop(); } catch (_) {}
+    }
+
+    setSpeechTranscript('');
+    setSpeechInterim('');
+    speechTranscriptRef.current = '';
+    audioChunksRef.current = [];
+    setRecordingSeconds(0);
+    recordingSecondsRef.current = 0;
+    recordingStartTimeRef.current = null;
+  };
+
+  // --- Voice Recorder Cancel Handler ---
+  const handleCancelRecording = () => {
+    if (recordingIntervalId) {
+      clearInterval(recordingIntervalId);
+      setRecordingIntervalId(null);
+    }
+    setIsRecording(false);
+
+    const manager = SpeechRecognitionManager.getInstance();
+    manager.abortSession();
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.onstop = null;
+      try {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stream?.getTracks().forEach(t => t.stop());
+      } catch (_) {}
+    }
+
+    audioChunksRef.current = [];
+    setSpeechTranscript('');
+    setSpeechInterim('');
+    speechTranscriptRef.current = '';
+    setRecordingSeconds(0);
+    recordingSecondsRef.current = 0;
+    recordingStartTimeRef.current = null;
+  };
+
+  // --- Toggle Recording Wrapper ---
   const handleToggleRecording = async () => {
     if (isRecording) {
-      // Stop recording
-      const stopTime = Date.now();
-      const startTime = recordingStartTimeRef.current || stopTime;
-      const elapsedTime = (stopTime - startTime) / 1000;
-      const finalSecs = Math.max(Math.round(elapsedTime), recordingSecondsRef.current || 0, recordingSeconds || 0);
-
-      if (recordingIntervalId) {
-        clearInterval(recordingIntervalId);
-        setRecordingIntervalId(null);
-      }
-      setIsRecording(false);
-
-      const manager = SpeechRecognitionManager.getInstance();
-      const finalSpeechText = manager.finalize();
-      if (finalSpeechText) {
-        speechTranscriptRef.current = finalSpeechText;
-        setSpeechTranscript(finalSpeechText);
-      }
-
-      // Check recording duration (< 3 seconds) using actual elapsedTime
-      if (finalSecs < 3 || elapsedTime < 2.8) {
-        alert('مدة التسجيل قصيرة جداً (أقل من 3 ثوانٍ). يرجى التسجيل لمدة أطول لضمان تفريغ الصوت بدقة وبجودة عالية.');
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-          mediaRecorderRef.current.onstop = null;
-          try { mediaRecorderRef.current.stop(); } catch (e) {}
-        }
-        audioChunksRef.current = [];
-        manager.abortSession();
-        setRecordingSeconds(0);
-        recordingSecondsRef.current = 0;
-        recordingStartTimeRef.current = null;
-        return;
-      }
-
-      // Store finalSecs in ref so onstop can access it
-      recordingSecondsRef.current = finalSecs;
-
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try { mediaRecorderRef.current.requestData(); } catch (e) {}
-        mediaRecorderRef.current.stop();
-      } else {
-        const capturedSpeech = (manager.getFinalTranscript() || speechTranscriptRef.current).trim();
-        const fallbackAudioUrl = createFallbackAudioWav(finalSecs);
-        processAudioRecordingOrFile({
-          dataUrl: fallbackAudioUrl,
-          mimeType: 'audio/wav',
-          fileName: `فضفضة صوتية ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}.wav`,
-          duration: finalSecs,
-          liveSpeechText: capturedSpeech || 'تم تسجيل الفضفضة الصوتية بنجاح.'
-        });
-        setRecordingSeconds(0);
-        recordingSecondsRef.current = 0;
-        recordingStartTimeRef.current = null;
-      }
+      handleStopAndInsertRecording();
     } else {
-      // Start recording
-      const startTime = Date.now();
-      recordingStartTimeRef.current = startTime;
-      setIsRecording(true);
-      setRecordingSeconds(0);
-      recordingSecondsRef.current = 0;
-      setSpeechTranscript('');
-      speechTranscriptRef.current = '';
-      audioChunksRef.current = [];
-
-      // Start centralized speech recognition
-      const manager = SpeechRecognitionManager.getInstance();
-      if (manager.isSupported()) {
-        manager.startSession({
-          lang: 'ar-SA',
-          continuous: true,
-          callbacks: {
-            onTranscriptChange: (state) => {
-              speechTranscriptRef.current = state.displayTranscript;
-              setSpeechTranscript(state.displayTranscript);
-            },
-            onError: (e) => {
-              console.error("Speech Recognition setup error:", e);
-            }
-          }
-        });
-      }
-
-      // Try MediaRecorder for microphone recording
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          
-          let options: MediaRecorderOptions = { mimeType: 'audio/webm;codecs=opus' };
-          if (typeof MediaRecorder !== 'undefined' && !MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-            if (MediaRecorder.isTypeSupported('audio/webm')) {
-              options = { mimeType: 'audio/webm' };
-            } else {
-              options = {};
-            }
-          }
-
-          const mediaRecorder = new MediaRecorder(stream, options);
-          mediaRecorderRef.current = mediaRecorder;
-
-          mediaRecorder.ondataavailable = (e) => {
-            if (e.data && e.data.size > 0) {
-              audioChunksRef.current.push(e.data);
-            }
-          };
-
-          mediaRecorder.onstop = () => {
-            const stopTimestamp = Date.now();
-            const startTimestamp = recordingStartTimeRef.current || stopTimestamp;
-            const realElapsed = (stopTimestamp - startTimestamp) / 1000;
-            const finalDuration = Math.max(Math.round(realElapsed), recordingSecondsRef.current || 0, 3);
-
-            if (realElapsed < 2.8 && finalDuration < 3) {
-              alert('مدة التسجيل قصيرة جداً (أقل من 3 ثوانٍ). يرجى التسجيل لمدة أطول لضمان تفريغ الصوت بدقة وبجودة عالية.');
-              stream.getTracks().forEach(track => track.stop());
-              audioChunksRef.current = [];
-              setRecordingSeconds(0);
-              recordingSecondsRef.current = 0;
-              recordingStartTimeRef.current = null;
-              return;
-            }
-
-            const hasChunks = audioChunksRef.current.length > 0;
-            const audioBlob = hasChunks ? new Blob(audioChunksRef.current, { type: 'audio/webm' }) : null;
-            const blobUrl = audioBlob ? URL.createObjectURL(audioBlob) : undefined;
-            
-            const liveText = speechTranscriptRef.current.trim();
-            
-            if (audioBlob) {
-              const reader = new FileReader();
-              reader.onloadend = async () => {
-                const dataUrl = (typeof reader.result === 'string' && reader.result.startsWith('data:')) ? reader.result : (blobUrl || createFallbackAudioWav(finalDuration));
-                
-                processAudioRecordingOrFile({
-                  dataUrl: dataUrl,
-                  blobUrl: blobUrl,
-                  mimeType: 'audio/webm',
-                  fileName: `فضفضة صوتية ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}.webm`,
-                  duration: finalDuration,
-                  liveSpeechText: liveText
-                });
-                setRecordingSeconds(0);
-                recordingSecondsRef.current = 0;
-                recordingStartTimeRef.current = null;
-              };
-              reader.readAsDataURL(audioBlob);
-            } else {
-              const fallbackUrl = createFallbackAudioWav(finalDuration);
-              processAudioRecordingOrFile({
-                dataUrl: fallbackUrl,
-                mimeType: 'audio/wav',
-                fileName: `فضفضة صوتية ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}.wav`,
-                duration: finalDuration,
-                liveSpeechText: liveText
-              });
-              setRecordingSeconds(0);
-              recordingSecondsRef.current = 0;
-              recordingStartTimeRef.current = null;
-            }
-
-            stream.getTracks().forEach(track => track.stop());
-          };
-
-          mediaRecorder.start(200);
-        } catch (err) {
-          console.warn("Mic access error:", err);
-        }
-      }
-
-      const intId = window.setInterval(() => {
-        if (recordingStartTimeRef.current) {
-          const elapsed = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
-          setRecordingSeconds(elapsed);
-          recordingSecondsRef.current = elapsed;
-        } else {
-          setRecordingSeconds(prev => {
-            const next = prev + 1;
-            recordingSecondsRef.current = next;
-            return next;
-          });
-        }
-      }, 1000);
-      setRecordingIntervalId(intId);
+      handleStartRecording();
     }
   };
 
@@ -7171,34 +7215,71 @@ export default function App() {
                       }`}
                     >
                       <Mic className="w-3.5 h-3.5 text-red-500" />
-                      <span>{isRecording ? `جاري التسجيل (${recordingSeconds}ث)` : '🎤 فضفضة صوتية سريعة'}</span>
+                      <span>{isRecording ? `جاري الاستماع (${recordingSeconds}ث)` : '🎤 فضفضة صوتية سريعة'}</span>
                     </button>
 
+                    {/* Audio Upload Loading Banner */}
+                    {audioUploadLoading && (
+                      <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold col-span-full animate-pulse shadow-sm" dir="rtl">
+                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-700 shrink-0" />
+                        <span>⏳ جاري تفريغ التسجيل بالذكاء الاصطناعي بدقة عالية...</span>
+                      </div>
+                    )}
+
+                    {/* Interactive Real-Time Live Recording Card */}
                     {isRecording && (
-                      <div className="w-full mt-2 p-3 bg-red-50 border border-red-200 rounded-2xl flex flex-col space-y-1.5 animate-fadeIn text-xs col-span-full">
-                        <div className="flex items-center justify-between text-red-700 font-bold">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping shrink-0" />
-                            <span>جاري تسجيل الفضفضة والتقاط الصوت المباشر... ({recordingSeconds} ثانية)</span>
+                      <div className="w-full mt-2 p-3.5 sm:p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300/80 rounded-2xl flex flex-col space-y-3 shadow-md col-span-full animate-fadeIn text-xs" dir="rtl">
+                        <div className="flex items-center justify-between gap-2 border-b border-red-200/60 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                            </span>
+                            <span className="font-black text-red-800 text-xs flex items-center gap-1">
+                              <Mic className="w-3.5 h-3.5 text-red-600 animate-bounce" />
+                              <span>جاري الاستماع والكتابة لحظياً...</span>
+                            </span>
+                          </div>
+                          <span className="font-mono font-black text-red-700 bg-white/90 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] shadow-3xs">
+                            ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
                           </span>
+                        </div>
+
+                        {/* Live Transcript Area with Final / Interim Separation */}
+                        <div className="bg-white/95 p-3 sm:p-3.5 rounded-xl border border-red-100 max-h-40 overflow-y-auto space-y-1.5 shadow-inner">
+                          {speechTranscript || speechInterim ? (
+                            <p className="text-xs text-[#2B3E50] leading-relaxed font-medium">
+                              <span className="font-bold text-gray-900">{speechTranscript}</span>
+                              {speechInterim && (
+                                <span className="text-emerald-700 italic font-semibold mr-1 animate-pulse">
+                                  {speechTranscript ? ` ${speechInterim}` : speechInterim}
+                                </span>
+                              )}
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-gray-400 italic text-center py-2">
+                              🎙️ تحدث الآن بوضوح وسيظهر كلامك هنا لحظة بلحظة...
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Control Action Buttons */}
+                        <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center justify-end pt-1">
                           <button
                             type="button"
-                            onClick={handleToggleRecording}
-                            className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold text-[11px] cursor-pointer shadow-xs"
+                            onClick={handleCancelRecording}
+                            className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1"
                           >
-                            إيقاف وحفظ التسجيل ⏹️
+                            <span>❌ إلغاء</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleStopAndInsertRecording}
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                          >
+                            <span>✅ إنهاء وإدراج النص في التدوينة</span>
                           </button>
                         </div>
-                        {speechTranscript ? (
-                          <div className="bg-white/90 p-2 rounded-xl border border-red-100 text-[#2B3E50] text-[11px] font-medium leading-relaxed">
-                            <span className="font-bold text-red-600 block mb-0.5">النص المكتوب لحظياً:</span>
-                            <p className="italic">"{speechTranscript}"</p>
-                          </div>
-                        ) : (
-                          <p className="text-[10px] text-red-500 italic">
-                            تحدث الآن بوضوح وسيتم تحويل كلماتك لنص مكتوب بالذكاء الاصطناعي عند إنهاء التسجيل...
-                          </p>
-                        )}
                       </div>
                     )}
 

@@ -946,8 +946,8 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
           const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modName}:generateContent?key=${key.trim()}`;
           const promptText = `You are an expert audio transcription specialist and speech emotion recognition analyst.
 Listen to the attached audio recording and do the following:
-1. Provide an accurate transcription of all spoken words in the language spoken in the audio.
-2. Analyze speech emotion and vocal tone.
+1. قم بتفريغ هذا التسجيل الصوتي بدقة عالية إلى نص عربي منظم، حافظ على جميع الكلمات والتفاصيل دون حذف أو اختصار، صحح الأخطاء الواضحة الناتجة عن التعرف الصوتي، وأضف علامات الترقيم المناسبة مع الحفاظ على المعنى الأصلي وعدم اختلاق أي كلام غير موجود في التسجيل.
+2. Analyze speech emotion and vocal tone accurately based on pitch, cadence, and expression.
 3. Determine primary emotion.
 4. Rate emotion intensity score from 0 to 100%.
 5. Write a concise note explaining vocal tone details.
@@ -956,7 +956,7 @@ ${getLanguageInstruction(requestBody.appLanguage)}
 
 Return pure JSON only in the following format:
 {
-  "transcription": "Full transcribed text...",
+  "transcription": "Full accurate transcribed text...",
   "emotion": "Normal",
   "intensityScore": 75,
   "intensityLabel": "Medium",
