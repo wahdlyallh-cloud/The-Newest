@@ -125,6 +125,8 @@ export class SpeechRecognitionManager {
       }
     }
     this.isListening = false;
+    this.callbacks = {};
+    this.listeners.clear();
   }
 
   /**
@@ -147,6 +149,7 @@ export class SpeechRecognitionManager {
     this.confirmedText = '';
     this.interimText = '';
     this.callbacks = options.callbacks || {};
+    this.listeners.clear();
     this.lang = options.lang || 'ar-EG';
     this.continuous = options.continuous ?? true;
 
