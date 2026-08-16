@@ -335,7 +335,7 @@ export class SpeechRecognitionManager {
   }
 
   /**
-   * Processes incoming Web Speech API results using the standard event.resultIndex loop.
+   * Processes incoming Web Speech API results using stateless full-array reconstruction (prevents Android WebKit duplication).
    */
   public processRecognitionEvent(event: any, sessionToken: number): void {
     if (!event || !event.results || sessionToken !== this.currentSessionId || this.isExplicitlyStopped) {
@@ -343,28 +343,22 @@ export class SpeechRecognitionManager {
     }
 
     this.resultCount += 1;
-    let interim = '';
+    let finalTranscript = '';
+    let interimTranscript = '';
 
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const res = event.results[i];
-      if (!res || !res[0]) continue;
-      const text = (res[0].transcript || '').trim();
-      if (!text) continue;
-
-      if (res.isFinal) {
-        this.finalTranscript = this.finalTranscript
-          ? `${this.finalTranscript} ${text}`.trim()
-          : text;
-        console.log(`[VOICE DEBUG] Final result #${i}: "${text}" -> Total Final: "${this.finalTranscript}"`);
+    for (let i = 0; i < event.results.length; ++i) {
+      const item = event.results[i];
+      if (!item || !item[0]) continue;
+      const text = item[0]?.transcript || '';
+      if (item.isFinal) {
+        finalTranscript += text + ' ';
       } else {
-        interim = interim ? `${interim} ${text}` : text;
+        interimTranscript += text;
       }
     }
 
-    this.interimTranscript = interim.trim();
-    if (this.interimTranscript) {
-      console.log(`[VOICE DEBUG] Interim result: "${this.interimTranscript}"`);
-    }
+    this.finalTranscript = finalTranscript.trim();
+    this.interimTranscript = interimTranscript.trim();
 
     this.emitState();
   }

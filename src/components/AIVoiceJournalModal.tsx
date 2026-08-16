@@ -145,34 +145,26 @@ export default function AIVoiceJournalModal({
       };
 
       rec.onresult = (event: any) => {
-        let interim = '';
+        let finalTranscript = '';
+        let interimTranscript = '';
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const res = event.results[i];
-          if (!res || !res[0]) continue;
-          const text = res[0].transcript || '';
-
-          if (res.isFinal) {
-            finalTranscriptRef.current = (finalTranscriptRef.current ? `${finalTranscriptRef.current} ${text}` : text).trim();
+        for (let i = 0; i < event.results.length; ++i) {
+          const item = event.results[i];
+          if (!item || !item[0]) continue;
+          const text = item[0]?.transcript || '';
+          if (item.isFinal) {
+            finalTranscript += text + ' ';
           } else {
-            interim += text;
+            interimTranscript += text;
           }
         }
 
-        const currentFinal = finalTranscriptRef.current;
-        const currentInterim = interim.trim();
-        const fullVisible = (currentFinal ? `${currentFinal} ${currentInterim}` : currentInterim).trim();
+        const combined = (finalTranscript + interimTranscript).replace(/\s+/g, ' ').trim();
 
-        console.log('[DIRECT VOICE RESULT]', { currentFinal, currentInterim, fullVisible });
-
-        setFinalText(currentFinal);
-        setInterimText(currentInterim);
-        setLiveTranscript(fullVisible);
-        setDiagnostics(prev => ({
-          ...prev,
-          status: 'receiving-results',
-          resultCount: prev.resultCount + 1
-        }));
+        setFinalText(finalTranscript.trim());
+        setInterimText(interimTranscript.trim());
+        setLiveTranscript(combined);
+        finalTranscriptRef.current = combined;
       };
 
       rec.onerror = (event: any) => {
@@ -504,24 +496,6 @@ Return pure JSON only in the following schema:
                     </div>
                   )}
                 </div>
-
-                {/* Live Diagnostic Telemetry HUD */}
-                {isRecording && (
-                  <div className="bg-[#FAF8F5] border border-gray-200/80 p-2 sm:p-2.5 rounded-xl text-[10px] text-gray-600 font-mono space-y-1 text-left" dir="ltr">
-                    <div className="flex items-center justify-between font-bold">
-                      <span className="flex items-center gap-1">
-                        SpeechRecognition: {diagnostics.status === 'listening' || diagnostics.status === 'receiving-results' ? '🟢 ACTIVE' : (diagnostics.lastError ? '🔴 ERROR' : '🟡 ' + diagnostics.status.toUpperCase())}
-                      </span>
-                      <span>Chars: {liveTranscript.length}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-gray-500 text-[9.5px]">
-                      <span>results: {diagnostics.resultCount}</span>
-                      <span>final: {finalText.length} chars</span>
-                      <span>interim: {interimText.length} chars</span>
-                      {diagnostics.lastError && <span className="text-rose-600 font-bold">err: {diagnostics.lastError}</span>}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Analysis Loading Indicator */}
