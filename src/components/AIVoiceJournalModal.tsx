@@ -26,6 +26,7 @@ export default function AIVoiceJournalModal({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [liveInterim, setLiveInterim] = useState('');
+  const [diagnostics, setDiagnostics] = useState<any>(null);
   const [micPermissionError, setMicPermissionError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -59,6 +60,7 @@ export default function AIVoiceJournalModal({
       setShowCategoryPicker(false);
       setIsSaving(false);
       setMicPermissionError(null);
+      setDiagnostics(null);
       audioBlobRef.current = null;
       audioChunksRef.current = [];
     }
@@ -70,6 +72,7 @@ export default function AIVoiceJournalModal({
     setProcessedResult(null);
     setShowCategoryPicker(false);
     setMicPermissionError(null);
+    setDiagnostics(null);
     setIsRecording(true);
     setRecordingSeconds(0);
     audioChunksRef.current = [];
@@ -89,6 +92,7 @@ export default function AIVoiceJournalModal({
           onTranscriptChange: (state) => {
             setTranscript(state.finalTranscript);
             setLiveInterim(state.interimTranscript);
+            setDiagnostics(state.diagnostics);
           },
           onError: (e) => {
             if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -97,6 +101,9 @@ export default function AIVoiceJournalModal({
           }
         }
       });
+      setDiagnostics(manager.getDiagnostics());
+    } else {
+      setMicPermissionError(isEn ? 'Live Speech Recognition is not supported in this browser.' : 'التفريغ الصوتي المباشر غير مدعوم في هذا المتصفح (سيتم حفظ التسجيل الصوتي كمرفق).');
     }
 
     if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -130,10 +137,7 @@ export default function AIVoiceJournalModal({
 
         recorder.start(250);
       } catch (err: any) {
-        console.warn('MediaRecorder init error in voice journal modal:', err);
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          setMicPermissionError(isEn ? 'Microphone access is blocked. Please enable it in browser settings.' : 'تم حظر الميكروفون. يرجى تفعيل إذن الميكروفون في المتصفح.');
-        }
+        console.warn('MediaRecorder optional init error:', err);
       }
     }
   };
@@ -475,6 +479,26 @@ Return pure JSON only in the following schema:
                     </div>
                   )}
                 </div>
+
+                {/* Live Diagnostic Telemetry HUD */}
+                {isRecording && diagnostics && (
+                  <div className="bg-[#FAF8F5] border border-gray-200/80 p-2 sm:p-2.5 rounded-xl text-[10px] text-gray-600 font-mono space-y-1" dir="ltr">
+                    <div className="flex items-center justify-between font-bold">
+                      <span className="flex items-center gap-1">
+                        Recognition: {diagnostics.hasStarted ? '🟢 ACTIVE' : (diagnostics.lastError ? '🔴 ERROR' : '🟡 STARTING')}
+                      </span>
+                      <span>Chars: {transcript.length + liveInterim.length}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-gray-500 text-[9.5px]">
+                      <span>start: {diagnostics.hasStarted ? '✓' : '...'}</span>
+                      <span>audio: {diagnostics.hasAudio ? '✓' : '...'}</span>
+                      <span>sound: {diagnostics.hasSound ? '✓' : '...'}</span>
+                      <span>speech: {diagnostics.hasSpeech ? '✓' : '...'}</span>
+                      <span>results: {diagnostics.resultCount}</span>
+                      {diagnostics.lastError && <span className="text-rose-600 font-bold">err: {diagnostics.lastError}</span>}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {isAnalyzing && (

@@ -2363,6 +2363,7 @@ export default function App() {
   const speechTranscriptRef = React.useRef<string>('');
   const [speechTranscript, setSpeechTranscript] = useState('');
   const [speechInterim, setSpeechInterim] = useState('');
+  const [speechDiagnostics, setSpeechDiagnostics] = useState<any>(null);
   const [audioUploadLoading, setAudioUploadLoading] = useState(false);
   const [transcribingAudioId, setTranscribingAudioId] = useState<string | null>(null);
   const [editingTranscriptId, setEditingTranscriptId] = useState<string | null>(null);
@@ -3972,12 +3973,14 @@ export default function App() {
             speechTranscriptRef.current = state.finalTranscript;
             setSpeechTranscript(state.finalTranscript);
             setSpeechInterim(state.interimTranscript);
+            setSpeechDiagnostics(state.diagnostics);
           },
           onError: (e) => {
             console.error("Speech Recognition setup error:", e);
           }
         }
       });
+      setSpeechDiagnostics(manager.getDiagnostics());
     }
 
     // Try MediaRecorder for microphone audio recording
@@ -7265,6 +7268,24 @@ export default function App() {
                             </p>
                           )}
                         </div>
+
+                        {/* Live Diagnostic Telemetry HUD */}
+                        {isRecording && speechDiagnostics && (
+                          <div className="bg-white/80 border border-red-200 p-2 rounded-xl text-[10px] text-gray-600 font-mono space-y-0.5" dir="ltr">
+                            <div className="flex items-center justify-between font-bold">
+                              <span>Recognition: {speechDiagnostics.hasStarted ? '🟢 ACTIVE' : (speechDiagnostics.lastError ? '🔴 ERROR' : '🟡 STARTING')}</span>
+                              <span>Chars: {speechTranscript.length + speechInterim.length}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 text-gray-500 text-[9.5px]">
+                              <span>start: {speechDiagnostics.hasStarted ? '✓' : '...'}</span>
+                              <span>audio: {speechDiagnostics.hasAudio ? '✓' : '...'}</span>
+                              <span>sound: {speechDiagnostics.hasSound ? '✓' : '...'}</span>
+                              <span>speech: {speechDiagnostics.hasSpeech ? '✓' : '...'}</span>
+                              <span>results: {speechDiagnostics.resultCount}</span>
+                              {speechDiagnostics.lastError && <span className="text-rose-600 font-bold">err: {speechDiagnostics.lastError}</span>}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Control Action Buttons */}
                         <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center justify-end pt-1">
