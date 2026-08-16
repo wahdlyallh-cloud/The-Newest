@@ -1,12 +1,12 @@
 /**
  * Hayat AI - Centralized Native Web Speech Recognition Engine
  *
- * Session-Level Result Store Architecture:
- * 1. Single source of truth across all voice features.
- * 2. Result-indexed final segment storage (Map<number, string>) preventing replay duplication.
- * 3. Generation token protection against stale callbacks on restart/stop.
- * 4. Immediate and clean live interim + committed final separation.
- * 5. Continuous multi-minute/long session support across internal browser silence timeouts.
+ * Session-Safe Result-Index Commit Architecture:
+ * 1. Single source of truth for all voice features.
+ * 2. Per-recognition committed result index tracking (Set<number>) to guarantee a browser result index is committed EXACTLY ONCE.
+ * 3. Independent interim map (Map<number, string>) ensuring live words update immediately and are cleanly cleared upon finalization.
+ * 4. Multi-instance continuous session persistence (committedSegments: string[]) allowing 30+ minute recordings across browser timeouts and restarts without replay duplication.
+ * 5. Strict instance ID fencing to discard stale callbacks from aborted/previous recognition objects.
  */
 
 export interface SpeechSessionState {
@@ -17,8 +17,10 @@ export interface SpeechSessionState {
   isListening: boolean;
 }
 
+export type SpeechTranscriptListener = (state: SpeechSessionState) => void;
+
 export interface SpeechManagerCallbacks {
-  onTranscriptChange?: (state: SpeechSessionState) => void;
+  onTranscriptChange?: SpeechTranscriptListener;
   onStatusChange?: (status: 'idle' | 'listening' | 'analyzing' | 'speaking') => void;
   onError?: (error: any) => void;
   onSpeechEnd?: () => void;
@@ -27,18 +29,18 @@ export interface SpeechManagerCallbacks {
 export class SpeechRecognitionManager {
   private static instance: SpeechRecognitionManager | null = null;
 
-  private currentSessionId: number = 0;
-  private recognitionGeneration: number = 0;
-  private activeRecognition: any = null;
+  // Logical User Session State
+  private userSessionId: number = 0;
+  private instanceCounter: number = 0;
   private isExplicitlyStopped: boolean = true;
+  private isListening: boolean = false;
+  private committedSegments: string[] = [];
+  private activeInterimMap: Map<number, string> = new Map();
+  private activeCommittedIndices: Set<number> = new Set();
+  private activeRecognition: any = null;
   private restartTimer: any = null;
 
-  // Session-Level Store
-  private finalSegments: Map<number, string> = new Map();
-  private globalSequence: number = 0;
-  private lastCommittedNormalized: string = '';
-  private interimText: string = '';
-  private isListening: boolean = false;
+  private listeners: Set<SpeechTranscriptListener> = new Set();
   private callbacks: SpeechManagerCallbacks = {};
   private lang: string = 'ar-EG';
   private continuous: boolean = true;
@@ -58,15 +60,15 @@ export class SpeechRecognitionManager {
   }
 
   public getSessionId(): number {
-    return this.currentSessionId;
+    return this.userSessionId;
   }
 
   public getFinalTranscript(): string {
-    return Array.from(this.finalSegments.values()).join(' ').trim();
+    return this.committedSegments.join(' ').replace(/\s+/g, ' ').trim();
   }
 
   public getInterimTranscript(): string {
-    return this.interimText.trim();
+    return Array.from(this.activeInterimMap.values()).join(' ').replace(/\s+/g, ' ').trim();
   }
 
   public getDisplayTranscript(): string {
@@ -79,7 +81,7 @@ export class SpeechRecognitionManager {
 
   public getState(): SpeechSessionState {
     return {
-      sessionId: this.currentSessionId,
+      sessionId: this.userSessionId,
       finalTranscript: this.getFinalTranscript(),
       interimTranscript: this.getInterimTranscript(),
       displayTranscript: this.getDisplayTranscript(),
@@ -87,8 +89,20 @@ export class SpeechRecognitionManager {
     };
   }
 
+  public getTranscript(): string {
+    return this.getDisplayTranscript();
+  }
+
+  public subscribe(listener: SpeechTranscriptListener): () => void {
+    this.listeners.add(listener);
+    listener(this.getState());
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
   /**
-   * Forcefully tears down and nullifies any running recognition instance.
+   * Forcefully destroys any active native recognition instance.
    */
   public destroyActiveRecognition(): void {
     if (this.restartTimer) {
@@ -115,7 +129,7 @@ export class SpeechRecognitionManager {
   }
 
   /**
-   * Starts a new logical speech recognition session.
+   * Starts a new logical user speech session.
    */
   public startSession(options: {
     lang?: string;
@@ -124,27 +138,30 @@ export class SpeechRecognitionManager {
   } = {}): number {
     this.destroyActiveRecognition();
 
-    this.currentSessionId += 1;
-    const sessionToken = this.currentSessionId;
+    this.userSessionId += 1;
+    const currentSession = this.userSessionId;
 
     this.isExplicitlyStopped = false;
-    this.finalSegments.clear();
-    this.globalSequence = 0;
-    this.lastCommittedNormalized = '';
-    this.interimText = '';
+    this.committedSegments = [];
+    this.activeInterimMap.clear();
+    this.activeCommittedIndices.clear();
     this.callbacks = options.callbacks || {};
     this.lang = options.lang || 'ar-EG';
     this.continuous = options.continuous ?? true;
 
-    this.spawnRecognition(sessionToken);
-    return sessionToken;
+    this.spawnRecognition(currentSession);
+    return currentSession;
+  }
+
+  public start(options?: { lang?: string; continuous?: boolean; callbacks?: SpeechManagerCallbacks }): number {
+    return this.startSession(options);
   }
 
   /**
-   * Spawns an active browser SpeechRecognition instance with generation-token protection.
+   * Spawns a native SpeechRecognition instance dedicated to a specific session turn.
    */
-  private spawnRecognition(sessionToken: number): void {
-    if (this.isExplicitlyStopped || sessionToken !== this.currentSessionId) {
+  private spawnRecognition(userSession: number): void {
+    if (this.isExplicitlyStopped || userSession !== this.userSessionId) {
       return;
     }
 
@@ -160,8 +177,14 @@ export class SpeechRecognitionManager {
     }
 
     try {
-      this.recognitionGeneration += 1;
-      const instanceGeneration = this.recognitionGeneration;
+      this.instanceCounter += 1;
+      const instanceId = this.instanceCounter;
+
+      // Each native recognition instance has its own local index commit set and interim map
+      const instanceCommittedIndices = new Set<number>();
+      const instanceInterimMap = new Map<number, string>();
+      this.activeCommittedIndices = instanceCommittedIndices;
+      this.activeInterimMap = instanceInterimMap;
 
       const rec = new SpeechRec();
       rec.lang = this.lang || 'ar-EG';
@@ -170,7 +193,7 @@ export class SpeechRecognitionManager {
       rec.maxAlternatives = 1;
 
       rec.onstart = () => {
-        if (this.recognitionGeneration !== instanceGeneration || this.isExplicitlyStopped) return;
+        if (instanceId !== this.instanceCounter || this.isExplicitlyStopped) return;
         this.isListening = true;
         if (this.callbacks.onStatusChange) {
           this.callbacks.onStatusChange('listening');
@@ -179,24 +202,43 @@ export class SpeechRecognitionManager {
       };
 
       rec.onresult = (event: any) => {
-        if (this.recognitionGeneration !== instanceGeneration || this.isExplicitlyStopped) {
-          return;
+        if (instanceId !== this.instanceCounter || this.isExplicitlyStopped) return;
+
+        // Process only using event.resultIndex as boundary
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (!result || !result[0]) continue;
+          const text = (result[0].transcript || '').trim();
+          if (!text) continue;
+
+          if (result.isFinal) {
+            instanceInterimMap.delete(i);
+
+            // A browser result index in this instance may be committed EXACTLY ONCE
+            if (!instanceCommittedIndices.has(i)) {
+              instanceCommittedIndices.add(i);
+              this.committedSegments.push(text);
+            }
+          } else {
+            instanceInterimMap.set(i, text);
+          }
         }
-        this.processRecognitionEvent(event, instanceGeneration);
+
+        this.emitState();
       };
 
       rec.onerror = (event: any) => {
-        if (this.recognitionGeneration !== instanceGeneration || this.isExplicitlyStopped) return;
+        if (instanceId !== this.instanceCounter || this.isExplicitlyStopped) return;
 
         if (event.error === 'language-not-supported' && this.lang !== 'ar-SA') {
           this.lang = 'ar-SA';
           this.destroyActiveRecognition();
-          this.spawnRecognition(sessionToken);
+          this.spawnRecognition(userSession);
           return;
         }
 
         if (event.error === 'no-speech' && this.continuous && !this.isExplicitlyStopped) {
-          // Normal timeout on silence; let onend handle seamless auto-restart
+          // Expected on silence; let onend handle seamless continuation
           return;
         }
 
@@ -207,25 +249,25 @@ export class SpeechRecognitionManager {
       };
 
       rec.onspeechend = () => {
-        if (this.recognitionGeneration !== instanceGeneration || this.isExplicitlyStopped) return;
+        if (instanceId !== this.instanceCounter || this.isExplicitlyStopped) return;
         if (this.callbacks.onSpeechEnd) {
           this.callbacks.onSpeechEnd();
         }
       };
 
       rec.onend = () => {
-        if (this.recognitionGeneration !== instanceGeneration) return;
+        if (instanceId !== this.instanceCounter) return;
         this.isListening = false;
 
-        // Seamless auto-restart while user is still in active session
+        // Seamless auto-restart preserving committed transcript
         if (!this.isExplicitlyStopped && this.continuous) {
-          this.interimText = '';
+          this.activeInterimMap.clear();
           this.emitState();
           this.destroyActiveRecognition();
 
           this.restartTimer = setTimeout(() => {
-            if (!this.isExplicitlyStopped && this.currentSessionId === sessionToken) {
-              this.spawnRecognition(sessionToken);
+            if (!this.isExplicitlyStopped && this.userSessionId === userSession) {
+              this.spawnRecognition(userSession);
             }
           }, 80);
         }
@@ -242,54 +284,17 @@ export class SpeechRecognitionManager {
   }
 
   /**
-   * Processes incoming Web Speech API results using the Session-Level Result Store.
-   */
-  public processRecognitionEvent(event: any, generation: number): void {
-    if (!event || !event.results || generation !== this.recognitionGeneration || this.isExplicitlyStopped) {
-      return;
-    }
-
-    let currentInterim = '';
-
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const res = event.results[i];
-      if (!res || !res[0]) continue;
-      const text = (res[0].transcript || '').trim();
-      if (!text) continue;
-
-      if (res.isFinal) {
-        // Consecutive-final-segment replay protection (normalizing whitespace and punctuation only)
-        const normalized = text.replace(/[\s\p{P}]+/gu, ' ').trim();
-
-        if (normalized && normalized !== this.lastCommittedNormalized) {
-          this.lastCommittedNormalized = normalized;
-          this.globalSequence += 1;
-          this.finalSegments.set(this.globalSequence, text);
-        }
-      } else {
-        currentInterim = currentInterim ? `${currentInterim} ${text}` : text;
-      }
-    }
-
-    this.interimText = currentInterim.trim();
-    this.emitState();
-  }
-
-  /**
-   * Stops recognition and finalizes the transcript.
+   * Finalizes recognition and returns the complete, non-repeating transcript.
    */
   public finalize(): string {
     this.isExplicitlyStopped = true;
     this.destroyActiveRecognition();
 
-    if (this.interimText) {
-      const normalized = this.interimText.replace(/[\s\p{P}]+/gu, ' ').trim();
-      if (normalized && normalized !== this.lastCommittedNormalized) {
-        this.lastCommittedNormalized = normalized;
-        this.globalSequence += 1;
-        this.finalSegments.set(this.globalSequence, this.interimText.trim());
-      }
-      this.interimText = '';
+    // If an interim fragment remains, commit it once
+    const remainingInterim = this.getInterimTranscript();
+    if (remainingInterim) {
+      this.committedSegments.push(remainingInterim);
+      this.activeInterimMap.clear();
     }
 
     const finalResult = this.getFinalTranscript();
@@ -297,29 +302,42 @@ export class SpeechRecognitionManager {
     return finalResult;
   }
 
-  /**
-   * Stops the active session.
-   */
+  public stop(): string {
+    return this.finalize();
+  }
+
   public stopSession(): string {
     return this.finalize();
   }
 
-  /**
-   * Aborts and resets without keeping transcripts.
-   */
+  public abort(): void {
+    this.abortSession();
+  }
+
   public abortSession(): void {
     this.isExplicitlyStopped = true;
     this.destroyActiveRecognition();
-    this.finalSegments.clear();
-    this.globalSequence = 0;
-    this.lastCommittedNormalized = '';
-    this.interimText = '';
+    this.committedSegments = [];
+    this.activeInterimMap.clear();
+    this.activeCommittedIndices.clear();
     this.emitState();
   }
 
+  public reset(): void {
+    this.abortSession();
+  }
+
   private emitState(): void {
+    const state = this.getState();
     if (this.callbacks.onTranscriptChange) {
-      this.callbacks.onTranscriptChange(this.getState());
+      this.callbacks.onTranscriptChange(state);
     }
+    this.listeners.forEach((listener) => {
+      try {
+        listener(state);
+      } catch (e) {
+        console.warn('Transcript listener error:', e);
+      }
+    });
   }
 }
