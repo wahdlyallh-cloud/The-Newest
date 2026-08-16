@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Mic, Sparkles, Check, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import { DiaryEntry, JournalEntryType } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
-import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig } from '../lib/journalTypes';
-import { saveAttachmentBlob } from '../lib/attachmentStore';
 import { generateGeminiContentDirect } from '../lib/gemini';
 
 interface AIVoiceJournalModalProps {
@@ -24,13 +22,20 @@ export default function AIVoiceJournalModal({
 }: AIVoiceJournalModalProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [transcript, setTranscript] = useState('');
-  const [liveInterim, setLiveInterim] = useState('');
-  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [finalText, setFinalText] = useState('');
+  const [interimText, setInterimText] = useState('');
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [isSupported, setIsSupported] = useState(true);
   const [micPermissionError, setMicPermissionError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<{
+    status: string;
+    resultCount: number;
+    lastError: string | null;
+  }>({ status: 'idle', resultCount: 0, lastError: null });
+
   const [processedResult, setProcessedResult] = useState<{
     title: string;
     content: string;
@@ -41,134 +46,175 @@ export default function AIVoiceJournalModal({
   } | null>(null);
 
   const timerRef = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioBlobRef = useRef<Blob | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef<string>('');
+  const isRecordingRef = useRef<boolean>(false);
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const isEn = appLanguage === 'en';
 
+  // Check support on mount
+  useEffect(() => {
+    const SpeechRec = typeof window !== 'undefined'
+      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+      : null;
+    setIsSupported(!!SpeechRec);
+  }, []);
+
+  // Cleanup on close
   useEffect(() => {
     if (!isOpen) {
-      stopRecording();
-      SpeechRecognitionManager.getInstance().abortSession();
-      setTranscript('');
-      setLiveInterim('');
+      stopRecordingSession();
+      setFinalText('');
+      setInterimText('');
+      setLiveTranscript('');
+      finalTranscriptRef.current = '';
       setRecordingSeconds(0);
       setProcessedResult(null);
       setShowCategoryPicker(false);
       setIsSaving(false);
       setMicPermissionError(null);
-      setDiagnostics(null);
-      audioBlobRef.current = null;
-      audioChunksRef.current = [];
+      setDiagnostics({ status: 'idle', resultCount: 0, lastError: null });
     }
   }, [isOpen]);
 
-  const startRecording = async () => {
-    setTranscript('');
-    setLiveInterim('');
-    setProcessedResult(null);
-    setShowCategoryPicker(false);
-    setMicPermissionError(null);
-    setDiagnostics(null);
-    setIsRecording(true);
-    setRecordingSeconds(0);
-    audioChunksRef.current = [];
-    audioBlobRef.current = null;
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setRecordingSeconds(prev => prev + 1);
-    }, 1000);
-
-    const manager = SpeechRecognitionManager.getInstance();
-    if (manager.isSupported()) {
-      manager.startSession({
-        lang: isEn ? 'en-US' : 'ar-EG',
-        continuous: true,
-        callbacks: {
-          onTranscriptChange: (state) => {
-            setTranscript(state.finalTranscript);
-            setLiveInterim(state.interimTranscript);
-            setDiagnostics(state.diagnostics);
-          },
-          onError: (e) => {
-            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-              setMicPermissionError(isEn ? 'Microphone permission denied. Please allow microphone access.' : 'تم رفض الإذن باستخدام الميكروفون. يرجى تفعيل الإذن من إعدادات المتصفح.');
-            }
-          }
-        }
-      });
-      setDiagnostics(manager.getDiagnostics());
-    } else {
-      setMicPermissionError(isEn ? 'Live Speech Recognition is not supported in this browser.' : 'التفريغ الصوتي المباشر غير مدعوم في هذا المتصفح (سيتم حفظ التسجيل الصوتي كمرفق).');
-    }
-
-    if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        let options: MediaRecorderOptions = { mimeType: 'audio/webm;codecs=opus' };
-        if (typeof MediaRecorder !== 'undefined' && !MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-          if (MediaRecorder.isTypeSupported('audio/webm')) {
-            options = { mimeType: 'audio/webm' };
-          } else {
-            options = {};
-          }
-        }
-        const recorder = new MediaRecorder(stream, options);
-        mediaRecorderRef.current = recorder;
-
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) {
-            audioChunksRef.current.push(e.data);
-          }
-        };
-
-        recorder.onstop = () => {
-          if (audioChunksRef.current.length > 0) {
-            audioBlobRef.current = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          }
-          try {
-            stream.getTracks().forEach(track => track.stop());
-          } catch (_) {}
-        };
-
-        recorder.start(250);
-      } catch (err: any) {
-        console.warn('MediaRecorder optional init error:', err);
-      }
-    }
-  };
-
-  const stopRecording = () => {
+  const stopRecordingSession = () => {
+    isRecordingRef.current = false;
     setIsRecording(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    const manager = SpeechRecognitionManager.getInstance();
-    const finalTxt = manager.finalize();
-    if (finalTxt) {
-      setTranscript(finalTxt);
-    }
-    setLiveInterim('');
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    if (recognitionRef.current) {
       try {
-        mediaRecorderRef.current.requestData();
-        mediaRecorderRef.current.stop();
-      } catch (_) {}
+        recognitionRef.current.onstart = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.stop();
+      } catch (e) {
+        // ignore
+      }
+      recognitionRef.current = null;
+    }
+  };
+
+  const startRecording = () => {
+    // 1. Reset state
+    setFinalText('');
+    setInterimText('');
+    setLiveTranscript('');
+    finalTranscriptRef.current = '';
+    setProcessedResult(null);
+    setShowCategoryPicker(false);
+    setMicPermissionError(null);
+    setIsRecording(true);
+    isRecordingRef.current = true;
+    setRecordingSeconds(0);
+    setDiagnostics({ status: 'starting', resultCount: 0, lastError: null });
+
+    // 2. Start timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setRecordingSeconds(prev => prev + 1);
+    }, 1000);
+
+    // 3. Instantiate Native SpeechRecognition directly without getUserMedia locking
+    const SpeechRec = typeof window !== 'undefined'
+      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+      : null;
+
+    if (!SpeechRec) {
+      setIsSupported(false);
+      setMicPermissionError(isEn ? 'Live Speech Recognition is not supported in this browser.' : 'التفريغ الصوتي المباشر غير مدعوم في هذا المتصفح.');
+      setDiagnostics({ status: 'unsupported', resultCount: 0, lastError: 'not-supported' });
+      return;
+    }
+
+    try {
+      const rec = new SpeechRec();
+      rec.lang = isEn ? 'en-US' : 'ar-EG';
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+
+      rec.onstart = () => {
+        console.log('[DIRECT VOICE] SpeechRecognition started');
+        setDiagnostics(prev => ({ ...prev, status: 'listening' }));
+      };
+
+      rec.onresult = (event: any) => {
+        let interim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          if (!res || !res[0]) continue;
+          const text = res[0].transcript || '';
+
+          if (res.isFinal) {
+            finalTranscriptRef.current = (finalTranscriptRef.current ? `${finalTranscriptRef.current} ${text}` : text).trim();
+          } else {
+            interim += text;
+          }
+        }
+
+        const currentFinal = finalTranscriptRef.current;
+        const currentInterim = interim.trim();
+        const fullVisible = (currentFinal ? `${currentFinal} ${currentInterim}` : currentInterim).trim();
+
+        console.log('[DIRECT VOICE RESULT]', { currentFinal, currentInterim, fullVisible });
+
+        setFinalText(currentFinal);
+        setInterimText(currentInterim);
+        setLiveTranscript(fullVisible);
+        setDiagnostics(prev => ({
+          ...prev,
+          status: 'receiving-results',
+          resultCount: prev.resultCount + 1
+        }));
+      };
+
+      rec.onerror = (event: any) => {
+        console.error('[DIRECT VOICE ERROR]', event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setMicPermissionError(isEn ? 'Microphone permission denied. Please allow microphone access.' : 'تم رفض الإذن باستخدام الميكروفون. يرجى تفعيل الإذن من إعدادات المتصفح.');
+          setDiagnostics(prev => ({ ...prev, lastError: event.error }));
+        } else if (event.error === 'no-speech') {
+          // Expected on silence; let onend handle restart if still recording
+        } else if (event.error === 'language-not-supported' && rec.lang !== 'ar-SA') {
+          rec.lang = 'ar-SA';
+        } else {
+          setDiagnostics(prev => ({ ...prev, lastError: event.error }));
+        }
+      };
+
+      rec.onend = () => {
+        console.log('[DIRECT VOICE] SpeechRecognition ended. Active:', isRecordingRef.current);
+        if (isRecordingRef.current) {
+          // Auto-restart while user is still recording
+          try {
+            rec.start();
+          } catch (e) {
+            console.warn('[DIRECT VOICE] Auto-restart error:', e);
+          }
+        }
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
+    } catch (err: any) {
+      console.error('[DIRECT VOICE] Failed to start recognition:', err);
+      setMicPermissionError(isEn ? 'Failed to start microphone speech recognition.' : 'تعذر بدء محرك التعرف الصوتي.');
+      setDiagnostics(prev => ({ ...prev, lastError: err?.message || 'start-error' }));
     }
   };
 
   const handleAnalyzeAudio = async () => {
-    stopRecording();
+    stopRecordingSession();
     setIsAnalyzing(true);
 
-    const manager = SpeechRecognitionManager.getInstance();
-    const rawSpeechText = (manager.getFinalTranscript() || transcript || liveInterim).trim();
+    const rawSpeechText = (finalTranscriptRef.current || liveTranscript || finalText || interimText).trim();
 
     if (!rawSpeechText) {
       alert(isEn ? 'No speech detected to analyze. Please speak clearly.' : 'لم يتم التقاط أي كلام لتحليله. يرجى التحدث بوضوح.');
@@ -182,19 +228,11 @@ export default function AIVoiceJournalModal({
       const dayName = now.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long' });
       const timeStr = now.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
-      const analysisPrompt = `You are an expert Arabic voice journal analyzer and psychological wellness advisor.
-Analyze the following raw spoken transcript from the user's voice journal:
+      const analysisPrompt = `نسّق هذه المذكرة الصوتية باللغة العربية مع الحفاظ الكامل على معناها وكلماتها، ثم استخرج المشاعر والحالة المزاجية والوسوم المناسبة دون اختلاق أي معلومات:
 
 """
 ${rawSpeechText}
 """
-
-Requirements:
-1. "content": Format the spoken words into structured, clean, well-punctuated Arabic paragraphs preserving all meanings and facts without inventing or hallucinating information.
-2. "title": A concise, inspiring title reflecting the session theme.
-3. "moods": Array of 2 to 4 detected mood keywords in Arabic (e.g. ["مرتاح", "منجز", "ممتن", "متفائل", "هادئ", "متوتر", "قلق"]).
-4. "sleepHours": Sleep duration in hours as number if mentioned (otherwise null).
-5. "sportsDuration": Physical activity in minutes as number if mentioned (otherwise null).
 
 Return pure JSON only in the following schema:
 {
@@ -209,7 +247,7 @@ Return pure JSON only in the following schema:
       try {
         aiResultText = await generateGeminiContentDirect(analysisPrompt, undefined, apiKey);
       } catch (aiErr) {
-        console.warn('Gemini direct analysis warning:', aiErr);
+        console.warn('Gemini analysis post-processing note (preserving raw transcript):', aiErr);
       }
 
       let parsed: any = null;
@@ -238,6 +276,7 @@ Return pure JSON only in the following schema:
       });
     } catch (err) {
       console.error('Error during voice analysis:', err);
+      // Fallback ALWAYS preserves the raw captured transcript
       setProcessedResult({
         title: `${isEn ? 'Voice Journal' : 'مذكرة صوتية'} - ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`,
         content: rawSpeechText,
@@ -262,7 +301,6 @@ Return pure JSON only in the following schema:
       const now = new Date();
       const isAr = (appLanguage || 'ar') === 'ar';
       const dayName = now.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long' });
-      const dateStr = now.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
       const timeStr = now.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
       const typeConfig = getJournalTypeConfig(chosenType);
 
@@ -271,26 +309,6 @@ Return pure JSON only in the following schema:
         : '🎙️ Interactive Voice Journaling Assistant Transcript';
 
       const formattedContent = `${voiceBadge}\n\n${processedResult.content}`;
-
-      const audioRecordings: any[] = [];
-      if (audioBlobRef.current && audioBlobRef.current.size > 50) {
-        const attId = `att-voice-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        try {
-          await saveAttachmentBlob(attId, audioBlobRef.current, 'audio/webm');
-          const blobUrl = URL.createObjectURL(audioBlobRef.current);
-          audioRecordings.push({
-            id: `rec-voice-${Date.now()}`,
-            name: `${isAr ? 'تسجيل المساعد الصوتي' : 'Voice Assistant Recording'} - ${timeStr}.webm`,
-            dataUrl: blobUrl,
-            blobUrl: blobUrl,
-            duration: recordingSeconds || 5,
-            transcription: processedResult.content,
-            attachmentId: attId
-          });
-        } catch (attErr) {
-          console.warn('Failed to save voice blob to IndexedDB:', attErr);
-        }
-      }
 
       const newEntryData: Partial<DiaryEntry> = {
         title: processedResult.title || `${typeConfig.labelAr} - ${dayName} ${timeStr}`,
@@ -303,7 +321,7 @@ Return pure JSON only in the following schema:
         updatedAt: now.toISOString(),
         tags: [isAr ? 'مذكرة صوتية' : 'Voice Journal', isAr ? 'مساعد ذكي' : 'AI Assistant', typeConfig.labelAr],
         importance: 4,
-        audioRecordings,
+        audioRecordings: [],
         isLocked: false
       };
 
@@ -324,6 +342,7 @@ Return pure JSON only in the following schema:
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-[65] font-sans" dir={langInfo.dir}>
       <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 max-h-[92vh] flex flex-col relative">
         
+        {/* Header */}
         <div className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
@@ -346,7 +365,10 @@ Return pure JSON only in the following schema:
           </button>
         </div>
 
+        {/* Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1">
+
+          {/* Permission Error State */}
           {micPermissionError && (
             <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-2xl flex items-center gap-2.5 text-xs text-rose-900 font-bold animate-shake" dir="rtl">
               <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
@@ -363,6 +385,7 @@ Return pure JSON only in the following schema:
             </div>
           )}
 
+          {/* Category Picker View */}
           {showCategoryPicker ? (
             <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200" dir={langInfo.dir}>
               <div className="flex items-center justify-between border-b border-[#E2DCC8]/70 pb-2.5">
@@ -424,6 +447,7 @@ Return pure JSON only in the following schema:
             </div>
           ) : (
             <>
+              {/* Recording Status & Pulse Visualizer */}
               <div className="bg-white border-2 border-[#E2DCC8] p-5 sm:p-6 rounded-3xl text-center space-y-3.5 shadow-3xs">
                 <div className="relative inline-flex items-center justify-center">
                   {isRecording && (
@@ -431,7 +455,7 @@ Return pure JSON only in the following schema:
                   )}
                   <button
                     type="button"
-                    onClick={isRecording ? stopRecording : startRecording}
+                    onClick={isRecording ? stopRecordingSession : startRecording}
                     className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-all transform shadow-md cursor-pointer ${
                       isRecording
                         ? 'bg-rose-600 hover:bg-rose-700 scale-105'
@@ -455,23 +479,24 @@ Return pure JSON only in the following schema:
                   )}
                 </div>
 
+                {/* Primary Live Transcript Box */}
                 <div
-                  className="bg-[#FAF8F5] border border-[#E2DCC8] p-3.5 sm:p-4 rounded-2xl min-h-[110px] max-h-56 overflow-y-auto font-medium shadow-inner"
-                  style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
+                  className="bg-[#FAF8F5] border border-[#E2DCC8] p-4 rounded-2xl min-h-[120px] max-h-60 overflow-y-auto font-medium shadow-inner"
+                  style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.9 }}
                 >
-                  {transcript || liveInterim ? (
+                  {liveTranscript || finalText || interimText ? (
                     <p className="text-[#2B3E50] text-sm leading-[1.9]">
-                      <span className="font-bold text-gray-900">{transcript}</span>
-                      {liveInterim && (
+                      <span className="font-bold text-gray-900">{finalText}</span>
+                      {interimText && (
                         <span className="text-emerald-700 italic font-semibold mr-1.5 animate-pulse">
-                          {transcript ? ` ${liveInterim}` : liveInterim}
+                          {finalText ? ` ${interimText}` : interimText}
                         </span>
                       )}
                     </p>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-5 text-gray-400 text-xs gap-1.5">
-                      <span className="text-xl">🎙️</span>
-                      <span className="font-semibold text-[11.5px]">
+                    <div className="flex flex-col items-center justify-center py-6 text-gray-400 text-xs gap-2">
+                      <span className="text-2xl animate-bounce">🎙️</span>
+                      <span className="font-semibold text-xs text-gray-500">
                         {isRecording
                           ? (isEn ? 'Listening and typing live... Speak clearly now' : 'جاري الاستماع والكتابة لحظياً... تحدث الآن بوضوح وسيظهر كلامك هنا فوراً')
                           : (isEn ? 'Spoken words will appear here in real-time while speaking...' : 'سوف تظهر كلماتك المنطوقة هنا لحظة بلحظة أثناء الحديث...')}
@@ -481,26 +506,25 @@ Return pure JSON only in the following schema:
                 </div>
 
                 {/* Live Diagnostic Telemetry HUD */}
-                {isRecording && diagnostics && (
-                  <div className="bg-[#FAF8F5] border border-gray-200/80 p-2 sm:p-2.5 rounded-xl text-[10px] text-gray-600 font-mono space-y-1" dir="ltr">
+                {isRecording && (
+                  <div className="bg-[#FAF8F5] border border-gray-200/80 p-2 sm:p-2.5 rounded-xl text-[10px] text-gray-600 font-mono space-y-1 text-left" dir="ltr">
                     <div className="flex items-center justify-between font-bold">
                       <span className="flex items-center gap-1">
-                        Recognition: {diagnostics.hasStarted ? '🟢 ACTIVE' : (diagnostics.lastError ? '🔴 ERROR' : '🟡 STARTING')}
+                        SpeechRecognition: {diagnostics.status === 'listening' || diagnostics.status === 'receiving-results' ? '🟢 ACTIVE' : (diagnostics.lastError ? '🔴 ERROR' : '🟡 ' + diagnostics.status.toUpperCase())}
                       </span>
-                      <span>Chars: {transcript.length + liveInterim.length}</span>
+                      <span>Chars: {liveTranscript.length}</span>
                     </div>
                     <div className="flex flex-wrap gap-2 text-gray-500 text-[9.5px]">
-                      <span>start: {diagnostics.hasStarted ? '✓' : '...'}</span>
-                      <span>audio: {diagnostics.hasAudio ? '✓' : '...'}</span>
-                      <span>sound: {diagnostics.hasSound ? '✓' : '...'}</span>
-                      <span>speech: {diagnostics.hasSpeech ? '✓' : '...'}</span>
                       <span>results: {diagnostics.resultCount}</span>
+                      <span>final: {finalText.length} chars</span>
+                      <span>interim: {interimText.length} chars</span>
                       {diagnostics.lastError && <span className="text-rose-600 font-bold">err: {diagnostics.lastError}</span>}
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Analysis Loading Indicator */}
               {isAnalyzing && (
                 <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl flex items-center justify-center gap-2.5 text-xs text-purple-900 font-bold animate-pulse shadow-xs" dir="rtl">
                   <RefreshCw className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
@@ -508,6 +532,7 @@ Return pure JSON only in the following schema:
                 </div>
               )}
 
+              {/* Processed AI Result Preview */}
               {processedResult && !isAnalyzing && (
                 <div className="bg-emerald-50/80 border border-emerald-200 p-4.5 rounded-3xl space-y-3 animate-in fade-in duration-300">
                   <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
@@ -551,6 +576,7 @@ Return pure JSON only in the following schema:
 
         </div>
 
+        {/* Footer Actions */}
         <div className="p-4 bg-[#F0EDE4] border-t border-[#E2DCC8] flex items-center justify-between shrink-0">
           {!showCategoryPicker && (
             <>
@@ -558,7 +584,7 @@ Return pure JSON only in the following schema:
                 <button
                   type="button"
                   onClick={handleAnalyzeAudio}
-                  disabled={isAnalyzing || (!isRecording && !transcript && !liveInterim)}
+                  disabled={isAnalyzing || (!isRecording && !liveTranscript && !finalText && !interimText)}
                   className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
                 >
                   <Sparkles className={`w-4 h-4 text-purple-200 ${isAnalyzing ? 'animate-spin' : ''}`} />
@@ -578,8 +604,9 @@ Return pure JSON only in the following schema:
           )}
 
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2.5 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer mr-auto"
+            className="px-4 py-2.5 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer mr-auto transition-colors"
           >
             {t.common?.closeBtn || (isEn ? 'Close' : 'إغلاق')}
           </button>

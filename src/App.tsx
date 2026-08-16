@@ -3982,34 +3982,6 @@ export default function App() {
       });
       setSpeechDiagnostics(manager.getDiagnostics());
     }
-
-    // Try MediaRecorder for microphone audio recording
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        let options: MediaRecorderOptions = { mimeType: 'audio/webm;codecs=opus' };
-        if (typeof MediaRecorder !== 'undefined' && !MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-          if (MediaRecorder.isTypeSupported('audio/webm')) {
-            options = { mimeType: 'audio/webm' };
-          } else {
-            options = {};
-          }
-        }
-
-        const mediaRecorder = new MediaRecorder(stream, options);
-        mediaRecorderRef.current = mediaRecorder;
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) {
-            audioChunksRef.current.push(e.data);
-          }
-        };
-
-        mediaRecorder.start(250);
-      } catch (micErr) {
-        console.warn('Microphone stream access error:', micErr);
-      }
-    }
   };
 
   // --- Voice Recorder Stop & Insert Handler ---
