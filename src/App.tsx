@@ -3970,17 +3970,15 @@ export default function App() {
         continuous: true,
         callbacks: {
           onTranscriptChange: (state) => {
-            speechTranscriptRef.current = state.finalTranscript;
-            setSpeechTranscript(state.finalTranscript);
-            setSpeechInterim(state.interimTranscript);
-            setSpeechDiagnostics(state.diagnostics);
+            speechTranscriptRef.current = state.displayTranscript;
+            setSpeechTranscript(state.displayTranscript);
+            setSpeechInterim('');
           },
           onError: (e) => {
             console.error("Speech Recognition setup error:", e);
           }
         }
       });
-      setSpeechDiagnostics(manager.getDiagnostics());
     }
   };
 
@@ -7225,14 +7223,9 @@ export default function App() {
                           className="bg-white/95 p-3.5 rounded-xl border border-red-100 min-h-[75px] max-h-48 overflow-y-auto space-y-1.5 shadow-inner"
                           style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
                         >
-                          {speechTranscript || speechInterim ? (
+                          {speechTranscript ? (
                             <p className="text-xs sm:text-sm text-[#2B3E50] leading-[1.9] font-medium">
-                              <span className="font-bold text-gray-900">{speechTranscript}</span>
-                              {speechInterim && (
-                                <span className="text-emerald-700 italic font-semibold mr-1.5 animate-pulse">
-                                  {speechTranscript ? ` ${speechInterim}` : speechInterim}
-                                </span>
-                              )}
+                              {speechTranscript}
                             </p>
                           ) : (
                             <p className="text-xs text-gray-400 italic text-center py-3 font-semibold">

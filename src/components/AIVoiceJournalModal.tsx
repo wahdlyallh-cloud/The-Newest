@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mic, Sparkles, Check, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
+import { X, Mic, Sparkles, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import { DiaryEntry, JournalEntryType } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig } from '../lib/journalTypes';
+import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { generateGeminiContentDirect } from '../lib/gemini';
 
 interface AIVoiceJournalModalProps {
@@ -22,19 +23,11 @@ export default function AIVoiceJournalModal({
 }: AIVoiceJournalModalProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [finalText, setFinalText] = useState('');
-  const [interimText, setInterimText] = useState('');
-  const [liveTranscript, setLiveTranscript] = useState('');
-  const [isSupported, setIsSupported] = useState(true);
+  const [transcript, setTranscript] = useState('');
   const [micPermissionError, setMicPermissionError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<{
-    status: string;
-    resultCount: number;
-    lastError: string | null;
-  }>({ status: 'idle', resultCount: 0, lastError: null });
 
   const [processedResult, setProcessedResult] = useState<{
     title: string;
@@ -46,159 +39,76 @@ export default function AIVoiceJournalModal({
   } | null>(null);
 
   const timerRef = useRef<any>(null);
-  const recognitionRef = useRef<any>(null);
-  const finalTranscriptRef = useRef<string>('');
-  const isRecordingRef = useRef<boolean>(false);
+  const transcriptRef = useRef<string>('');
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const isEn = appLanguage === 'en';
 
-  // Check support on mount
-  useEffect(() => {
-    const SpeechRec = typeof window !== 'undefined'
-      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
-      : null;
-    setIsSupported(!!SpeechRec);
-  }, []);
-
-  // Cleanup on close
   useEffect(() => {
     if (!isOpen) {
       stopRecordingSession();
-      setFinalText('');
-      setInterimText('');
-      setLiveTranscript('');
-      finalTranscriptRef.current = '';
+      SpeechRecognitionManager.getInstance().abortSession();
+      setTranscript('');
+      transcriptRef.current = '';
       setRecordingSeconds(0);
       setProcessedResult(null);
       setShowCategoryPicker(false);
       setIsSaving(false);
       setMicPermissionError(null);
-      setDiagnostics({ status: 'idle', resultCount: 0, lastError: null });
     }
   }, [isOpen]);
 
   const stopRecordingSession = () => {
-    isRecordingRef.current = false;
     setIsRecording(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.onstart = null;
-        recognitionRef.current.onresult = null;
-        recognitionRef.current.onerror = null;
-        recognitionRef.current.onend = null;
-        recognitionRef.current.stop();
-      } catch (e) {
-        // ignore
-      }
-      recognitionRef.current = null;
+    const manager = SpeechRecognitionManager.getInstance();
+    const finalTxt = manager.finalize();
+    if (finalTxt) {
+      setTranscript(finalTxt);
+      transcriptRef.current = finalTxt;
     }
   };
 
   const startRecording = () => {
-    // 1. Reset state
-    setFinalText('');
-    setInterimText('');
-    setLiveTranscript('');
-    finalTranscriptRef.current = '';
+    // Reset state
+    setTranscript('');
+    transcriptRef.current = '';
     setProcessedResult(null);
     setShowCategoryPicker(false);
     setMicPermissionError(null);
     setIsRecording(true);
-    isRecordingRef.current = true;
     setRecordingSeconds(0);
-    setDiagnostics({ status: 'starting', resultCount: 0, lastError: null });
 
-    // 2. Start timer
+    // Timer
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setRecordingSeconds(prev => prev + 1);
     }, 1000);
 
-    // 3. Instantiate Native SpeechRecognition directly without getUserMedia locking
-    const SpeechRec = typeof window !== 'undefined'
-      ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
-      : null;
-
-    if (!SpeechRec) {
-      setIsSupported(false);
+    // Shared Speech Engine
+    const manager = SpeechRecognitionManager.getInstance();
+    if (manager.isSupported()) {
+      manager.startSession({
+        lang: isEn ? 'en-US' : 'ar-EG',
+        continuous: true,
+        callbacks: {
+          onTranscriptChange: (state) => {
+            setTranscript(state.displayTranscript);
+            transcriptRef.current = state.displayTranscript;
+          },
+          onError: (e) => {
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+              setMicPermissionError(isEn ? 'Microphone permission denied. Please allow microphone access.' : 'تم رفض الإذن باستخدام الميكروفون. يرجى تفعيل الإذن من إعدادات المتصفح.');
+            }
+          }
+        }
+      });
+    } else {
       setMicPermissionError(isEn ? 'Live Speech Recognition is not supported in this browser.' : 'التفريغ الصوتي المباشر غير مدعوم في هذا المتصفح.');
-      setDiagnostics({ status: 'unsupported', resultCount: 0, lastError: 'not-supported' });
-      return;
-    }
-
-    try {
-      const rec = new SpeechRec();
-      rec.lang = isEn ? 'en-US' : 'ar-EG';
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.maxAlternatives = 1;
-
-      rec.onstart = () => {
-        console.log('[DIRECT VOICE] SpeechRecognition started');
-        setDiagnostics(prev => ({ ...prev, status: 'listening' }));
-      };
-
-      rec.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        for (let i = 0; i < event.results.length; ++i) {
-          const item = event.results[i];
-          if (!item || !item[0]) continue;
-          const text = item[0]?.transcript || '';
-          if (item.isFinal) {
-            finalTranscript += text + ' ';
-          } else {
-            interimTranscript += text;
-          }
-        }
-
-        const combined = (finalTranscript + interimTranscript).replace(/\s+/g, ' ').trim();
-
-        setFinalText(finalTranscript.trim());
-        setInterimText(interimTranscript.trim());
-        setLiveTranscript(combined);
-        finalTranscriptRef.current = combined;
-      };
-
-      rec.onerror = (event: any) => {
-        console.error('[DIRECT VOICE ERROR]', event.error);
-        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-          setMicPermissionError(isEn ? 'Microphone permission denied. Please allow microphone access.' : 'تم رفض الإذن باستخدام الميكروفون. يرجى تفعيل الإذن من إعدادات المتصفح.');
-          setDiagnostics(prev => ({ ...prev, lastError: event.error }));
-        } else if (event.error === 'no-speech') {
-          // Expected on silence; let onend handle restart if still recording
-        } else if (event.error === 'language-not-supported' && rec.lang !== 'ar-SA') {
-          rec.lang = 'ar-SA';
-        } else {
-          setDiagnostics(prev => ({ ...prev, lastError: event.error }));
-        }
-      };
-
-      rec.onend = () => {
-        console.log('[DIRECT VOICE] SpeechRecognition ended. Active:', isRecordingRef.current);
-        if (isRecordingRef.current) {
-          // Auto-restart while user is still recording
-          try {
-            rec.start();
-          } catch (e) {
-            console.warn('[DIRECT VOICE] Auto-restart error:', e);
-          }
-        }
-      };
-
-      recognitionRef.current = rec;
-      rec.start();
-    } catch (err: any) {
-      console.error('[DIRECT VOICE] Failed to start recognition:', err);
-      setMicPermissionError(isEn ? 'Failed to start microphone speech recognition.' : 'تعذر بدء محرك التعرف الصوتي.');
-      setDiagnostics(prev => ({ ...prev, lastError: err?.message || 'start-error' }));
     }
   };
 
@@ -206,7 +116,7 @@ export default function AIVoiceJournalModal({
     stopRecordingSession();
     setIsAnalyzing(true);
 
-    const rawSpeechText = (finalTranscriptRef.current || liveTranscript || finalText || interimText).trim();
+    const rawSpeechText = (SpeechRecognitionManager.getInstance().getFinalTranscript() || transcriptRef.current || transcript).trim();
 
     if (!rawSpeechText) {
       alert(isEn ? 'No speech detected to analyze. Please speak clearly.' : 'لم يتم التقاط أي كلام لتحليله. يرجى التحدث بوضوح.');
@@ -239,7 +149,7 @@ Return pure JSON only in the following schema:
       try {
         aiResultText = await generateGeminiContentDirect(analysisPrompt, undefined, apiKey);
       } catch (aiErr) {
-        console.warn('Gemini analysis post-processing note (preserving raw transcript):', aiErr);
+        console.warn('Gemini post-processing note (preserving raw transcript):', aiErr);
       }
 
       let parsed: any = null;
@@ -268,7 +178,6 @@ Return pure JSON only in the following schema:
       });
     } catch (err) {
       console.error('Error during voice analysis:', err);
-      // Fallback ALWAYS preserves the raw captured transcript
       setProcessedResult({
         title: `${isEn ? 'Voice Journal' : 'مذكرة صوتية'} - ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`,
         content: rawSpeechText,
@@ -333,7 +242,7 @@ Return pure JSON only in the following schema:
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-[65] font-sans" dir={langInfo.dir}>
       <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 max-h-[92vh] flex flex-col relative">
-        
+
         {/* Header */}
         <div className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -349,7 +258,7 @@ Return pure JSON only in the following schema:
               </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
           >
@@ -476,14 +385,9 @@ Return pure JSON only in the following schema:
                   className="bg-[#FAF8F5] border border-[#E2DCC8] p-4 rounded-2xl min-h-[120px] max-h-60 overflow-y-auto font-medium shadow-inner"
                   style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.9 }}
                 >
-                  {liveTranscript || finalText || interimText ? (
-                    <p className="text-[#2B3E50] text-sm leading-[1.9]">
-                      <span className="font-bold text-gray-900">{finalText}</span>
-                      {interimText && (
-                        <span className="text-emerald-700 italic font-semibold mr-1.5 animate-pulse">
-                          {finalText ? ` ${interimText}` : interimText}
-                        </span>
-                      )}
+                  {transcript ? (
+                    <p className="text-[#2B3E50] text-sm leading-[1.9] font-medium">
+                      {transcript}
                     </p>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-6 text-gray-400 text-xs gap-2">
@@ -558,7 +462,7 @@ Return pure JSON only in the following schema:
                 <button
                   type="button"
                   onClick={handleAnalyzeAudio}
-                  disabled={isAnalyzing || (!isRecording && !liveTranscript && !finalText && !interimText)}
+                  disabled={isAnalyzing || (!isRecording && !transcript)}
                   className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
                 >
                   <Sparkles className={`w-4 h-4 text-purple-200 ${isAnalyzing ? 'animate-spin' : ''}`} />
