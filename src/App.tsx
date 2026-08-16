@@ -3885,12 +3885,12 @@ export default function App() {
           return { ...prev, content: updatedContent };
         });
       } else {
-        const errMsg = data.error || 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
+        const errMsg = (isEn ? 'AI transcription is currently unavailable for this audio file.' : 'تعذر التفريغ بالذكاء الاصطناعي حالياً.');
         updateAudioTranscriptionAtomic(newRecId, errMsg);
       }
     } catch (err: any) {
       console.error('Audio upload & transcribe error:', err);
-      updateAudioTranscriptionAtomic(newRecId, 'عذراً، تعذر التفريغ النصي للملف الصوتي.');
+      updateAudioTranscriptionAtomic(newRecId, isEn ? 'AI transcription is currently unavailable.' : 'تعذر التفريغ بالذكاء الاصطناعي حالياً.');
     } finally {
       setAudioUploadLoading(false);
       setTranscribingAudioId(null);
