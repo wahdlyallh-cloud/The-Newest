@@ -10115,28 +10115,40 @@ export default function App() {
       <AIVoiceJournalModal
         isOpen={showVoiceJournalModal}
         onClose={() => setShowVoiceJournalModal(false)}
-        onSaveDiary={(entry) => {
+        onSaveDiary={async (entry) => {
           const fullEntry: DiaryEntry = {
             id: `diary-${Date.now()}`,
             title: entry.title || (isEn ? 'Voice Diary Entry' : 'مذكرة صوتية'),
             content: entry.content || '',
             createdAt: entry.createdAt || new Date().toISOString(),
             updatedAt: entry.updatedAt || new Date().toISOString(),
+            diaryType: entry.diaryType || 'diary',
+            isFavorite: false,
             moods: entry.moods || ['مرتاح'],
             importance: entry.importance || 4,
             sleepHours: entry.sleepHours,
             sportsDuration: entry.sportsDuration,
             tags: entry.tags || ['مذكرة صوتية'],
-            color: 'bg-[#F0EDE4] border-[#E2DCC8]',
-            images: [],
-            videos: [],
-            audioRecordings: [],
-            files: [],
-            tasks: [],
+            color: 'bg-white border-[#E2DCC8]',
+            images: entry.images || [],
+            videos: entry.videos || [],
+            links: entry.links || [],
+            audioRecordings: entry.audioRecordings || [],
+            files: entry.files || [],
+            tasks: entry.tasks || [],
             chatLogs: [],
             isLocked: false
           };
+
+          // Save entry to memory state & persistence
           setDiaries(prev => [fullEntry, ...prev]);
+
+          // Open directly in the full Diary Editor
+          setEditingDiary(fullEntry);
+          setIsNewEntry(false);
+          setActiveTab('diaries');
+          setDiaryAiAnswer('');
+          triggerAutoSaveFeedback();
         }}
         appLanguage={settings?.appLanguage || 'ar'}
         apiKey={settings.userApiKey}
