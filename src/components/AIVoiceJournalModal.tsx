@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mic, Sparkles, Check, Square, Save, RefreshCw, Activity, Clock, ChevronRight, Folder } from 'lucide-react';
+import { X, Mic, Sparkles, Check, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import { DiaryEntry, JournalEntryType } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig } from '../lib/journalTypes';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
+import { generateGeminiContentDirect } from '../lib/gemini';
 
 interface AIVoiceJournalModalProps {
   isOpen: boolean;
@@ -24,12 +25,15 @@ export default function AIVoiceJournalModal({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [transcript, setTranscript] = useState('');
+  const [liveInterim, setLiveInterim] = useState('');
+  const [micPermissionError, setMicPermissionError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [processedResult, setProcessedResult] = useState<{
     title: string;
     content: string;
+    rawTranscript: string;
     moods: string[];
     sleepHours?: number;
     sportsDuration?: number;
@@ -49,10 +53,12 @@ export default function AIVoiceJournalModal({
       stopRecording();
       SpeechRecognitionManager.getInstance().abortSession();
       setTranscript('');
+      setLiveInterim('');
       setRecordingSeconds(0);
       setProcessedResult(null);
       setShowCategoryPicker(false);
       setIsSaving(false);
+      setMicPermissionError(null);
       audioBlobRef.current = null;
       audioChunksRef.current = [];
     }
@@ -60,13 +66,16 @@ export default function AIVoiceJournalModal({
 
   const startRecording = async () => {
     setTranscript('');
+    setLiveInterim('');
     setProcessedResult(null);
     setShowCategoryPicker(false);
+    setMicPermissionError(null);
     setIsRecording(true);
     setRecordingSeconds(0);
     audioChunksRef.current = [];
     audioBlobRef.current = null;
 
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setRecordingSeconds(prev => prev + 1);
     }, 1000);
@@ -74,14 +83,17 @@ export default function AIVoiceJournalModal({
     const manager = SpeechRecognitionManager.getInstance();
     if (manager.isSupported()) {
       manager.startSession({
-        lang: isEn ? 'en-US' : 'ar-SA',
+        lang: isEn ? 'en-US' : 'ar-EG',
         continuous: true,
         callbacks: {
           onTranscriptChange: (state) => {
-            setTranscript(state.displayTranscript);
+            setTranscript(state.finalTranscript);
+            setLiveInterim(state.interimTranscript);
           },
           onError: (e) => {
-            console.warn('Speech recognition error:', e);
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+              setMicPermissionError(isEn ? 'Microphone permission denied. Please allow microphone access.' : 'تم رفض الإذن باستخدام الميكروفون. يرجى تفعيل الإذن من إعدادات المتصفح.');
+            }
           }
         }
       });
@@ -112,13 +124,16 @@ export default function AIVoiceJournalModal({
             audioBlobRef.current = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           }
           try {
-            stream.getTracks().forEach(t => t.stop());
+            stream.getTracks().forEach(track => track.stop());
           } catch (_) {}
         };
 
         recorder.start(250);
-      } catch (err) {
+      } catch (err: any) {
         console.warn('MediaRecorder init error in voice journal modal:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setMicPermissionError(isEn ? 'Microphone access is blocked. Please enable it in browser settings.' : 'تم حظر الميكروفون. يرجى تفعيل إذن الميكروفون في المتصفح.');
+        }
       }
     }
   };
@@ -134,6 +149,7 @@ export default function AIVoiceJournalModal({
     if (finalTxt) {
       setTranscript(finalTxt);
     }
+    setLiveInterim('');
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
@@ -147,31 +163,83 @@ export default function AIVoiceJournalModal({
     stopRecording();
     setIsAnalyzing(true);
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1400));
-      const manager = SpeechRecognitionManager.getInstance();
-      const speechText = (manager.getFinalTranscript() || transcript).trim() || (isEn
-        ? "Today was a productive day. I felt a bit anxious in the morning about tasks, but went for a 30-minute run and slept 7 hours last night, which helped me regain calm and focus."
-        : "اليوم كان حافلاً بالمهام. شعرت ببعض التوتر في الصباح بشأن الدراسة، لكن مارست المشي السريع لمدة 30 دقيقة ونمت 7 ساعات الليلة الماضية والحمد لله استعدت هدوئي وتركيزي.");
+    const manager = SpeechRecognitionManager.getInstance();
+    const rawSpeechText = (manager.getFinalTranscript() || transcript || liveInterim).trim();
 
-      if (isEn) {
-        setProcessedResult({
-          title: "Voice Journal: " + new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-          content: speechText,
-          moods: ["Anxious", "Calm", "Productive"],
-          sleepHours: 7.0,
-          sportsDuration: 30
-        });
-      } else {
-        setProcessedResult({
-          title: "مذكرة صوتية: " + new Date().toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }),
-          content: speechText,
-          moods: ["متوتر", "مرتاح", "منجز"],
-          sleepHours: 7.0,
-          sportsDuration: 30
-        });
+    if (!rawSpeechText) {
+      alert(isEn ? 'No speech detected to analyze. Please speak clearly.' : 'لم يتم التقاط أي كلام لتحليله. يرجى التحدث بوضوح.');
+      setIsAnalyzing(false);
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const isAr = (appLanguage || 'ar') === 'ar';
+      const dayName = now.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long' });
+      const timeStr = now.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+
+      const analysisPrompt = `You are an expert Arabic voice journal analyzer and psychological wellness advisor.
+Analyze the following raw spoken transcript from the user's voice journal:
+
+"""
+${rawSpeechText}
+"""
+
+Requirements:
+1. "content": Format the spoken words into structured, clean, well-punctuated Arabic paragraphs preserving all meanings and facts without inventing or hallucinating information.
+2. "title": A concise, inspiring title reflecting the session theme.
+3. "moods": Array of 2 to 4 detected mood keywords in Arabic (e.g. ["مرتاح", "منجز", "ممتن", "متفائل", "هادئ", "متوتر", "قلق"]).
+4. "sleepHours": Sleep duration in hours as number if mentioned (otherwise null).
+5. "sportsDuration": Physical activity in minutes as number if mentioned (otherwise null).
+
+Return pure JSON only in the following schema:
+{
+  "title": "عنوان معبر للمذكرة",
+  "content": "النص المنسق بدقة...",
+  "moods": ["مرتاح", "منجز"],
+  "sleepHours": null,
+  "sportsDuration": null
+}`;
+
+      let aiResultText = '';
+      try {
+        aiResultText = await generateGeminiContentDirect(analysisPrompt, undefined, apiKey);
+      } catch (aiErr) {
+        console.warn('Gemini direct analysis warning:', aiErr);
       }
-    } catch {
+
+      let parsed: any = null;
+      if (aiResultText && aiResultText.trim()) {
+        try {
+          const jsonMatch = aiResultText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsed = JSON.parse(jsonMatch[0]);
+          }
+        } catch (_) {}
+      }
+
+      const finalTitle = parsed?.title || `${isAr ? 'مذكرة صوتية' : 'Voice Journal'} - ${dayName} ${timeStr}`;
+      const finalCleanContent = parsed?.content || rawSpeechText;
+      const finalMoods = Array.isArray(parsed?.moods) && parsed.moods.length > 0
+        ? parsed.moods
+        : (isAr ? ['مرتاح', 'منجز'] : ['Calm', 'Productive']);
+
+      setProcessedResult({
+        title: finalTitle,
+        content: finalCleanContent,
+        rawTranscript: rawSpeechText,
+        moods: finalMoods,
+        sleepHours: typeof parsed?.sleepHours === 'number' ? parsed.sleepHours : undefined,
+        sportsDuration: typeof parsed?.sportsDuration === 'number' ? parsed.sportsDuration : undefined
+      });
+    } catch (err) {
+      console.error('Error during voice analysis:', err);
+      setProcessedResult({
+        title: `${isEn ? 'Voice Journal' : 'مذكرة صوتية'} - ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`,
+        content: rawSpeechText,
+        rawTranscript: rawSpeechText,
+        moods: isEn ? ['Reflective'] : ['تأملي'],
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -249,10 +317,10 @@ export default function AIVoiceJournalModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[65] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 max-h-[90vh] flex flex-col relative">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-[65] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 max-h-[92vh] flex flex-col relative">
         
-        <div className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] p-5 text-white flex items-center justify-between shrink-0">
+        <div className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
               <Mic className="w-6 h-6 text-purple-200" />
@@ -274,7 +342,23 @@ export default function AIVoiceJournalModal({
           </button>
         </div>
 
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1">
+          {micPermissionError && (
+            <div className="p-3.5 bg-rose-50 border border-rose-300 rounded-2xl flex items-center gap-2.5 text-xs text-rose-900 font-bold animate-shake" dir="rtl">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+              <div className="flex-1">
+                <p>{micPermissionError}</p>
+                <button
+                  type="button"
+                  onClick={startRecording}
+                  className="mt-1.5 px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-extrabold cursor-pointer"
+                >
+                  🎙️ إعادة طلب إذن الميكروفون
+                </button>
+              </div>
+            </div>
+          )}
+
           {showCategoryPicker ? (
             <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200" dir={langInfo.dir}>
               <div className="flex items-center justify-between border-b border-[#E2DCC8]/70 pb-2.5">
@@ -336,7 +420,7 @@ export default function AIVoiceJournalModal({
             </div>
           ) : (
             <>
-              <div className="bg-white border-2 border-[#E2DCC8] p-6 rounded-3xl text-center space-y-4 shadow-3xs">
+              <div className="bg-white border-2 border-[#E2DCC8] p-5 sm:p-6 rounded-3xl text-center space-y-3.5 shadow-3xs">
                 <div className="relative inline-flex items-center justify-center">
                   {isRecording && (
                     <span className="absolute w-24 h-24 bg-purple-500/20 rounded-full animate-ping" />
@@ -362,23 +446,45 @@ export default function AIVoiceJournalModal({
                   </p>
                   {isRecording && (
                     <p className="text-xs font-mono font-black text-rose-600 mt-1">
-                      00:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
+                      ⏱️ 00:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
                     </p>
                   )}
                 </div>
 
-                <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 rounded-2xl text-xs text-gray-700 min-h-[70px] text-justify max-h-36 overflow-y-auto font-medium">
-                  {transcript || (
-                    <span className="text-gray-400 italic">
-                      {isEn
-                        ? 'Your spoken words will appear here in real time...'
-                        : 'سوف تظهر كلماتك المنطوقة هنا مباشرة أثناء الحديث...'}
-                    </span>
+                <div
+                  className="bg-[#FAF8F5] border border-[#E2DCC8] p-3.5 sm:p-4 rounded-2xl min-h-[110px] max-h-56 overflow-y-auto font-medium shadow-inner"
+                  style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
+                >
+                  {transcript || liveInterim ? (
+                    <p className="text-[#2B3E50] text-sm leading-[1.9]">
+                      <span className="font-bold text-gray-900">{transcript}</span>
+                      {liveInterim && (
+                        <span className="text-emerald-700 italic font-semibold mr-1.5 animate-pulse">
+                          {transcript ? ` ${liveInterim}` : liveInterim}
+                        </span>
+                      )}
+                    </p>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-5 text-gray-400 text-xs gap-1.5">
+                      <span className="text-xl">🎙️</span>
+                      <span className="font-semibold text-[11.5px]">
+                        {isRecording
+                          ? (isEn ? 'Listening and typing live... Speak clearly now' : 'جاري الاستماع والكتابة لحظياً... تحدث الآن بوضوح وسيظهر كلامك هنا فوراً')
+                          : (isEn ? 'Spoken words will appear here in real-time while speaking...' : 'سوف تظهر كلماتك المنطوقة هنا لحظة بلحظة أثناء الحديث...')}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {processedResult && (
+              {isAnalyzing && (
+                <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl flex items-center justify-center gap-2.5 text-xs text-purple-900 font-bold animate-pulse shadow-xs" dir="rtl">
+                  <RefreshCw className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
+                  <span>⏳ جاري تحليل التسجيل الصوتي وتنسيقه بالذكاء الاصطناعي...</span>
+                </div>
+              )}
+
+              {processedResult && !isAnalyzing && (
                 <div className="bg-emerald-50/80 border border-emerald-200 p-4.5 rounded-3xl space-y-3 animate-in fade-in duration-300">
                   <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
                     <h4 className="font-extrabold text-xs text-emerald-950 flex items-center gap-1.5">
@@ -392,7 +498,7 @@ export default function AIVoiceJournalModal({
 
                   <div className="space-y-2 text-xs text-emerald-950">
                     <p className="font-black text-sm text-emerald-900">{processedResult.title}</p>
-                    <p className="leading-relaxed bg-white/80 p-3 rounded-xl border border-emerald-100">{processedResult.content}</p>
+                    <p className="leading-relaxed bg-white/90 p-3 rounded-xl border border-emerald-100 font-medium">{processedResult.content}</p>
 
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {processedResult.moods.map((m, idx) => (
@@ -426,17 +532,19 @@ export default function AIVoiceJournalModal({
             <>
               {!processedResult ? (
                 <button
+                  type="button"
                   onClick={handleAnalyzeAudio}
-                  disabled={isAnalyzing || (!isRecording && !transcript)}
-                  className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  disabled={isAnalyzing || (!isRecording && !transcript && !liveInterim)}
+                  className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
                 >
                   <Sparkles className={`w-4 h-4 text-purple-200 ${isAnalyzing ? 'animate-spin' : ''}`} />
                   <span>{isAnalyzing ? (isEn ? 'Analyzing Voice...' : 'جاري تحليل الصوت...') : (t.voiceStopBtn || (isEn ? 'Analyze Voice ⏹️' : 'تحليل وتسجيل المذكرة 🧠'))}</span>
                 </button>
               ) : (
                 <button
+                  type="button"
                   onClick={handleOpenCategoryPicker}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all"
                 >
                   <Save className="w-4 h-4 text-emerald-100" />
                   <span>{t.voiceSaveBtn || (isEn ? 'Save as Diary Entry 💾' : 'حفظ كتدوينة يومية 💾')}</span>

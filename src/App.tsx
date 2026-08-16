@@ -3965,7 +3965,7 @@ export default function App() {
     const manager = SpeechRecognitionManager.getInstance();
     if (manager.isSupported()) {
       manager.startSession({
-        lang: 'ar-SA',
+        lang: isEn ? 'en-US' : 'ar-EG',
         continuous: true,
         callbacks: {
           onTranscriptChange: (state) => {
@@ -7246,19 +7246,22 @@ export default function App() {
                         </div>
 
                         {/* Live Transcript Area with Final / Interim Separation */}
-                        <div className="bg-white/95 p-3 sm:p-3.5 rounded-xl border border-red-100 max-h-40 overflow-y-auto space-y-1.5 shadow-inner">
+                        <div
+                          className="bg-white/95 p-3.5 rounded-xl border border-red-100 min-h-[75px] max-h-48 overflow-y-auto space-y-1.5 shadow-inner"
+                          style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
+                        >
                           {speechTranscript || speechInterim ? (
-                            <p className="text-xs text-[#2B3E50] leading-relaxed font-medium">
+                            <p className="text-xs sm:text-sm text-[#2B3E50] leading-[1.9] font-medium">
                               <span className="font-bold text-gray-900">{speechTranscript}</span>
                               {speechInterim && (
-                                <span className="text-emerald-700 italic font-semibold mr-1 animate-pulse">
+                                <span className="text-emerald-700 italic font-semibold mr-1.5 animate-pulse">
                                   {speechTranscript ? ` ${speechInterim}` : speechInterim}
                                 </span>
                               )}
                             </p>
                           ) : (
-                            <p className="text-[11px] text-gray-400 italic text-center py-2">
-                              🎙️ تحدث الآن بوضوح وسيظهر كلامك هنا لحظة بلحظة...
+                            <p className="text-xs text-gray-400 italic text-center py-3 font-semibold">
+                              🎙️ جاري الاستماع والكتابة لحظياً... تحدث الآن بوضوح وسيظهر كلامك هنا فوراً
                             </p>
                           )}
                         </div>

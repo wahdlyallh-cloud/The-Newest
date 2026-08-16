@@ -214,8 +214,8 @@ export class SpeechRecognitionManager {
     this.finalTranscript = '';
     this.interimTranscript = '';
     this.callbacks = options.callbacks || {};
-    this.lang = options.lang || 'ar-SA';
-    this.continuous = options.continuous ?? false;
+    this.lang = options.lang || 'ar-EG';
+    this.continuous = options.continuous ?? true;
 
     speechLog(`Starting session #${sessionToken} (lang: ${this.lang}, continuous: ${this.continuous})`);
 
@@ -244,14 +244,15 @@ export class SpeechRecognitionManager {
 
     try {
       const rec = new SpeechRec();
-      rec.lang = this.lang;
+      rec.lang = this.lang || 'ar-EG';
       rec.continuous = this.continuous;
       rec.interimResults = true;
+      rec.maxAlternatives = 1;
 
       rec.onstart = () => {
         if (this.currentSessionId !== sessionToken || this.isExplicitlyStopped) return;
         this.isListening = true;
-        speechLog(`Session #${sessionToken} started listening`);
+        speechLog(`Session #${sessionToken} started listening (lang: ${rec.lang})`);
         if (this.callbacks.onStatusChange) {
           this.callbacks.onStatusChange('listening');
         }
@@ -290,7 +291,7 @@ export class SpeechRecognitionManager {
         this.isListening = false;
         speechLog(`Session #${sessionToken} recognition ended`);
 
-        // Seamless auto-restart on mobile silence timeout if session is still active
+        // Seamless auto-restart on silence timeout if session is still actively recording
         if (!this.isExplicitlyStopped && this.continuous) {
           this.baseTranscript = this.finalTranscript;
           this.interimTranscript = '';
@@ -332,9 +333,9 @@ export class SpeechRecognitionManager {
       if (!chunk) continue;
 
       if (res.isFinal) {
-        currentCycleFinal = stitchFinalSegment(currentCycleFinal, chunk);
+        currentCycleFinal = currentCycleFinal ? stitchFinalSegment(currentCycleFinal, chunk) : chunk;
       } else {
-        rawInterim = chunk;
+        rawInterim = rawInterim ? `${rawInterim} ${chunk}` : chunk;
       }
     }
 
