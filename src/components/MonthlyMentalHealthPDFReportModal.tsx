@@ -1047,14 +1047,14 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             <div className="flex items-center gap-1.5 flex-wrap">
               {periodType === 'custom' ? (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A5A40] flex-wrap">
-                  <span className="shrink-0">{isEn ? 'From:' : 'من:'}</span>
+                  <span className="shrink-0">{t.reportFromDate || 'From:'}</span>
                   <input
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
                     className="bg-white border border-[#E2DCC8] rounded-xl px-2 py-1 text-xs text-[#3A3A3A] font-bold shadow-3xs"
                   />
-                  <span className="shrink-0">{isEn ? 'To:' : 'إلى:'}</span>
+                  <span className="shrink-0">{t.reportToDate || 'To:'}</span>
                   <input
                     type="date"
                     value={customEndDate}
@@ -1065,7 +1065,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               ) : (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A5A40]">
                   <Clock className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                  <span className="shrink-0">{isEn ? 'Range:' : 'الفاصل:'}</span>
+                  <span className="shrink-0">{t.reportRangeLabel || 'Range:'}</span>
                   <select
                     value={selectedOffset}
                     onChange={(e) => setSelectedOffset(Number(e.target.value))}
@@ -1073,51 +1073,51 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   >
                     {periodType === 'daily' && (
                       <>
-                        <option value={0}>{isEn ? 'Today' : 'اليوم'}</option>
-                        <option value={1}>{isEn ? 'Yesterday' : 'الأمس'}</option>
-                        <option value={2}>{isEn ? '2 Days Ago' : 'قبل يومين'}</option>
-                        <option value={3}>{isEn ? '3 Days Ago' : 'قبل 3 أيام'}</option>
-                        <option value={4}>{isEn ? '4 Days Ago' : 'قبل 4 أيام'}</option>
-                        <option value={5}>{isEn ? '5 Days Ago' : 'قبل 5 أيام'}</option>
-                        <option value={6}>{isEn ? '6 Days Ago' : 'قبل 6 أيام'}</option>
+                        <option value={0}>{t.today || 'Today'}</option>
+                        <option value={1}>{t.yesterday || 'Yesterday'}</option>
+                        <option value={2}>{t('daysAgo', { count: 2 }) || '2 Days Ago'}</option>
+                        <option value={3}>{t('daysAgo', { count: 3 }) || '3 Days Ago'}</option>
+                        <option value={4}>{t('daysAgo', { count: 4 }) || '4 Days Ago'}</option>
+                        <option value={5}>{t('daysAgo', { count: 5 }) || '5 Days Ago'}</option>
+                        <option value={6}>{t('daysAgo', { count: 6 }) || '6 Days Ago'}</option>
                       </>
                     )}
                     {periodType === 'weekly' && (
                       <>
-                        <option value={0}>{isEn ? 'Current Week' : 'الأسبوع الحالي'}</option>
-                        <option value={1}>{isEn ? 'Last Week' : 'الأسبوع الماضي'}</option>
-                        <option value={2}>{isEn ? '2 Weeks Ago' : 'قبل أسبوعين'}</option>
-                        <option value={3}>{isEn ? '3 Weeks Ago' : 'قبل 3 أسابيع'}</option>
+                        <option value={0}>{t.currentWeek || 'Current Week'}</option>
+                        <option value={1}>{t.lastWeek || 'Last Week'}</option>
+                        <option value={2}>{t('weeksAgo', { count: 2 }) || '2 Weeks Ago'}</option>
+                        <option value={3}>{t('weeksAgo', { count: 3 }) || '3 Weeks Ago'}</option>
                       </>
                     )}
                     {periodType === 'monthly' && (
                       <>
-                        <option value={0}>{isEn ? 'Current Month' : 'الشهر الحالي'}</option>
-                        <option value={1}>{isEn ? 'Last Month' : 'الشهر الماضي'}</option>
-                        <option value={2}>{isEn ? '2 Months Ago' : 'قبل شهرين'}</option>
-                        <option value={3}>{isEn ? '3 Months Ago' : 'قبل 3 أشهر'}</option>
+                        <option value={0}>{t.currentMonth || 'Current Month'}</option>
+                        <option value={1}>{t.lastMonth || 'Last Month'}</option>
+                        <option value={2}>{t('monthsAgo', { count: 2 }) || '2 Months Ago'}</option>
+                        <option value={3}>{t('monthsAgo', { count: 3 }) || '3 Months Ago'}</option>
                       </>
                     )}
                     {periodType === 'quarterly' && (
                       <>
-                        <option value={0}>{isEn ? 'Current Quarter' : 'الربع الحالي'}</option>
-                        <option value={1}>{isEn ? 'Previous Quarter' : 'الربع السابق'}</option>
-                        <option value={2}>{isEn ? '2 Quarters Ago' : 'قبل ربعين'}</option>
-                        <option value={3}>{isEn ? '3 Quarters Ago' : 'قبل 3 أرباع'}</option>
+                        <option value={0}>{t.currentQuarter || 'Current Quarter'}</option>
+                        <option value={1}>{t.previousQuarter || 'Previous Quarter'}</option>
+                        <option value={2}>{t('quartersAgo', { count: 2 }) || '2 Quarters Ago'}</option>
+                        <option value={3}>{t('quartersAgo', { count: 3 }) || '3 Quarters Ago'}</option>
                       </>
                     )}
                     {periodType === 'semi-annually' && (
                       <>
-                        <option value={0}>{isEn ? 'Current Half' : 'النصف الحالي'}</option>
-                        <option value={1}>{isEn ? 'Previous Half' : 'النصف السابق'}</option>
-                        <option value={2}>{isEn ? '2 Halves Ago' : 'قبل نصفين'}</option>
+                        <option value={0}>{t.currentHalf || 'Current Half'}</option>
+                        <option value={1}>{t.previousHalf || 'Previous Half'}</option>
+                        <option value={2}>{t('halvesAgo', { count: 2 }) || '2 Halves Ago'}</option>
                       </>
                     )}
                     {periodType === 'yearly' && (
                       <>
-                        <option value={0}>{isEn ? `Current Year (${new Date().getFullYear()})` : `السنة الحالية (${new Date().getFullYear()})`}</option>
-                        <option value={1}>{isEn ? `Last Year (${new Date().getFullYear() - 1})` : `السنة الماضية (${new Date().getFullYear() - 1})`}</option>
-                        <option value={2}>{isEn ? `Year ${new Date().getFullYear() - 2}` : `سنة ${new Date().getFullYear() - 2}`}</option>
+                        <option value={0}>{t('currentYearLabel', { year: new Date().getFullYear() }) || `Current Year (${new Date().getFullYear()})`}</option>
+                        <option value={1}>{t('lastYearLabel', { year: new Date().getFullYear() - 1 }) || `Last Year (${new Date().getFullYear() - 1})`}</option>
+                        <option value={2}>{t('yearLabelN', { year: new Date().getFullYear() - 2 }) || `Year ${new Date().getFullYear() - 2}`}</option>
                       </>
                     )}
                   </select>
@@ -1133,7 +1133,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#5A5A40] hover:bg-[#2B3E50] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
               >
                 <History className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                <span>{isEn ? `History (${savedReports.length})` : `السجل (${savedReports.length}) 📜`}</span>
+                <span>{t('reportsHistory', { count: savedReports.length }) || `History (${savedReports.length})`}</span>
               </button>
 
               <button
@@ -1142,7 +1142,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5 text-white" />
-                <span>{isEn ? 'Save' : 'حفظ 💾'}</span>
+                <span>{t.save_btn || 'Save'} 💾</span>
               </button>
 
               {!aiAnalysisText && (
@@ -1153,7 +1153,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   <Brain className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                  <span>{loadingAi ? (isEn ? 'Analyzing...' : 'جاري التحليل...') : (isEn ? 'AI Summary 🧠' : 'ملخص الذكاء الاصطناعي 🧠')}</span>
+                  <span>{loadingAi ? (t.analyzingStatus || 'Analyzing...') : (t.aiSummaryBtn || 'AI Summary 🧠')}</span>
                 </button>
               )}
 
@@ -1161,10 +1161,10 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 type="button"
                 onClick={handleCopyText}
                 className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
-                title={isEn ? 'Copy Text' : 'نسخ النص'}
+                title={t.copyTextTooltip || 'Copy Text'}
               >
                 {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
-                <span className="hidden sm:inline">{copySuccess ? (isEn ? 'Copied!' : 'تم النسخ!') : (isEn ? 'Copy' : 'نسخ')}</span>
+                <span className="hidden sm:inline">{copySuccess ? (t.copiedSuccess || 'Copied!') : (t.copyBtn || 'Copy')}</span>
               </button>
 
               <button
@@ -1181,10 +1181,10 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 type="button"
                 onClick={handlePrintPdf}
                 className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
-                title={isEn ? 'Print' : 'طباعة'}
+                title={t.printReportTooltip || 'Print'}
               >
                 <Printer className="w-3.5 h-3.5 text-[#5A5A40]" />
-                <span className="hidden md:inline">{isEn ? 'Print' : 'طباعة'}</span>
+                <span className="hidden md:inline">{t.printReportTooltip || 'Print'}</span>
               </button>
             </div>
 
@@ -1228,23 +1228,23 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <FileText className="w-3.5 h-3.5 text-[#5A5A40] shrink-0" />
-                  <span className="truncate">{isEn ? 'Logged Diaries' : 'اليوميات المدونة'}</span>
+                  <span className="truncate">{t.loggedDiariesStat || 'Logged Diaries'}</span>
                 </span>
-                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.totalDiaries} <span className="text-xs font-normal text-gray-500">{isEn ? 'entries' : 'مذكرة'}</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.totalDiaries} <span className="text-xs font-normal text-gray-500">{t.entriesUnit || 'entries'}</span></p>
               </div>
 
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <Moon className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                  <span className="truncate">{isEn ? 'Avg Sleep' : 'متوسط النوم'}</span>
+                  <span className="truncate">{t.avgSleepStat || 'Avg Sleep'}</span>
                 </span>
-                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{isEn ? 'hrs' : 'ساعة'}</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{t.hoursUnit || 'hrs'}</span></p>
               </div>
 
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <Smile className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span className="truncate">{isEn ? 'Mood Score' : 'معدل المزاج'}</span>
+                  <span className="truncate">{t.moodScoreStat || 'Mood Score'}</span>
                 </span>
                 <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgMood} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
               </div>
@@ -1252,9 +1252,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <Activity className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="truncate">{isEn ? 'Exercise Time' : 'وقت الرياضة'}</span>
+                  <span className="truncate">{t.exerciseTimeStat || 'Exercise Time'}</span>
                 </span>
-                <p className="text-base sm:text-lg font-black text-emerald-700">{stats.totalSportsMinutes} <span className="text-xs font-normal text-gray-500">{isEn ? 'min' : 'دقيقة'}</span></p>
+                <p className="text-base sm:text-lg font-black text-emerald-700">{stats.totalSportsMinutes} <span className="text-xs font-normal text-gray-500">{t.minutesUnit || 'min'}</span></p>
               </div>
             </div>
 
@@ -1263,9 +1263,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="flex items-center justify-between text-xs font-extrabold text-[#5A5A40] border-b border-[#E2DCC8] pb-2">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                  <span>{isEn ? 'Sleep vs Mood Trend Chart' : 'الرسم البياني للربط بين النوم والمزاج (Sleep vs Mood Trend)'}</span>
+                  <span>{t.sleepMoodChartTitle || 'Sleep vs Mood Trend Chart'}</span>
                 </span>
-                <span className="text-[10px] text-gray-500 shrink-0">{isEn ? 'Timeline' : 'توزيع الفترة'}</span>
+                <span className="text-[10px] text-gray-500 shrink-0">{t.timelineLabel || 'Timeline'}</span>
               </div>
 
               <div className="h-52 sm:h-56 min-h-[190px] w-full pt-2">
@@ -1287,9 +1287,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="flex items-center justify-between border-b border-[#E2DCC8] pb-2 flex-wrap gap-2">
                 <h3 className="font-extrabold text-xs sm:text-sm text-[#5A5A40] flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-[#D4A373] shrink-0" />
-                  <span>{isEn ? 'Clinical Psychological Analysis (AI Advisor)' : 'التقرير والتحليل النفسي السريري (المستشار الذكي)'}</span>
+                  <span>{t.clinicalAnalysisTitle || 'Clinical Psychological Analysis (AI Advisor)'}</span>
                 </h3>
-                {loadingAi && <span className="text-xs text-[#8B9D83] font-bold animate-pulse">{isEn ? 'Analyzing...' : 'جاري التحليلات...'}</span>}
+                {loadingAi && <span className="text-xs text-[#8B9D83] font-bold animate-pulse">{t.analyzingStatus || 'Analyzing...'}</span>}
               </div>
 
               <div className="text-xs text-gray-800 leading-relaxed font-normal bg-white p-3 sm:p-4 rounded-xl border border-[#E2DCC8]/60 min-h-[90px] break-words">
@@ -1297,7 +1297,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <FormattedReportView content={aiAnalysisText} />
                 ) : (
                   <div className="text-gray-400 italic text-center py-4">
-                    {isEn ? 'Click "AI Summary" above to include behavior & mood analysis for this period.' : 'انقر على زر "ملخص الذكاء الاصطناعي 🧠" أعلاه لإدراج تحليلات الملاحظات والسلوكيات لهذه الفترة.'}
+                    {t.clickAiSummaryHint || 'Click "AI Summary" above to include behavior & mood analysis for this period.'}
                   </div>
                 )}
               </div>
@@ -1306,7 +1306,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             {/* Dominant Moods & Habits Summary */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2">
-                <h4 className="font-bold text-xs text-[#5A5A40]">{isEn ? 'Top Logged Feelings:' : 'أبرز المشاعر المسجلة خلال الفترة:'}</h4>
+                <h4 className="font-bold text-xs text-[#5A5A40]">{t.topLoggedFeelingsTitle || 'Top Logged Feelings:'}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {stats.topMoods.length > 0 ? (
                     stats.topMoods.map((m, idx) => (
@@ -1315,15 +1315,15 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-gray-500">{isEn ? 'Calm, Peaceful, Optimistic' : 'مرتاح، مطئمن، متفائل'}</span>
+                    <span className="text-xs text-gray-500">{t.sampleFeelings || 'Calm, Peaceful, Optimistic'}</span>
                   )}
                 </div>
               </div>
 
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2">
-                <h4 className="font-bold text-xs text-[#5A5A40]">{isEn ? 'Daily Habits Commitment:' : 'التزام العادات اليومية:'}</h4>
+                <h4 className="font-bold text-xs text-[#5A5A40]">"Daily Habits Commitment:"</h4>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 font-medium">{isEn ? 'Completion Rate:' : 'نسبة الإنجاز:'}</span>
+                  <span className="text-xs text-gray-600 font-medium">"Completion Rate:"</span>
                   <span className="text-sm font-black text-[#8B9D83]">{stats.habitRate}%</span>
                 </div>
                 <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -1340,16 +1340,16 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 <div>
                   <h3 className="font-black text-xs sm:text-sm text-[#5A5A40] flex items-center gap-2">
                     <ArrowRightLeft className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                    <span>{isEn ? 'Therapy Session Review & Monitoring (Pre & Post Session)' : 'رصد ومتابعة الجلسة العلاجية (ما قبل وما بعد الجلسة)'}</span>
+                    <span>"Therapy Session Review & Monitoring (Pre & Post Session)"</span>
                   </h3>
                   <p className="text-[11px] text-gray-500 mt-0.5">
-                    {isEn ? 'System connecting pre-session prep with therapist responses and mood balance' : 'نظام متكامل لربط تحضيراتك قبل الجلسة مع ردود المعالج النفسي الحقيقي واستجابة التوازن المزاجي'}
+                    "System connecting pre-session prep with therapist responses and mood balance"
                   </p>
                 </div>
 
                 {/* Live Mood Delta Comparison Badge */}
                 <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-[#E2DCC8] shadow-3xs text-xs font-bold shrink-0">
-                  <span className="text-gray-500">{isEn ? 'Recovery:' : 'التعافي:'}</span>
+                  <span className="text-gray-500">"Recovery:"</span>
                   <span className={`font-black ${postSessionMood - preSessionMood >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
                     {postSessionMood - preSessionMood >= 0 ? `+${postSessionMood - preSessionMood}% 📈` : `${postSessionMood - preSessionMood}% 📉`}
                   </span>
@@ -1367,8 +1367,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         <Stethoscope className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-extrabold text-xs text-[#2B3E50] truncate">{isEn ? 'Pre-Session Prep' : 'ما قبل الجلسة (تحضير المريض)'}</h4>
-                        <span className="text-[10px] text-gray-500 truncate block">{isEn ? 'Notes & questions' : 'الملاحظات والأسئلة'}</span>
+                        <h4 className="font-extrabold text-xs text-[#2B3E50] truncate">"Pre-Session Prep"</h4>
+                        <span className="text-[10px] text-gray-500 truncate block">"Notes & questions"</span>
                       </div>
                     </div>
                     <span className="text-xs font-black text-[#5A5A40] bg-white px-2 py-0.5 rounded-lg border border-[#E2DCC8] shrink-0">
@@ -1381,7 +1381,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     <div className="flex items-center justify-between text-xs font-bold text-[#5A5A40]">
                       <span className="flex items-center gap-1">
                         <Smile className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                        <span>{isEn ? 'Pre-session mood:' : 'المزاج قبل الجلسة:'}</span>
+                        <span>"Pre-session mood:"</span>
                       </span>
                       <span className="text-xs font-black text-[#8B9D83] bg-white px-2 py-0.5 rounded-md border border-[#E2DCC8]">
                         {preSessionMood}% {preSessionMoodLabel}
@@ -1428,12 +1428,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   {/* Questions & Notes for Therapist */}
                   <div className="space-y-1">
                     <label className="block text-xs font-extrabold text-[#5A5A40]">
-                      {isEn ? '✍️ Notes to Discuss with Therapist:' : '✍️ أسئلة وملاحظات ترغب بمناقشتها مع معالجك:'}
+                      "✍️ Notes to Discuss with Therapist:"
                     </label>
                     <textarea
                       value={patientNotes}
                       onChange={(e) => setPatientNotes(e.target.value)}
-                      placeholder={isEn ? 'Write questions or thoughts...' : 'اكتب هنا أي استفسارات أو مواقف تود طرحها على المعالج في الجلسة القادمة...'}
+                      placeholder="Write questions or thoughts..."
                       rows={3}
                       className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed break-words"
                     />
@@ -1448,8 +1448,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         <UserCheck className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-extrabold text-xs text-[#2D5A27] truncate">{isEn ? 'Post-Session Feedback' : 'ما بعد الجلسة (توصيات المعالج)'}</h4>
-                        <span className="text-[10px] text-gray-500 truncate block">{isEn ? 'Advice & Homework' : 'التوجيهات والمهام المطلوبة'}</span>
+                        <h4 className="font-extrabold text-xs text-[#2D5A27] truncate">"Post-Session Feedback"</h4>
+                        <span className="text-[10px] text-gray-500 truncate block">"Advice & Homework"</span>
                       </div>
                     </div>
                     <span className="text-xs font-black text-[#2D5A27] bg-white px-2 py-0.5 rounded-lg border border-[#C2DCBE] shrink-0">
@@ -1461,7 +1461,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="flex items-center justify-between bg-[#F7F9F6] p-2 rounded-xl border border-[#C2DCBE] gap-2 flex-wrap">
                     <label className="text-xs font-bold text-[#2D5A27] flex items-center gap-1 shrink-0">
                       <Clock className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                      <span>{isEn ? 'Session Time:' : 'وقت الجلسة:'}</span>
+                      <span>"Session Time:"</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1475,12 +1475,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
                       <MessageSquare className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                      <span>{isEn ? 'Therapist Feedback:' : 'ردود وتوجيهات المعالج النفسي:'}</span>
+                      <span>"Therapist Feedback:"</span>
                     </label>
                     <textarea
                       value={therapistFeedback}
                       onChange={(e) => setTherapistFeedback(e.target.value)}
-                      placeholder={isEn ? 'Record therapist answers discussed in session...' : 'سجل هنا إجابات المعالج وتوجيهاته التي ناقشتماها في الجلسة...'}
+                      placeholder="Record therapist answers discussed in session..."
                       rows={2}
                       className="w-full bg-[#F9FBF8] border border-[#C2DCBE] rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed break-words"
                     />
@@ -1490,7 +1490,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1.5 bg-[#F4F8F3] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
                       <ListTodo className="w-3.5 h-3.5 text-[#5A5A40] shrink-0" />
-                      <span>{isEn ? 'Therapist Homework:' : 'المهام والتوصيات المطلوبة:'}</span>
+                      <span>"Therapist Homework:"</span>
                     </label>
 
                     <div className="space-y-1">
@@ -1517,7 +1517,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         value={homeworkInput}
                         onChange={(e) => setHomeworkInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddHomework())}
-                        placeholder={isEn ? 'Add homework...' : 'أضف مهمة جديدة طلبها المعالج...'}
+                        placeholder="Add homework..."
                         className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none min-w-0"
                       />
                       <button
@@ -1526,7 +1526,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shrink-0"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Add' : 'إضافة'}</span>
+                        <span>"Add"</span>
                       </button>
                     </div>
                   </div>
@@ -1536,7 +1536,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     <div className="flex items-center justify-between text-xs font-bold text-[#2D5A27]">
                       <span className="flex items-center gap-1">
                         <Smile className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>{isEn ? 'Post-session mood:' : 'المزاج بعد الجلسة:'}</span>
+                        <span>"Post-session mood:"</span>
                       </span>
                       <span className="text-xs font-black text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-[#C2DCBE]">
                         {postSessionMood}% {postSessionMoodLabel}
@@ -1580,7 +1580,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1.5 bg-[#F9FBF8] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                      <span>{isEn ? 'Session Summary Points:' : 'نقاط ملخصة للجلسة العلاجية:'}</span>
+                      <span>"Session Summary Points:"</span>
                     </label>
 
                     <div className="space-y-1">
@@ -1607,7 +1607,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         value={summaryInput}
                         onChange={(e) => setSummaryInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSummaryBullet())}
-                        placeholder={isEn ? 'Add takeaway point...' : 'اكتب نقطة مستفادة من الجلسة...'}
+                        placeholder="Add takeaway point..."
                         className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none min-w-0"
                       />
                       <button
@@ -1616,7 +1616,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         className="px-2.5 py-1 bg-[#5A5A40] hover:bg-[#8B9D83] text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shrink-0"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Add' : 'إضافة'}</span>
+                        <span>"Add"</span>
                       </button>
                     </div>
                   </div>
@@ -1627,13 +1627,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             {/* Footer & Doctor Verification Signature Area */}
             <div className="border-t border-[#E2DCC8] pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-gray-500 gap-3">
               <div>
-                <p className="font-bold text-[#5A5A40]">{isEn ? 'Therapist / Doctor Signature & Notes:' : 'توقيع وملاحظات الطبيب / المعالج النفسي:'}</p>
+                <p className="font-bold text-[#5A5A40]">"Therapist / Doctor Signature & Notes:"</p>
                 <div className="w-44 sm:w-48 h-8 border-b border-dashed border-gray-400 mt-1"></div>
               </div>
 
               <div className="text-right sm:text-left space-y-0.5">
                 <p className="font-extrabold text-[#5A5A40]">Hayat AI Medical & Behavioral Report</p>
-                <p className="text-[10px] text-gray-400">{isEn ? 'Encrypted automated report from Hayat AI system' : 'وثيقة مشفرة ومولدة تلقائياً من نظام حياة AI'}</p>
+                <p className="text-[10px] text-gray-400">"Encrypted automated report from Hayat AI system"</p>
               </div>
             </div>
 
@@ -1644,7 +1644,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
         {/* Modal Bottom Actions Footer */}
         <div className="px-4 py-3 bg-[#F0EDE4] border-t border-[#E2DCC8] flex items-center justify-between shrink-0">
           <p className="text-xs text-gray-600 font-medium hidden sm:block">
-            {isEn ? 'Ready for export & sharing with therapist 📄' : 'جاهز للتصدير والتسليم للمعالج النفسي 📄'}
+            "Ready for export & sharing with therapist 📄"
           </p>
 
           <div className="flex items-center space-x-2 space-x-reverse w-full sm:w-auto justify-end">
@@ -1652,7 +1652,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               onClick={onClose}
               className="px-4 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer"
             >
-              {isEn ? 'Close' : 'إغلاق'}
+              "Close"
             </button>
 
             <button
@@ -1661,7 +1661,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               className="px-5 py-2 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Download className="w-4 h-4 text-[#FEFAE0]" />
-              <span>{isExportingPdf ? (isEn ? 'Preparing PDF...' : 'جاري تجهيز PDF...') : (isEn ? 'Export PDF Now' : 'تصدير PDF الآن')}</span>
+              <span>{isExportingPdf ? (t.preparingPdf || 'Preparing PDF...') : (t.exportPdfNow || 'Export PDF Now')}</span>
             </button>
           </div>
         </div>
@@ -1678,7 +1678,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
       {/* SAVED REPORTS HISTORY OVERLAY DRAWER */}
       {showHistoryDrawer && (
-        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5" dir={isEn ? 'ltr' : 'rtl'}>
+        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5" dir={langInfo.dir}>
           <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col border border-[#E2DCC8] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             
             {/* Drawer Header */}
@@ -1688,8 +1688,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <History className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">{isEn ? 'Saved & Archived Mental Health Reports History 📜' : 'سجل تقارير الصحة النفسية المولدة والمؤرشفة 📜'}</h3>
-                  <p className="text-xs text-[#FEFAE0]">{isEn ? 'History of previous reports with dates, time range, and therapist notes' : 'يتضمن السجل كافة التقارير السابقة بالتاريخ والوقت والفترة الزمنية وملاحظات المعالج'}</p>
+                  <h3 className="text-base font-black text-white">{t.reportsHistoryTitle || 'Saved Mental Health Reports History 📜'}</h3>
+                  <p className="text-xs text-[#FEFAE0]">{t.reportsHistorySubtitle || 'History of previous reports with dates and therapist notes'}</p>
                 </div>
               </div>
               <button
@@ -1708,12 +1708,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   type="text"
                   value={historySearchQuery}
                   onChange={(e) => setHistorySearchQuery(e.target.value)}
-                  placeholder={isEn ? 'Search by title, date, or period...' : 'ابحث بالاسم أو التاريخ أو الفترة الزمانية...'}
+                  placeholder={t.searchReportsPlaceholder || 'Search reports...'}
                   className="w-full bg-white border border-[#E2DCC8] rounded-xl pr-9 pl-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
                 />
               </div>
               <span className="text-xs font-bold text-[#5A5A40] bg-[#EAE7DC] px-3 py-1.5 rounded-xl border border-[#E2DCC8] shrink-0">
-                {isEn ? `Total Reports: ${savedReports.length}` : `إجمالي التقارير: ${savedReports.length}`}
+                {t('totalReportsCount', { count: savedReports.length }) || `Total Reports: ${savedReports.length}`}
               </span>
             </div>
 
@@ -1722,8 +1722,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               {filteredSavedReports.length === 0 ? (
                 <div className="text-center py-12 space-y-3">
                   <FileText className="w-12 h-12 text-gray-300 mx-auto" />
-                  <p className="text-sm text-gray-500 font-bold">{isEn ? 'No saved reports found in history' : 'لا توجد تقارير محفوظة حالياً في السجل'}</p>
-                  <p className="text-xs text-gray-400">{isEn ? 'Click "Save Report" above to archive your report.' : 'انقر على "حفظ التقرير في السجل 💾" أعلاه لأرشفة تقريرك واستعادته لاحقاً.'}</p>
+                  <p className="text-sm text-gray-500 font-bold">{t.noReportsInHistory || 'No saved reports found in history'}</p>
+                  <p className="text-xs text-gray-400">{t.clickSaveReportHint || 'Click "Save Report" above to archive your report.'}</p>
                 </div>
               ) : (
                 filteredSavedReports.map((rep) => {
@@ -1735,15 +1735,15 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                           <h4 className="font-extrabold text-sm text-[#5A5A40]">{rep.periodTitle}</h4>
                           <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                             <Clock className="w-3.5 h-3.5 text-[#8B9D83]" />
-                            <span>{isEn ? 'Issue Date:' : 'تاريخ ووقت الإصدار:'} {rep.displayDate}</span>
+                            <span>"Issue Date:" {rep.displayDate}</span>
                           </p>
                         </div>
                         
                         {/* Mood Change Pill */}
                         <div className="flex items-center gap-1.5 bg-[#F7F5EE] px-3 py-1 rounded-xl border border-[#E2DCC8] text-xs font-bold shrink-0">
-                          <span>{isEn ? 'Before:' : 'قبل:'} {rep.preSessionMood}%</span>
+                          <span>"Before:" {rep.preSessionMood}%</span>
                           <span>⬅️</span>
-                          <span>{isEn ? 'After:' : 'بعد:'} {rep.postSessionMood}%</span>
+                          <span>"After:" {rep.postSessionMood}%</span>
                           <span className={`font-black ${moodDiff >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
                             ({moodDiff >= 0 ? `+${moodDiff}%` : `${moodDiff}%`})
                           </span>
@@ -1751,12 +1751,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       </div>
 
                       <div className="text-xs text-gray-600 space-y-1">
-                        <p><strong className="text-[#5A5A40]">{isEn ? 'Covered Period:' : 'الفترة المغطاة:'}</strong> {rep.periodLabel} ({rep.startDateStr} ⬅️ {rep.endDateStr})</p>
+                        <p><strong className="text-[#5A5A40]">"Covered Period:"</strong> {rep.periodLabel} ({rep.startDateStr} ⬅️ {rep.endDateStr})</p>
                         {rep.patientNotes && (
-                          <p className="truncate"><strong className="text-[#5A5A40]">{isEn ? 'Pre-session Notes:' : 'ملاحظات قبل الجلسة:'}</strong> {rep.patientNotes}</p>
+                          <p className="truncate"><strong className="text-[#5A5A40]">"Pre-session Notes:"</strong> {rep.patientNotes}</p>
                         )}
                         {rep.therapistFeedback && (
-                          <p className="truncate"><strong className="text-[#2D5A27]">{isEn ? 'Therapist Feedback:' : 'رد المعالج النفسي:'}</strong> {rep.therapistFeedback}</p>
+                          <p className="truncate"><strong className="text-[#2D5A27]">"Therapist Feedback:"</strong> {rep.therapistFeedback}</p>
                         )}
                       </div>
 
@@ -1767,14 +1767,14 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                           className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
-                          <span>{isEn ? 'View Report 📖' : 'استعراض وتحميل التقرير 📖'}</span>
+                          <span>"View Report 📖"</span>
                         </button>
                         <button
                           onClick={() => deleteSavedReport(rep.id)}
                           className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer border border-red-200"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          <span>{isEn ? 'Delete' : 'حذف'}</span>
+                          <span>"Delete"</span>
                         </button>
                       </div>
                     </div>
@@ -1789,7 +1789,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 onClick={() => setShowHistoryDrawer(false)}
                 className="px-4 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer"
               >
-                {isEn ? 'Close History' : 'إغلاق السجل'}
+                "Close History"
               </button>
             </div>
 

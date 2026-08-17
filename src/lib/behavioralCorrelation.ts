@@ -3,13 +3,13 @@ import { AppLanguage, getTranslation } from './languages';
 
 export interface CorrelationInsight {
   id: string;
-  type: 'sleep_water' | 'exercise_mood' | 'cbt_anxiety' | 'meds_balance' | 'general';
+  type: 'sleep_water' | 'exercise_mood' | 'cbt_anxiety' | 'gratitude_stability';
   title: string;
   description: string;
-  percentageChange: number; // e.g. 35 for 35% improvement
+  percentageChange: number;
   isPositive: boolean;
   metricType: string;
-  iconName: 'droplets' | 'moon' | 'activity' | 'heart' | 'brain' | 'sparkles';
+  iconName: string;
   sampleSize: number;
   details: {
     goodDaysAvg: number;
@@ -19,10 +19,7 @@ export interface CorrelationInsight {
   };
 }
 
-export function computeBehavioralCorrelations(
-  entries: DiaryEntry[],
-  appLanguage: AppLanguage = 'ar'
-): {
+export interface BehavioralCorrelationResult {
   insights: CorrelationInsight[];
   stats: {
     totalAnalyzedDays: number;
@@ -31,39 +28,63 @@ export function computeBehavioralCorrelations(
     avgExerciseMins: number;
     avgMoodScore: number;
   };
-} {
-  const validEntries = (entries || []).filter(e => !e.isTrash);
+}
 
-  let totalSleep = 0, sleepCount = 0;
-  let totalWater = 0, waterCount = 0;
-  let totalExercise = 0, exerciseCount = 0;
-  let totalMood = 0, moodCount = 0;
+/**
+ * Calculates behavioral correlations from historical diary entries
+ */
+export function calculateBehavioralCorrelations(
+  diaries: DiaryEntry[],
+  appLanguage: AppLanguage = 'ar'
+): BehavioralCorrelationResult {
 
-  validEntries.forEach(e => {
-    if (e.sleepHours && e.sleepHours > 0) {
-      totalSleep += e.sleepHours;
+  const trans = getTranslation(appLanguage);
+
+  if (!diaries || diaries.length === 0) {
+    return {
+      insights: [],
+      stats: {
+        totalAnalyzedDays: 0,
+        avgSleepHours: 0,
+        avgWaterCups: 0,
+        avgExerciseMins: 0,
+        avgMoodScore: 0,
+      }
+    };
+  }
+
+  // Filter valid entries with some health data
+  const validEntries = diaries.filter(d =>
+    (d.sleepHours !== undefined && d.sleepHours > 0) ||
+    (d.waterCups !== undefined && d.waterCups > 0) ||
+    (d.sportsDuration !== undefined && d.sportsDuration > 0) ||
+    d.fastMoodScore !== undefined
+  );
+
+  let totalSleep = 0;
+  let sleepCount = 0;
+  let totalWater = 0;
+  let waterCount = 0;
+  let totalExercise = 0;
+  let exerciseCount = 0;
+  let totalMood = 0;
+  let moodCount = 0;
+
+  validEntries.forEach(entry => {
+    if (entry.sleepHours) {
+      totalSleep += entry.sleepHours;
       sleepCount++;
     }
-    if (e.waterCups && e.waterCups > 0) {
-      totalWater += e.waterCups;
+    if (entry.waterCups) {
+      totalWater += entry.waterCups;
       waterCount++;
     }
-    if (e.sportsDuration && e.sportsDuration > 0) {
-      totalExercise += e.sportsDuration;
+    if (entry.sportsDuration) {
+      totalExercise += entry.sportsDuration;
       exerciseCount++;
     }
-    if (e.fastMoodScore && e.fastMoodScore > 0) {
-      totalMood += e.fastMoodScore;
-      moodCount++;
-    } else if (e.moods && e.moods.length > 0) {
-      let derived = 5;
-      const positiveTags = ['happy', 'calm', 'joy', 'excited', 'relaxed', 'grateful', 'peaceful'];
-      const negativeTags = ['sad', 'anxious', 'angry', 'stressed', 'depressed', 'exhausted'];
-      e.moods.forEach(m => {
-        if (positiveTags.some(p => m.toLowerCase().includes(p))) derived += 1.5;
-        if (negativeTags.some(n => m.toLowerCase().includes(n))) derived -= 1.5;
-      });
-      totalMood += Math.min(10, Math.max(1, derived));
+    if (entry.fastMoodScore) {
+      totalMood += entry.fastMoodScore;
       moodCount++;
     }
   });
@@ -74,11 +95,6 @@ export function computeBehavioralCorrelations(
   const avgMoodScore = moodCount > 0 ? Math.round((totalMood / moodCount) * 10) / 10 : 6.8;
 
   const insights: CorrelationInsight[] = [];
-
-  const isAr = appLanguage === 'ar';
-  const isEn = appLanguage === 'en';
-
-  const trans = getTranslation(appLanguage);
 
   // 1. Sleep + Water vs Anxiety / Mood Correlation
   const goodSleepWaterDays = validEntries.filter(e => (e.sleepHours || 0) >= 7 && (e.waterCups || 0) >= 6);
@@ -98,17 +114,8 @@ export function computeBehavioralCorrelations(
   const improvementPercent = Math.min(65, Math.max(25, Math.round(((goodMoodAvg - badMoodAvg) / (badMoodAvg || 5)) * 100) || 35));
   const anxietyDropPercent = Math.min(55, Math.max(25, Math.round(improvementPercent * 0.85)));
 
-  let title1 = trans.sleepWaterAnxietyTitle || 'Sleep & Water Impact on Anxiety';
-  let desc1 = trans.sleepWaterAnxietyDesc 
-    ? String(trans.sleepWaterAnxietyDesc).replace('{percent}', `${anxietyDropPercent}`).replace('%P%', `${anxietyDropPercent}`)
-    : (isAr 
-        ? `في الأيام التي تشرب فيها 8 أكواب من الماء وتنام أكثر من 7 ساعات، ينخفض مستوى القلق لديك بنسبة ${anxietyDropPercent}% وتزداد استقرارك العاطفي.`
-        : `On days when you drink 8 cups (2L) of water and sleep >7h, your anxiety score drops by ${anxietyDropPercent}% and emotional stability increases.`);
-
-  if (isEn) {
-    title1 = trans.sleepWaterAnxietyTitle || 'Sleep & Water Impact on Anxiety';
-    desc1 = `On days when you drink 8 cups (2L) of water and sleep >7h, your anxiety score drops by ${anxietyDropPercent}% and emotional stability increases.`;
-  }
+  const title1 = trans.sleepWaterAnxietyTitle || 'Sleep & Water Impact on Anxiety';
+  const desc1 = trans('sleepWaterAnxietyDesc', { percent: anxietyDropPercent }) || `On days when you drink 8 cups of water and sleep >7h, anxiety drops by ${anxietyDropPercent}%.`;
 
   insights.push({
     id: 'sleep_water_anxiety',
@@ -132,17 +139,8 @@ export function computeBehavioralCorrelations(
   const exerciseDays = validEntries.filter(e => (e.sportsDuration || 0) >= 20);
   const boostPercent = 28;
 
-  let title2 = trans.exerciseMoodBoostTitle || 'Physical Exercise & Energy Impact';
-  let desc2 = trans.exerciseMoodBoostDesc
-    ? String(trans.exerciseMoodBoostDesc).replace('{percent}', `${boostPercent}`).replace('%P%', `${boostPercent}`)
-    : (isAr
-        ? `ممارسة الرياضة لأكثر من 20 دقيقة ترتبط بتحسن المزاج الإيجابي بنسبة ${boostPercent}% وتقليل الإجهاد الذهني.`
-        : `Exercising for 20+ minutes correlates with a ${boostPercent}% boost in positive mood and reduced mental exhaustion.`);
-
-  if (isEn) {
-    title2 = trans.exerciseMoodBoostTitle || 'Physical Exercise & Energy Impact';
-    desc2 = `Exercising for 20+ minutes correlates with a ${boostPercent}% boost in positive mood and reduced mental exhaustion.`;
-  }
+  const title2 = trans.exerciseMoodBoostTitle || 'Physical Exercise & Energy Impact';
+  const desc2 = trans('exerciseMoodBoostDesc', { percent: boostPercent }) || `Exercising for 20+ minutes correlates with a ${boostPercent}% boost in positive mood.`;
 
   insights.push({
     id: 'exercise_mood_boost',
@@ -166,17 +164,8 @@ export function computeBehavioralCorrelations(
   const cbtEntries = validEntries.filter(e => e.cbtWorksheets && e.cbtWorksheets.length > 0);
   const cbtAnxietyDrop = 42;
 
-  let title3 = trans.cbtEffectivenessTitle || 'Effectiveness of CBT Exercises';
-  let desc3 = trans.cbtEffectivenessDesc
-    ? String(trans.cbtEffectivenessDesc).replace('{percent}', `${cbtAnxietyDrop}`).replace('%P%', `${cbtAnxietyDrop}`)
-    : (isAr
-        ? `تفكيك الأفكار التلقائية السلبية يقلل من الضائقة النفسية والعاطفية بنسبة ${cbtAnxietyDrop}%.`
-        : `Deconstructing negative automatic thoughts reduces emotional distress by an average of ${cbtAnxietyDrop}%.`);
-
-  if (isEn) {
-    title3 = trans.cbtEffectivenessTitle || 'Effectiveness of CBT Exercises';
-    desc3 = `Deconstructing negative automatic thoughts reduces emotional distress by an average of ${cbtAnxietyDrop}%.`;
-  }
+  const title3 = trans.cbtEffectivenessTitle || 'Effectiveness of CBT Exercises';
+  const desc3 = trans('cbtEffectivenessDesc', { percent: cbtAnxietyDrop }) || `Deconstructing negative automatic thoughts reduces emotional distress by ${cbtAnxietyDrop}%.`;
 
   insights.push({
     id: 'cbt_effectiveness',
@@ -207,3 +196,5 @@ export function computeBehavioralCorrelations(
     }
   };
 }
+
+export const computeBehavioralCorrelations = calculateBehavioralCorrelations;

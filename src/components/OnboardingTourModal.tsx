@@ -19,12 +19,14 @@ import {
   Play
 } from 'lucide-react';
 
+import { getLanguageInfo, getTranslation, isRtlLanguage, AppLanguage } from '../lib/languages';
+
 export interface OnboardingTourModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateTab?: (tab: 'dashboard' | 'diaries' | 'advisor' | 'analytics' | 'settings') => void;
   onOpenVoiceJournal?: () => void;
-  appLanguage?: string;
+  appLanguage?: AppLanguage;
 }
 
 export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
@@ -35,8 +37,11 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
   appLanguage = 'ar'
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const langInfo = getLanguageInfo(appLanguage);
+  const t = getTranslation(appLanguage);
+  const isRtl = isRtlLanguage(appLanguage);
   const isEn = appLanguage === 'en';
-  const isRtl = !isEn;
+
 
   // Keyboard navigation & accessibility
   useEffect(() => {
@@ -71,10 +76,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'welcome',
       icon: Compass,
-      badge: isEn ? 'Step 1 of 7' : 'الخطوة 1 من 7',
+      badge: 'Step 1 of 7',
       accentColor: 'from-[#2B3E50] to-[#3A506B]',
       iconBg: 'bg-[#2B3E50]/10 text-[#2B3E50]',
-      title: isEn ? '🌿 Welcome to Hayat AI' : '🌿 مرحبًا بك في حياة AI',
+      title: '🌿 Welcome to Hayat AI',
       subtitle: isEn
         ? 'Your safe psychological space to write, express, and grow with smart AI guidance.'
         : 'مساحتك الخاصة للكتابة، والتعبير عن مشاعرك، وفهم ذاتك، وتنظيم يومك بمساعدة الذكاء الاصطناعي.',
@@ -85,18 +90,18 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         <div className="grid grid-cols-3 gap-2 sm:gap-2.5 py-1">
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">✍️</span>
-            <span className="text-xs font-black text-[#2B3E50]">{isEn ? 'Express' : 'عبّر'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{isEn ? 'Write freely' : 'اكتب ما يدور في ذهنك بحرية'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{'Express'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{'Write freely'}</span>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">🧠</span>
-            <span className="text-xs font-black text-[#2B3E50]">{isEn ? 'Understand' : 'افهم'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{isEn ? 'Explore feelings' : 'استكشف مشاعرك بأدوات ذكية'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{'Understand'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{'Explore feelings'}</span>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">🌱</span>
-            <span className="text-xs font-black text-[#2B3E50]">{isEn ? 'Grow' : 'تطوّر'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{isEn ? 'Track progress' : 'تابع عاداتك ومزاجك مع الوقت'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{'Grow'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{'Track progress'}</span>
           </div>
         </div>
       ),
@@ -107,10 +112,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'diaries',
       icon: BookOpen,
-      badge: isEn ? 'Step 2 of 7' : 'الخطوة 2 من 7',
+      badge: 'Step 2 of 7',
       accentColor: 'from-[#4F772D] to-[#31572E]',
       iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
-      title: isEn ? '✍️ Express What Lies Within' : '✍️ عبّر عمّا بداخلك',
+      title: '✍️ Express What Lies Within',
       subtitle: isEn
         ? 'Write your reflections freely, record daily moments, and keep life memories in one safe spot.'
         : 'اكتب يومياتك وخواطرك بحرية، وسجّل ما حدث في يومك، وما شعرت به، وما يدور في ذهنك.',
@@ -122,10 +127,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#2B3E50]">
               <Smile className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{isEn ? 'Calm & Grateful' : 'شعور بالاطمئنان والامتنان'}</span>
+              <span>{'Calm & Grateful'}</span>
             </div>
             <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-              {isEn ? 'Mood Analysis' : 'تحليل المزاج'}
+              {'Mood Analysis'}
             </span>
           </div>
           <p className="text-xs text-gray-700 leading-relaxed font-medium bg-white/80 p-2.5 rounded-xl border border-gray-100">
@@ -134,14 +139,14 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
               : '"أخذت اليوم وقتاً مستقطعاً للتنفس بهدوء وترتيب أولوياتي مع بداية المساء..."'}
           </p>
           <div className="flex items-center gap-3 pt-0.5 text-[11px] text-gray-500 font-semibold">
-            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {isEn ? 'Rich Text' : 'كتابة منسقة'}</span>
-            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {isEn ? 'Photo' : 'صور'}</span>
-            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {isEn ? 'Audio' : 'تسجيل صوتي'}</span>
+            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {'Rich Text'}</span>
+            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {'Photo'}</span>
+            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {'Audio'}</span>
           </div>
         </div>
       ),
       actionButton: {
-        text: isEn ? 'Try Diaries' : 'جرّب اليوميات',
+        text: 'Try Diaries',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('diaries');
@@ -153,10 +158,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'voice',
       icon: Mic,
-      badge: isEn ? 'Step 3 of 7' : 'الخطوة 3 من 7',
+      badge: 'Step 3 of 7',
       accentColor: 'from-[#6B4E71] to-[#3B1F47]',
       iconBg: 'bg-[#6B4E71]/10 text-[#6B4E71]',
-      title: isEn ? '🎙️ Prefer Speaking? Just Talk' : '🎙️ لا ترغب في الكتابة؟ تحدّث فقط',
+      title: '🎙️ Prefer Speaking? Just Talk',
       subtitle: isEn
         ? 'Speak naturally, pause whenever you wish to think, and continue talking comfortably.'
         : 'تحدّث بطبيعتك، وخذ وقتك في التفكير أو التوقف، ثم واصل حديثك متى شئت.',
@@ -168,22 +173,22 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
           <div className="flex items-center justify-between text-xs font-bold text-[#6B4E71]">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>{isEn ? 'Live Voice Journaling' : 'المساعد الصوتي التفاعلي'}</span>
+              <span>{'Live Voice Journaling'}</span>
             </span>
             <span className="text-[10px] font-extrabold bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
-              {isEn ? 'Continuous Recording' : 'تفريغ لحظي مستمر'}
+              {'Continuous Recording'}
             </span>
           </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-extrabold text-[#2B3E50]">
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {isEn ? 'Speak' : 'تحدّث'}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {isEn ? 'Pause' : 'توقّف'}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {isEn ? 'Continue' : 'واصل'}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {isEn ? 'Save' : 'احفظ'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {'Speak'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {'Pause'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {'Continue'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {'Save'}</div>
           </div>
         </div>
       ),
       actionButton: {
-        text: isEn ? 'Try Voice Journal' : 'جرّب التسجيل الصوتي',
+        text: 'Try Voice Journal',
         onClick: () => {
           onClose();
           if (onOpenVoiceJournal) {
@@ -199,10 +204,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'advisor',
       icon: Brain,
-      badge: isEn ? 'Step 4 of 7' : 'الخطوة 4 من 7',
+      badge: 'Step 4 of 7',
       accentColor: 'from-[#5C4D7D] to-[#3B2C5C]',
       iconBg: 'bg-[#5C4D7D]/10 text-[#5C4D7D]',
-      title: isEn ? '🧠 Your Smart Companion' : '🧠 مستشارك الذكي',
+      title: '🧠 Your Smart Companion',
       subtitle: isEn
         ? 'When you need to organize your thoughts or understand your emotions, talk with the AI advisor.'
         : 'عندما تحتاج إلى ترتيب أفكارك أو فهم مشاعرك، يمكنك التحدث مع المستشار الذكي ومناقشة ما يشغلك بطريقة هادئة ومنظمة.',
@@ -212,13 +217,13 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="bg-white/90 p-2 rounded-xl border border-gray-100 text-xs text-gray-800">
-            <span className="font-black text-[#2B3E50] block text-[10px] mb-0.5">{isEn ? 'You:' : 'المستخدم:'}</span>
-            <span className="leading-snug">{isEn ? '"I feel a bit anxious and do not know why."' : '«أشعر بالقلق ولا أعرف السبب بالضبط.»'}</span>
+            <span className="font-black text-[#2B3E50] block text-[10px] mb-0.5">{'You:'}</span>
+            <span className="leading-snug">{'"I feel a bit anxious and do not know why."'}</span>
           </div>
           <div className="bg-purple-50/90 p-2 rounded-xl border border-purple-100 text-xs text-purple-950">
             <span className="font-black text-purple-900 flex items-center gap-1 text-[10px] mb-0.5">
               <Sparkles className="w-3 h-3 text-purple-600 shrink-0" />
-              <span>{isEn ? 'Hayat AI Advisor:' : 'المستشار الذكي:'}</span>
+              <span>{'Hayat AI Advisor:'}</span>
             </span>
             <span className="leading-snug">
               {isEn
@@ -229,7 +234,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         </div>
       ),
       actionButton: {
-        text: isEn ? 'Start a Conversation' : 'ابدأ محادثة',
+        text: 'Start a Conversation',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('advisor');
@@ -241,10 +246,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'analytics',
       icon: TrendingUp,
-      badge: isEn ? 'Step 5 of 7' : 'الخطوة 5 من 7',
+      badge: 'Step 5 of 7',
       accentColor: 'from-[#197278] to-[#124E52]',
       iconBg: 'bg-[#197278]/10 text-[#197278]',
-      title: isEn ? '🌱 Track Your Growth' : '🌱 تابع رحلتك ونموك',
+      title: '🌱 Track Your Growth',
       subtitle: isEn
         ? 'Monitor your daily habits, mood, and progress to discover how your journey evolves over time.'
         : 'راقب عاداتك ومزاجك وتقدمك اليومي، واكتشف كيف تتغير رحلتك مع مرور الوقت.',
@@ -254,21 +259,21 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2">
           <div className="flex justify-between items-center text-xs font-extrabold text-[#2B3E50]">
-            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {isEn ? 'Psychological Growth Tree' : 'شجرة النمو النفسي 🌳'}</span>
-            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{isEn ? 'Flourishing' : 'في مرحلة النمو'}</span>
+            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {'Psychological Growth Tree'}</span>
+            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{'Flourishing'}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full w-[85%] transition-all"></div>
           </div>
           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 pt-0.5">
-            <span>✅ {isEn ? 'Daily Habits' : 'العادات اليومية'}</span>
-            <span>📊 {isEn ? 'Mood Trends' : 'تتبع المزاج'}</span>
-            <span>🎯 {isEn ? 'Achievements' : 'الإنجازات'}</span>
+            <span>✅ {'Daily Habits'}</span>
+            <span>📊 {'Mood Trends'}</span>
+            <span>🎯 {'Achievements'}</span>
           </div>
         </div>
       ),
       actionButton: {
-        text: isEn ? 'Discover Your Progress' : 'اكتشف تقدّمك',
+        text: 'Discover Your Progress',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('analytics');
@@ -280,10 +285,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'privacy',
       icon: ShieldCheck,
-      badge: isEn ? 'Step 6 of 7' : 'الخطوة 6 من 7',
+      badge: 'Step 6 of 7',
       accentColor: 'from-[#3A506B] to-[#1C2541]',
       iconBg: 'bg-[#3A506B]/10 text-[#3A506B]',
-      title: isEn ? '🔒 Your Privacy First' : '🔒 خصوصيتك أولًا',
+      title: '🔒 Your Privacy First',
       subtitle: isEn
         ? 'This is your private sanctuary. Protection tools are crafted to keep you in total control of your data.'
         : 'هذه مساحتك الخاصة، ولذلك صُممت أدوات الحماية في حياة AI لمساعدتك على التحكم الكامل في بياناتك وحمايتها.',
@@ -294,23 +299,23 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="flex items-center gap-2 text-xs font-bold text-[#2B3E50]">
             <Lock className="w-4 h-4 text-[#3A506B] shrink-0" />
-            <span>{isEn ? 'Local Device Storage & Security' : 'حفظ محلي آمن على جهازك'}</span>
+            <span>{'Local Device Storage & Security'}</span>
           </div>
           <ul className="text-[11px] text-gray-700 space-y-1 font-medium">
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {isEn ? 'Passcode & Biometrics App Lock' : 'قفل التطبيق برمز PIN وبصمة الإصبع والوجه'}
+              <span className="text-emerald-600">✓</span> {'Passcode & Biometrics App Lock'}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {isEn ? 'Offline-first Local Database' : 'قاعدة بيانات محلية على هاتفك لا تغادره إلا بطلبك'}
+              <span className="text-emerald-600">✓</span> {'Offline-first Local Database'}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {isEn ? 'Encrypted Cloud Backup options' : 'إمكانية أخذ نسخ احتياطية مشفرة واسترجاعها بسهولة'}
+              <span className="text-emerald-600">✓</span> {'Encrypted Cloud Backup options'}
             </li>
           </ul>
         </div>
       ),
       actionButton: {
-        text: isEn ? 'Privacy Settings' : 'تعرّف إلى إعدادات الخصوصية',
+        text: 'Privacy Settings',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('settings');
@@ -322,10 +327,10 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'ready',
       icon: Sparkles,
-      badge: isEn ? 'Step 7 of 7' : 'الخطوة 7 من 7',
+      badge: 'Step 7 of 7',
       accentColor: 'from-[#4F772D] to-[#1B4332]',
       iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
-      title: isEn ? '🚀 You Are All Set' : '🚀 أنت مستعد الآن',
+      title: '🚀 You Are All Set',
       subtitle: isEn
         ? 'You have now discovered the core essence of Hayat AI.'
         : 'لقد تعرّفت الآن إلى أهم ما يقدمه تطبيق حياة AI.',
@@ -398,14 +403,14 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleComplete}
                 className="text-[11px] sm:text-xs font-bold text-gray-500 hover:text-[#2B3E50] transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 cursor-pointer"
               >
-                {isEn ? 'Skip' : 'تخطي الجولة'}
+                {'Skip'}
               </button>
             )}
             <button
               type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100 cursor-pointer"
-              aria-label={isEn ? 'Close guide' : 'إغلاق الدليل'}
+              aria-label={'Close guide'}
             >
               <X className="w-4 h-4" />
             </button>
@@ -483,7 +488,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 className="py-2.5 px-4 rounded-2xl border border-[#E2DCC8] bg-white text-[#2B3E50] font-bold text-xs hover:bg-gray-50 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 {isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                <span>{isEn ? 'Previous' : 'السابق'}</span>
+                <span>{t.previousBtn || 'Previous'}</span>
               </button>
             ) : (
               <div />
@@ -495,7 +500,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleComplete}
                 className="py-2.5 px-6 rounded-2xl bg-gradient-to-r from-[#4F772D] to-[#31572E] text-white font-black text-xs hover:opacity-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{isEn ? 'Start My Journey Now' : 'ابدأ رحلتي الآن'}</span>
+                <span>{'Start My Journey Now'}</span>
                 <CheckCircle2 className="w-4 h-4" />
               </button>
             ) : (
@@ -504,7 +509,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleNext}
                 className="py-2.5 px-5 rounded-2xl bg-[#2B3E50] text-white font-bold text-xs hover:bg-[#1C2541] transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{isFirstStep ? (isEn ? 'Start Tour' : 'ابدأ الجولة') : (isEn ? 'Next' : 'التالي')}</span>
+                <span>{isFirstStep ? ('Start Tour') : (t.nextBtn || 'Next')}</span>
                 {isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
             )}

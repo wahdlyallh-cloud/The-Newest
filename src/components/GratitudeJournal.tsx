@@ -70,10 +70,10 @@ export default function GratitudeJournal({
   triggerGratitudeNotificationNow,
   onOpenShareModal,
 }: GratitudeJournalProps) {
-  const isAr = settings.appLanguage === 'ar';
   const t = getTranslation(settings.appLanguage || 'ar');
   const langInfo = getLanguageInfo(settings.appLanguage || 'ar');
-  const isEn = !isAr;
+  const isAr = (settings.appLanguage || 'ar') === 'ar';
+  const isEn = (settings.appLanguage || 'ar') === 'en';
   
   // Input states
   const [newText, setNewText] = useState('');
@@ -105,7 +105,7 @@ export default function GratitudeJournal({
 
   const handleSpeakCard = (cardId: string, text: string) => {
     if (!('speechSynthesis' in window)) {
-      alert(isEn ? 'Speech synthesis not supported on this browser.' : 'خاصية القراءة الصوتية غير مدعومة على هذا المتصفح.');
+      alert(t.speechNotSupported || 'Speech synthesis not supported on this browser.');
       return;
     }
     if (speakingCardId === cardId) {
@@ -222,14 +222,14 @@ export default function GratitudeJournal({
       } else {
         setCardAnalysisResults(prev => ({
           ...prev,
-          [cardId]: isEn ? 'Failed to analyze.' : 'عذراً، فشل تحليل البطاقة حالياً.',
+          [cardId]: t.failedToAnalyze || 'Failed to analyze.',
         }));
       }
     } catch (err) {
       console.error(err);
       setCardAnalysisResults(prev => ({
         ...prev,
-        [cardId]: isEn ? 'Server error.' : 'خطأ في الاتصال بالذكاء الاصطناعي.',
+        [cardId]: t.serverError || 'Server error.',
       }));
     } finally {
       setAnalyzingCardId(null);
@@ -294,12 +294,12 @@ export default function GratitudeJournal({
     setAiHistory(prev => prev.map(item => item.id === itemId ? { ...item, userAnswer: answer.trim() } : item));
     setEditingAnswerId(null);
     setTempAnswerText('');
-    showToast(isEn ? 'Answer saved successfully! ✓' : 'تم حفظ إجابتك وتأملك بنجاح! ✓');
+    showToast(t.answerSavedSuccess || 'Answer saved successfully! ✓');
   };
 
   const handleDeleteHistoryItem = (itemId: string) => {
     setAiHistory(prev => prev.filter(item => item.id !== itemId));
-    showToast(isEn ? 'Item deleted from history.' : 'تم حذف العنصر من السجل.');
+    showToast(t.itemDeletedFromHistory || 'Item deleted from history.');
   };
 
   // Export functions
@@ -313,18 +313,18 @@ export default function GratitudeJournal({
       createdAt: new Date().toISOString(),
     };
     setGratitudeCards(prev => [newCard, ...prev]);
-    showToast(isEn ? 'Added to Gratitude Wall! 🌸' : 'تمت إضافة البطاقة إلى جدار امتنناك بنجاح! 🌸');
+    showToast(t.addedToGratitudeWall || 'Added to Gratitude Wall! 🌸');
   };
 
   const handleExportToDailyVenting = (title: string, bodyText: string) => {
     if (!bodyText.trim()) return;
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}`,
-      title: title || (isEn ? 'Gratitude Reflection' : 'فضفضة امتنان ووعي إيجابي 🌸'),
+      title: title || t.gratitudeReflectionTitle || 'Gratitude Reflection',
       content: bodyText.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      moods: isEn ? ['Gratitude 🌸', 'Serenity ✨'] : ['امتنان 🌸', 'سكينة ✨'],
+      moods: ['Gratitude 🌸', 'Serenity ✨'],
       importance: 4,
       color: 'bg-[#FEF9E7]',
       images: [],
@@ -332,7 +332,7 @@ export default function GratitudeJournal({
       audioRecordings: [],
       files: [],
       tasks: [],
-      tags: isEn ? ['gratitude', 'positive_reflection'] : ['امتنان', 'تأمل_إيجابي'],
+      tags: ['gratitude', 'positive_reflection'],
       chatLogs: [],
       isLocked: false,
       diaryType: 'diary',
@@ -347,7 +347,7 @@ export default function GratitudeJournal({
         localStorage.setItem('yawmiyati_diaries', JSON.stringify([newEntry, ...list]));
       } catch (e) { console.error(e); }
     }
-    showToast(isEn ? 'Exported to Daily Venting! 📖' : 'تمت إضافة النص بنجاح إلى قسم اليوميات! 📖');
+    showToast(t.exportedToDailyVenting || 'Exported to Daily Venting! 📖');
     if (setActiveTab && setActiveDiariesSubTab) {
       setActiveTab('diaries');
       setActiveDiariesSubTab('journal');
@@ -361,11 +361,11 @@ export default function GratitudeJournal({
 
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      title: `${cfg.icon} ${isEn ? cfg.labelEn : cfg.labelAr} - ${card.category || (isEn ? 'Gratitude Moment' : 'لحظة امتنان')}`,
+      title: `${cfg.icon} ${cfg.labelEn} - ${card.category || ('Gratitude Moment')}`,
       content: card.text.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      moods: isEn ? ['Grateful ❤️', 'Peaceful 🌿'] : ['ممتن ❤️', 'سكينة 🌿'],
+      moods: ['Grateful ❤️', 'Peaceful 🌿'],
       importance: 4,
       color: 'bg-white',
       images: [],
@@ -373,7 +373,7 @@ export default function GratitudeJournal({
       audioRecordings: [],
       files: [],
       tasks: [],
-      tags: isEn ? ['gratitude', chosenType] : ['امتنان', cfg.labelAr],
+      tags: ['gratitude', chosenType],
       chatLogs: [],
       isLocked: false,
       diaryType: chosenType,
@@ -392,7 +392,7 @@ export default function GratitudeJournal({
       }
     }
 
-    const typeLabel = isEn ? cfg.labelEn : cfg.labelAr;
+    const typeLabel = cfg.labelEn;
     showToast(
       isEn
         ? `🌿 Gratitude successfully added to [${typeLabel}] section in Journal!`
@@ -406,11 +406,11 @@ export default function GratitudeJournal({
     if (!bodyText.trim()) return;
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}`,
-      title: title || (isEn ? 'Positive Reflection' : 'خاطرة امتنان ورؤية إيجابية ✍️'),
+      title: title || t.positiveReflectionTitle || 'Positive Reflection',
       content: bodyText.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      moods: isEn ? ['Serenity 🧘‍♂️', 'Inspiration 💡'] : ['صفاء 🧘‍♂️', 'إلهام 💡'],
+      moods: ['Serenity 🧘‍♂️', 'Inspiration 💡'],
       importance: 5,
       color: 'bg-[#F4ECF7]',
       images: [],
@@ -418,7 +418,7 @@ export default function GratitudeJournal({
       audioRecordings: [],
       files: [],
       tasks: [],
-      tags: isEn ? ['thoughts', 'gratitude'] : ['خواطر', 'امتنان'],
+      tags: ['thoughts', 'gratitude'],
       chatLogs: [],
       isLocked: false,
       diaryType: 'thought',
@@ -433,7 +433,7 @@ export default function GratitudeJournal({
         localStorage.setItem('yawmiyati_diaries', JSON.stringify([newEntry, ...list]));
       } catch (e) { console.error(e); }
     }
-    showToast(isEn ? 'Exported to Thoughts & Reflections! ✍️' : 'تمت إضافة الخاطرة بنجاح إلى قسم الخواطر! ✍️');
+    showToast(t.exportedToThoughts || 'Exported to Thoughts & Reflections! ✍️');
     if (setActiveTab && setActiveDiariesSubTab) {
       setActiveTab('diaries');
       setActiveDiariesSubTab('journal');
@@ -464,15 +464,15 @@ export default function GratitudeJournal({
       });
       const data = await response.json();
       if (data.success && data.answer) {
-        addHistoryItem('qa', isEn ? 'Gratitude Consultation' : 'استشارة امتنانية خاصة', data.answer, qText);
+        addHistoryItem('qa', 'Gratitude Consultation', data.answer, qText);
         setDirectQuestionText('');
-        showToast(isEn ? 'Consultation saved to AI History! 🤖' : 'تمت الإجابة وحفظ الاستشارة في سجل الذكاء الاصطناعي! 🤖');
+        showToast(t.consultationSaved || 'Consultation saved to AI History! 🤖');
       } else {
-        showToast(isEn ? 'Failed to respond.' : 'تعذر الحصول على رد حالياً.');
+        showToast(t.failedToRespond || 'Failed to respond.');
       }
     } catch (err) {
       console.error(err);
-      showToast(isEn ? 'Connection error.' : 'خطأ في الاتصال بالذكاء الاصطناعي.');
+      showToast(t.connectionError || 'Connection error.');
     } finally {
       setDirectQuestionLoading(false);
     }
@@ -507,7 +507,7 @@ export default function GratitudeJournal({
               text: parsed.text,
               colorClass: parsed.suggestedColor || 'lavender'
             });
-            addHistoryItem('ai_generator', isEn ? 'Generated Gratitude Card' : 'بطاقة امتنان مستخلصة من المذكرات', parsed.text);
+            addHistoryItem('ai_generator', 'Generated Gratitude Card', parsed.text);
           } catch (e) {
             console.error("Failed to parse AI Card generator response", e);
             const cardTxt = data.answer.replace(/[{}]/g, '').trim();
@@ -515,21 +515,21 @@ export default function GratitudeJournal({
               text: cardTxt,
               colorClass: 'lavender'
             });
-            addHistoryItem('ai_generator', isEn ? 'Generated Gratitude Card' : 'بطاقة امتنان مستخلصة من المذكرات', cardTxt);
+            addHistoryItem('ai_generator', 'Generated Gratitude Card', cardTxt);
           }
         } else if (action === 'reflect') {
           setAiResult(data.answer);
-          addHistoryItem('reflect', isEn ? 'Gratitude Pattern Analysis' : 'تحليل أنماط امتناني', data.answer);
+          addHistoryItem('reflect', 'Gratitude Pattern Analysis', data.answer);
         } else {
           setAiResult(data.answer);
-          addHistoryItem('suggest', isEn ? 'Mindful Gratitude Questions' : 'أسئلة تفكرية للامتنان', data.answer);
+          addHistoryItem('suggest', 'Mindful Gratitude Questions', data.answer);
         }
       } else {
-        setAiResult(isEn ? 'An error occurred during AI generation.' : 'حدث خطأ أثناء الحصول على الرد السلوكي من الذكاء الاصطناعي.');
+        setAiResult('An error occurred during AI generation.');
       }
     } catch (err) {
       console.error(err);
-      setAiResult(isEn ? 'Could not connect to smart server.' : 'تعذر الاتصال بالخادم الذكي حالياً.');
+      setAiResult('Could not connect to smart server.');
     } finally {
       setAiLoading(false);
     }
@@ -542,7 +542,7 @@ export default function GratitudeJournal({
     return matchesSearch && matchesColor;
   });
 
-  const activePrompts = isEn ? ENGLISH_PROMPTS : ARABIC_PROMPTS;
+  const activePrompts = ENGLISH_PROMPTS;
 
   return (
     <div className="space-y-6" id="gratitude-journal-section">
@@ -555,10 +555,10 @@ export default function GratitudeJournal({
           <div className="space-y-1.5 max-w-2xl text-right">
             <span className="inline-flex items-center space-x-1.5 space-x-reverse text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200/50 px-3 py-1 rounded-full">
               <span>🌸</span>
-              <span>{isEn ? "Positive Psychology Apps" : "تطبيقات علم النفس الإيجابي وعلاج القلق"}</span>
+              <span>{"Positive Psychology Apps"}</span>
             </span>
             <h2 className="text-xl md:text-2xl font-extrabold text-[#3A3A3A] tracking-tight">
-              {isEn ? "My Gratitude Journal" : "مفكرة الامتنان وجدار السلام الإيجابي"}
+              {"My Gratitude Journal"}
             </h2>
             <p className="text-xs md:text-sm text-gray-500 leading-relaxed font-normal">
               {isEn 
@@ -573,8 +573,8 @@ export default function GratitudeJournal({
                 <Heart className="w-5 h-5 fill-rose-500 animate-pulse" />
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-gray-400 font-bold">{isEn ? "Total Moments" : "مجموع لحظات الرضا"}</p>
-                <p className="text-sm font-extrabold text-[#3A3A3A]">{gratitudeCards.length} {isEn ? "cards" : "بطاقة ملونة"}</p>
+                <p className="text-[10px] text-gray-400 font-bold">{"Total Moments"}</p>
+                <p className="text-sm font-extrabold text-[#3A3A3A]">{gratitudeCards.length} {"cards"}</p>
               </div>
             </div>
 
@@ -583,10 +583,10 @@ export default function GratitudeJournal({
                 type="button"
                 onClick={() => onOpenShareModal?.()}
                 className="px-2.5 py-1.5 bg-[#8B9D83] hover:bg-[#7A8C72] text-white rounded-xl text-[10px] font-extrabold flex items-center space-x-1 space-x-reverse shadow-2xs cursor-pointer"
-                title={isEn ? "Design Shareable Gratitude Card" : "تضمين وتصميم بطاقات امتنان قابلة للمشاركة 🎨"}
+                title={"Design Shareable Gratitude Card"}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{isEn ? "Export Card 🎨" : "تصميم بطاقة للنشر 🎨"}</span>
+                <span>{"Export Card 🎨"}</span>
               </button>
 
               <button
@@ -594,17 +594,17 @@ export default function GratitudeJournal({
                 onClick={handleShowRandomMemory}
                 disabled={gratitudeCards.length === 0}
                 className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded-xl text-[10px] font-extrabold flex items-center space-x-1 space-x-reverse shadow-2xs cursor-pointer"
-                title={isEn ? "Show Random Gratitude Memory" : "استرجاع لحظة امتنان عشوائية من الأرشيف"}
+                title={"Show Random Gratitude Memory"}
               >
                 <Shuffle className="w-3.5 h-3.5" />
-                <span>{isEn ? "Random Memory" : "ذكري عشوائية 🎰"}</span>
+                <span>{"Random Memory"}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => window.print()}
                 className="p-1.5 bg-white border border-[#E2DCC8] hover:bg-gray-50 text-gray-600 rounded-xl text-xs font-bold cursor-pointer shadow-3xs"
-                title={isEn ? "Print / Export Wall" : "طباعة وتصدير جدار الامتنان"}
+                title={"Print / Export Wall"}
               >
                 <Printer className="w-3.5 h-3.5" />
               </button>
@@ -621,7 +621,7 @@ export default function GratitudeJournal({
           <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
             <h3 className="font-extrabold text-[#3A3A3A] text-xs flex items-center space-x-2 space-x-reverse">
               <span>✍️</span>
-              <span>{isEn ? "Add a New Positive Moment" : "أضف لحظة إيجابية جديدة (عدد غير محدود)"}</span>
+              <span>{"Add a New Positive Moment"}</span>
             </h3>
             
             <form onSubmit={handleAddCard} className="space-y-4">
@@ -639,7 +639,7 @@ export default function GratitudeJournal({
 
               {/* Quick Prompt Pill Helpers */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-gray-400">{isEn ? "Quick Prompts (Click to Fill):" : "أفكار مقترحة للكتابة والتدفق (اضغط للملء الفوري):"}</label>
+                <label className="block text-[10px] font-bold text-gray-400">{"Quick Prompts (Click to Fill):"}</label>
                 <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
                   {activePrompts.map((prompt, idx) => (
                     <button
@@ -656,7 +656,7 @@ export default function GratitudeJournal({
 
               {/* Color Selection */}
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-gray-500">{isEn ? "Select Polaroid Card Color Theme:" : "اختر لون بطاقة الامتنان الفنية:"}</label>
+                <label className="block text-[11px] font-bold text-gray-500">{"Select Polaroid Card Color Theme:"}</label>
                 <div className="flex flex-wrap gap-2">
                   {PASTEL_COLORS.map((col, idx) => (
                     <button
@@ -686,7 +686,7 @@ export default function GratitudeJournal({
                 }`}
               >
                 <Plus className="w-4 h-4" />
-                <span>{isEn ? "Hang this card on my Gratitude Wall" : "تعليق هذه البطاقة الملونة في جدار امتناني"}</span>
+                <span>{"Hang this card on my Gratitude Wall"}</span>
               </button>
             </form>
           </div>
@@ -696,7 +696,7 @@ export default function GratitudeJournal({
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-[#3A3A3A] text-xs flex items-center space-x-2 space-x-reverse">
                 <Bell className="w-4 h-4 text-amber-500" />
-                <span>{isEn ? "Daily Gratitude Reminder" : "تذكير ممارسة الامتنان وتخفيف القلق اليومي"}</span>
+                <span>{"Daily Gratitude Reminder"}</span>
               </h3>
               
               <button
@@ -708,7 +708,7 @@ export default function GratitudeJournal({
                     : 'bg-gray-100 text-gray-400 border border-transparent'
                 }`}
               >
-                {reminderEnabled ? (isEn ? 'Active 🟢' : 'مفعّل حالياً 🟢') : (isEn ? 'Disabled ⚪' : 'معطّل ⚪')}
+                {reminderEnabled ? ('Active 🟢') : ('Disabled ⚪')}
               </button>
             </div>
 
@@ -720,7 +720,7 @@ export default function GratitudeJournal({
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#F9F7F2] p-3 rounded-2xl border border-[#E2DCC8]/50">
               <div className="flex items-center space-x-2 space-x-reverse justify-between">
-                <span className="text-xs text-[#5A5A40] font-bold">{isEn ? "Alarm Time:" : "وقت التنبيه اليومي:"}</span>
+                <span className="text-xs text-[#5A5A40] font-bold">{"Alarm Time:"}</span>
                 {reminderEnabled && (
                   <input
                     type="time"
@@ -738,7 +738,7 @@ export default function GratitudeJournal({
                   className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[10px] font-extrabold flex items-center justify-center space-x-1 space-x-reverse shadow-3xs cursor-pointer"
                 >
                   <Play className="w-3 h-3 fill-white" />
-                  <span>{isEn ? "Simulate Notification Now" : "محاكاة واختبار التنبيه الآن"}</span>
+                  <span>{"Simulate Notification Now"}</span>
                 </button>
               )}
             </div>
@@ -748,7 +748,7 @@ export default function GratitudeJournal({
           <div className="bg-gradient-to-br from-[#8B9D83]/10 to-amber-50/20 border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
             <h3 className="font-extrabold text-[#3A3A3A] text-xs flex items-center space-x-2 space-x-reverse">
               <Sparkles className="w-4 h-4 text-amber-600 animate-pulse" />
-              <span>{isEn ? "AI Positive Psychology Companion" : "مستشار ومحفز الوعي الإيجابي الذكي AI"}</span>
+              <span>{"AI Positive Psychology Companion"}</span>
             </h3>
 
             <p className="text-[11px] text-gray-500 leading-relaxed font-normal">
@@ -769,7 +769,7 @@ export default function GratitudeJournal({
                       : 'border-[#8B9D83] bg-white text-[#5A5A40] hover:bg-[#8B9D83]/5'
                   }`}
                 >
-                  <span>✨ {isEn ? "Reflect on Gratitude Patterns" : "تحليل أنماط امتناني"}</span>
+                  <span>✨ {"Reflect on Gratitude Patterns"}</span>
                 </button>
 
                 <button
@@ -779,7 +779,7 @@ export default function GratitudeJournal({
                   className="py-2 px-2.5 border border-[#D4A373] bg-white text-[#D4A373] hover:bg-[#D4A373]/5 rounded-xl text-[10px] font-extrabold transition-all flex items-center justify-center space-x-1 space-x-reverse cursor-pointer"
                 >
                   <Lightbulb className="w-3.5 h-3.5" />
-                  <span>💡 {isEn ? "Mindfulness Prompts" : "اقتراح أسئلة مخصصة"}</span>
+                  <span>💡 {"Mindfulness Prompts"}</span>
                 </button>
               </div>
 
@@ -795,7 +795,7 @@ export default function GratitudeJournal({
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
-                <span>🪄 {isEn ? "Generate Gratitude Card from Diaries" : "مولد بطاقات الامتنان الذكي من مذكراتي اليومية"}</span>
+                <span>🪄 {"Generate Gratitude Card from Diaries"}</span>
               </button>
             </div>
 
@@ -803,7 +803,7 @@ export default function GratitudeJournal({
             {aiLoading && (
               <div className="bg-white border border-[#E2DCC8]/50 p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 py-6">
                 <RefreshCw className="w-5 h-5 text-[#8B9D83] animate-spin" />
-                <span className="text-[10px] text-gray-500 font-bold">{isEn ? "Reviewing card deck and diary transcripts..." : "جاري قراءة مذكراتك وتحليل بطاقات رضاك وتوليد الدعم المعرفي..."}</span>
+                <span className="text-[10px] text-gray-500 font-bold">{"Reviewing card deck and diary transcripts..."}</span>
               </div>
             )}
 
@@ -819,13 +819,13 @@ export default function GratitudeJournal({
                   <div className="flex items-center justify-between pb-1.5 border-b border-amber-100">
                     <span className="text-[10px] font-bold text-amber-600 flex items-center space-x-1 space-x-reverse">
                       <span>🪄</span>
-                      <span>{isEn ? "AI-Suggested Gratitude Card" : "بطاقة امتنان مستخلصة بالذكاء الاصطناعي"}</span>
+                      <span>{"AI-Suggested Gratitude Card"}</span>
                     </span>
                     <button 
                       onClick={() => setProposedCard(null)}
                       className="text-gray-400 hover:text-gray-600 text-[10px] font-bold"
                     >
-                      {isEn ? 'Cancel' : 'إلغاء'}
+                      {'Cancel'}
                     </button>
                   </div>
                   
@@ -839,14 +839,14 @@ export default function GratitudeJournal({
                       onClick={handleAddProposedCard}
                       className="flex-1 py-1.5 px-3 bg-[#8B9D83] hover:bg-[#72856A] text-white text-[10px] font-extrabold rounded-xl transition-all cursor-pointer"
                     >
-                      {isEn ? 'Accept & Save Card ✓' : 'موافق، علّق البطاقة الآن 🌸'}
+                      {'Accept & Save Card ✓'}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAiAction('ai_generator')}
                       className="py-1.5 px-3 bg-gray-50 border border-gray-200 text-gray-500 hover:bg-gray-100 text-[10px] font-bold rounded-xl transition-all cursor-pointer"
                     >
-                      {isEn ? 'Try Another' : 'استخلص فكرة أخرى'}
+                      {'Try Another'}
                     </button>
                   </div>
                 </motion.div>
@@ -857,14 +857,14 @@ export default function GratitudeJournal({
             <div className="pt-2 border-t border-[#E2DCC8]/40 space-y-2">
               <label className="block text-[10px] font-extrabold text-[#5A5A40] flex items-center space-x-1 space-x-reverse">
                 <Brain className="w-3.5 h-3.5 text-[#8B9D83]" />
-                <span>{isEn ? "Ask Smart Advisor about your gratitude:" : "اطرح سؤالاً ذكياً مباشرًا على مستشارك حول امتنانك 🤖"}</span>
+                <span>{"Ask Smart Advisor about your gratitude:"}</span>
               </label>
               <form onSubmit={handleSendDirectQuestion} className="flex gap-1.5">
                 <input
                   type="text"
                   value={directQuestionText}
                   onChange={(e) => setDirectQuestionText(e.target.value)}
-                  placeholder={isEn ? "e.g., How can I stay grateful on tough days?" : "مثال: كيف أستثمر هذه الامتنانات لتقوية عزيمتي في الأيام الصعبة؟"}
+                  placeholder={"e.g., How can I stay grateful on tough days?"}
                   className="flex-1 bg-white border border-[#E2DCC8] focus:border-[#8B9D83] focus:ring-1 focus:ring-[#8B9D83] rounded-xl px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
                 />
                 <button
@@ -877,7 +877,7 @@ export default function GratitudeJournal({
                   ) : (
                     <>
                       <Send className="w-3 h-3 rotate-180" />
-                      <span>{isEn ? "Ask" : "إرسال"}</span>
+                      <span>{"Ask"}</span>
                     </>
                   )}
                 </button>
@@ -896,7 +896,7 @@ export default function GratitudeJournal({
                   <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                     <span className="text-[10px] font-extrabold text-[#8B9D83] flex items-center space-x-1 space-x-reverse">
                       <span>🧠</span>
-                      <span>{aiActionType === 'reflect' ? (isEn ? 'Gratitude Reflections' : 'تقرير التأمل الشعوري') : (isEn ? 'Mindful Prompts' : 'أسئلة تفكرية للامتنان')}</span>
+                      <span>{aiActionType === 'reflect' ? ('Gratitude Reflections') : ('Mindful Prompts')}</span>
                     </span>
                     <span className="text-[9px] text-gray-400">Gemini 3.5 Flash</span>
                   </div>
@@ -917,16 +917,16 @@ export default function GratitudeJournal({
                   </div>
                   <div>
                     <h4 className="text-xs font-extrabold text-[#3A3A3A]">
-                      {isEn ? "AI Gratitude History & Answers Log" : "سجل نتائج ومقترحات الذكاء الاصطناعي"}
+                      {"AI Gratitude History & Answers Log"}
                     </h4>
                     <p className="text-[10px] text-gray-400">
-                      {isEn ? "Saved reflections, answered questions, and generated cards" : "حفظ تلقائي لكافة التحليلات، الأسئلة والأجوبة، والبطاقات المولدة"}
+                      {"Saved reflections, answered questions, and generated cards"}
                     </p>
                   </div>
                 </div>
                 
                 <span className="text-[10px] font-extrabold bg-[#8B9D83]/15 text-[#5A5A40] px-2.5 py-0.5 rounded-full">
-                  {aiHistory.length} {isEn ? "saved" : "عنصر محفوظ"}
+                  {aiHistory.length} {"saved"}
                 </span>
               </div>
 
@@ -937,35 +937,35 @@ export default function GratitudeJournal({
                   onClick={() => setHistoryTab('all')}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${historyTab === 'all' ? 'bg-[#8B9D83] text-white shadow-2xs' : 'text-gray-500 hover:bg-white/60'}`}
                 >
-                  {isEn ? "All" : "الكل"} ({aiHistory.length})
+                  {"All"} ({aiHistory.length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setHistoryTab('reflect')}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${historyTab === 'reflect' ? 'bg-[#8B9D83] text-white shadow-2xs' : 'text-gray-500 hover:bg-white/60'}`}
                 >
-                  ✨ {isEn ? "Patterns" : "أنماط امتناني"} ({aiHistory.filter(h => h.type === 'reflect').length})
+                  ✨ {"Patterns"} ({aiHistory.filter(h => h.type === 'reflect').length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setHistoryTab('suggest')}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${historyTab === 'suggest' ? 'bg-[#8B9D83] text-white shadow-2xs' : 'text-gray-500 hover:bg-white/60'}`}
                 >
-                  💡 {isEn ? "Prompts & Answers" : "الأسئلة وإجاباتك"} ({aiHistory.filter(h => h.type === 'suggest').length})
+                  💡 {"Prompts & Answers"} ({aiHistory.filter(h => h.type === 'suggest').length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setHistoryTab('ai_generator')}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${historyTab === 'ai_generator' ? 'bg-[#8B9D83] text-white shadow-2xs' : 'text-gray-500 hover:bg-white/60'}`}
                 >
-                  🪄 {isEn ? "Cards" : "البطاقات المولدة"} ({aiHistory.filter(h => h.type === 'ai_generator').length})
+                  🪄 {"Cards"} ({aiHistory.filter(h => h.type === 'ai_generator').length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setHistoryTab('qa')}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${historyTab === 'qa' ? 'bg-[#8B9D83] text-white shadow-2xs' : 'text-gray-500 hover:bg-white/60'}`}
                 >
-                  🤖 {isEn ? "Consultations" : "استشارات خاصة"} ({aiHistory.filter(h => h.type === 'qa').length})
+                  🤖 {"Consultations"} ({aiHistory.filter(h => h.type === 'qa').length})
                 </button>
               </div>
 
@@ -973,9 +973,9 @@ export default function GratitudeJournal({
               {aiHistory.filter(item => historyTab === 'all' || item.type === historyTab).length === 0 ? (
                 <div className="bg-white/60 border border-dashed border-[#E2DCC8] rounded-2xl p-5 text-center text-gray-400 text-xs space-y-1">
                   <Sparkles className="w-6 h-6 mx-auto opacity-30 text-amber-500" />
-                  <p className="font-bold text-[#3A3A3A]">{isEn ? "No items saved in this category yet" : "لا توجد عناصر محفوظة في هذا التصنيف حتى الآن"}</p>
+                  <p className="font-bold text-[#3A3A3A]">{"No items saved in this category yet"}</p>
                   <p className="text-[10px] text-gray-400">
-                    {isEn ? "Click any AI button above to generate and automatically save insights & questions." : "اضغط على أزرار الذكاء الاصطناعي أعلاه للحصول على تحليلات وأسئلة وحفظها تلقائياً هنا."}
+                    {"Click any AI button above to generate and automatically save insights & questions."}
                   </p>
                 </div>
               ) : (
@@ -994,13 +994,13 @@ export default function GratitudeJournal({
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[9px] text-gray-400">
-                              {new Date(item.createdAt).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleDeleteHistoryItem(item.id)}
                               className="text-gray-300 hover:text-red-500 p-1 rounded-lg transition-colors cursor-pointer"
-                              title={isEn ? "Delete from history" : "حذف من السجل"}
+                              title={"Delete from history"}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1010,7 +1010,7 @@ export default function GratitudeJournal({
                         {/* Prompt or Question Context if available */}
                         {item.promptOrContext && (
                           <div className="bg-amber-50/60 border border-amber-100 rounded-xl p-2 text-[11px] text-amber-900 font-semibold">
-                            <span className="font-extrabold">{isEn ? "Query / Context: " : "السؤال / السياق: "}</span>
+                            <span className="font-extrabold">{"Query / Context: "}</span>
                             {item.promptOrContext}
                           </div>
                         )}
@@ -1026,11 +1026,11 @@ export default function GratitudeJournal({
                             <div className="flex items-center justify-between text-[10px] font-bold text-emerald-800">
                               <span className="flex items-center gap-1">
                                 <MessageSquare className="w-3 h-3 text-emerald-600" />
-                                <span>{isEn ? "Your Answer / Reflection:" : "إجابتك وتأملك الشخصي على هذا السؤال:"}</span>
+                                <span>{"Your Answer / Reflection:"}</span>
                               </span>
                               {item.userAnswer && (
                                 <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[9px] font-bold">
-                                  {isEn ? "Answered ✓" : "تمت الإجابة ✓"}
+                                  {"Answered ✓"}
                                 </span>
                               )}
                             </div>
@@ -1041,7 +1041,7 @@ export default function GratitudeJournal({
                                   rows={2}
                                   value={tempAnswerText}
                                   onChange={(e) => setTempAnswerText(e.target.value)}
-                                  placeholder={isEn ? "Write your thoughts and answer here..." : "اكتب إجابتك وتأملك هنا مستلهمة من هذا السؤال..."}
+                                  placeholder={"Write your thoughts and answer here..."}
                                   className="w-full bg-white border border-emerald-200 focus:border-emerald-500 rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none resize-none"
                                 />
                                 <div className="flex gap-1.5 justify-end">
@@ -1050,14 +1050,14 @@ export default function GratitudeJournal({
                                     onClick={() => setEditingAnswerId(null)}
                                     className="px-2.5 py-1 bg-gray-100 text-gray-500 text-[10px] font-bold rounded-lg cursor-pointer"
                                   >
-                                    {isEn ? "Cancel" : "إلغاء"}
+                                    {"Cancel"}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleSaveQuestionAnswer(item.id, tempAnswerText)}
                                     className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold rounded-lg cursor-pointer shadow-2xs"
                                   >
-                                    {isEn ? "Save Answer ✓" : "حفظ الإجابة وتأكيد الرضا ✓"}
+                                    {"Save Answer ✓"}
                                   </button>
                                 </div>
                               </div>
@@ -1075,7 +1075,7 @@ export default function GratitudeJournal({
                                   className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-1"
                                 >
                                   <Edit3 className="w-3 h-3" />
-                                  <span>{isEn ? "Edit Answer" : "تعديل الإجابة"}</span>
+                                  <span>{"Edit Answer"}</span>
                                 </button>
                               </div>
                             ) : (
@@ -1088,7 +1088,7 @@ export default function GratitudeJournal({
                                 className="w-full py-1.5 bg-white border border-emerald-200 hover:bg-emerald-100/50 text-emerald-700 rounded-xl text-[10px] font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1"
                               >
                                 <Edit3 className="w-3 h-3" />
-                                <span>{isEn ? "Answer this question now" : "أجب على هذا السؤال وسجل تأملك الآن"}</span>
+                                <span>{"Answer this question now"}</span>
                               </button>
                             )}
                           </div>
@@ -1096,54 +1096,54 @@ export default function GratitudeJournal({
 
                         {/* Export Toolbar */}
                         <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-gray-100">
-                          <span className="text-[10px] text-gray-400 font-bold ml-1">{isEn ? "Export to:" : "إضافة السجل إلى:"}</span>
+                          <span className="text-[10px] text-gray-400 font-bold ml-1">{"Export to:"}</span>
 
                           {/* Save to Gratitude Card */}
                           <button
                             type="button"
-                            onClick={() => handleExportToGratitudeCard(item.userAnswer ? `${item.content}\n\n${isEn ? 'My Answer:' : 'إجابتي:'} ${item.userAnswer}` : item.content)}
+                            onClick={() => handleExportToGratitudeCard(item.userAnswer ? `${item.content}\n\n${'My Answer:'} ${item.userAnswer}` : item.content)}
                             className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 text-amber-800 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1"
-                            title={isEn ? "Save as Gratitude Card on Wall" : "تعليق كبطاقة ملونة في جدار الامتنان"}
+                            title={"Save as Gratitude Card on Wall"}
                           >
                             <span>🌸</span>
-                            <span>{isEn ? "Gratitude Card" : "بطاقة امتنان"}</span>
+                            <span>{"Gratitude Card"}</span>
                           </button>
 
                           {/* Export to Daily Venting */}
                           <button
                             type="button"
-                            onClick={() => handleExportToDailyVenting(item.title, item.userAnswer ? `${isEn ? 'Gratitude Question:' : 'سؤال الامتنان:'} ${item.content}\n\n${isEn ? 'My Daily Reflection:' : 'تأملي وإجابتي اليومية:'}\n${item.userAnswer}` : item.content)}
+                            onClick={() => handleExportToDailyVenting(item.title, item.userAnswer ? `${'Gratitude Question:'} ${item.content}\n\n${'My Daily Reflection:'}\n${item.userAnswer}` : item.content)}
                             className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 text-emerald-800 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1"
-                            title={isEn ? "Append to Daily Venting Entries" : "إضافة إلى اليوميات"}
+                            title={"Append to Daily Venting Entries"}
                           >
                             <span>📖</span>
-                            <span>{isEn ? "Daily Venting" : "اليوميات"}</span>
+                            <span>{"Daily Venting"}</span>
                           </button>
 
                           {/* Export to Thoughts */}
                           <button
                             type="button"
-                            onClick={() => handleExportToThoughts(item.title, item.userAnswer ? `${isEn ? 'Mindful Thought:' : 'فكرة تفكرية:'} ${item.content}\n\n${isEn ? 'Positive Reflection:' : 'الخاطرة الإيجابية:'}\n${item.userAnswer}` : item.content)}
+                            onClick={() => handleExportToThoughts(item.title, item.userAnswer ? `${'Mindful Thought:'} ${item.content}\n\n${'Positive Reflection:'}\n${item.userAnswer}` : item.content)}
                             className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 border border-purple-200/60 text-purple-800 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer flex items-center gap-1"
-                            title={isEn ? "Save to Thoughts & Reflections" : "إضافة إلى الخواطر"}
+                            title={"Save to Thoughts & Reflections"}
                           >
                             <span>✍️</span>
-                            <span>{isEn ? "Thoughts & Diary" : "الخواطر"}</span>
+                            <span>{"Thoughts & Diary"}</span>
                           </button>
 
                           {/* Copy Text */}
                           <button
                             type="button"
                             onClick={() => {
-                              const fullText = item.userAnswer ? `${item.content}\n\n${isEn ? 'My Answer:' : 'إجابتي:'} ${item.userAnswer}` : item.content;
+                              const fullText = item.userAnswer ? `${item.content}\n\n${'My Answer:'} ${item.userAnswer}` : item.content;
                               navigator.clipboard.writeText(fullText);
-                              showToast(isEn ? "Copied to clipboard!" : "تم نسخ النص إلى الحافظة! 📋");
+                              showToast("Copied to clipboard!");
                             }}
                             className="px-2 py-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1"
-                            title={isEn ? "Copy text" : "نسخ النص"}
+                            title={"Copy text"}
                           >
                             <Copy className="w-3 h-3" />
-                            <span>{isEn ? "Copy" : "نسخ"}</span>
+                            <span>{"Copy"}</span>
                           </button>
                         </div>
                       </div>
@@ -1163,7 +1163,7 @@ export default function GratitudeJournal({
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <h3 className="font-extrabold text-[#3A3A3A] text-xs flex items-center space-x-1.5 space-x-reverse">
                 <Award className="w-4 h-4 text-[#8B9D83]" />
-                <span>{isEn ? "My Gratitude Wall & Happy Deck" : "جدار ممتناتي وبطاقات الرضا النفسي"}</span>
+                <span>{"My Gratitude Wall & Happy Deck"}</span>
               </h3>
               
               {/* Search input */}
@@ -1173,7 +1173,7 @@ export default function GratitudeJournal({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={isEn ? "Search positive cards..." : "ابحث في بطاقات امتنناك..."}
+                  placeholder={"Search positive cards..."}
                   className="w-full bg-[#F9F7F2] border border-[#E2DCC8]/80 focus:border-[#8B9D83] rounded-xl py-1.5 pl-3 pr-8 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none"
                 />
               </div>
@@ -1183,7 +1183,7 @@ export default function GratitudeJournal({
             <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-[#E2DCC8]/30">
               <span className="text-[10px] font-bold text-gray-400 ml-1.5 flex items-center gap-1">
                 <Filter className="w-3 h-3 text-gray-400" />
-                {isEn ? "Color Filter:" : "فلترة اللون:"}
+                {"Color Filter:"}
               </span>
               
               <button
@@ -1194,7 +1194,7 @@ export default function GratitudeJournal({
                     : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'
                 }`}
               >
-                {isEn ? "All" : "الكل"}
+                {"All"}
               </button>
 
                   {PASTEL_COLORS.map(col => {
@@ -1219,7 +1219,7 @@ export default function GratitudeJournal({
           {filteredCards.length === 0 ? (
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-12 text-center text-gray-400 text-sm">
               <Smile className="w-12 h-12 mx-auto mb-3 opacity-30 text-[#8B9D83]" />
-              <p className="font-extrabold text-[#3A3A3A]">{isEn ? "No matching gratitude cards" : "جدار ممتناتك لا يحتوي بطاقات تطابق بحثك!"}</p>
+              <p className="font-extrabold text-[#3A3A3A]">{"No matching gratitude cards"}</p>
               <p className="text-xs mt-1 text-gray-400">
                 {isEn 
                   ? "Try resetting filters or write your first positive card using the left panel."
@@ -1230,7 +1230,7 @@ export default function GratitudeJournal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AnimatePresence>
                 {filteredCards.map((card) => {
-                  const cardDate = new Date(card.createdAt).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', {
+                  const cardDate = new Date(card.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
@@ -1260,7 +1260,7 @@ export default function GratitudeJournal({
                               ? 'bg-amber-500 text-white animate-pulse'
                               : 'bg-white/85 hover:bg-amber-50 text-amber-700'
                           }`}
-                          title={isEn ? "Listen to Card" : "استماع للبطاقة بصوت واضح"}
+                          title={"Listen to Card"}
                         >
                           <Volume2 className="w-3 h-3" />
                         </button>
@@ -1270,7 +1270,7 @@ export default function GratitudeJournal({
                           type="button"
                           onClick={() => setCardToExport(card)}
                           className="p-1.5 bg-white/85 hover:bg-emerald-50 text-[#4E685B] hover:text-emerald-700 rounded-lg transition-colors cursor-pointer border border-[#E2DCC8]/40 shadow-3xs"
-                          title={isEn ? "Add to Journal" : "إضافة إلى اليوميات"}
+                          title={"Add to Journal"}
                         >
                           <BookmarkPlus className="w-3 h-3 text-[#4E685B]" />
                         </button>
@@ -1278,9 +1278,9 @@ export default function GratitudeJournal({
                         {/* Export Shareable Card Image Button */}
                         <button
                           type="button"
-                          onClick={() => onOpenShareModal?.({ text: card.text, category: isEn ? 'Daily Gratitude' : 'امتنان اليوم' })}
+                          onClick={() => onOpenShareModal?.({ text: card.text, category: 'Daily Gratitude' })}
                           className="p-1.5 bg-white/85 hover:bg-purple-50 text-purple-600 rounded-lg transition-colors cursor-pointer border border-[#E2DCC8]/40 shadow-3xs"
-                          title={isEn ? "Design Shareable Image Card" : "تصميم وتصدير بطاقة بصرية للنشر"}
+                          title={"Design Shareable Image Card"}
                         >
                           <Sparkles className="w-3 h-3 text-purple-600" />
                         </button>
@@ -1290,7 +1290,7 @@ export default function GratitudeJournal({
                           type="button"
                           onClick={() => handleCopyCard(card.id, card.text)}
                           className="p-1.5 bg-white/85 hover:bg-emerald-50 text-gray-500 hover:text-emerald-700 rounded-lg transition-colors cursor-pointer border border-[#E2DCC8]/40 shadow-3xs"
-                          title={isEn ? "Copy text" : "نسخ نص البطاقة"}
+                          title={"Copy text"}
                         >
                           {copiedCardId === card.id ? (
                             <Check className="w-3 h-3 text-emerald-600" />
@@ -1305,7 +1305,7 @@ export default function GratitudeJournal({
                           onClick={() => handleAnalyzeSingleCard(card.id, card.text)}
                           disabled={isAnalyzing}
                           className="p-1.5 bg-white/85 hover:bg-amber-50 text-amber-600 hover:text-amber-700 rounded-lg transition-colors cursor-pointer border border-[#E2DCC8]/40 shadow-3xs"
-                          title={isEn ? "Analyze psychological impact" : "تحليل طبي للأثر النفسي والبيوكيميائي للبطاقة"}
+                          title={"Analyze psychological impact"}
                         >
                           {isAnalyzing ? (
                             <RefreshCw className="w-3 h-3 animate-spin text-amber-500" />
@@ -1319,7 +1319,7 @@ export default function GratitudeJournal({
                           type="button"
                           onClick={() => handleDeleteCard(card.id)}
                           className="p-1.5 bg-white/85 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer border border-[#E2DCC8]/40 shadow-3xs"
-                          title={isEn ? "Delete Card" : "حذف البطاقة"}
+                          title={"Delete Card"}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -1343,7 +1343,7 @@ export default function GratitudeJournal({
                           >
                             <span className="font-extrabold text-amber-800 flex items-center space-x-1 space-x-reverse justify-end text-[9px]">
                               <span>🧠</span>
-                              <span>{isEn ? "Neurochemical Impact (Gemini):" : "الأثر الكيميائي العصبي (Gemini):"}</span>
+                              <span>{"Neurochemical Impact (Gemini):"}</span>
                             </span>
                             <p className="italic">"{analysisText}"</p>
                           </motion.div>
@@ -1376,12 +1376,12 @@ export default function GratitudeJournal({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               className={`w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl border ${randomCard.color}`}
-              dir={isEn ? "ltr" : "rtl"}
+              dir={"ltr"}
             >
               <div className="flex justify-between items-center border-b border-[#3A3A3A]/10 pb-3">
                 <span className="text-xs font-black text-[#5A5A40] flex items-center gap-1.5">
                   <Shuffle className="w-4 h-4 text-amber-600" />
-                  <span>{isEn ? "Random Memory Flashcard 🎰" : "ذكرى امتنان استرجاعية من أرشيفك 🎰"}</span>
+                  <span>{"Random Memory Flashcard 🎰"}</span>
                 </span>
                 <button
                   onClick={() => setRandomCard(null)}
@@ -1396,7 +1396,7 @@ export default function GratitudeJournal({
                   "{randomCard.text}"
                 </p>
                 <p className="text-[10px] text-gray-500 font-bold">
-                  🗓️ {new Date(randomCard.createdAt).toLocaleDateString(isEn ? 'en-US' : 'ar-SA', {
+                  🗓️ {new Date(randomCard.createdAt).toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -1406,7 +1406,7 @@ export default function GratitudeJournal({
               </div>
 
               <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-[11px] text-amber-900 leading-relaxed font-bold">
-                💡 {isEn ? "Remember: Re-visiting past gratitude triggers dopamine and reinforces peaceful emotional pathways!" : "تذكّر: إعادة استحضار لحظات الامتنان السابقة يرفع هرمون الدوبامين ويعزز مرونة دماغك العصبي ضد القلق والتفكير السلبي!"}
+                💡 {"Remember: Re-visiting past gratitude triggers dopamine and reinforces peaceful emotional pathways!"}
               </div>
 
               <div className="flex justify-between items-center pt-2">
@@ -1416,7 +1416,7 @@ export default function GratitudeJournal({
                   className="py-2 px-3 bg-white/80 hover:bg-white text-amber-700 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer border shadow-3xs"
                 >
                   <Volume2 className="w-3.5 h-3.5" />
-                  <span>{isEn ? "Listen 🔊" : "استمع للذكرى 🔊"}</span>
+                  <span>{"Listen 🔊"}</span>
                 </button>
 
                 <div className="flex gap-2">
@@ -1425,14 +1425,14 @@ export default function GratitudeJournal({
                     onClick={handleShowRandomMemory}
                     className="py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold cursor-pointer"
                   >
-                    {isEn ? "Another Memory 🎰" : "ذكرى أخرى 🎰"}
+                    {"Another Memory 🎰"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setRandomCard(null)}
                     className="py-2 px-4 bg-gray-200 text-gray-700 rounded-xl text-xs font-bold cursor-pointer"
                   >
-                    {isEn ? "Close" : "إغلاق"}
+                    {"Close"}
                   </button>
                 </div>
               </div>
@@ -1450,7 +1450,7 @@ export default function GratitudeJournal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-[#E2DCC8] space-y-4"
-              dir={isEn ? 'ltr' : 'rtl'}
+              dir={'ltr'}
             >
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -1459,10 +1459,10 @@ export default function GratitudeJournal({
                   </div>
                   <div>
                     <h4 className="font-extrabold text-[#2B3E50] text-sm sm:text-base">
-                      {isEn ? "Add to Journal" : "اختر القسم لإضافة هذا الامتنان إلى اليوميات"}
+                      {"Add to Journal"}
                     </h4>
                     <p className="text-[10px] text-gray-500 font-bold">
-                      {isEn ? "Select section to save as a new journal entry" : "حدد النوع لحفظ الامتنان في الخط الزمني مع بقاء الأصل"}
+                      {"Select section to save as a new journal entry"}
                     </p>
                   </div>
                 </div>
@@ -1483,7 +1483,7 @@ export default function GratitudeJournal({
               {/* 7 Journal Types Options */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black text-gray-600 block">
-                  {isEn ? "Choose Entry Type:" : "اختر نوع التدوينة:"}
+                  {"Choose Entry Type:"}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[40vh] overflow-y-auto pr-0.5">
                   {ALL_JOURNAL_TYPES.map((typeKey) => {
@@ -1498,10 +1498,10 @@ export default function GratitudeJournal({
                         <span className="text-xl shrink-0">{cfg.icon}</span>
                         <div className="min-w-0 flex-1">
                           <p className={`text-xs font-black truncate ${cfg.colorText}`}>
-                            {isEn ? cfg.labelEn : cfg.labelAr}
+                            {cfg.labelEn}
                           </p>
                           <p className="text-[9px] text-gray-500 font-medium truncate">
-                            {isEn ? cfg.descriptionEn : cfg.descriptionAr}
+                            {cfg.descriptionEn}
                           </p>
                         </div>
                       </button>
@@ -1516,7 +1516,7 @@ export default function GratitudeJournal({
                   onClick={() => setCardToExport(null)}
                   className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                 >
-                  {isEn ? "Cancel" : "إلغاء"}
+                  {"Cancel"}
                 </button>
               </div>
             </motion.div>

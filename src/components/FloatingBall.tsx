@@ -12,7 +12,6 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
   const [isOpen, setIsOpen] = useState(false);
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isEn = appLanguage === 'en';
 
   const toggleMenu = () => setIsOpen(!isOpen);
 

@@ -57,7 +57,6 @@ export default function BackupSyncModal({
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isEn = appLanguage === 'en';
 
   if (!isOpen) return null;
 
