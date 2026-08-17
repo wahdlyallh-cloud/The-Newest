@@ -29,7 +29,7 @@ export async function isBiometricsSupported(): Promise<{
   isNative?: boolean;
 }> {
   if (typeof window === 'undefined') {
-    return { supported: false, reason: 'البيئة غير متاحة' };
+    return { supported: false, reason: (t.environmentUnavailable || 'Environment unavailable') };
   }
 
   // 1. Native Capacitor Biometrics check
@@ -57,7 +57,7 @@ export async function isBiometricsSupported(): Promise<{
   if (!window.PublicKeyCredential) {
     return {
       supported: false,
-      reason: 'المتصفح الحالية لا يدعم تقنية WebAuthn / Passkey'
+      reason: (t.webAuthnUnsupported || 'WebAuthn/Passkey is not supported in this browser')
     };
   }
 
@@ -67,7 +67,7 @@ export async function isBiometricsSupported(): Promise<{
       if (!isAvailable) {
         return {
           supported: false,
-          reason: 'الجهاز الحالي لا يحوي مستشعر بصمة مفعّل أو غير متاح'
+          reason: (t.biometricSensorUnavailable || 'No biometric sensor detected or enabled on this device')
         };
       }
     }
@@ -75,7 +75,7 @@ export async function isBiometricsSupported(): Promise<{
   } catch {
     return {
       supported: false,
-      reason: 'تعذر الاتصال بمستشعر البصمة في هذا المتصفح'
+      reason: (t.biometricSensorConnectFailed || 'Unable to connect to biometric sensor in this browser')
     };
   }
 }
@@ -126,7 +126,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
         const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
         await BiometricAuth.authenticate({
           reason: t.biometricScanInstruction,
-          cancelTitle: 'إلغاء',
+          cancelTitle: t.cancelBtn || 'Cancel',
           allowDeviceCredential: true
         });
         return {
@@ -138,7 +138,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
         return {
           success: false,
           fallbackToPin: true,
-          infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+          infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
           error: nativeErr?.message || 'فشلت قراءة البصمة من النظام المحمول'
         };
       }
@@ -148,7 +148,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
       return {
         success: false,
         fallbackToPin: true,
-        infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+        infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
         error: check.reason || 'البيئة الحالية لا تدعم البصمة'
       };
     }
@@ -187,7 +187,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
       return {
         success: false,
         fallbackToPin: true,
-        infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+        infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
         error: t.biometricCanceled
       };
     }
@@ -200,7 +200,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
     return {
       success: false,
       fallbackToPin: true,
-      infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+      infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
       error: err?.name === 'NotAllowedError' ? 'تم رفض إذن البصمة أو البيئة المضمنة غير مسموحة' : err?.message
     };
   }
@@ -222,7 +222,7 @@ export async function verifyBiometrics(
         const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
         await BiometricAuth.authenticate({
           reason: t.biometricScanInstruction,
-          cancelTitle: 'إلغاء',
+          cancelTitle: t.cancelBtn || 'Cancel',
           allowDeviceCredential: true
         });
         return { success: true };
@@ -230,7 +230,7 @@ export async function verifyBiometrics(
         return {
           success: false,
           fallbackToPin: true,
-          infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+          infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
           error: e?.message
         };
       }
@@ -241,7 +241,7 @@ export async function verifyBiometrics(
       return {
         success: false,
         fallbackToPin: true,
-        infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+        infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
         error: check.reason
       };
     }
@@ -274,7 +274,7 @@ export async function verifyBiometrics(
       return {
         success: false,
         fallbackToPin: true,
-        infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
+        infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
         error: t.biometricCanceled
       };
     }
@@ -283,8 +283,8 @@ export async function verifyBiometrics(
     return {
       success: false,
       fallbackToPin: true,
-      infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
-      error: err?.message || 'خطأ في التحقق البيومتري'
+      infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
+      error: err?.message || (t.biometricsAuthFailed || 'Biometrics authentication error')
     };
   }
 }

@@ -499,7 +499,7 @@ export async function transcribeAudioWithGemini(
             }
           },
           {
-            text: 'قم بتفريغ هذا التسجيل الصوتي إلى نص عربي دقيق جداً. اكتب النص المفرغ فقط دون أي مقدمات أو شروحات.'
+            text: 'Transcribe this audio recording with extreme accuracy in the spoken language. Output only the transcription verbatim without introductory or closing remarks.'
           }
         ]
       }

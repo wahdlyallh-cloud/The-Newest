@@ -48,12 +48,15 @@ function getLanguageInstruction(langCode?: string): string {
     de: "German",
     fr: "French",
     es: "Spanish",
+    it: "Italian",
     tr: "Turkish",
-    ur: "Urdu",
-    hi: "Hindi",
-    id: "Indonesian"
+    pt: "Portuguese",
+    ru: "Russian",
+    ja: "Japanese",
+    zh: "Chinese",
+    hi: "Hindi"
   };
-  const targetName = langNames[code] || "Arabic";
+  const targetName = langNames[code] || "English";
   return `\n\nCRITICAL LANGUAGE MANDATE: You must generate all clinical analyses, chat responses, and CBT feedback strictly in ${targetName}. Translate all mood tags, insights, and recommendations completely to ${targetName}.`;
 }
 
@@ -584,7 +587,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       }
     }
 
-    const fallbackAnswer = getDynamicSmartAdvisorFallback(userQuery, reportType, diaries, books, gratitudeCards, habits);
+    const fallbackAnswer = getDynamicSmartAdvisorFallback(userQuery, reportType, diaries, books, gratitudeCards, habits, reqLang);
 
     try {
       let systemInstruction = `أنت المستشار الذكي الموحد في تطبيق 'حياة AI' (Unified Hayat AI Intelligence).
