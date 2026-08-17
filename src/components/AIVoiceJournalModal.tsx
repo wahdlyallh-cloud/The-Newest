@@ -154,13 +154,13 @@ export default function AIVoiceJournalModal({
           },
           onError: (e) => {
             if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-              setMicPermissionError(t.micPermissionDenied || 'Microphone permission denied. Please allow microphone access.');
+              setMicPermissionError(t.micPermissionDenied);
             }
           }
         }
       });
     } else {
-      setMicPermissionError(t.speechNotSupported || 'Live Speech Recognition is not supported in this browser.');
+      setMicPermissionError(t.speechNotSupported);
     }
   };
 
@@ -171,7 +171,7 @@ export default function AIVoiceJournalModal({
     const rawSpeechText = (SpeechRecognitionManager.getInstance().getFinalTranscript() || transcriptRef.current || transcript).trim();
 
     if (!rawSpeechText) {
-      alert(t.noSpeechDetected || 'No speech detected to analyze. Please speak clearly.');
+      alert(t.noSpeechDetected);
       setIsAnalyzing(false);
       return;
     }
@@ -214,7 +214,7 @@ Return pure JSON only in the following schema:
         } catch (_) {}
       }
 
-      const finalTitle = parsed?.title || `${t.voiceJournalTitle || 'Voice Journal'} - ${dayName} ${timeStr}`;
+      const finalTitle = parsed?.title || `${t.voiceJournalTitle} - ${dayName} ${timeStr}`;
       const finalCleanContent = parsed?.content || rawSpeechText;
       const finalMoods = Array.isArray(parsed?.moods) && parsed.moods.length > 0
         ? parsed.moods
@@ -231,7 +231,7 @@ Return pure JSON only in the following schema:
     } catch (err) {
       console.error('Error during voice analysis:', err);
       setProcessedResult({
-        title: `${t.voiceJournalTitle || 'Voice Journal'} - ${new Date().toLocaleTimeString(langInfo.bcp47, { hour: '2-digit', minute: '2-digit' })}`,
+        title: `${t.voiceJournalTitle} - ${new Date().toLocaleTimeString(langInfo.bcp47, { hour: '2-digit', minute: '2-digit' })}`,
         content: rawSpeechText,
         rawTranscript: rawSpeechText,
         moods: (appLanguage || 'ar') === 'ar' ? ['تأملي'] : ['Reflective'],
@@ -273,7 +273,7 @@ Return pure JSON only in the following schema:
       let audioRecordingsList: AudioRecording[] = [];
 
       if (audioBlobRef.current) {
-        await saveAttachmentBlob(attachmentId, audioBlobRef.current, audioBlobRef.current.type || 'audio/webm');
+        await saveAttachmentBlob(attachmentId, audioBlobRef.current, audioBlobRef.current.type);
         const blobUrl = URL.createObjectURL(audioBlobRef.current);
         const newAudioRec: AudioRecording = {
           id: `rec-${Date.now()}`,
@@ -307,7 +307,7 @@ Return pure JSON only in the following schema:
       onClose();
     } catch (err: any) {
       console.error('Error saving voice journal entry:', err);
-      alert(t.voiceSaveFailed || 'Failed to save voice entry. Please try again.');
+      alert(t.voiceSaveFailed);
     } finally {
       setIsSaving(false);
     }
@@ -327,10 +327,10 @@ Return pure JSON only in the following schema:
             </div>
             <div>
               <h3 className="font-black text-base sm:text-lg flex items-center gap-2">
-                <span>{t.voiceJournalTitle || 'AI Voice Journaling Assistant'}</span>
+                <span>{t.voiceJournalTitle}</span>
               </h3>
               <p className="text-xs text-purple-100/80 font-medium">
-                {t.voiceJournalSub || 'Speak freely & AI formats your voice into structured entries'}
+                {t.voiceJournalSub}
               </p>
             </div>
           </div>
@@ -356,7 +356,7 @@ Return pure JSON only in the following schema:
                   onClick={startRecording}
                   className="mt-1.5 px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-extrabold cursor-pointer"
                 >
-                  {t.requestMicPermission || '🎙️ Request Microphone Permission'}
+                  {t.requestMicPermission}
                 </button>
               </div>
             </div>
@@ -369,7 +369,7 @@ Return pure JSON only in the following schema:
                 <div className="flex items-center gap-2">
                   <span className="p-1.5 bg-[#6D5D6E]/15 text-[#6D5D6E] rounded-xl text-base">📂</span>
                   <h4 className="font-black text-sm text-[#2B3E50]">
-                    {t.chooseCategoryTitle || 'Choose Journal Category 📂'}
+                    {t.chooseCategoryTitle}
                   </h4>
                 </div>
                 <button
@@ -377,12 +377,12 @@ Return pure JSON only in the following schema:
                   onClick={() => setShowCategoryPicker(false)}
                   className="text-xs text-[#6D5D6E] font-bold hover:underline cursor-pointer"
                 >
-                  {t.back_btn || 'Back ↩️'}
+                  {t.back_btn}
                 </button>
               </div>
 
               <p className="text-xs text-[#5A5A40] leading-relaxed">
-                {t.chooseCategorySub || 'Select the Unified Journal type for this voice note to open it directly in the editor:'}
+                {t.chooseCategorySub}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
@@ -416,7 +416,7 @@ Return pure JSON only in the following schema:
               {isSaving && (
                 <div className="flex items-center justify-center gap-2 p-3 bg-white border border-[#E2DCC8] rounded-2xl text-xs text-[#6D5D6E] font-bold animate-pulse">
                   <RefreshCw className="w-4 h-4 animate-spin text-[#6D5D6E]" />
-                  <span>{t.savingEntry || 'Saving entry and opening editor...'}</span>
+                  <span>{t.savingEntry}</span>
                 </div>
               )}
             </div>
@@ -444,8 +444,8 @@ Return pure JSON only in the following schema:
                 <div>
                   <p className="font-extrabold text-sm text-[#2B3E50]">
                     {isRecording
-                      ? (t.voiceListening || 'Listening attentively...')
-                      : (t.voiceRecordBtn || 'Start Voice Recording 🎙️')}
+                      ? (t.voiceListening)
+                      : (t.voiceRecordBtn)}
                   </p>
                   {isRecording && (
                     <p className="text-xs font-mono font-black text-rose-600 mt-1">
@@ -468,8 +468,8 @@ Return pure JSON only in the following schema:
                       <span className="text-2xl animate-bounce">🎙️</span>
                       <span className="font-semibold text-xs text-gray-500">
                         {isRecording
-                          ? (t.listeningLivePrompt || 'Listening and typing live... Speak clearly now')
-                          : (t.voiceLivePlaceholder || 'Spoken words will appear here in real-time while speaking...')}
+                          ? (t.listeningLivePrompt)
+                          : (t.voiceLivePlaceholder)}
                       </span>
                     </div>
                   )}
@@ -480,7 +480,7 @@ Return pure JSON only in the following schema:
               {isAnalyzing && (
                 <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl flex items-center justify-center gap-2.5 text-xs text-purple-900 font-bold animate-pulse shadow-xs" dir={langInfo.dir}>
                   <RefreshCw className="w-4 h-4 animate-spin text-purple-700 shrink-0" />
-                  <span>{t.analyzingVoicePrompt || '⏳ Analyzing and formatting voice recording with AI...'}</span>
+                  <span>{t.analyzingVoicePrompt}</span>
                 </div>
               )}
 
@@ -490,10 +490,10 @@ Return pure JSON only in the following schema:
                   <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
                     <h4 className="font-extrabold text-xs text-emerald-950 flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-emerald-600" />
-                      <span>{t.aiFormattedResultTitle || 'AI Formatted Entry Result'}</span>
+                      <span>{t.aiFormattedResultTitle}</span>
                     </h4>
                     <span className="text-[10px] bg-emerald-200 text-emerald-900 font-black px-2 py-0.5 rounded-full">
-                      {t.readyToSaveBadge || 'Ready to save'}
+                      {t.readyToSaveBadge}
                     </span>
                   </div>
 
@@ -510,13 +510,13 @@ Return pure JSON only in the following schema:
                       {processedResult.sleepHours && (
                         <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {processedResult.sleepHours} {t.hoursUnit || 'hrs sleep'}
+                          {processedResult.sleepHours} {t.hoursUnit}
                         </span>
                       )}
                       {processedResult.sportsDuration && (
                         <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <Activity className="w-3 h-3" />
-                          {processedResult.sportsDuration} {t.minutesUnit || 'mins sports'}
+                          {processedResult.sportsDuration} {t.minutesUnit}
                         </span>
                       )}
                     </div>
@@ -540,7 +540,7 @@ Return pure JSON only in the following schema:
                   className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
                 >
                   <Sparkles className={`w-4 h-4 text-purple-200 ${isAnalyzing ? 'animate-spin' : ''}`} />
-                  <span>{isAnalyzing ? (t.analyzingVoice || 'Analyzing Voice...') : (t.voiceStopBtn || 'Analyze Voice ⏹️')}</span>
+                  <span>{isAnalyzing ? (t.analyzingVoice) : (t.voiceStopBtn)}</span>
                 </button>
               ) : (
                 <button
@@ -549,7 +549,7 @@ Return pure JSON only in the following schema:
                   className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all"
                 >
                   <Save className="w-4 h-4 text-emerald-100" />
-                  <span>{t.voiceSaveBtn || 'Save as Diary Entry 💾'}</span>
+                  <span>{t.voiceSaveBtn}</span>
                 </button>
               )}
             </>
@@ -560,7 +560,7 @@ Return pure JSON only in the following schema:
             onClick={onClose}
             className="px-4 py-2.5 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer mr-auto transition-colors"
           >
-            {t.closeBtn || 'Close'}
+            {t.closeBtn}
           </button>
         </div>
 

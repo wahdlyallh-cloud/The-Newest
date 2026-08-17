@@ -488,7 +488,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 className="py-2.5 px-4 rounded-2xl border border-[#E2DCC8] bg-white text-[#2B3E50] font-bold text-xs hover:bg-gray-50 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 {isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-                <span>{t.previousBtn || 'Previous'}</span>
+                <span>{t.previousBtn}</span>
               </button>
             ) : (
               <div />
@@ -509,7 +509,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleNext}
                 className="py-2.5 px-5 rounded-2xl bg-[#2B3E50] text-white font-bold text-xs hover:bg-[#1C2541] transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{isFirstStep ? ('Start Tour') : (t.nextBtn || 'Next')}</span>
+                <span>{isFirstStep ? ('Start Tour') : (t.nextBtn)}</span>
                 {isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
             )}

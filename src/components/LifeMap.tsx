@@ -34,9 +34,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'sleep',
         type: 'sleep',
-        title: t.sleepPeriodTitle || 'Sleep & Rest Period 💤',
+        title: t.sleepPeriodTitle,
         time: '08:00',
-        description: `${t.sleepLogged || 'Logged sleep & recovery duration:'} ${diaryToday.sleepHours} ${t.hoursUnit || 'hours'}.`,
+        description: `${t.sleepLogged} ${diaryToday.sleepHours} ${t.hoursUnit}.`,
         icon: 'moon'
       });
     }
@@ -49,9 +49,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
         events.push({
           id: `med-${med.id}`,
           type: 'medication',
-          title: `${t.medicationTrackTitle || 'Medication:'} ${med.name} 💊`,
+          title: `${t.medicationTrackTitle} ${med.name} 💊`,
           time: med.time || '10:00',
-          description: med.taken ? (t.medicationTakenBtn || 'Taken on time.') : (t.medicationPendingBtn || 'Pending / Not taken yet.'),
+          description: med.taken ? (t.medicationTakenBtn) : (t.medicationPendingBtn),
           icon: 'pill',
           moodColor: med.taken ? 'text-emerald-500' : 'text-amber-500'
         });
@@ -64,9 +64,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'sports',
         type: 'sports',
-        title: t.physicalActivityTitle || 'Physical Activity & De-stressing 🏃',
+        title: t.physicalActivityTitle,
         time: '17:30',
-        description: `${t.sportsDurationLogged || 'Logged workout activity for'} ${diaryToday.sportsDuration} ${t.minutesUnit || 'minutes'}.`,
+        description: `${t.sportsDurationLogged} ${diaryToday.sportsDuration} ${t.minutesUnit}.`,
         icon: 'sports'
       });
     }
@@ -84,9 +84,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'mood',
         type: 'mood',
-        title: t.moodStateTitle || 'Logged Mood & Emotion 🧠',
+        title: t.moodStateTitle,
         time: '19:00',
-        description: `${t.dominantMoods || 'Dominant moods:'} ${diaryToday.moods.join(' • ')}`,
+        description: `${t.dominantMoods} ${diaryToday.moods.join(' • ')}`,
         icon: 'mood'
       });
     }
@@ -95,9 +95,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
     events.push({
       id: 'note',
       type: 'note',
-      title: t.diaryEntryEventTitle || 'Diary Entry & Reflection 📝',
+      title: t.diaryEntryEventTitle,
       time: diaryToday.createdAt.split('T')[1]?.substring(0, 5) || '21:00',
-      description: `${t.writtenEntryDesc || 'Documented diary entry:'} "${diaryToday.title || t.untitledEntry || 'Untitled'}"`,
+      description: `${t.writtenEntryDesc} "${diaryToday.title || t.untitledEntry}"`,
       icon: 'note'
     });
   }
@@ -133,8 +133,8 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               <Brain className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-[#3A3A3A] text-base">{t.dailyLifeMapTitle || 'Daily Life Map & Indicators'}</h3>
-              <p className="text-xs text-gray-400">{t.dailyLifeMapSub || 'Integrated dashboard connecting behavioral habits to your mental well-being'}</p>
+              <h3 className="font-extrabold text-[#3A3A3A] text-base">{t.dailyLifeMapTitle}</h3>
+              <p className="text-xs text-gray-400">{t.dailyLifeMapSub}</p>
             </div>
           </div>
           <span className="text-xs bg-[#F9F7F2] text-[#5A5A40] border border-[#E2DCC8]/60 px-3 py-1.5 rounded-full font-bold self-start sm:self-auto">
@@ -150,12 +150,12 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               {/* Day Quality Indicator (Circular Gauge feel) */}
               <div className="bg-[#F9F7F2]/60 border border-[#E2DCC8]/50 rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5A5A40]">{t.dailyBalanceIndexLabel || 'Daily Balance Index:'}</span>
+                  <span className="text-xs font-bold text-[#5A5A40]">{t.dailyBalanceIndexLabel}</span>
                   <Sparkles className="w-4 h-4 text-[#D4A373] animate-pulse" />
                 </div>
                 <div className="flex items-baseline space-x-2 space-x-reverse">
                   <span className="text-4xl font-black text-[#8B9D83]">{balanceScore}%</span>
-                  <span className="text-xs text-gray-400 font-semibold">{t.excellentBalance || 'Balanced Day'}</span>
+                  <span className="text-xs text-gray-400 font-semibold">{t.excellentBalance}</span>
                 </div>
                 <div className="space-y-1.5">
                   <div className="w-full bg-gray-100 rounded-full h-2">
@@ -165,7 +165,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                     ></div>
                   </div>
                   <p className="text-[10px] text-gray-500 leading-relaxed">
-                    {t.balanceScoreCalculatedDesc || 'Calculated from sleep, sports, medication compliance, and daily reflections.'}
+                    {t.balanceScoreCalculatedDesc}
                   </p>
                 </div>
               </div>
@@ -176,11 +176,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Sleep Metrics */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>💤 {t.sleepQuality || 'Sleep Quality'}</span>
+                    <span>💤 {t.sleepQuality}</span>
                     <Moon className="w-4 h-4 text-blue-500" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {diaryToday.sleepHours ? `${diaryToday.sleepHours} ${t.hoursUnit || 'hours'}` : (t.notRecorded || 'Not logged')}
+                    {diaryToday.sleepHours ? `${diaryToday.sleepHours} ${t.hoursUnit}` : (t.notRecorded)}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${sleepProgress}%` }}></div>
@@ -190,11 +190,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Sports Metrics */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>🏃 {t.sportsActivity || 'Movement & Exercise'}</span>
+                    <span>🏃 {t.sportsActivity}</span>
                     <Activity className="w-4 h-4 text-emerald-500" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {diaryToday.sportsDuration ? `${diaryToday.sportsDuration} ${t.minutesUnit || 'minutes'}` : (t.noSportsLogged || 'No sports logged')}
+                    {diaryToday.sportsDuration ? `${diaryToday.sportsDuration} ${t.minutesUnit}` : (t.noSportsLogged)}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${sportsProgress}%` }}></div>
@@ -204,11 +204,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Medication Compliance */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>💊 {t.medicationAdherence || 'Medication Adherence'}</span>
+                    <span>💊 {t.medicationAdherence}</span>
                     <Pill className="w-4 h-4 text-[#D4A373]" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {medTotalCount > 0 ? `${medTakenCount} / ${medTotalCount}` : (t.noDosesToday || 'No doses today')}
+                    {medTotalCount > 0 ? `${medTakenCount} / ${medTotalCount}` : (t.noDosesToday)}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-[#D4A373] h-1.5 rounded-full" style={{ width: medTotalCount > 0 ? `${(medTakenCount / medTotalCount) * 100}%` : '0%' }}></div>

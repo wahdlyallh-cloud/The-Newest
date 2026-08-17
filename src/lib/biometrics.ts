@@ -125,7 +125,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
       try {
         const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
         await BiometricAuth.authenticate({
-          reason: t.biometricScanInstruction || 'تأكيد الهوية البيومترية لتأمين التطبيق',
+          reason: t.biometricScanInstruction,
           cancelTitle: 'إلغاء',
           allowDeviceCredential: true
         });
@@ -162,13 +162,13 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
       publicKey: {
         challenge,
         rp: {
-          name: t.appName || 'Hayat AI Pro',
+          name: t.appName,
           id: window.location.hostname
         },
         user: {
           id: userId,
           name: 'user@hayatai.app',
-          displayName: t.guestUser || 'Hayat AI User'
+          displayName: t.guestUser
         },
         pubKeyCredParams: [
           { alg: -7, type: 'public-key' },  // ES256
@@ -188,7 +188,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
         success: false,
         fallbackToPin: true,
         infoMessage: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي',
-        error: t.biometricCanceled || 'تم إلغاء قراءة البصمة'
+        error: t.biometricCanceled
       };
     }
 
@@ -221,7 +221,7 @@ export async function verifyBiometrics(
       try {
         const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
         await BiometricAuth.authenticate({
-          reason: t.biometricScanInstruction || 'تحقق البصمة',
+          reason: t.biometricScanInstruction,
           cancelTitle: 'إلغاء',
           allowDeviceCredential: true
         });

@@ -120,7 +120,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
                 type="button"
                 onClick={() => setStep('type_selection')}
                 className="p-1 hover:bg-white/10 rounded-full transition-all cursor-pointer ml-1"
-                title={t.back_btn || 'رجوع'}
+                title={t.back_btn}
               >
                 <ArrowRight className="w-5 h-5 text-white" />
               </button>
@@ -135,7 +135,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
               onClick={handleSubmit}
               className="bg-white/20 hover:bg-white/30 text-white font-bold text-xs px-4 py-1.5 rounded-xl transition-all cursor-pointer border border-white/30"
             >
-              {t.save_btn || 'حفظ'}
+              {t.save_btn}
             </button>
           ) : (
             <button

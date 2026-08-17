@@ -68,21 +68,21 @@ export function getMoodLabel(mood?: string, t?: any): string {
   if (!mood) return '';
   if (!t) return mood;
   const moodMap: Record<string, string> = {
-    'سعيد': t.mood_happy || 'Happy',
-    'سعيد جدًا': t.mood_very_happy || 'Very Happy',
-    'ممتن': t.mood_grateful || 'Grateful',
-    'مطمئن': t.mood_calm || 'Calm',
-    'أمل': t.mood_hopeful || 'Hopeful',
-    'مرتاح': t.mood_relaxed || 'Relaxed',
-    'حماس': t.mood_enthusiastic || 'Enthusiastic',
-    'متحمس': t.mood_excited || 'Excited',
-    'قلق': t.mood_anxious || 'Anxious',
-    'حزين': t.mood_sad || 'Sad',
-    'خوف': t.mood_afraid || 'Fearful',
-    'أرق': t.mood_insomnia || 'Insomnia',
-    'مرهق': t.mood_exhausted || 'Exhausted',
-    'غضب': t.mood_angry || 'Angry',
-    'طبيعي': t.mood_normal || 'Normal'
+    'سعيد': t.mood_happy,
+    'سعيد جدًا': t.mood_very_happy,
+    'ممتن': t.mood_grateful,
+    'مطمئن': t.mood_calm,
+    'أمل': t.mood_hopeful,
+    'مرتاح': t.mood_relaxed,
+    'حماس': t.mood_enthusiastic,
+    'متحمس': t.mood_excited,
+    'قلق': t.mood_anxious,
+    'حزين': t.mood_sad,
+    'خوف': t.mood_afraid,
+    'أرق': t.mood_insomnia,
+    'مرهق': t.mood_exhausted,
+    'غضب': t.mood_angry,
+    'طبيعي': t.mood_normal
   };
   return moodMap[mood] || mood;
 }
@@ -91,18 +91,18 @@ export function getTagLabel(tag?: string, t?: any): string {
   if (!tag) return '';
   if (!t) return tag;
   const tagMap: Record<string, string> = {
-    'دراسة': t.tag_study || 'Study',
-    'عائلة': t.tag_family || 'Family',
-    'أمل': t.tag_hope || 'Hope',
-    'أرق': t.tag_insomnia || 'Insomnia',
-    'قلق': t.tag_anxiety || 'Anxiety',
-    'تحدي': t.tag_challenge || 'Challenge',
-    'إنجاز': t.tag_achievement || 'Achievement',
-    'سعادة': t.tag_happiness || 'Happiness',
-    'قراءة': t.tag_reading || 'Reading',
-    'تأمل': t.tag_mindfulness || 'Mindfulness',
-    'عمل': t.tag_work || 'Work',
-    'رياضة': t.tag_sports || 'Sports'
+    'دراسة': t.tag_study,
+    'عائلة': t.tag_family,
+    'أمل': t.tag_hope,
+    'أرق': t.tag_insomnia,
+    'قلق': t.tag_anxiety,
+    'تحدي': t.tag_challenge,
+    'إنجاز': t.tag_achievement,
+    'سعادة': t.tag_happiness,
+    'قراءة': t.tag_reading,
+    'تأمل': t.tag_mindfulness,
+    'عمل': t.tag_work,
+    'رياضة': t.tag_sports
   };
   return tagMap[tag] || tag;
 }
@@ -3150,14 +3150,14 @@ export default function App() {
 
   // --- Permanent Delete ---
   const handlePermanentDeleteDiary = (id: string) => {
-    if (window.confirm(t.confirmDeletePermanent || 'Are you sure you want to delete this diary permanently?')) {
+    if (window.confirm(t.confirmDeletePermanent)) {
       setDiaries(prev => prev.filter(d => d.id !== id));
     }
   };
 
   // --- Empty Trash ---
   const handleEmptyTrash = () => {
-    if (window.confirm(t.confirmEmptyTrash || 'Are you sure you want to empty the trash? All deleted notes will be permanently lost.')) {
+    if (window.confirm(t.confirmEmptyTrash)) {
       setDiaries(prev => prev.filter(d => !d.isTrash));
     }
   };
@@ -4024,12 +4024,12 @@ export default function App() {
           return { ...prev, content: updatedContent };
         });
       } else {
-        const errMsg = t.aiTranscriptionUnavailable || 'AI transcription is currently unavailable for this audio file.';
+        const errMsg = t.aiTranscriptionUnavailable;
         updateAudioTranscriptionAtomic(newRecId, errMsg);
       }
     } catch (err: any) {
       console.error('Audio upload & transcribe error:', err);
-      updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable || 'AI transcription is currently unavailable.');
+      updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable);
     } finally {
       setAudioUploadLoading(false);
       setTranscribingAudioId(null);
@@ -4460,18 +4460,18 @@ export default function App() {
       return updated;
     });
     alert(
-      `${t.diariesImportSuccess || 'Successfully imported entries into your timeline! 🎉'} (${entries.length})`
+      `${t.diariesImportSuccess} (${entries.length})`
     );
   };
 
   const handleSendEmailBackup = async () => {
     if (!backupEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(backupEmail)) {
-      setEmailBackupStatus(t.invalidEmailError || 'Please enter a valid email address.');
+      setEmailBackupStatus(t.invalidEmailError);
       return;
     }
     
     setIsSendingEmailBackup(true);
-    setEmailBackupStatus(t.sendingEmailBackup || 'Sending backup to email...');
+    setEmailBackupStatus(t.sendingEmailBackup);
     
     try {
       const payload = {
@@ -4500,16 +4500,16 @@ export default function App() {
       const data = await response.json();
       if (data.success) {
         setEmailBackupStatus(
-          `${t.emailBackupSuccess || 'Backup successfully sent to'} ${backupEmail}! 🎉`
+          `${t.emailBackupSuccess} ${backupEmail}! 🎉`
         );
       } else {
         setEmailBackupStatus(
-          `${t.emailBackupFailed || 'Failed:'} ${data.message || 'Unknown error'}`
+          `${t.emailBackupFailed} ${data.message || 'Unknown error'}`
         );
       }
     } catch (error) {
       console.error("Email backup error:", error);
-      setEmailBackupStatus(t.serverError || 'Network error occurred.');
+      setEmailBackupStatus(t.serverError);
     } finally {
       setIsSendingEmailBackup(false);
     }
@@ -5120,7 +5120,7 @@ export default function App() {
               }}
               className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
               title={t('nav.dhikr_title')}
-              aria-label={t('nav.dhikr') || 'Dhikr'}
+              aria-label={t('nav.dhikr')}
             >
               <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
               <span>{t('nav.dhikr')}</span>
@@ -5263,8 +5263,8 @@ export default function App() {
                     ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
                     : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
                 }`}
-                title={t('nav.more_options') || 'More options & tools'}
-                aria-label={t('nav.more_options') || 'More options & tools'}
+                title={t('nav.more_options')}
+                aria-label={t('nav.more_options')}
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
@@ -5317,7 +5317,7 @@ export default function App() {
                   >
                     <div className="flex items-center gap-2">
                       <BellRing className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                      <span>{t('nav.smart_reminders') || 'Smart Reminders'}</span>
+                      <span>{t('nav.smart_reminders')}</span>
                     </div>
                     <span className="text-[10px] bg-[#8B9D83]/20 text-[#5A5A40] px-1.5 py-0.5 rounded-md font-bold">
                       {settings.reminders?.length || 0}
@@ -5335,7 +5335,7 @@ export default function App() {
                   >
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>{t('nav.rate_feedback') || 'Rate & Feedback'}</span>
+                      <span>{t('nav.rate_feedback')}</span>
                     </div>
                     <span className="text-[10px] text-gray-400">★ ★ ★ ★ ★</span>
                   </button>
@@ -5456,7 +5456,7 @@ export default function App() {
                     <Brain className="w-4 h-4 text-amber-300" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{t.predictiveTitle || 'Predictive Health 🔮'}</h4>
+                    <h4 className="font-extrabold text-xs truncate">{t.predictiveTitle}</h4>
                     <p className="text-[10px] text-blue-100/80 truncate">{t.predictiveSub}</p>
                   </div>
                 </div>
@@ -5473,7 +5473,7 @@ export default function App() {
                     <Mic className="w-4 h-4 text-purple-200" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{t.voiceJournalTitle || 'Voice Journaling 🎙️'}</h4>
+                    <h4 className="font-extrabold text-xs truncate">{t.voiceJournalTitle}</h4>
                     <p className="text-[10px] text-purple-100/80 truncate">{t.voiceJournalSub}</p>
                   </div>
                 </div>
@@ -5506,10 +5506,10 @@ export default function App() {
               <div className="space-y-1">
                 <h3 className="text-xs sm:text-sm font-black text-[#4E685B] flex items-center space-x-1.5 space-x-reverse">
                   <span>📅</span>
-                  <span>{t.fullCalendar || 'Full Calendar & Day View'}</span>
+                  <span>{t.fullCalendar}</span>
                 </h3>
                 <p className="text-[10px] sm:text-xs text-[#5A5A40]/80 leading-relaxed">
-                  {t.fullCalendarSub || 'Tap to browse diaries, books, and AI insights logged on any day'}
+                  {t.fullCalendarSub}
                 </p>
               </div>
               <div className="p-3 bg-white border border-[#E2DCC8] rounded-2xl text-rose-500 shadow-xs shrink-0 group-hover:scale-105 transition-transform flex items-center justify-center">
@@ -5698,10 +5698,10 @@ export default function App() {
                   </motion.div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 tracking-wider block">{t.streakTitle || 'Streak Tracker'}</span>
+                    <span className="text-[10px] font-bold text-gray-400 tracking-wider block">{t.streakTitle}</span>
                     <div className="flex items-baseline space-x-1 space-x-reverse">
                       <span className="text-2xl font-extrabold text-[#3A3A3A]">{streakInfo.currentStreak}</span>
-                      <span className="text-xs text-[#5A5A40] font-semibold">{t.dayStreak || 'Days'}</span>
+                      <span className="text-xs text-[#5A5A40] font-semibold">{t.dayStreak}</span>
                     </div>
                   </div>
                 </div>
@@ -5711,14 +5711,14 @@ export default function App() {
                   <p className="text-xs text-[#5A5A40] leading-relaxed font-medium">
                     {streakInfo.hasLoggedToday ? (
                       <span className="text-emerald-700 flex items-center space-x-1 space-x-reverse">
-                        <span>✨ {t.streakActiveMsg || 'Great job! You maintained your streak today.'}</span>
+                        <span>✨ {t.streakActiveMsg}</span>
                       </span>
                     ) : (
                       <span>
                         {streakInfo.currentStreak === 0 ? (
-                          t.streakInactiveZero || 'Start your streak today by logging a thought or habit.'
+                          t.streakInactiveZero
                         ) : (
-                          t.streakInactiveOneLeft || 'Keep the momentum going by writing an entry today.'
+                          t.streakInactiveOneLeft
                         )}
                       </span>
                     )}
@@ -5728,10 +5728,10 @@ export default function App() {
                 {/* Right Side: Quick Stats Badges */}
                 <div className="flex flex-col items-end justify-center shrink-0 border-r md:border-r border-t md:border-t-0 border-[#E2DCC8]/60 pt-3 md:pt-0 pr-4 md:pr-4 pl-4 md:pl-0">
                   <div className="text-right">
-                    <span className="text-[10px] text-gray-400 block font-medium">{t.longestStreak || 'Longest Streak:'}</span>
+                    <span className="text-[10px] text-gray-400 block font-medium">{t.longestStreak}</span>
                     <span className="text-sm font-bold text-[#8B9D83] flex items-center justify-end space-x-1 space-x-reverse">
                       <span>🏆</span>
-                      <span>{streakInfo.maxStreak} {t.daysUnit || 'Days'}</span>
+                      <span>{streakInfo.maxStreak} {t.daysUnit}</span>
                     </span>
                   </div>
                 </div>
@@ -5740,7 +5740,7 @@ export default function App() {
 
               {/* 7-Day Visual Calendar Tracker */}
               <div className="border-t border-[#E2DCC8]/50 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <span className="text-[10px] font-bold text-gray-400">{t.recentWeek || 'Recent Week Progress:'}</span>
+                <span className="text-[10px] font-bold text-gray-400">{t.recentWeek}</span>
                 <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto scrollbar-none pb-1">
                   {getWeekDays().map((day, idx) => {
                     // Check if diaries has an entry on this day
@@ -5770,7 +5770,7 @@ export default function App() {
 
             {/* Day Selector Calendar Matrix */}
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-4 shadow-xs space-y-3">
-              <span className="text-xs font-bold text-[#5A5A40] block mb-1">{t.selectDateTitle || 'Select a date to log or view activities:'}</span>
+              <span className="text-xs font-bold text-[#5A5A40] block mb-1">{t.selectDateTitle}</span>
               <div className="grid grid-cols-7 gap-2">
                 {getWeekDays().map((day, idx) => (
                   <button
@@ -5807,10 +5807,10 @@ export default function App() {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(`"${dailyQuote.quote}" - ${dailyQuote.author}`);
-                      alert(t.quoteCopiedAlert || 'Quote copied to clipboard! 🌸');
+                      alert(t.quoteCopiedAlert);
                     }}
                     className="p-2.5 bg-white border border-[#E2DCC8] hover:border-[#D4A373] text-[#5A5A40] rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-center"
-                    title={t.copyQuoteTooltip || 'Copy quote'}
+                    title={t.copyQuoteTooltip}
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -5866,11 +5866,11 @@ export default function App() {
                     <span className="text-xs text-[#D4A373] font-bold block">
                       {(() => {
                         const score = activeDiaryForSelectedDate?.fastMoodScore || 5;
-                        if (score <= 2) return t.moodDistress || 'Severe distress 😭';
-                        if (score <= 4) return t.moodAnxious || 'Anxious & overthinking 😞';
-                        if (score <= 6) return t.moodStable || 'Stable & neutral mood 😐';
-                        if (score <= 8) return t.moodContent || 'Content & peaceful 😊';
-                        return t.moodJoyful || 'Joyful & high energy! 🤩';
+                        if (score <= 2) return t.moodDistress;
+                        if (score <= 4) return t.moodAnxious;
+                        if (score <= 6) return t.moodStable;
+                        if (score <= 8) return t.moodContent;
+                        return t.moodJoyful;
                       })()}
                     </span>
                   </div>
@@ -5964,10 +5964,10 @@ export default function App() {
 
                     <div className="text-center sm:text-right">
                       <span className="text-xs font-bold text-[#5A5A40]">
-                        {t.waterConsumed} <span className="font-mono text-base text-[#3399FF] font-extrabold">{activeDiaryForSelectedDate?.waterCups || 0}</span> {t('ofEightCups', { total: 8 }) || 'of 8 cups'} ({(activeDiaryForSelectedDate?.waterCups || 0) * 0.25} {t.litersUnit || 'L'})
+                        {t.waterConsumed} <span className="font-mono text-base text-[#3399FF] font-extrabold">{activeDiaryForSelectedDate?.waterCups || 0}</span> {t('ofEightCups', { total: 8 }) || 'of 8 cups'} ({(activeDiaryForSelectedDate?.waterCups || 0) * 0.25} {t.litersUnit})
                       </span>
                       <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
-                        {(activeDiaryForSelectedDate?.waterCups || 0) >= 8 ? (t.hydrationGoalReached || '🏆 Excellent! Daily hydration target reached!') : (t.waterRemaining || '💡 A few cups left to reach your goal.')}
+                        {(activeDiaryForSelectedDate?.waterCups || 0) >= 8 ? (t.hydrationGoalReached) : (t.waterRemaining)}
                       </p>
                     </div>
                   </div>
@@ -6502,9 +6502,9 @@ export default function App() {
                 {/* شريط اختيار نوع التدوينة الموحد (Horizontal Scrollable Type Selector) */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-[#5A5A40]">{t.entryClassificationLabel || 'Entry Classification:'}</label>
+                    <label className="block text-xs font-bold text-[#5A5A40]">{t.entryClassificationLabel}</label>
                     <span className="text-[10px] font-bold text-gray-400">
-                      {t.scrollHint || 'Scroll ↔'}
+                      {t.scrollHint}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full max-w-full">
@@ -6626,11 +6626,11 @@ export default function App() {
                           const todayStr = new Date().toISOString().split('T')[0];
                           const todaysCards = gratitudeCards.filter(c => c.createdAt.startsWith(todayStr));
                           if (todaysCards.length > 0) {
-                            const formatted = `\n\n🌸 ${t.importGratitudeTitle || "Gratitude Moments"}:\n` + todaysCards.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
+                            const formatted = `\n\n🌸 ${t.importGratitudeTitle}:\n` + todaysCards.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
                             setEditingDiary(prev => prev ? { ...prev, content: prev.content + formatted } : null);
                           } else {
                             const lastThree = gratitudeCards.slice(0, 3);
-                            const formatted = `\n\n🌸 ${t.importGratitudeTitle || "Gratitude Moments"}:\n` + lastThree.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
+                            const formatted = `\n\n🌸 ${t.importGratitudeTitle}:\n` + lastThree.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
                             setEditingDiary(prev => prev ? { ...prev, content: prev.content + formatted } : null);
                           }
                         }}
@@ -6665,7 +6665,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      title={t.boldTooltip || "Bold"}
+                      title={t.boldTooltip}
                       onClick={() => insertFormatting('**', '**')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
@@ -6673,7 +6673,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title={t.italicTooltip || "Italic"}
+                      title={t.italicTooltip}
                       onClick={() => insertFormatting('*', '*')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
@@ -6681,7 +6681,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title={t.underlineTooltip || "Underline"}
+                      title={t.underlineTooltip}
                       onClick={() => insertFormatting('<u>', '</u>')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
@@ -6689,7 +6689,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title={t.strikethroughTooltip || "Strikethrough"}
+                      title={t.strikethroughTooltip}
                       onClick={() => insertFormatting('~~', '~~')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
                     >
@@ -6700,7 +6700,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      title={t.h1Tooltip || "Heading 1"}
+                      title={t.h1Tooltip}
                       onClick={() => insertFormatting('\n# ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer flex-shrink-0"
                     >
@@ -6708,7 +6708,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title={t.h2Tooltip || "Heading 2"}
+                      title={t.h2Tooltip}
                       onClick={() => insertFormatting('\n## ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0"
                     >
@@ -6717,7 +6717,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      title={t.quoteTooltip || "Quote"}
+                      title={t.quoteTooltip}
                       onClick={() => insertFormatting('\n> ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0"
                     >
@@ -6725,23 +6725,23 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      title={t.bulletListTooltip || "Bullet List"}
+                      title={t.bulletListTooltip}
                       onClick={() => insertFormatting('\n- ')}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0 whitespace-nowrap"
                     >
-                      • {t.bulletListLabel || "List"}
+                      • {t.bulletListLabel}
                     </button>
 
                     <div className="h-4 w-px bg-[#E2DCC8] mx-0.5" />
 
                     <button
                       type="button"
-                      title={t.fontColorsTooltip || "Font Colors"}
+                      title={t.fontColorsTooltip}
                       onClick={() => setShowColorPalette(!showColorPalette)}
                       className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-amber-800 flex items-center space-x-1 space-x-reverse cursor-pointer flex-shrink-0 whitespace-nowrap"
                     >
                       <span>🎨</span>
-                      <span>{t.fontColorsBtn || "Font Colors"}</span>
+                      <span>{t.fontColorsBtn}</span>
                     </button>
 
                     <button
@@ -7327,7 +7327,7 @@ export default function App() {
                     {audioUploadLoading && (
                       <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold col-span-full animate-pulse shadow-sm" dir={langInfo.dir}>
                         <RefreshCw className="w-4 h-4 animate-spin text-emerald-700 shrink-0" />
-                        <span>⏳ {t.aiTranscriptionLoading || 'جاري تفريغ التسجيل بالذكاء الاصطناعي بدقة عالية...'}</span>
+                        <span>⏳ {t.aiTranscriptionLoading}</span>
                       </div>
                     )}
 
@@ -7687,7 +7687,7 @@ export default function App() {
                                     value={editingTranscriptText}
                                     onChange={(e) => setEditingTranscriptText(e.target.value)}
                                     rows={3}
-                                    placeholder={t.typeVoiceTranscriptPlaceholder || "اكتب النص المفرغ الصوتي هنا..."}
+                                    placeholder={t.typeVoiceTranscriptPlaceholder}
                                     className="w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-xl p-2.5 text-xs text-[#3A3A3A] leading-relaxed resize-y font-medium shadow-2xs"
                                     dir={langInfo.dir}
                                     autoFocus
@@ -7880,7 +7880,7 @@ export default function App() {
                           <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                             🎨
                           </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.bgColorIcon || 'Background Color'}</span>
+                          <span className="text-xs font-bold text-[#3A3A3A]">{t.bgColorIcon}</span>
                         </button>
 
                         {/* 4. إرفاق ملف (Attach File) */}
@@ -7891,7 +7891,7 @@ export default function App() {
                           <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                             📎
                           </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.attachFileIcon || 'Attach File'}</span>
+                          <span className="text-xs font-bold text-[#3A3A3A]">{t.attachFileIcon}</span>
                           <input
                             type="file"
                             accept="*/*"
@@ -8109,7 +8109,7 @@ export default function App() {
                           disabled={aiWriterLoading}
                           className="absolute left-1.5 top-1.5 bottom-1.5 px-3 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-bold rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
                         >
-                          {aiWriterLoading ? (t.generatingAiText || 'Generating...') : (t.sendPromptBtn || 'Send ✨')}
+                          {aiWriterLoading ? (t.generatingAiText) : (t.sendPromptBtn)}
                         </button>
                       </div>
 
@@ -8165,7 +8165,7 @@ export default function App() {
                                   onClick={handleCopyAiNote}
                                   className="flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-[11px] cursor-pointer transition-all text-center"
                                 >
-                                  {copiedAiText ? (t.copiedTextSuccess || '✓ Copied text') : (t.copyTextBtn || '📋 Copy text')}
+                                  {copiedAiText ? (t.copiedTextSuccess) : (t.copyTextBtn)}
                                 </button>
                                 <button
                                   type="button"
@@ -8182,11 +8182,11 @@ export default function App() {
                             <span className="text-[11px] font-extrabold text-gray-400 block">{t.quickPromptSuggestionsTitle}</span>
                             <div className="space-y-2">
                               {[
-                                { id: 'health', icon: '💡', title: t.promptHealthTitle || 'Health Tips', prompt: t.promptHealthText || 'Generate daily health and psychological tips' },
-                                { id: 'article', icon: '📝', title: t.promptArticleTitle || 'Write an Article', prompt: t.promptArticleText || 'Write an inspiring article on the benefits of journaling and inner peace' },
-                                { id: 'future', icon: '🚀', title: t.promptFutureTitle || 'Future Trends', prompt: t.promptFutureText || 'Future trends and flexible adaptation with technology' },
-                                { id: 'marketing', icon: '🎧', title: t.promptMarketingTitle || 'Marketing & Customer Care', prompt: t.promptMarketingText || 'Modern marketing and empathy-based customer service' },
-                                { id: 'projects', icon: '🎯', title: t.promptProjectsTitle || 'Project Management', prompt: t.promptProjectsText || 'A practical guide to project management and breaking down goals' },
+                                { id: 'health', icon: '💡', title: t.promptHealthTitle, prompt: t.promptHealthText },
+                                { id: 'article', icon: '📝', title: t.promptArticleTitle, prompt: t.promptArticleText },
+                                { id: 'future', icon: '🚀', title: t.promptFutureTitle, prompt: t.promptFutureText },
+                                { id: 'marketing', icon: '🎧', title: t.promptMarketingTitle, prompt: t.promptMarketingText },
+                                { id: 'projects', icon: '🎯', title: t.promptProjectsTitle, prompt: t.promptProjectsText },
                               ].map((item) => (
                                 <button
                                   key={item.id}
@@ -8250,7 +8250,7 @@ export default function App() {
                             {msg.text}
                           </div>
                           <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
-                            {msg.sender === 'user' ? (t.meLabel || "Me") : (t.aiPsychAdvisor || "AI Counselor")} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
+                            {msg.sender === 'user' ? (t.meLabel) : (t.aiPsychAdvisor)} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
                           </span>
                         </div>
                       ))
@@ -8351,7 +8351,7 @@ export default function App() {
                         className="flex-1 sm:flex-initial px-3.5 py-2 text-xs font-black text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5 space-x-reverse"
                       >
                         <Archive className="w-4 h-4 text-amber-700" />
-                        <span>{editingDiary.isArchived ? (t.restoreAction || 'Restore') : (t.archiveAction || 'Archive 📥')}</span>
+                        <span>{editingDiary.isArchived ? (t.restoreAction) : (t.archiveAction)}</span>
                       </button>
                     )}
 
@@ -8517,7 +8517,7 @@ export default function App() {
                         }`}
                       >
                         <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                        <span className="whitespace-nowrap">{t.favoritesLabel || "Favorites ⭐"}</span>
+                        <span className="whitespace-nowrap">{t.favoritesLabel}</span>
                       </button>
                     </div>
                     
@@ -8629,7 +8629,7 @@ export default function App() {
                         ) : (
                           <>
                             <p className="font-bold text-[#3A3A3A]">{t.noMatchingDiariesNow}</p>
-                            <p className="text-xs mt-1 text-gray-400">{t.clickWriteNewNotePrompt || "Click 'Write New Entry' to start expressing yourself!"}</p>
+                            <p className="text-xs mt-1 text-gray-400">{t.clickWriteNewNotePrompt}</p>
                           </>
                         )}
                       </div>
@@ -8668,7 +8668,7 @@ export default function App() {
                               </div>
 
                               <span className="text-[10px] md:text-xs font-bold text-[#5A5A40] bg-[#F9F7F2] border border-[#E2DCC8]/60 px-3 py-1 rounded-xl self-start sm:self-auto">
-                                <span>{dayEntries.length} {t.subNotesCount || 'sub-entries'}</span>
+                                <span>{dayEntries.length} {t.subNotesCount}</span>
                               </span>
                             </div>
 
@@ -8698,7 +8698,7 @@ export default function App() {
                                         {/* Direct Favorite Toggle Button */}
                                         <button
                                           type="button"
-                                          title={diary.isFavorite ? (t.removeFromFavorites || "Remove from Favorites ⭐") : (t.addToFavorites || "Add to Favorites ⭐")}
+                                          title={diary.isFavorite ? (t.removeFromFavorites) : (t.addToFavorites)}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             toggleFavoriteDiary(diary.id);
@@ -8731,7 +8731,7 @@ export default function App() {
                                         {/* Archive Button */}
                                         <button
                                           type="button"
-                                          title={t.archiveAction || "Archive Note"}
+                                          title={t.archiveAction}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             toggleArchiveDiary(diary.id);
@@ -8745,7 +8745,7 @@ export default function App() {
                                         {/* Move to Trash Button */}
                                         <button
                                           type="button"
-                                          title={t.moveToTrash || "Move to Trash"}
+                                          title={t.moveToTrash}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleDeleteDiary(diary.id);
@@ -8782,7 +8782,7 @@ export default function App() {
                                           );
                                         })()}
                                         <h4 className="font-extrabold text-[#3A3A3A] text-xs md:text-sm line-clamp-1">
-                                          {diary.title || t.subNoteDefaultTitle || "Sub-entry"}
+                                          {diary.title || t.subNoteDefaultTitle}
                                         </h4>
                                       </div>
                                       
@@ -9762,7 +9762,7 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         triggerLockScreenNotification();
-                        alert('📌 ' + (t('lockScreenAlertSuccess') || 'Lock screen widget pinned successfully!'));
+                        alert('📌 ' + (t('lockScreenAlertSuccess')));
                       }}
                       className="px-3.5 py-1.5 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center gap-1.5 active:scale-95"
                     >
@@ -9858,7 +9858,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => {
-                        alert(`💡 ${t('pwaInstructionTitle') || 'How to hide browser bar permanently?'}\n\n1. ${t('pwaStep1') || 'Open browser menu (⋮) or Share button.'}\n2. ${t('pwaStep2') || "Select 'Add to Home Screen'."}\n3. ${t('pwaStep3') || 'The app will install as a standalone PWA without address bar!'}`);
+                        alert(`💡 ${t('pwaInstructionTitle')}\n\n1. ${t('pwaStep1')}\n2. ${t('pwaStep2')}\n3. ${t('pwaStep3')}`);
                       }}
                       className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-900 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1"
                     >
@@ -9976,7 +9976,7 @@ export default function App() {
             type="button"
             onClick={revealBottomNavTemporarily}
             className="flex items-center space-x-2 space-x-reverse px-3.5 py-1.5 bg-[#4E685B] text-white rounded-full shadow-xl border border-white/40 active:scale-95 transition-all cursor-pointer group"
-            title={t.showBottomMenuTooltip || "Tap to show bottom menu"}
+            title={t.showBottomMenuTooltip}
           >
             <Compass className="w-4 h-4 text-[#FEFAE0] animate-pulse shrink-0" />
             <span className="text-[11px] font-black tracking-tight">
@@ -10174,7 +10174,7 @@ export default function App() {
         onSaveDiary={async (entry) => {
           const fullEntry: DiaryEntry = {
             id: `diary-${Date.now()}`,
-            title: entry.title || t.voiceDiaryDefaultTitle || "Voice Diary Entry",
+            title: entry.title || t.voiceDiaryDefaultTitle,
             content: entry.content || '',
             createdAt: entry.createdAt || new Date().toISOString(),
             updatedAt: entry.updatedAt || new Date().toISOString(),
@@ -10309,7 +10309,7 @@ export default function App() {
               <div className="bg-[#FCF5DE] border border-[#E9E1C4] p-3.5 rounded-2xl text-xs text-[#8C661D] font-bold space-y-1">
                 <div className="flex items-center gap-1 text-[#A67E2E]">
                   <Sparkles className="w-4 h-4" />
-                  <span>{t.motivationalNoteForYou || "Motivational note for you:"}</span>
+                  <span>{t.motivationalNoteForYou}</span>
                 </div>
                 <p className="leading-relaxed italic text-sm">
                   "{triggeredReminder.motivationalNote}"
@@ -10326,13 +10326,13 @@ export default function App() {
                 }}
                 className="flex-1 py-2.5 bg-[#4E685B] text-white font-bold text-xs rounded-xl hover:bg-[#3F5449] transition-all cursor-pointer shadow-xs text-center"
               >
-                {t.goToJournal || "Go to Journal ✍️"}
+                {t.goToJournal}
               </button>
               <button
                 onClick={() => setTriggeredReminder(null)}
                 className="px-4 py-2.5 bg-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-300 transition-all cursor-pointer"
               >
-                {t.okThanks || "OK, Thanks"}
+                {t.okThanks}
               </button>
             </div>
           </div>
@@ -10358,12 +10358,12 @@ export default function App() {
                   📓
                 </div>
                 <div>
-                  <h1 className="text-xl font-black text-[#8B9D83] tracking-wide">{t.hayatAi || "Hayat AI"}</h1>
+                  <h1 className="text-xl font-black text-[#8B9D83] tracking-wide">{t.hayatAi}</h1>
                   <p className="text-[10px] text-gray-400 font-bold mt-0.5">سجل المذكرات والفضفضة النفسية الآمن</p>
                 </div>
               </div>
               <div className="text-left">
-                <div className="text-[10px] text-gray-400 font-bold">{t.exportDateTitle || 'Export Date:'}</div>
+                <div className="text-[10px] text-gray-400 font-bold">{t.exportDateTitle}</div>
                 <div className="text-xs text-gray-600 font-bold mt-1" style={{ direction: 'ltr' }}>
                   {formatDateTime(new Date(), settings?.appLanguage || 'ar')}
                 </div>
@@ -10376,7 +10376,7 @@ export default function App() {
               {/* Note Metadata Block */}
               <div className="bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl p-6 grid grid-cols-3 gap-4">
                 <div>
-                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.entryDateLabel || 'Entry Date:'}</span>
+                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.entryDateLabel}</span>
                   <span className="text-xs text-[#3A3A3A] font-extrabold">
                     {formatDate(editingDiary.createdAt, settings?.appLanguage || 'ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
@@ -10488,7 +10488,7 @@ export default function App() {
                 "إن كتابة اليوميات والوعي بالمشاعر هو أولى خطوات التوازن النفسي والسلام الداخلي."
               </p>
               <div className="text-[9px] text-gray-400 font-bold flex items-center space-x-1.5 space-x-reverse mt-2">
-                <span>{t.hayatAiApp || "Hayat AI App"}</span>
+                <span>{t.hayatAiApp}</span>
                 <span>•</span>
                 <span>تصدير آمن للمعلومات الشخصية</span>
                 <span>•</span>
@@ -12040,7 +12040,7 @@ export default function App() {
               }}
               className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer"
             >
-              {t.undoBtn || "تراجع (Undo)"}
+              {t.undoBtn}
             </button>
             <button
               type="button"

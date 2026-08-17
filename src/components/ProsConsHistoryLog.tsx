@@ -116,18 +116,18 @@ export default function ProsConsHistoryLog({
 
   // Delete Record
   const handleDeleteRecord = (dayKey: string) => {
-    if (window.confirm(t.confirmDeleteProsCons || "Are you sure you want to delete this Pros & Cons record?")) {
+    if (window.confirm(t.confirmDeleteProsCons)) {
       const updated = records.filter(r => r.dayKey !== dayKey);
       saveAllProsConsRecords(updated);
       setRecords(updated);
-      showToast(t.prosConsDeleted || 'Daily record deleted successfully.');
+      showToast(t.prosConsDeleted);
     }
   };
 
   // Master Export All to Word
   const handleExportAllWord = () => {
     if (records.length === 0) {
-      alert(t.noProsConsToExport || 'No records logged yet for export.');
+      alert(t.noProsConsToExport);
       return;
     }
 
@@ -166,7 +166,7 @@ export default function ProsConsHistoryLog({
     link.download = isAr ? "سجل_الإيجابيات_والسلبيات_الشامل.doc" : "Pros_and_Cons_Comprehensive_Log.doc";
     link.click();
     URL.revokeObjectURL(url);
-    showToast(t.exportedWordSuccess || 'Exported full record as Word document 📝');
+    showToast(t.exportedWordSuccess);
   };
 
   return (

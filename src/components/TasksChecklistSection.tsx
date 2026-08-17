@@ -94,7 +94,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     mind: t('catMindMeditation'),
     sport: t('catSportActivity'),
     culture: t('catCultureReading'),
-    custom: t('customGoals') || 'Other Goals 🎯'
+    custom: t('customGoals')
   };
   // Sub-view inside Tasks & Activities
   const [subView, setSubView] = useState<'daily_checklist' | 'habits_matrix' | 'habit_settings'>('daily_checklist');
@@ -176,8 +176,8 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     setShowWaterReminderModal(true);
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        new Notification(t.waterReminderNotifTitle || '💧 Time to Hydrate!', {
-          body: t.waterReminderNotifBody || 'Gentle reminder: Drink a glass of water for health and mental focus.',
+        new Notification(t.waterReminderNotifTitle, {
+          body: t.waterReminderNotifBody,
           tag: 'water-reminder'
         });
       } catch (e) {
@@ -198,10 +198,10 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           console.error(e);
         }
       }
-      showToast(t.waterReminderEnabledToast || 'Hourly water reminders enabled 💧⏰');
+      showToast(t.waterReminderEnabledToast);
       setTimeout(() => triggerWaterReminder(), 400);
     } else {
-      showToast(t.waterReminderDisabledToast || 'Water reminders disabled 🔕');
+      showToast(t.waterReminderDisabledToast);
     }
   };
 
@@ -248,7 +248,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
       totalCupsDrunk += cups;
       last7Days.push({
         dateStr,
-        dayLabel: i === 0 ? (t.today || 'Today') : dayName,
+        dayLabel: i === 0 ? (t.today) : dayName,
         cups,
         target: targetPerDay
       });
@@ -280,18 +280,18 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
   const handleStartWorkoutTimer = () => {
     setIsWorkoutTimerRunning(true);
-    showToast(t.workoutTimerStarted || 'Workout timer started! ⏱️🏃');
+    showToast(t.workoutTimerStarted);
   };
 
   const handlePauseWorkoutTimer = () => {
     setIsWorkoutTimerRunning(false);
-    showToast(t.workoutTimerPaused || 'Workout timer paused ⏸️');
+    showToast(t.workoutTimerPaused);
   };
 
   const handleResetWorkoutTimer = () => {
     setIsWorkoutTimerRunning(false);
     setWorkoutSeconds(0);
-    showToast(t.workoutTimerReset || 'Workout timer reset 🔄');
+    showToast(t.workoutTimerReset);
   };
 
   const handleSaveWorkoutTimer = (mode: 'add' | 'replace' = 'add') => {
@@ -372,7 +372,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   const handleDeleteMedication = (medId: string) => {
     const updated = medicationsList.filter(m => m.id !== medId);
     handleUpdateHabit('medication', updated);
-    showToast(t.medDeleted || 'Removed from medication list.');
+    showToast(t.medDeleted);
   };
 
   // Calculate metrics for selected date / period
@@ -438,7 +438,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
         // Create
         const newH: Habit = {
           id: `habit-${Date.now()}`,
-          name: habitData.name || (t.newHabitDefaultName || 'New Habit'),
+          name: habitData.name || (t.newHabitDefaultName),
           category: habitData.category || 'custom',
           habitType: habitData.habitType || 'boolean',
           question: habitData.question,
@@ -462,7 +462,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   };
 
   const handleDeleteHabit = (habitId: string) => {
-    if (confirm(t.confirmDeleteHabit || 'Are you sure you want to permanently delete this habit?')) {
+    if (confirm(t.confirmDeleteHabit)) {
       if (setHabits) {
         setHabits(prev => prev.filter(h => h.id !== habitId));
       }
@@ -495,7 +495,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           }`}
         >
           <ListTodo className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8B9D83] shrink-0" />
-          <span className="truncate">{t.tasksSubTabDaily || "Daily & Tasks"}</span>
+          <span className="truncate">{t.tasksSubTabDaily}</span>
         </button>
 
         <button
@@ -507,7 +507,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           }`}
         >
           <Grid className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#2B529A] shrink-0" />
-          <span className="truncate">{t.tasksSubTabHabitsGrid || "Habits Grid"}</span>
+          <span className="truncate">{t.tasksSubTabHabitsGrid}</span>
         </button>
 
         <button
@@ -519,7 +519,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           }`}
         >
           <SettingsIcon className="w-4 h-4 text-[#D4A373]" />
-          <span>{t.tasksSubTabSettings || "Habit Settings & Data"}</span>
+          <span>{t.tasksSubTabSettings}</span>
         </button>
       </div>
 

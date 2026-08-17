@@ -174,7 +174,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           <button
             onClick={onBack}
             className="p-2 hover:bg-gray-100 rounded-2xl transition-all cursor-pointer text-[#5A5A40]"
-            title={t.backBtn || "رجوع"}
+            title={t.backBtn}
           >
             <ArrowRight className={`w-5 h-5 ${langInfo.dir === 'rtl' ? '' : 'rotate-180'}`} />
           </button>

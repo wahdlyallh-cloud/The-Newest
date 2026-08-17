@@ -301,7 +301,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-bold text-amber-200">
-              {t.dhikrTitle || 'سبحة الأذكار اليومية'}
+              {t.dhikrTitle}
             </h3>
           </div>
         </div>

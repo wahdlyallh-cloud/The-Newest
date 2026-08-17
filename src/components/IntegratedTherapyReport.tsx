@@ -210,7 +210,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
     printWindow.document.write(`
       <html dir="${langInfo.dir}" lang="${langInfo.code}">
         <head>
-          <title>${t.therapyReportTitle || 'Therapist Report'} - Hayat AI</title>
+          <title>${t.therapyReportTitle} - Hayat AI</title>
           <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
             h1 { color: #5A5A40; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
@@ -223,23 +223,23 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           </style>
         </head>
         <body>
-          <h1>🎓 ${t.therapyReportTitle || 'Therapy Report'}</h1>
+          <h1>🎓 ${t.therapyReportTitle}</h1>
           <div class="meta">
-            <strong>${t.reportPeriodLabel || 'Period:'}</strong> ${startDate} - ${endDate}<br/>
-            <strong>${t.totalEntriesCount || 'Total Entries:'}</strong> ${totalEntries}<br/>
-            <strong>${t.exportDateTitle || 'Date:'}</strong> ${new Date().toLocaleString(langInfo.bcp47)}
+            <strong>${t.reportPeriodLabel}</strong> ${startDate} - ${endDate}<br/>
+            <strong>${t.totalEntriesCount}</strong> ${totalEntries}<br/>
+            <strong>${t.exportDateTitle}</strong> ${new Date().toLocaleString(langInfo.bcp47)}
           </div>
 
           <div class="grid">
             <div class="stat-box">
-              <strong>💤 ${t.avgSleep || 'Avg Sleep:'}</strong> ${averageSleep} ${t.hoursUnit || 'h'}
+              <strong>💤 ${t.avgSleep}</strong> ${averageSleep} ${t.hoursUnit}
             </div>
             <div class="stat-box">
-              <strong>🏃 ${t.sportsTime || 'Sports:'}</strong> ${totalSports} ${t.minutesUnit || 'm'}
+              <strong>🏃 ${t.sportsTime}</strong> ${totalSports} ${t.minutesUnit}
             </div>
           </div>
 
-          <h2>📋 ${t.aiPsychAdvisor || 'AI Analysis'}</h2>
+          <h2>📋 ${t.aiPsychAdvisor}</h2>
           <div style="font-size: 15px;">
             ${reportText.replace(/\n/g, '<br/>')}
           </div>
@@ -256,7 +256,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
 
   const handleCopyText = async () => {
     try {
-      const textToCopy = `${t.therapyReportTitle || 'Therapy Report'} - Hayat AI\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
+      const textToCopy = `${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 3000);
@@ -266,7 +266,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   };
 
   const handleDownloadTxt = () => {
-    const textContent = `\uFEFF${t.therapyReportTitle || 'Therapy Report'} - Hayat AI\n${startDate} - ${endDate}\n\n${reportText}`;
+    const textContent = `\uFEFF${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n${reportText}`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -281,7 +281,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
 <html dir="${langInfo.dir}" lang="${langInfo.code}">
 <head>
   <meta charset="UTF-8">
-  <title>${t.therapyReportTitle || 'Therapy Report'}</title>
+  <title>${t.therapyReportTitle}</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
     h1 { color: #5A5A40; border-bottom: 2px solid #E2DCC8; padding-bottom: 8px; font-size: 20px; }
@@ -291,7 +291,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   </style>
 </head>
 <body>
-  <h1>🎓 ${t.therapyReportTitle || 'Therapy Report'}</h1>
+  <h1>🎓 ${t.therapyReportTitle}</h1>
   <div class="meta">
     <p><strong>${startDate} - ${endDate}</strong></p>
     <p>${totalEntries} | ${averageSleep} | ${totalSports}</p>

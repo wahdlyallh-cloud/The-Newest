@@ -44,17 +44,17 @@ const DEFAULT_ADVISOR_PERMISSIONS: AdvisorPermissions = {
 const getPermissionsConfig = (lang: AppLanguage) => {
   const t = getTranslation(lang);
   return [
-    { key: 'diaries' as const, title: t.smartContextDiariesTitle || 'Diaries & Reflections', desc: t.smartContextDiariesDesc || 'Read personal diary entries', icon: '📖' },
-    { key: 'moodLogs' as const, title: t.smartContextMoodLogsTitle || 'Daily Mood & Emotion Logs', desc: t.smartContextMoodLogsDesc || 'Assess daily mood scores', icon: '📊' },
-    { key: 'habits' as const, title: t.smartContextHabitsTitle || 'Habits & Routines Tracker', desc: t.smartContextHabitsDesc || 'Track habit completion rates', icon: '🎯' },
-    { key: 'tasks' as const, title: t.smartContextTasksTitle || 'Tasks & To-Do Checklists', desc: t.smartContextTasksDesc || 'Access daily & weekly tasks', icon: '📝' },
-    { key: 'cbtExercises' as const, title: t.smartContextCbtTitle || 'CBT Therapy Exercises', desc: t.smartContextCbtDesc || 'Read coping cards for guidance', icon: '🧠' },
-    { key: 'therapyReports' as const, title: t.smartContextReportsTitle || 'Mental Health Reports', desc: t.smartContextReportsDesc || 'Analyze psychological summaries', icon: '🩺' },
-    { key: 'voiceNotes' as const, title: t.smartContextVoiceTitle || 'Voice Notes & Recordings', desc: t.smartContextVoiceDesc || 'Analyze audio transcripts', icon: '🗣️' },
-    { key: 'books' as const, title: t.smartContextBooksTitle || 'Favorite Books & Library', desc: t.smartContextBooksDesc || 'Read reading logs & quotes', icon: '📚' },
-    { key: 'gratitude' as const, title: t.smartContextGratitudeTitle || 'Gratitude & Positive Mindset', desc: t.smartContextGratitudeDesc || 'Review gratitude items', icon: '🌟' },
-    { key: 'lifeMap' as const, title: t.smartContextLifeMapTitle || 'Life Map & Future Goals', desc: t.smartContextLifeMapDesc || 'Follow long-term goals', icon: '🗺️' },
-    { key: 'prosCons' as const, title: t.smartContextProsConsTitle || 'Decision Balance (Pros & Cons)', desc: t.smartContextProsConsDesc || 'Review decision balances', icon: '⚖️' },
+    { key: 'diaries' as const, title: t.smartContextDiariesTitle, desc: t.smartContextDiariesDesc, icon: '📖' },
+    { key: 'moodLogs' as const, title: t.smartContextMoodLogsTitle, desc: t.smartContextMoodLogsDesc, icon: '📊' },
+    { key: 'habits' as const, title: t.smartContextHabitsTitle, desc: t.smartContextHabitsDesc, icon: '🎯' },
+    { key: 'tasks' as const, title: t.smartContextTasksTitle, desc: t.smartContextTasksDesc, icon: '📝' },
+    { key: 'cbtExercises' as const, title: t.smartContextCbtTitle, desc: t.smartContextCbtDesc, icon: '🧠' },
+    { key: 'therapyReports' as const, title: t.smartContextReportsTitle, desc: t.smartContextReportsDesc, icon: '🩺' },
+    { key: 'voiceNotes' as const, title: t.smartContextVoiceTitle, desc: t.smartContextVoiceDesc, icon: '🗣️' },
+    { key: 'books' as const, title: t.smartContextBooksTitle, desc: t.smartContextBooksDesc, icon: '📚' },
+    { key: 'gratitude' as const, title: t.smartContextGratitudeTitle, desc: t.smartContextGratitudeDesc, icon: '🌟' },
+    { key: 'lifeMap' as const, title: t.smartContextLifeMapTitle, desc: t.smartContextLifeMapDesc, icon: '🗺️' },
+    { key: 'prosCons' as const, title: t.smartContextProsConsTitle, desc: t.smartContextProsConsDesc, icon: '⚖️' },
   ];
 };
 
@@ -302,7 +302,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     setVoiceStatus('listening');
-    setVoiceTranscript(t.voiceListeningPrompt || 'Listening... Speak freely...');
+    setVoiceTranscript(t.voiceListeningPrompt);
 
     manager.startSession({
       lang: langInfo.speechLang,
@@ -968,8 +968,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const handleClearHistory = () => {
     const isGeneral = activeAdvisorTab === 'general';
     const confirmMsg = isGeneral
-      ? (t.confirmClearGeneralChat || 'Are you sure you want to clear General AI chat history?')
-      : (t.confirmClearAdvisorChat || 'Are you sure you want to clear the AI advisor chat history?');
+      ? (t.confirmClearGeneralChat)
+      : (t.confirmClearAdvisorChat);
 
     if (window.confirm(confirmMsg)) {
       if (isGeneral) {
@@ -1461,7 +1461,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 ? 'bg-[#D4A373] text-white animate-pulse ring-4 ring-[#D4A373]/20'
                 : 'bg-[#F0EDE4] text-[#3A3A3A] hover:bg-[#E2DCC8]'
             }`}
-            title={isRecording ? (t.stopDictationTitle || 'Click to stop dictation') : (t.smartDictationTitle || 'Smart Voice Dictation')}
+            title={isRecording ? (t.stopDictationTitle) : (t.smartDictationTitle)}
           >
             <Mic className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
           </button>
@@ -1473,10 +1473,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
             placeholder={
               isRecording
-                ? (t.listeningVoice || 'Listening...')
+                ? (t.listeningVoice)
                 : activeAdvisorTab === 'general'
-                ? (t.askGeneralAiPlaceholder || 'Ask General AI or attach files...')
-                : (t.askAdvisorPlaceholder || 'Ask advisor about your diary...')
+                ? (t.askGeneralAiPlaceholder)
+                : (t.askAdvisorPlaceholder)
             }
             disabled={isRecording}
             className="min-w-0 flex-1 bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8]/60 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none transition-colors truncate"
@@ -1513,15 +1513,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 activeAdvisorTab === 'general' ? 'bg-[#2B3E50]/15 text-[#2B3E50]' : 'bg-[#8B9D83]/15 text-[#8B9D83]'
               }`}>
                 {activeAdvisorTab === 'general' 
-                  ? (t.generalVoiceCompanionTitle || 'General Voice Companion 🌐')
-                  : (t.voiceCompanionTitle || 'المساعد الصوتي العيادي المستمر')
+                  ? (t.generalVoiceCompanionTitle)
+                  : (t.voiceCompanionTitle)
                 }
               </span>
               <h3 className="font-extrabold text-[#3A3A3A] text-lg">
-                {voiceStatus === 'listening' && `🎤 ${t.voiceStatusListening || 'جاري الاستماع بإنصات...'}`}
-                {voiceStatus === 'analyzing' && `🧠 ${t.voiceStatusAnalyzing || 'جاري التفكير وصياغة الرد...'}`}
-                {voiceStatus === 'speaking' && `🔊 ${t.voiceStatusSpeaking || 'يتحدث الآن...'}`}
-                {voiceStatus === 'idle' && `💤 ${t.voiceStatusIdle || 'مستعد للبدء'}`}
+                {voiceStatus === 'listening' && `🎤 ${t.voiceStatusListening}`}
+                {voiceStatus === 'analyzing' && `🧠 ${t.voiceStatusAnalyzing}`}
+                {voiceStatus === 'speaking' && `🔊 ${t.voiceStatusSpeaking}`}
+                {voiceStatus === 'idle' && `💤 ${t.voiceStatusIdle}`}
               </h3>
             </div>
 
@@ -1556,11 +1556,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
             {/* Live Transcript / Response display area */}
             <div className="bg-[#F0EDE4]/45 p-4 rounded-2xl border border-[#E2DCC8]/50 max-h-40 overflow-y-auto">
-              <p className="text-xs text-gray-500 font-medium mb-1">{t.voiceLiveTranscript || 'النسخ التلقائي للمحادثة:'}</p>
+              <p className="text-xs text-gray-500 font-medium mb-1">{t.voiceLiveTranscript}</p>
               <p className="text-sm text-[#3A3A3A] font-medium leading-relaxed">
                 {voiceTranscript || (activeAdvisorTab === 'general'
-                  ? (t.generalVoiceModalDesc || 'Speak freely, the AI assistant will answer all your questions...')
-                  : (t.advisorVoiceModalDesc || 'Speak freely, the assistant will process your entries and speak back...')
+                  ? (t.generalVoiceModalDesc)
+                  : (t.advisorVoiceModalDesc)
                 )}
               </p>
             </div>
@@ -1576,7 +1576,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   }}
                   className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  {t.voiceInterruptAndSpeak || 'مقاطعة والحديث الآن ⏹️'}
+                  {t.voiceInterruptAndSpeak}
                 </button>
               )}
 
@@ -1585,7 +1585,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   onClick={startListeningVoiceChat}
                   className="px-6 py-2.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  {t.voiceStartSpeaking || 'بدء الاستماع والتحدث 🎙️'}
+                  {t.voiceStartSpeaking}
                 </button>
               )}
 
@@ -1593,7 +1593,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 onClick={endVoiceChatSession}
                 className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-bold cursor-pointer"
               >
-                {t.voiceEndSession || 'إنهاء المكالمة 📞'}
+                {t.voiceEndSession}
               </button>
             </div>
           </div>

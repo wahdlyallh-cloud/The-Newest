@@ -101,20 +101,20 @@ export default function BackupSyncModal({
             <div className="flex items-center justify-between">
               <h5 className="font-black text-emerald-950 text-xs flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>{t.e2eeTitle || 'Encrypted Cloud Sync (E2EE) 🔐'}</span>
+                <span>{t.e2eeTitle}</span>
               </h5>
               <span className="text-[9px] bg-emerald-200 text-emerald-900 font-black px-2 py-0.5 rounded-full">
                 256-bit AES
               </span>
             </div>
             <p className="text-[10px] text-emerald-900/80 font-medium leading-relaxed">
-              {t.e2eeSub || 'End-to-end encryption across all your devices with custom key'}
+              {t.e2eeSub}
             </p>
 
             <div className="space-y-2">
               <input
                 type="password"
-                placeholder={t.e2eePassphrasePlaceholder || 'Enter encryption passphrase...'}
+                placeholder={t.e2eePassphrasePlaceholder}
                 value={e2eePassphrase}
                 onChange={(e) => setE2eePassphrase(e.target.value)}
                 className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-1.5 text-xs text-gray-800 focus:outline-none"
@@ -122,7 +122,7 @@ export default function BackupSyncModal({
               <div className="flex items-center justify-between bg-white/80 p-2 rounded-xl border border-emerald-100 text-[10px] text-emerald-900 font-bold">
                 <span className="flex items-center gap-1">
                   <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{t.e2eePairingCodeTitle || 'Device Pairing Key:'}</span>
+                  <span>{t.e2eePairingCodeTitle}</span>
                 </span>
                 <span className="font-mono bg-emerald-100 px-2 py-0.5 rounded text-emerald-800">HYT-882-SEC</span>
               </div>
@@ -152,7 +152,7 @@ export default function BackupSyncModal({
             <div className="flex-grow border-t border-[#E2DCC8]"></div>
             <span className="flex-shrink mx-3 text-[10px] font-black text-gray-400 flex items-center gap-1.5">
               <Settings className="w-3.5 h-3.5 text-gray-400" />
-              <span>{t.multiFormatTitle || 'Multi-Format Export & Import 📦'}</span>
+              <span>{t.multiFormatTitle}</span>
             </span>
             <div className="flex-grow border-t border-[#E2DCC8]"></div>
           </div>
@@ -183,7 +183,7 @@ export default function BackupSyncModal({
               className="py-2.5 bg-[#4E685B] hover:bg-[#3F5449] text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs hover:shadow-md"
             >
               <Download className="w-4 h-4 text-emerald-300" />
-              <span>{t.exportJson || 'JSON Backup'}</span>
+              <span>{t.exportJson}</span>
             </button>
 
             {/* Export CSV */}
@@ -196,7 +196,7 @@ export default function BackupSyncModal({
               className="py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
             >
               <FileText className="w-4 h-4 text-sky-200" />
-              <span>{t.exportCsv || 'CSV Excel'}</span>
+              <span>{t.exportCsv}</span>
             </button>
 
             {/* Export Encrypted */}
@@ -206,7 +206,7 @@ export default function BackupSyncModal({
               className="py-2.5 bg-[#2B3E50] hover:bg-[#1E2D3B] text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
             >
               <Lock className="w-4 h-4 text-amber-300" />
-              <span>{t.exportEncrypted || 'Encrypted (ENC)'}</span>
+              <span>{t.exportEncrypted}</span>
             </button>
           </div>
 

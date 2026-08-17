@@ -409,10 +409,10 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       if (p.cbtExercises !== false && d.cbtWorksheets && Array.isArray(d.cbtWorksheets)) {
         d.cbtWorksheets.forEach((cbt, idx) => {
           const cbtContent = [
-            `الحدث المثير / المحفز: ${cbt.triggerEvent || 'غير محدد'}`,
-            `الأفكار التلقائية السلبية: ${cbt.negativeThoughts || 'غير محدد'}`,
-            `التشوه المعرفي المكتشف: ${cbt.cognitiveDistortion || 'غير محدد'}`,
-            `الفكرة البديلة العقلانية: ${cbt.rationalAlternative || 'غير محدد'}`,
+            `الحدث المثير / المحفز: ${cbt.triggerEvent}`,
+            `الأفكار التلقائية السلبية: ${cbt.negativeThoughts}`,
+            `التشوه المعرفي المكتشف: ${cbt.cognitiveDistortion}`,
+            `الفكرة البديلة العقلانية: ${cbt.rationalAlternative}`,
             cbt.evidenceFor ? `الأدلة المؤيدة للفكرة: ${cbt.evidenceFor}` : '',
             cbt.evidenceAgainst ? `الأدلة المعارضة للفكرة: ${cbt.evidenceAgainst}` : '',
             cbt.coreBelief ? `المعتقد الجذري: ${cbt.coreBelief}` : '',
@@ -435,8 +435,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               exerciseType: cbt.exerciseType
             },
             relationshipKeys: [...relKeys, 'type:cbt', `parent:diary_${d.id}`],
-            sourceLabelAr: `تمرين CBT (${dateStr}) - "${cbt.triggerEvent || 'موقف'}"`,
-            sourceLabelEn: `CBT Exercise (${dateStr}) - "${cbt.triggerEvent || 'Trigger'}"`,
+            sourceLabelAr: `تمرين CBT (${dateStr}) - "${cbt.triggerEvent}"`,
+            sourceLabelEn: `CBT Exercise (${dateStr}) - "${cbt.triggerEvent}"`,
             rawRef: cbt
           });
         });

@@ -252,9 +252,9 @@ export default function PasskeyAuth({
           <Fingerprint className="w-4 h-4 text-white" />
           <span>
             {isLoading
-              ? (t.scanningBiometrics || 'Scanning Biometrics...')
+              ? (t.scanningBiometrics)
               : biometricCredentialId
-              ? (t.updateBiometricBtn || 'Update Device Biometric 👆👤') : (t.linkBiometricBtn || 'Link Device Biometric Now 👆👤')}
+              ? (t.updateBiometricBtn) : (t.linkBiometricBtn)}
           </span>
         </button>
       </div>

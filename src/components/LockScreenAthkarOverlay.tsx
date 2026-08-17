@@ -280,7 +280,7 @@ export default function LockScreenAthkarOverlay({
                   className="p-2.5 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 transition-colors flex items-center gap-1.5 font-bold text-xs cursor-pointer shadow-md"
                 >
                   <X className="w-4 h-4" />
-                  <span>{t.closeBtn || "Close"}</span>
+                  <span>{t.closeBtn}</span>
                 </button>
               </div>
             </div>

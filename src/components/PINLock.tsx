@@ -290,7 +290,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
                 ? t.pinPadShortcutSub 
                 : t.pinPadSub}
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full inline-block">💡 {t.defaultPinHint || 'Default PIN: 1234 (can be changed in Settings)'}</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full inline-block">💡 {t.defaultPinHint}</p>
           </div>
 
           {/* Dots & Feedbacks */}

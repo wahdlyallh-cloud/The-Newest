@@ -40,37 +40,37 @@ export default function PsychologicalGrowthTree({
   // Growth Stage Calculation
   // Level 5 (شجرة الحكمة المعمرة) requires 365 days of continuous streak OR 320+ XP
   let stageLevel = 1;
-  let stageName = t.treeStage1 || 'Seedling of Intent 🌱';
-  let stageDesc = t.treeDesc1 || 'Beginning your path to mindfulness';
+  let stageName = t.treeStage1;
+  let stageDesc = t.treeDesc1;
   let maxXP = 30;
   let minXP = 0;
   let stageIcon = '🌱';
 
   if (effectiveStreak >= 365 || totalXP >= 320) {
     stageLevel = 5;
-    stageName = t.treeStage5 || 'Ancient Tree of Wisdom 🌲👑✨';
-    stageDesc = t.treeDesc5 || '365 consecutive days milestone! An ancient tree of wisdom and eternal peace.';
+    stageName = t.treeStage5;
+    stageDesc = t.treeDesc5;
     minXP = 320;
     maxXP = 500;
     stageIcon = '🌲👑✨';
   } else if (totalXP >= 180) {
     stageLevel = 4;
-    stageName = t.treeStage4 || 'Blooming Mind Tree 🌸🌳';
-    stageDesc = t.treeDesc4 || 'Daily consistency blossoms into peace';
+    stageName = t.treeStage4;
+    stageDesc = t.treeDesc4;
     minXP = 180;
     maxXP = 320;
     stageIcon = '🌸';
   } else if (totalXP >= 80) {
     stageLevel = 3;
-    stageName = t.treeStage3 || 'Tree of Balance 🌳';
-    stageDesc = t.treeDesc3 || 'Your mental roots grow deeper every day';
+    stageName = t.treeStage3;
+    stageDesc = t.treeDesc3;
     minXP = 80;
     maxXP = 180;
     stageIcon = '🌳';
   } else if (totalXP >= 30) {
     stageLevel = 2;
-    stageName = t.treeStage2 || 'Sprout of Peace 🌿';
-    stageDesc = t.treeDesc2 || 'Gentle progress with every logged thought';
+    stageName = t.treeStage2;
+    stageDesc = t.treeDesc2;
     minXP = 30;
     maxXP = 80;
     stageIcon = '🌿';
@@ -123,11 +123,11 @@ export default function PsychologicalGrowthTree({
           <div>
             <div className="flex items-center gap-2">
               <span className={`text-xs font-black tracking-wider ${isLevel5AncientTree ? 'text-amber-300' : 'text-emerald-300'} uppercase`}>
-                {t.psychologicalGrowthTreeTitle || 'Psychological Growth Tree'}
+                {t.psychologicalGrowthTreeTitle}
               </span>
               <span className={`px-2.5 py-0.5 text-[10px] ${isLevel5AncientTree ? 'bg-amber-400/30 text-amber-200 border-amber-300/50' : 'bg-amber-400/20 text-amber-300 border-amber-400/30'} border rounded-full font-black flex items-center gap-1`}>
                 {isLevel5AncientTree && <Crown className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />}
-                Level {stageLevel} {isLevel5AncientTree && (t.ancientTreeTag || '• 365 Days')}
+                Level {stageLevel} {isLevel5AncientTree && (t.ancientTreeTag)}
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-black text-white mt-0.5 flex items-center gap-2">
@@ -357,7 +357,7 @@ export default function PsychologicalGrowthTree({
             <span>{totalXP} XP</span>
           </span>
           <span className="text-amber-300 font-extrabold">
-            {stageLevel === 5 ? (t.maxTreeLevelBadge || 'Max Level Achieved 🌟') : `${progressPercent}% ${t.toNextTreeStage || 'To Next Stage'}`}
+            {stageLevel === 5 ? (t.maxTreeLevelBadge) : `${progressPercent}% ${t.toNextTreeStage}`}
           </span>
         </div>
 
@@ -374,7 +374,7 @@ export default function PsychologicalGrowthTree({
       {/* Quick Action Shortcuts ("Nurture Your Tree") */}
       <div className="relative z-10 space-y-2 pt-2 border-t border-white/10">
         <span className="text-[11px] font-black text-emerald-300/80 block">
-          {t.nurtureTreePrompt || 'Nurture your tree with daily logging:'}
+          {t.nurtureTreePrompt}
         </span>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -454,7 +454,7 @@ export default function PsychologicalGrowthTree({
               <div className="flex justify-between items-center pb-3 border-b border-white/10">
                 <h4 className="font-black text-emerald-300 text-base flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-amber-300" />
-                  <span>{t.howTreeGrowsTitle || 'How Mind Growth Tree Works'}</span>
+                  <span>{t.howTreeGrowsTitle}</span>
                 </h4>
                 <button
                   type="button"
@@ -514,7 +514,7 @@ export default function PsychologicalGrowthTree({
                     <Crown className="w-4 h-4 text-amber-300" />
                     <span>
                       {test365Mode
-                        ? (t.disableTreePreview || 'Disable 365 Days Preview 🔄') : (t.enableTreePreview || 'Test Preview 365 Days Wisdom Tree Stage 🧪')}
+                        ? (t.disableTreePreview) : (t.enableTreePreview)}
                     </span>
                   </button>
                 </div>

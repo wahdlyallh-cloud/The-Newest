@@ -290,13 +290,13 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       {/* 1. Main Sub-Tab Navigation Switcher */}
       <div className="flex overflow-x-auto pb-1 gap-2 bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-2xs no-scrollbar">
         {[
-          { id: 'thought_records', label: t.cbtTabThoughtRecords || '🧠 Thought Records', icon: FileText, color: 'text-emerald-700' },
-          { id: 'downward_arrow', label: t.cbtTabDownwardArrow || '⬇️ Downward Arrow', icon: ArrowDown, color: 'text-indigo-700' },
-          { id: 'worry_box', label: t.cbtTabWorryBox || '📦 Worry Box', icon: Archive, color: 'text-amber-700' },
-          { id: 'exposure_ladder', label: t.cbtTabExposureLadder || '🪜 Exposure Ladder', icon: Layers, color: 'text-sky-700' },
-          { id: 'coping_cards', label: t.cbtTabCopingCards || '📇 Coping Cards', icon: ShieldCheck, color: 'text-pink-700' },
-          { id: 'grounding', label: t.cbtTabGrounding || '🧘 5-4-3-2-1 Grounding', icon: Compass, color: 'text-teal-700' },
-          { id: 'analytics', label: t.cbtTabAnalytics || '📊 Distortions Analytics', icon: BarChart2, color: 'text-purple-700' }
+          { id: 'thought_records', label: t.cbtTabThoughtRecords, icon: FileText, color: 'text-emerald-700' },
+          { id: 'downward_arrow', label: t.cbtTabDownwardArrow, icon: ArrowDown, color: 'text-indigo-700' },
+          { id: 'worry_box', label: t.cbtTabWorryBox, icon: Archive, color: 'text-amber-700' },
+          { id: 'exposure_ladder', label: t.cbtTabExposureLadder, icon: Layers, color: 'text-sky-700' },
+          { id: 'coping_cards', label: t.cbtTabCopingCards, icon: ShieldCheck, color: 'text-pink-700' },
+          { id: 'grounding', label: t.cbtTabGrounding, icon: Compass, color: 'text-teal-700' },
+          { id: 'analytics', label: t.cbtTabAnalytics, icon: BarChart2, color: 'text-purple-700' }
         ].map(tab => {
           const IconComp = tab.icon;
           const isActive = activeTab === tab.id;
@@ -395,7 +395,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     <div className="space-y-2 text-xs">
                       <div>
                         <span className="text-[10px] font-bold text-gray-400 block">🚩 {isAr ? "الموقف أو المحفز:" : "Trigger Event:"}</span>
-                        <p className="font-bold text-gray-800">{item.triggerEvent || (t.notSpecified || 'Not specified')}</p>
+                        <p className="font-bold text-gray-800">{item.triggerEvent || (t.notSpecified)}</p>
                       </div>
 
                       <div>
@@ -622,10 +622,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     createdAt: new Date().toISOString(),
                     triggerEvent: isAr ? 'صندوق القلق' : 'Worry Box',
                     negativeThoughts: worryText,
-                    cognitiveDistortion: worryCategory === 'actionable' ? (t.realProblemLabel || 'Real problem') : (t.uncontrollableFearLabel || 'Uncontrollable fear'),
+                    cognitiveDistortion: worryCategory === 'actionable' ? (t.realProblemLabel) : (t.uncontrollableFearLabel),
                     rationalAlternative: worryCategory === 'actionable'
-                      ? `${t.actionPlanLabel || 'Action plan:'} ${worryStep1 || (t.setResolutionTime || 'Set resolution time')} - ${worryStep2 || ''}`
-                      : (t.applyAcceptanceDesc || 'Apply acceptance and let go of uncontrollable thoughts.'),
+                      ? `${t.actionPlanLabel} ${worryStep1 || (t.setResolutionTime)} - ${worryStep2 || ''}`
+                      : (t.applyAcceptanceDesc),
                     emotionBefore: 8,
                     emotionAfter: 3,
                     exerciseType: 'worry_box',
@@ -635,7 +635,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   setWorryText('');
                   setWorryStep1('');
                   setWorryStep2('');
-                  alert(t.worryBoxDepositSuccess || 'Thought successfully deposited and locked in the Worry Container! 🔒✨');
+                  alert(t.worryBoxDepositSuccess);
                 }}
                 className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
@@ -674,7 +674,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       : 'bg-amber-600 hover:bg-amber-700 text-white'
                   }`}
                 >
-                  {worryTimerRunning ? (t.pauseBtn || 'Pause ⏸️') : (t.startWorryTimerBtn || 'Start Worry Time (15m) ⏱️')}
+                  {worryTimerRunning ? (t.pauseBtn) : (t.startWorryTimerBtn)}
                 </button>
                 <button
                   type="button"
@@ -818,7 +818,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(card.text);
-                        alert(t.copingCardCopied || 'Coping card text copied! 📋');
+                        alert(t.copingCardCopied);
                       }}
                       className="p-1 bg-white/80 hover:bg-pink-100 text-pink-600 rounded-lg text-xs transition-colors cursor-pointer border border-pink-200"
                       title={isAr ? "نسخ النص 📋" : "Copy text 📋"}
@@ -855,11 +855,11 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="flex justify-between items-center px-4 py-2 bg-teal-50/60 rounded-2xl border border-teal-100 text-xs font-bold text-teal-900">
             <span>{isAr ? `الخطوة ${groundingStep} من 5` : `Step ${groundingStep} of 5`}</span>
             <span>
-              {groundingStep === 1 && (t.groundingStep1Label || '👁️ 5 things you can see')}
-              {groundingStep === 2 && (t.groundingStep2Label || '✋ 4 things you can touch')}
-              {groundingStep === 3 && (t.groundingStep3Label || '👂 3 things you can hear')}
-              {groundingStep === 4 && (t.groundingStep4Label || '👃 2 things you can smell')}
-              {groundingStep === 5 && (t.groundingStep5Label || '👅 1 thing you can taste')}
+              {groundingStep === 1 && (t.groundingStep1Label)}
+              {groundingStep === 2 && (t.groundingStep2Label)}
+              {groundingStep === 3 && (t.groundingStep3Label)}
+              {groundingStep === 4 && (t.groundingStep4Label)}
+              {groundingStep === 5 && (t.groundingStep5Label)}
             </span>
           </div>
 
@@ -996,7 +996,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             ) : (
               <button
                 onClick={() => {
-                  alert(t.groundingCompleteSuccess || 'Well done! Take a deep breath and feel the calm in your senses now. 🌿✨');
+                  alert(t.groundingCompleteSuccess);
                   setGroundingStep(1);
                 }}
                 className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
@@ -1147,7 +1147,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     className="py-1 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>{trAiLoading ? (t.analyzing || 'Analyzing...') : (t.suggestAiAlternativeBtn || 'Suggest AI Alternative')}</span>
+                    <span>{trAiLoading ? (t.analyzing) : (t.suggestAiAlternativeBtn)}</span>
                   </button>
                 </div>
 
@@ -1215,7 +1215,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     };
                     saveCbtItemToDiary(newW);
                     setShowThoughtWizard(false);
-                    alert(t.thoughtRecordSavedSuccess || 'Thought record saved successfully to your diary! 🎉🧠');
+                    alert(t.thoughtRecordSavedSuccess);
                   }}
                   className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
@@ -1321,7 +1321,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       triggerEvent: isAr ? 'سهم التفكير للأسفل' : 'Downward Arrow',
                       negativeThoughts: daTrigger,
                       cognitiveDistortion: isAr ? 'معتقد أساسي عميق' : 'Deep core belief',
-                      rationalAlternative: daHealthyBelief || (t.balancedBeliefDefault || 'Balanced alternative belief'),
+                      rationalAlternative: daHealthyBelief || (t.balancedBeliefDefault),
                       emotionBefore: 9,
                       emotionAfter: 4,
                       exerciseType: 'downward_arrow',
@@ -1330,7 +1330,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     };
                     saveCbtItemToDiary(newArrow);
                     setShowArrowWizard(false);
-                    alert(t.downwardArrowSavedSuccess || 'Downward arrow exercise saved successfully! 🎯✨');
+                    alert(t.downwardArrowSavedSuccess);
                   }}
                   className="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
@@ -1436,7 +1436,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   };
                   saveCbtItemToDiary(newLadder);
                   setShowExposureWizard(false);
-                  alert(t.exposureLadderSavedSuccess || 'Exposure ladder created and saved successfully! 🪜✨');
+                  alert(t.exposureLadderSavedSuccess);
                 }}
                 className="py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
               >

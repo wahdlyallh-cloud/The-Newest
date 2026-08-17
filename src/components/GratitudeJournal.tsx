@@ -105,7 +105,7 @@ export default function GratitudeJournal({
 
   const handleSpeakCard = (cardId: string, text: string) => {
     if (!('speechSynthesis' in window)) {
-      alert(t.speechNotSupported || 'Speech synthesis not supported on this browser.');
+      alert(t.speechNotSupported);
       return;
     }
     if (speakingCardId === cardId) {
@@ -222,14 +222,14 @@ export default function GratitudeJournal({
       } else {
         setCardAnalysisResults(prev => ({
           ...prev,
-          [cardId]: t.failedToAnalyze || 'Failed to analyze.',
+          [cardId]: t.failedToAnalyze,
         }));
       }
     } catch (err) {
       console.error(err);
       setCardAnalysisResults(prev => ({
         ...prev,
-        [cardId]: t.serverError || 'Server error.',
+        [cardId]: t.serverError,
       }));
     } finally {
       setAnalyzingCardId(null);
@@ -294,12 +294,12 @@ export default function GratitudeJournal({
     setAiHistory(prev => prev.map(item => item.id === itemId ? { ...item, userAnswer: answer.trim() } : item));
     setEditingAnswerId(null);
     setTempAnswerText('');
-    showToast(t.answerSavedSuccess || 'Answer saved successfully! ✓');
+    showToast(t.answerSavedSuccess);
   };
 
   const handleDeleteHistoryItem = (itemId: string) => {
     setAiHistory(prev => prev.filter(item => item.id !== itemId));
-    showToast(t.itemDeletedFromHistory || 'Item deleted from history.');
+    showToast(t.itemDeletedFromHistory);
   };
 
   // Export functions
@@ -313,14 +313,14 @@ export default function GratitudeJournal({
       createdAt: new Date().toISOString(),
     };
     setGratitudeCards(prev => [newCard, ...prev]);
-    showToast(t.addedToGratitudeWall || 'Added to Gratitude Wall! 🌸');
+    showToast(t.addedToGratitudeWall);
   };
 
   const handleExportToDailyVenting = (title: string, bodyText: string) => {
     if (!bodyText.trim()) return;
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}`,
-      title: title || t.gratitudeReflectionTitle || 'Gratitude Reflection',
+      title: title || t.gratitudeReflectionTitle,
       content: bodyText.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -347,7 +347,7 @@ export default function GratitudeJournal({
         localStorage.setItem('yawmiyati_diaries', JSON.stringify([newEntry, ...list]));
       } catch (e) { console.error(e); }
     }
-    showToast(t.exportedToDailyVenting || 'Exported to Daily Venting! 📖');
+    showToast(t.exportedToDailyVenting);
     if (setActiveTab && setActiveDiariesSubTab) {
       setActiveTab('diaries');
       setActiveDiariesSubTab('journal');
@@ -406,7 +406,7 @@ export default function GratitudeJournal({
     if (!bodyText.trim()) return;
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}`,
-      title: title || t.positiveReflectionTitle || 'Positive Reflection',
+      title: title || t.positiveReflectionTitle,
       content: bodyText.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -433,7 +433,7 @@ export default function GratitudeJournal({
         localStorage.setItem('yawmiyati_diaries', JSON.stringify([newEntry, ...list]));
       } catch (e) { console.error(e); }
     }
-    showToast(t.exportedToThoughts || 'Exported to Thoughts & Reflections! ✍️');
+    showToast(t.exportedToThoughts);
     if (setActiveTab && setActiveDiariesSubTab) {
       setActiveTab('diaries');
       setActiveDiariesSubTab('journal');
@@ -466,13 +466,13 @@ export default function GratitudeJournal({
       if (data.success && data.answer) {
         addHistoryItem('qa', 'Gratitude Consultation', data.answer, qText);
         setDirectQuestionText('');
-        showToast(t.consultationSaved || 'Consultation saved to AI History! 🤖');
+        showToast(t.consultationSaved);
       } else {
-        showToast(t.failedToRespond || 'Failed to respond.');
+        showToast(t.failedToRespond);
       }
     } catch (err) {
       console.error(err);
-      showToast(t.connectionError || 'Connection error.');
+      showToast(t.connectionError);
     } finally {
       setDirectQuestionLoading(false);
     }

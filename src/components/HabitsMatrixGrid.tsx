@@ -191,7 +191,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
       <div className="flex items-center justify-between p-4 bg-white border border-[#E2DCC8] rounded-3xl shadow-xs">
         <h3 className="font-black text-lg text-[#2B3E50] flex items-center gap-2">
           <span>📊</span>
-          <span>{t.habits || 'Habits'}</span>
+          <span>{t.habits}</span>
         </h3>
 
         <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
           <button
             onClick={onOpenAddHabit}
             className="w-9 h-9 rounded-2xl bg-[#2B529A] hover:bg-[#1f3f7a] text-white flex items-center justify-center font-bold text-lg cursor-pointer transition-all shadow-xs"
-            title={t.addNewHabit || 'Add New Habit'}
+            title={t.addNewHabit}
           >
             <Plus className="w-5 h-5" />
           </button>
@@ -209,10 +209,10 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
             <button
               onClick={() => setShowFilterMenu(!showFilterMenu)}
               className="p-2.5 rounded-2xl bg-[#F0EDE4] hover:bg-[#E2DCC8] text-gray-700 flex items-center gap-1.5 text-xs font-bold cursor-pointer transition-all shadow-2xs active:scale-95"
-              title={t.habitsFilterAndSort || 'Habits Filter & Sort'}
+              title={t.habitsFilterAndSort}
             >
               <Sliders className="w-4 h-4 text-[#5A5A40]" />
-              <span className="inline text-xs font-bold">{t.filterAndSortBtn || 'Filter & Sort'}</span>
+              <span className="inline text-xs font-bold">{t.filterAndSortBtn}</span>
             </button>
 
             {/* Filter & Sort Dropdown Popup */}
@@ -226,7 +226,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                   <div className="font-bold text-[#5A5A40] border-b border-gray-100 pb-2 flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-xs">
                       <Sliders className="w-3.5 h-3.5 text-[#8B9D83]" />
-                      <span>{t.filterAndSortHeader || 'Filter & Sort Habits'}</span>
+                      <span>{t.filterAndSortHeader}</span>
                     </span>
                     <button
                       onClick={() => setShowFilterMenu(false)}
@@ -245,7 +245,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                         onChange={(e) => setHideArchived(e.target.checked)}
                         className="w-4 h-4 rounded text-[#8B9D83] focus:ring-[#8B9D83] cursor-pointer"
                       />
-                      <span>{t.hideArchived || 'Hide Archived'}</span>
+                      <span>{t.hideArchived}</span>
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer text-gray-700 font-bold select-none">
@@ -255,19 +255,19 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                         onChange={(e) => setHideCompleted(e.target.checked)}
                         className="w-4 h-4 rounded text-[#8B9D83] focus:ring-[#8B9D83] cursor-pointer"
                       />
-                      <span>{t.hideCompleted || 'Hide Completed'}</span>
+                      <span>{t.hideCompleted}</span>
                     </label>
                   </div>
 
                   {/* Sort Options Submenu */}
                   <div className="border-t border-gray-100 pt-2 space-y-1">
-                    <span className="font-bold text-gray-500 block mb-1.5 text-[11px]">{t.sortMethod || 'Sort Method:'}</span>
+                    <span className="font-bold text-gray-500 block mb-1.5 text-[11px]">{t.sortMethod}</span>
                     {[
-                      { id: 'manual', label: t.sortManual || 'Manual ⬆' },
-                      { id: 'name', label: t.sortByName || 'By Name' },
-                      { id: 'color', label: t.sortByColor || 'By Color' },
-                      { id: 'score', label: t.sortByScore || 'By Score' },
-                      { id: 'status', label: t.sortByStatus || 'By Status' }
+                      { id: 'manual', label: t.sortManual },
+                      { id: 'name', label: t.sortByName },
+                      { id: 'color', label: t.sortByColor },
+                      { id: 'score', label: t.sortByScore },
+                      { id: 'status', label: t.sortByStatus }
                     ].map(s => (
                       <button
                         key={s.id}
@@ -295,7 +295,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
           <button
             onClick={onOpenSettings}
             className="p-2.5 rounded-2xl bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] flex items-center justify-center cursor-pointer transition-all"
-            title={t.habitsSettingsTitle || 'Habits & Data Settings'}
+            title={t.habitsSettingsTitle}
           >
             <Settings className="w-4 h-4" />
           </button>
@@ -307,7 +307,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold text-[#5A5A40] flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-[#8B9D83]" />
-            <span>{t.periodicityFilter || 'Display Range & Periodicity:'}</span>
+            <span>{t.periodicityFilter}</span>
           </span>
           <span className="text-[10px] text-gray-400 font-mono font-bold">
             {t('daysDisplayed', { count: dateColumns.length }) || `${dateColumns.length} days`}
@@ -317,13 +317,13 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
         {/* Filter Quick Buttons */}
         <div className="flex flex-wrap gap-1.5 text-xs font-bold">
           {[
-            { id: 'day', label: t.dayRangeDay || '📅 Day' },
-            { id: 'week', label: t.dayRangeWeek || '📆 Week' },
-            { id: 'month', label: t.dayRangeMonth || '🗓️ Month' },
-            { id: 'quarter', label: t.dayRangeQuarter || '📊 Quarter' },
-            { id: 'semi_annual', label: t.dayRangeSemiAnnual || '📈 Semi-Annual' },
-            { id: 'year', label: t.dayRangeYear || '📅 Year' },
-            { id: 'custom', label: t.dayRangeCustom || '🎯 Custom (From/To)' }
+            { id: 'day', label: t.dayRangeDay },
+            { id: 'week', label: t.dayRangeWeek },
+            { id: 'month', label: t.dayRangeMonth },
+            { id: 'quarter', label: t.dayRangeQuarter },
+            { id: 'semi_annual', label: t.dayRangeSemiAnnual },
+            { id: 'year', label: t.dayRangeYear },
+            { id: 'custom', label: t.dayRangeCustom }
           ].map(p => (
             <button
               key={p.id}
@@ -343,7 +343,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
         {rangeMode === 'custom' && (
           <div className="flex flex-col sm:flex-row items-center gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-2xl pt-2">
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <span className="text-xs font-bold text-amber-800 whitespace-nowrap">{t.fromDate || 'From Date:'}</span>
+              <span className="text-xs font-bold text-amber-800 whitespace-nowrap">{t.fromDate}</span>
               <input
                 type="date"
                 value={customRangeStart}
@@ -352,7 +352,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <span className="text-xs font-bold text-amber-800 whitespace-nowrap">{t.toDate || 'To Date:'}</span>
+              <span className="text-xs font-bold text-amber-800 whitespace-nowrap">{t.toDate}</span>
               <input
                 type="date"
                 value={customRangeEnd}
@@ -372,7 +372,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
             <thead>
               <tr className="bg-[#F9F7F2] border-b border-[#E2DCC8] text-xs font-bold text-[#5A5A40]">
                 <th className={`p-3 ${langInfo.dir === 'rtl' ? 'pr-4 sticky right-0 border-l' : 'pl-4 sticky left-0 border-r'} bg-[#F9F7F2] z-10 w-48 shadow-xs border-[#E2DCC8]/50`}>
-                  {t.habitsAndRoutinesTitle || 'Habits & Routines'}
+                  {t.habitsAndRoutinesTitle}
                 </th>
 
                 {/* Date Columns */}
@@ -391,7 +391,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                   );
                 })}
 
-                <th className="p-3 text-center w-24">{t.actionsHeader || 'Actions'}</th>
+                <th className="p-3 text-center w-24">{t.actionsHeader}</th>
               </tr>
             </thead>
 
@@ -400,7 +400,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
               {processedHabits.length === 0 ? (
                 <tr>
                   <td colSpan={dateColumns.length + 2} className="p-8 text-center text-gray-400 font-bold">
-                    {t.noHabitsFiltered || 'No habits found for selected filters. Click (+) to add a new habit.'}
+                    {t.noHabitsFiltered}
                   </td>
                 </tr>
               ) : (
@@ -412,7 +412,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                       <div className="flex items-center space-x-2 space-x-reverse">
                         <div
                           className="w-3.5 h-3.5 rounded-full shrink-0 shadow-3xs"
-                          style={{ backgroundColor: habit.color || '#3B82F6' }}
+                          style={{ backgroundColor: habit.color }}
                         />
                         <div className="min-w-0 flex-1">
                           <span className="font-bold text-gray-800 block truncate">
@@ -420,8 +420,8 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                           </span>
                           <span className="text-[9px] text-gray-400 block font-bold">
                             {habit.habitType === 'measurable'
-                              ? `📊 ${habit.targetValue || 10} ${habit.unit || t.measurableUnitDefault || 'unit'}`
-                              : (t.habitBooleanLabel || '✓ Yes/No')}
+                              ? `📊 ${habit.targetValue || 10} ${habit.unit || t.measurableUnitDefault}`
+                              : (t.habitBooleanLabel)}
                           </span>
                         </div>
                       </div>
@@ -487,7 +487,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                           onClick={() => handleMoveUp(idx)}
                           disabled={idx === 0}
                           className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30 cursor-pointer"
-                          title={t.moveUpTitle || 'Move Up'}
+                          title={t.moveUpTitle}
                         >
                           <ChevronUp className="w-3.5 h-3.5" />
                         </button>
@@ -495,21 +495,21 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                           onClick={() => handleMoveDown(idx)}
                           disabled={idx === processedHabits.length - 1}
                           className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30 cursor-pointer"
-                          title={t.moveDownTitle || 'Move Down'}
+                          title={t.moveDownTitle}
                         >
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => onEditHabit(habit)}
                           className="p-1 text-gray-400 hover:text-blue-600 cursor-pointer"
-                          title={t.editHabitTitle || 'Edit'}
+                          title={t.editHabitTitle}
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => onDeleteHabit(habit.id)}
                           className="p-1 text-gray-400 hover:text-red-500 cursor-pointer"
-                          title={t.delete || 'Delete'}
+                          title={t.delete}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -537,7 +537,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
 
             <div className="space-y-2">
               <label className="text-xs text-gray-600 font-bold block">
-                {t('quantity', { unit: editingValueHabit.habit.unit || t.measurableUnitDefault || 'unit', date: editingValueHabit.dateStr }) || `Quantity (${editingValueHabit.habit.unit || 'unit'}) for ${editingValueHabit.dateStr}:`}
+                {t('quantity', { unit: editingValueHabit.habit.unit || t.measurableUnitDefault, date: editingValueHabit.dateStr }) || `Quantity (${editingValueHabit.habit.unit}) for ${editingValueHabit.dateStr}:`}
               </label>
               <input
                 type="number"
@@ -553,13 +553,13 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                 onClick={() => setEditingValueHabit(null)}
                 className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold cursor-pointer"
               >
-                {t.cancel || 'Cancel'}
+                {t.cancel}
               </button>
               <button
                 onClick={saveMeasurableValue}
                 className="px-4 py-1.5 bg-[#8B9D83] text-white rounded-xl text-xs font-bold cursor-pointer"
               >
-                {t.saveValue || 'Save Value'}
+                {t.saveValue}
               </button>
             </div>
           </div>

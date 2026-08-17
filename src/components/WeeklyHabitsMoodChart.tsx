@@ -19,8 +19,8 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
   const [daysCount, setDaysCount] = React.useState<7 | 14 | 30>(7);
   const [showRangeMenu, setShowRangeMenu] = React.useState(false);
 
-  const habitsKey = t.habitsCompletionPct || 'Habit Completion (%)';
-  const moodKey = t.moodStabilityScore || 'Mood Stability (out of 10)';
+  const habitsKey = t.habitsCompletionPct;
+  const moodKey = t.moodStabilityScore;
 
   // Generate past N days data
   const weeklyData = React.useMemo(() => {
@@ -82,9 +82,9 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
   const bestDay = [...weeklyData].sort((a, b) => (b[moodKey] || 0) - (a[moodKey] || 0))[0];
 
   const rangeOptions = [
-    { label: t.dayRangeWeek || 'Past 7 Days', value: 7 },
-    { label: t.dayRange2Weeks || 'Past 14 Days', value: 14 },
-    { label: t.dayRangeMonth || 'Past 30 Days', value: 30 }
+    { label: t.dayRangeWeek, value: 7 },
+    { label: t.dayRange2Weeks, value: 14 },
+    { label: t.dayRangeMonth, value: 30 }
   ];
 
   return (
@@ -96,8 +96,8 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-extrabold text-sm sm:text-base text-[#2B3E50]">{t.weeklyHabitsMoodTitle || 'Weekly Habits & Mood Tracking'}</h3>
-            <p className="text-[11px] text-gray-500">{t.weeklyHabitsMoodDesc || 'Visual correlation between habit consistency and mood balance'}</p>
+            <h3 className="font-extrabold text-sm sm:text-base text-[#2B3E50]">{t.weeklyHabitsMoodTitle}</h3>
+            <p className="text-[11px] text-gray-500">{t.weeklyHabitsMoodDesc}</p>
           </div>
         </div>
 
@@ -139,15 +139,15 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
       {/* Summary Stat Badges */}
       <div className="grid grid-cols-3 gap-2 py-1">
         <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-2.5 rounded-2xl text-center space-y-0.5">
-          <span className="text-[10px] text-gray-400 font-bold block">{t.avgHabitsRate || 'Habits Rate'}</span>
+          <span className="text-[10px] text-gray-400 font-bold block">{t.avgHabitsRate}</span>
           <span className="text-sm font-black text-[#8B9D83] font-mono">{avgHabitRate}%</span>
         </div>
         <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-2.5 rounded-2xl text-center space-y-0.5">
-          <span className="text-[10px] text-gray-400 font-bold block">{t.avgMoodRate || 'Avg Mood'}</span>
+          <span className="text-[10px] text-gray-400 font-bold block">{t.avgMoodRate}</span>
           <span className="text-sm font-black text-[#D4A373] font-mono">{avgMood} / 10</span>
         </div>
         <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-2.5 rounded-2xl text-center space-y-0.5">
-          <span className="text-[10px] text-gray-400 font-bold block">{t.bestMoodDay || 'Best Day'}</span>
+          <span className="text-[10px] text-gray-400 font-bold block">{t.bestMoodDay}</span>
           <span className="text-xs font-black text-[#3A3A3A] truncate block">{bestDay?.day?.split(' ')[0] || '-'}</span>
         </div>
       </div>
@@ -218,7 +218,7 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
       <div className="bg-[#EEF1EB] border border-[#DCE4D8] p-3.5 rounded-2xl flex items-start gap-2.5">
         <TrendingUp className="w-4 h-4 text-[#556E4F] shrink-0 mt-0.5" />
         <p className="text-[11px] text-[#4E685B] leading-relaxed font-semibold">
-          <strong>{t.cognitiveInsightLabel || 'Cognitive Insight:'}</strong> {t.weeklyChartInsight || 'Data shows a strong direct correlation between habit adherence and mood balance; days exceeding 70% habit completion experience significantly elevated emotional stability.'}
+          <strong>{t.cognitiveInsightLabel}</strong> {t.weeklyChartInsight}
         </p>
       </div>
     </div>

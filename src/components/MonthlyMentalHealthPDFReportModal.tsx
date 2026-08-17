@@ -803,18 +803,18 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 <body dir="${langInfo.dir}">
   <h1>🎓 ${periodTitle}</h1>
   <div class="meta">
-    <p><strong>${t.timePeriod || 'Time Period:'}</strong> ${periodLabel}</p>
-    <p><strong>${t.diariesCount || 'Diaries:'}</strong> ${stats.totalDiaries} | <strong>${t.avgSleep || 'Avg Sleep:'}</strong> ${stats.avgSleep} ${t.hoursUnit || 'hrs'} | <strong>${t.moodScore || 'Mood Score:'}</strong> ${stats.avgMood}/10 | <strong>${t.sportsTime || 'Exercise:'}</strong> ${stats.totalSportsMinutes} ${t.minutesUnit || 'min'}</p>
+    <p><strong>${t.timePeriod}</strong> ${periodLabel}</p>
+    <p><strong>${t.diariesCount}</strong> ${stats.totalDiaries} | <strong>${t.avgSleep}</strong> ${stats.avgSleep} ${t.hoursUnit} | <strong>${t.moodScore}</strong> ${stats.avgMood}/10 | <strong>${t.sportsTime}</strong> ${stats.totalSportsMinutes} ${t.minutesUnit}</p>
   </div>
-  <h3>${t.aiClinicalAnalysisTitle || '📋 AI Advisor Clinical Analysis & Report'}</h3>
+  <h3>${t.aiClinicalAnalysisTitle}</h3>
   <div class="report-body">
-    ${(aiAnalysisText || t.clinicalSummaryPlaceholder || 'Comprehensive report evaluating mood stability, behavioral balance, and sleep.').replace(/\n/g, '<br/>')}
+    ${(aiAnalysisText || t.clinicalSummaryPlaceholder).replace(/\n/g, '<br/>')}
   </div>
   ${patientNotes ? `
-    <h3>${t.therapistNotesTitle || '📝 Notes & Questions for Therapist'}</h3>
+    <h3>${t.therapistNotesTitle}</h3>
     <div class="report-body">${patientNotes.replace(/\n/g, '<br/>')}</div>
   ` : ''}
-  <div class="footer">${t.reportGeneratedSecurely || 'This report was generated automatically & securely via Hayat AI on '} ${new Date().toLocaleDateString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47)}</div>
+  <div class="footer">${t.reportGeneratedSecurely} ${new Date().toLocaleDateString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47)}</div>
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
@@ -988,13 +988,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             </div>
             <div className="min-w-0">
               <h2 className="text-sm sm:text-base font-black text-white flex items-center gap-2 flex-wrap truncate">
-                <span>{t.exportMentalHealthReport || 'Export Mental Health Report (Custom PDF)'}</span>
+                <span>{t.exportMentalHealthReport}</span>
                 <span className="bg-[#FEFAE0] text-[#5A5A40] text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">
-                  {t.customPeriod || 'Custom Period'}
+                  {t.customPeriod}
                 </span>
               </h2>
               <p className="text-[11px] text-[#E2DCC8] font-medium truncate hidden sm:block">
-                {t.exportReportSub || 'Comprehensive structured document customizable by date range for sharing with therapists & doctors'}
+                {t.exportReportSub}
               </p>
             </div>
           </div>
@@ -1002,7 +1002,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           <button
             onClick={onClose}
             className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer shrink-0"
-            title={t.closeBtn || 'Close'}
+            title={t.closeBtn}
           >
             <X className="w-5 h-5" />
           </button>
@@ -1014,13 +1014,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           {/* Row 1: Period Type Horizontal Scrollable Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none max-w-full">
             {[
-              { id: 'daily', label: t.dailyTab || '☀️ Daily' },
-              { id: 'weekly', label: t.weeklyTab || '📅 Weekly' },
-              { id: 'monthly', label: t.monthlyTab || '📆 Monthly' },
-              { id: 'quarterly', label: t.quarterlyTab || '🧱 Quarterly' },
-              { id: 'semi-annually', label: t.semiAnnualTab || '🌓 Semi-Annual' },
-              { id: 'yearly', label: t.yearlyTab || '📊 Yearly' },
-              { id: 'custom', label: t.customTab || '⚙️ Custom' },
+              { id: 'daily', label: t.dailyTab },
+              { id: 'weekly', label: t.weeklyTab },
+              { id: 'monthly', label: t.monthlyTab },
+              { id: 'quarterly', label: t.quarterlyTab },
+              { id: 'semi-annually', label: t.semiAnnualTab },
+              { id: 'yearly', label: t.yearlyTab },
+              { id: 'custom', label: t.customTab },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1047,14 +1047,14 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             <div className="flex items-center gap-1.5 flex-wrap">
               {periodType === 'custom' ? (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A5A40] flex-wrap">
-                  <span className="shrink-0">{t.reportFromDate || 'From:'}</span>
+                  <span className="shrink-0">{t.reportFromDate}</span>
                   <input
                     type="date"
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
                     className="bg-white border border-[#E2DCC8] rounded-xl px-2 py-1 text-xs text-[#3A3A3A] font-bold shadow-3xs"
                   />
-                  <span className="shrink-0">{t.reportToDate || 'To:'}</span>
+                  <span className="shrink-0">{t.reportToDate}</span>
                   <input
                     type="date"
                     value={customEndDate}
@@ -1065,7 +1065,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               ) : (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A5A40]">
                   <Clock className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                  <span className="shrink-0">{t.reportRangeLabel || 'Range:'}</span>
+                  <span className="shrink-0">{t.reportRangeLabel}</span>
                   <select
                     value={selectedOffset}
                     onChange={(e) => setSelectedOffset(Number(e.target.value))}
@@ -1073,8 +1073,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   >
                     {periodType === 'daily' && (
                       <>
-                        <option value={0}>{t.today || 'Today'}</option>
-                        <option value={1}>{t.yesterday || 'Yesterday'}</option>
+                        <option value={0}>{t.today}</option>
+                        <option value={1}>{t.yesterday}</option>
                         <option value={2}>{t('daysAgo', { count: 2 }) || '2 Days Ago'}</option>
                         <option value={3}>{t('daysAgo', { count: 3 }) || '3 Days Ago'}</option>
                         <option value={4}>{t('daysAgo', { count: 4 }) || '4 Days Ago'}</option>
@@ -1084,32 +1084,32 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     )}
                     {periodType === 'weekly' && (
                       <>
-                        <option value={0}>{t.currentWeek || 'Current Week'}</option>
-                        <option value={1}>{t.lastWeek || 'Last Week'}</option>
+                        <option value={0}>{t.currentWeek}</option>
+                        <option value={1}>{t.lastWeek}</option>
                         <option value={2}>{t('weeksAgo', { count: 2 }) || '2 Weeks Ago'}</option>
                         <option value={3}>{t('weeksAgo', { count: 3 }) || '3 Weeks Ago'}</option>
                       </>
                     )}
                     {periodType === 'monthly' && (
                       <>
-                        <option value={0}>{t.currentMonth || 'Current Month'}</option>
-                        <option value={1}>{t.lastMonth || 'Last Month'}</option>
+                        <option value={0}>{t.currentMonth}</option>
+                        <option value={1}>{t.lastMonth}</option>
                         <option value={2}>{t('monthsAgo', { count: 2 }) || '2 Months Ago'}</option>
                         <option value={3}>{t('monthsAgo', { count: 3 }) || '3 Months Ago'}</option>
                       </>
                     )}
                     {periodType === 'quarterly' && (
                       <>
-                        <option value={0}>{t.currentQuarter || 'Current Quarter'}</option>
-                        <option value={1}>{t.previousQuarter || 'Previous Quarter'}</option>
+                        <option value={0}>{t.currentQuarter}</option>
+                        <option value={1}>{t.previousQuarter}</option>
                         <option value={2}>{t('quartersAgo', { count: 2 }) || '2 Quarters Ago'}</option>
                         <option value={3}>{t('quartersAgo', { count: 3 }) || '3 Quarters Ago'}</option>
                       </>
                     )}
                     {periodType === 'semi-annually' && (
                       <>
-                        <option value={0}>{t.currentHalf || 'Current Half'}</option>
-                        <option value={1}>{t.previousHalf || 'Previous Half'}</option>
+                        <option value={0}>{t.currentHalf}</option>
+                        <option value={1}>{t.previousHalf}</option>
                         <option value={2}>{t('halvesAgo', { count: 2 }) || '2 Halves Ago'}</option>
                       </>
                     )}
@@ -1142,7 +1142,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5 text-white" />
-                <span>{t.save_btn || 'Save'} 💾</span>
+                <span>{t.save_btn} 💾</span>
               </button>
 
               {!aiAnalysisText && (
@@ -1153,7 +1153,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   <Brain className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                  <span>{loadingAi ? (t.analyzingStatus || 'Analyzing...') : (t.aiSummaryBtn || 'AI Summary 🧠')}</span>
+                  <span>{loadingAi ? (t.analyzingStatus) : (t.aiSummaryBtn)}</span>
                 </button>
               )}
 
@@ -1161,10 +1161,10 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 type="button"
                 onClick={handleCopyText}
                 className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
-                title={t.copyTextTooltip || 'Copy Text'}
+                title={t.copyTextTooltip}
               >
                 {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
-                <span className="hidden sm:inline">{copySuccess ? (t.copiedSuccess || 'Copied!') : (t.copyBtn || 'Copy')}</span>
+                <span className="hidden sm:inline">{copySuccess ? (t.copiedSuccess) : (t.copyBtn)}</span>
               </button>
 
               <button
@@ -1181,10 +1181,10 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 type="button"
                 onClick={handlePrintPdf}
                 className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
-                title={t.printReportTooltip || 'Print'}
+                title={t.printReportTooltip}
               >
                 <Printer className="w-3.5 h-3.5 text-[#5A5A40]" />
-                <span className="hidden md:inline">{t.printReportTooltip || 'Print'}</span>
+                <span className="hidden md:inline">{t.printReportTooltip}</span>
               </button>
             </div>
 
@@ -1228,23 +1228,23 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <FileText className="w-3.5 h-3.5 text-[#5A5A40] shrink-0" />
-                  <span className="truncate">{t.loggedDiariesStat || 'Logged Diaries'}</span>
+                  <span className="truncate">{t.loggedDiariesStat}</span>
                 </span>
-                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.totalDiaries} <span className="text-xs font-normal text-gray-500">{t.entriesUnit || 'entries'}</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.totalDiaries} <span className="text-xs font-normal text-gray-500">{t.entriesUnit}</span></p>
               </div>
 
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <Moon className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                  <span className="truncate">{t.avgSleepStat || 'Avg Sleep'}</span>
+                  <span className="truncate">{t.avgSleepStat}</span>
                 </span>
-                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{t.hoursUnit || 'hrs'}</span></p>
+                <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{t.hoursUnit}</span></p>
               </div>
 
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <Smile className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span className="truncate">{t.moodScoreStat || 'Mood Score'}</span>
+                  <span className="truncate">{t.moodScoreStat}</span>
                 </span>
                 <p className="text-base sm:text-lg font-black text-[#2B3E50]">{stats.avgMood} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
               </div>
@@ -1252,9 +1252,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-0.5 sm:space-y-1">
                 <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
                   <Activity className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="truncate">{t.exerciseTimeStat || 'Exercise Time'}</span>
+                  <span className="truncate">{t.exerciseTimeStat}</span>
                 </span>
-                <p className="text-base sm:text-lg font-black text-emerald-700">{stats.totalSportsMinutes} <span className="text-xs font-normal text-gray-500">{t.minutesUnit || 'min'}</span></p>
+                <p className="text-base sm:text-lg font-black text-emerald-700">{stats.totalSportsMinutes} <span className="text-xs font-normal text-gray-500">{t.minutesUnit}</span></p>
               </div>
             </div>
 
@@ -1263,9 +1263,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="flex items-center justify-between text-xs font-extrabold text-[#5A5A40] border-b border-[#E2DCC8] pb-2">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                  <span>{t.sleepMoodChartTitle || 'Sleep vs Mood Trend Chart'}</span>
+                  <span>{t.sleepMoodChartTitle}</span>
                 </span>
-                <span className="text-[10px] text-gray-500 shrink-0">{t.timelineLabel || 'Timeline'}</span>
+                <span className="text-[10px] text-gray-500 shrink-0">{t.timelineLabel}</span>
               </div>
 
               <div className="h-52 sm:h-56 min-h-[190px] w-full pt-2">
@@ -1287,9 +1287,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               <div className="flex items-center justify-between border-b border-[#E2DCC8] pb-2 flex-wrap gap-2">
                 <h3 className="font-extrabold text-xs sm:text-sm text-[#5A5A40] flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-[#D4A373] shrink-0" />
-                  <span>{t.clinicalAnalysisTitle || 'Clinical Psychological Analysis (AI Advisor)'}</span>
+                  <span>{t.clinicalAnalysisTitle}</span>
                 </h3>
-                {loadingAi && <span className="text-xs text-[#8B9D83] font-bold animate-pulse">{t.analyzingStatus || 'Analyzing...'}</span>}
+                {loadingAi && <span className="text-xs text-[#8B9D83] font-bold animate-pulse">{t.analyzingStatus}</span>}
               </div>
 
               <div className="text-xs text-gray-800 leading-relaxed font-normal bg-white p-3 sm:p-4 rounded-xl border border-[#E2DCC8]/60 min-h-[90px] break-words">
@@ -1297,7 +1297,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <FormattedReportView content={aiAnalysisText} />
                 ) : (
                   <div className="text-gray-400 italic text-center py-4">
-                    {t.clickAiSummaryHint || 'Click "AI Summary" above to include behavior & mood analysis for this period.'}
+                    {t.clickAiSummaryHintAI}
                   </div>
                 )}
               </div>
@@ -1306,7 +1306,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             {/* Dominant Moods & Habits Summary */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2">
-                <h4 className="font-bold text-xs text-[#5A5A40]">{t.topLoggedFeelingsTitle || 'Top Logged Feelings:'}</h4>
+                <h4 className="font-bold text-xs text-[#5A5A40]">{t.topLoggedFeelingsTitle}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {stats.topMoods.length > 0 ? (
                     stats.topMoods.map((m, idx) => (
@@ -1315,7 +1315,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-gray-500">{t.sampleFeelings || 'Calm, Peaceful, Optimistic'}</span>
+                    <span className="text-xs text-gray-500">{t.sampleFeelings}</span>
                   )}
                 </div>
               </div>
@@ -1661,7 +1661,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               className="px-5 py-2 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Download className="w-4 h-4 text-[#FEFAE0]" />
-              <span>{isExportingPdf ? (t.preparingPdf || 'Preparing PDF...') : (t.exportPdfNow || 'Export PDF Now')}</span>
+              <span>{isExportingPdf ? (t.preparingPdf) : (t.exportPdfNow)}</span>
             </button>
           </div>
         </div>
@@ -1688,8 +1688,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <History className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">{t.reportsHistoryTitle || 'Saved Mental Health Reports History 📜'}</h3>
-                  <p className="text-xs text-[#FEFAE0]">{t.reportsHistorySubtitle || 'History of previous reports with dates and therapist notes'}</p>
+                  <h3 className="text-base font-black text-white">{t.reportsHistoryTitle}</h3>
+                  <p className="text-xs text-[#FEFAE0]">{t.reportsHistorySubtitle}</p>
                 </div>
               </div>
               <button
@@ -1708,7 +1708,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   type="text"
                   value={historySearchQuery}
                   onChange={(e) => setHistorySearchQuery(e.target.value)}
-                  placeholder={t.searchReportsPlaceholder || 'Search reports...'}
+                  placeholder={t.searchReportsPlaceholder}
                   className="w-full bg-white border border-[#E2DCC8] rounded-xl pr-9 pl-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
                 />
               </div>
@@ -1722,8 +1722,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               {filteredSavedReports.length === 0 ? (
                 <div className="text-center py-12 space-y-3">
                   <FileText className="w-12 h-12 text-gray-300 mx-auto" />
-                  <p className="text-sm text-gray-500 font-bold">{t.noReportsInHistory || 'No saved reports found in history'}</p>
-                  <p className="text-xs text-gray-400">{t.clickSaveReportHint || 'Click "Save Report" above to archive your report.'}</p>
+                  <p className="text-sm text-gray-500 font-bold">{t.noReportsInHistory}</p>
+                  <p className="text-xs text-gray-400">{t.clickSaveReportHintSave}</p>
                 </div>
               ) : (
                 filteredSavedReports.map((rep) => {

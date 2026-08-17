@@ -88,7 +88,7 @@ export default function OfflineSyncBanner({
             <div>
               {!isOnline ? (
                 <span>
-                  {t.offlineStatusOffline || 'Offline Mode - Saving state locally'}
+                  {t.offlineStatusOffline}
                 </span>
               ) : pendingCount > 0 ? (
                 <span>
@@ -98,7 +98,7 @@ export default function OfflineSyncBanner({
                 </span>
               ) : (
                 <span>
-                  {t.offlineSyncSuccess || 'All offline data synced successfully ✨'}
+                  {t.offlineSyncSuccess}
                 </span>
               )}
             </div>
@@ -112,7 +112,7 @@ export default function OfflineSyncBanner({
               className="px-3 py-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-gray-950 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? (t.syncing || 'Syncing...') : (t.syncNowBtn || 'Sync Now 🔄')}</span>
+              <span>{isSyncing ? (t.syncing) : (t.syncNowBtn)}</span>
             </button>
           )}
         </div>

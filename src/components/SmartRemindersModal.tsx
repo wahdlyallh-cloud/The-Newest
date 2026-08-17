@@ -57,12 +57,12 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
   };
 
   const presetNotes = [
-    t.presetNote1 || 'You are doing great! Take a short mindful pause today.',
-    t.presetNote2 || 'Small consistent habits lead to profound peace of mind.',
-    t.presetNote3 || 'Self-care and mental wellness are an absolute priority.',
-    t.presetNote4 || 'Take 3 deep breaths right now and relax deeply.',
-    t.presetNote5 || 'Journaling clears stress and brings calm clarity.',
-    "💧 " + (t('presetNote6') || "شرب الماء والعناية ببدنك يرفع طاقتك وإيجابيتك طوال اليوم.")
+    t.presetNote1,
+    t.presetNote2,
+    t.presetNote3,
+    t.presetNote4,
+    t.presetNote5,
+    "💧 " + (t('presetNote6'))
   ];
 
   const resetForm = () => {
@@ -490,14 +490,14 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                         <button
                           onClick={() => handleStartEdit(reminder)}
                           className="p-2 text-gray-500 hover:text-[#4E685B] bg-gray-100 hover:bg-[#EEF1EB] rounded-xl transition-all cursor-pointer"
-                          title={t('edit') || "Edit"}
+                          title={t('edit')}
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(reminder.id)}
                           className="p-2 text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all cursor-pointer"
-                          title={t('delete') || "Delete"}
+                          title={t('delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

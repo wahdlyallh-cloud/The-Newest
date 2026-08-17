@@ -72,10 +72,10 @@ export default function ShareableGratitudeCardModal({
 
   const [cardText, setCardText] = useState(
     initialData?.text || 
-    t.defaultGratitudeCardQuote || 'Grateful for peace, calm moments, and health today.'
+    t.defaultGratitudeCardQuote
   );
-  const [authorName, setAuthorName] = useState(initialData?.author || (t.defaultAuthorName || 'My Mindful Journey'));
-  const [cardCategory, setCardCategory] = useState(initialData?.category || (t.defaultCardCategory || 'Gratitude Moment 💖'));
+  const [authorName, setAuthorName] = useState(initialData?.author || (t.defaultAuthorName));
+  const [cardCategory, setCardCategory] = useState(initialData?.category || (t.defaultCardCategory));
   const [selectedTheme, setSelectedTheme] = useState<CardThemeId>('emerald');
   const [selectedFormat, setSelectedFormat] = useState<CardFormat>('1:1');
   const [showWatermark, setShowWatermark] = useState(true);
@@ -331,11 +331,11 @@ export default function ShareableGratitudeCardModal({
       }, 30000);
 
       setDownloadSuccess(true);
-      showToast(t.gratitudeDownloaded || '✅ Gratitude card downloaded successfully', 'success');
+      showToast(t.gratitudeDownloaded, 'success');
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err: any) {
       console.error('[GratitudeExport] error during download:', err?.message, err?.stack);
-      showToast(t.gratitudeDownloadFailed || '⚠️ Failed to download image, please retry', 'error');
+      showToast(t.gratitudeDownloadFailed, 'error');
     } finally {
       setIsExporting(false);
       setExportAction(null);
@@ -409,15 +409,15 @@ export default function ShareableGratitudeCardModal({
         const copiedOk = await copyToClipboard(`«${cardText}» - ${authorName}`);
         if (copiedOk) {
           setCopied(true);
-          showToast(t.gratitudeCardCopied || '📋 Card text copied for sharing', 'info');
+          showToast(t.gratitudeCardCopied, 'info');
           setTimeout(() => setCopied(false), 2500);
         } else {
-          showToast(t.gratitudeShareUnsupported || '⚠️ Sharing not supported on this device', 'error');
+          showToast(t.gratitudeShareUnsupported, 'error');
         }
       }
     } catch (err: any) {
       console.error('[GratitudeExport] error during share:', err?.message, err?.stack);
-      showToast(t.gratitudeShareFailed || '⚠️ Failed to prepare share', 'error');
+      showToast(t.gratitudeShareFailed, 'error');
     } finally {
       setIsExporting(false);
       setExportAction(null);
@@ -431,10 +431,10 @@ export default function ShareableGratitudeCardModal({
     const ok = await copyToClipboard(fullText);
     if (ok) {
       setCopied(true);
-      showToast(t.gratitudeTextCopied || '📋 Text copied to clipboard', 'success');
+      showToast(t.gratitudeTextCopied, 'success');
       setTimeout(() => setCopied(false), 2500);
     } else {
-      showToast(t.gratitudeCopyFailed || '⚠️ Failed to copy to clipboard', 'error');
+      showToast(t.gratitudeCopyFailed, 'error');
     }
   };
 
@@ -475,10 +475,10 @@ export default function ShareableGratitudeCardModal({
             </div>
             <div>
               <h3 className="font-extrabold text-[#2B3E50] text-base sm:text-lg flex items-center gap-2">
-                <span>{t.shareableGratitudeTitle || 'Shareable Gratitude Cards 🎨'}</span>
+                <span>{t.shareableGratitudeTitle}</span>
               </h3>
               <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-                {t.shareableGratitudeSub || 'Design beautiful visual cards for sharing'}
+                {t.shareableGratitudeSub}
               </p>
             </div>
           </div>
@@ -679,10 +679,10 @@ export default function ShareableGratitudeCardModal({
                   <Download className="w-4 h-4 text-amber-300" />
                   <span>
                     {isExporting && exportAction === 'download'
-                      ? (t.preparingImage || '⏳ Preparing Image...')
+                      ? (t.preparingImage)
                       : downloadSuccess
-                      ? (t.downloadedBtn || 'Downloaded! 💾')
-                      : (t.downloadPngBtn || 'Download PNG')}
+                      ? (t.downloadedBtn)
+                      : (t.downloadPngBtn)}
                   </span>
                 </button>
 
@@ -695,8 +695,8 @@ export default function ShareableGratitudeCardModal({
                   <Share2 className="w-4 h-4" />
                   <span>
                     {isExporting && exportAction === 'share'
-                      ? (t.preparingShare || '⏳ Preparing Share...')
-                      : (t.directShareBtn || 'Share Card')}
+                      ? (t.preparingShare)
+                      : (t.directShareBtn)}
                   </span>
                 </button>
               </div>
@@ -711,8 +711,8 @@ export default function ShareableGratitudeCardModal({
                 {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#4E685B]" />}
                 <span>
                   {copied
-                    ? (t.copiedSuccessBtn || 'Copied successfully! ✨')
-                    : (t.copyTextBtn || '📋 Copy text to clipboard')}
+                    ? (t.copiedSuccessBtn)
+                    : (t.copyTextBtn)}
                 </span>
               </button>
             </div>

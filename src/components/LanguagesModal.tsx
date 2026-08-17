@@ -66,10 +66,10 @@ export default function LanguagesModal({
               </div>
               <div>
                 <h4 className="font-extrabold text-[#2B3E50] text-base sm:text-lg flex items-center gap-2">
-                  <span>{activeTab === 'languages' ? (isFirstTime ? t.selectLanguageTitle : t.languagesTitle) : (t.typographyTabTitle || 'Typography & Font Settings')}</span>
+                  <span>{activeTab === 'languages' ? (isFirstTime ? t.selectLanguageTitle : t.languagesTitle) : (t.typographyTabTitle)}</span>
                 </h4>
                 <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-                  {activeTab === 'languages' ? (isFirstTime ? t.selectLanguageSubtitle : t.languagesSub) : (t.typographyTabSub || 'Customize font family & line spacing')}
+                  {activeTab === 'languages' ? (isFirstTime ? t.selectLanguageSubtitle : t.languagesSub) : (t.typographyTabSub)}
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function LanguagesModal({
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span>{t.languageTabLabel || 'Language & Region'}</span>
+                <span>{t.languageTabLabel}</span>
               </button>
 
               <button
@@ -111,7 +111,7 @@ export default function LanguagesModal({
                 }`}
               >
                 <Type className="w-3.5 h-3.5" />
-                <span>{t.fontAndSpacingTabLabel || 'Font & Spacing 🔤'}</span>
+                <span>{t.fontAndSpacingTabLabel}</span>
               </button>
             </div>
           )}
@@ -270,7 +270,7 @@ export default function LanguagesModal({
             className="w-full py-3 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-2xl font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>{t.saveAndCloseBtn || 'Save & Close'}</span>
+            <span>{t.saveAndCloseBtn}</span>
           </button>
         </div>
 
