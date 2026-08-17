@@ -76,14 +76,14 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
   const localizedDistortions = COGNITIVE_DISTORTIONS.map(d => ({
     ...d,
-    name: isAr ? d.nameAr : d.nameEn,
-    desc: isAr ? d.descAr : d.descEn
+    name: t['distortion_' + d.id] || (isAr ? d.nameAr : d.nameEn),
+    desc: t['distortion_desc_' + d.id] || (isAr ? d.descAr : d.descEn)
   }));
 
   const localizedCopingCards = PREBUILT_COPING_CARDS.map(c => ({
     ...c,
-    title: isAr ? c.titleAr : c.titleEn,
-    text: isAr ? c.textAr : c.textEn
+    title: t['coping_title_' + c.id] || (isAr ? c.titleAr : c.titleEn),
+    text: t['coping_text_' + c.id] || (isAr ? c.textAr : c.textEn)
   }));
   // Main Sub-Tab view
   const [activeTab, setActiveTab] = useState<
@@ -290,13 +290,13 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       {/* 1. Main Sub-Tab Navigation Switcher */}
       <div className="flex overflow-x-auto pb-1 gap-2 bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-2xs no-scrollbar">
         {[
-          { id: 'thought_records', label: isAr ? '🧠 أوراق الهيكلة المعرفية' : '🧠 CBT Thought Records', icon: FileText, color: 'text-emerald-700' },
-          { id: 'downward_arrow', label: isAr ? '⬇️ سهم التفكير (المعتقدات العميقة)' : '⬇️ Downward Arrow Technique', icon: ArrowDown, color: 'text-indigo-700' },
-          { id: 'worry_box', label: isAr ? '📦 صندوق القلق وتأجيل الوساوس' : '📦 Worry Box & Postponement', icon: Archive, color: 'text-amber-700' },
-          { id: 'exposure_ladder', label: isAr ? '🪜 سلم التعريض التدريجي' : '🪜 Exposure Ladder', icon: Layers, color: 'text-sky-700' },
-          { id: 'coping_cards', label: isAr ? '📇 بطاقات المواجهة والتأقلم' : '📇 Coping Cards', icon: ShieldCheck, color: 'text-pink-700' },
-          { id: 'grounding', label: isAr ? '🧘 التأريض الحسي 5-4-3-2-1' : '🧘 5-4-3-2-1 Grounding', icon: Compass, color: 'text-teal-700' },
-          { id: 'analytics', label: isAr ? '📊 تحليلات وتشوهات الأفكار' : '📊 Distortions Analytics', icon: BarChart2, color: 'text-purple-700' }
+          { id: 'thought_records', label: t.cbtTabThoughtRecords || '🧠 Thought Records', icon: FileText, color: 'text-emerald-700' },
+          { id: 'downward_arrow', label: t.cbtTabDownwardArrow || '⬇️ Downward Arrow', icon: ArrowDown, color: 'text-indigo-700' },
+          { id: 'worry_box', label: t.cbtTabWorryBox || '📦 Worry Box', icon: Archive, color: 'text-amber-700' },
+          { id: 'exposure_ladder', label: t.cbtTabExposureLadder || '🪜 Exposure Ladder', icon: Layers, color: 'text-sky-700' },
+          { id: 'coping_cards', label: t.cbtTabCopingCards || '📇 Coping Cards', icon: ShieldCheck, color: 'text-pink-700' },
+          { id: 'grounding', label: t.cbtTabGrounding || '🧘 5-4-3-2-1 Grounding', icon: Compass, color: 'text-teal-700' },
+          { id: 'analytics', label: t.cbtTabAnalytics || '📊 Distortions Analytics', icon: BarChart2, color: 'text-purple-700' }
         ].map(tab => {
           const IconComp = tab.icon;
           const isActive = activeTab === tab.id;

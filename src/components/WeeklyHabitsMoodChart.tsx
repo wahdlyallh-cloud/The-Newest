@@ -1,4 +1,3 @@
-import { getTranslation } from '../lib/languages';
 import React from 'react';
 import { 
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, 
@@ -6,6 +5,7 @@ import {
 } from 'recharts';
 import { Habit, DiaryEntry, AppLanguage } from '../types';
 import { Sparkles, TrendingUp } from 'lucide-react';
+import { getLanguageInfo, getTranslation } from '../lib/languages';
 
 interface WeeklyHabitsMoodChartProps {
   habits: Habit[];
@@ -14,29 +14,29 @@ interface WeeklyHabitsMoodChartProps {
 }
 
 export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ habits, diaries, appLanguage = 'ar' }) => {
+  const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isAr = appLanguage === 'ar';
   const [daysCount, setDaysCount] = React.useState<7 | 14 | 30>(7);
   const [showRangeMenu, setShowRangeMenu] = React.useState(false);
 
+  const habitsKey = t.habitsCompletionPct || 'Habit Completion (%)';
+  const moodKey = t.moodStabilityScore || 'Mood Stability (out of 10)';
+
   // Generate past N days data
   const weeklyData = React.useMemo(() => {
-    const days: { 
-      day: string; 
-      date: string; 
-      'نسبة إنجاز العادات (%)': number; 
-      'استقرار المزاج (من 10)': number;
+    const days: Array<{
+      day: string;
+      date: string;
+      [key: string]: any;
       completedCount: number;
       totalHabits: number;
-    }[] = [];
-
-    const arabicDayNames = appLanguage === 'ar' ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    }> = [];
 
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const dayName = arabicDayNames[d.getDay()];
+      const dayName = d.toLocaleDateString(langInfo.bcp47 || 'ar-EG', { weekday: 'short' });
 
       // Calculate habit completion
       let completedCount = 0;
@@ -50,7 +50,7 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
         });
       }
 
-      let habitRate = totalHabits > 0 ? Math.round((completedCount / totalHabits) * 100) : 0;
+      const habitRate = totalHabits > 0 ? Math.round((completedCount / totalHabits) * 100) : 0;
 
       // Find diary entry for this day
       const dayDiary = diaries.find(entry => entry.createdAt.split('T')[0] === dateStr);
@@ -58,92 +58,72 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
       let moodScore = dayDiary?.fastMoodScore || 5;
 
       if (!dayDiary?.fastMoodScore && dayDiary) {
-        if (dayDiary.moods.some(m => ['سعيد', 'ممتن', 'فخور', 'مطمئن', 'أمل'].includes(m))) {
-          moodScore = 8;
-        } else if (dayDiary.moods.some(m => ['قلق', 'حزين', 'خوف', 'أرق'].includes(m))) {
-          moodScore = 4;
+        if (dayDiary.moods && dayDiary.moods.length > 0) {
+          moodScore = 7;
         }
       }
 
-      // Default fallback pattern if user hasn't recorded habits yet
-      if (totalHabits === 0 && !dayDiary) {
-        const mockHabitsRates = [65, 80, 55, 90, 85, 70, 95];
-        const mockMoodScores = [6, 8, 5, 9, 8, 7, 9];
-        const mockIdx = (daysCount - 1 - i) % 7;
-        habitRate = mockHabitsRates[mockIdx];
-        moodScore = mockMoodScores[mockIdx];
-      }
-
       days.push({
-        day: daysCount > 7 ? `${d.getDate()}/${d.getMonth()+1}` : `${dayName} ${dateStr.slice(5)}`,
+        day: `${dayName} ${d.getDate()}`,
         date: dateStr,
-        'نسبة إنجاز العادات (%)': habitRate,
-        'استقرار المزاج (من 10)': moodScore,
+        [habitsKey]: habitRate,
+        [moodKey]: moodScore,
         completedCount,
         totalHabits
       });
     }
 
     return days;
-  }, [habits, diaries, daysCount]);
+  }, [daysCount, habits, diaries, langInfo.bcp47, habitsKey, moodKey]);
 
-  // Calculate summary metrics
-  const avgHabitRate = Math.round(
-    weeklyData.reduce((acc, curr) => acc + curr['نسبة إنجاز العادات (%)'], 0) / weeklyData.length
-  );
-  const avgMood = (
-    weeklyData.reduce((acc, curr) => acc + curr['استقرار المزاج (من 10)'], 0) / weeklyData.length
-  ).toFixed(1);
+  // Averages calculation
+  const avgHabitRate = Math.round(weeklyData.reduce((acc, curr) => acc + (curr[habitsKey] || 0), 0) / (weeklyData.length || 1));
+  const avgMood = (weeklyData.reduce((acc, curr) => acc + (curr[moodKey] || 0), 0) / (weeklyData.length || 1)).toFixed(1);
+  const bestDay = [...weeklyData].sort((a, b) => (b[moodKey] || 0) - (a[moodKey] || 0))[0];
 
-  const bestDay = [...weeklyData].sort((a, b) => b['استقرار المزاج (من 10)'] - a['استقرار المزاج (من 10)'])[0];
+  const rangeOptions = [
+    { label: t.dayRangeWeek || 'Past 7 Days', value: 7 },
+    { label: t.dayRange2Weeks || 'Past 14 Days', value: 14 },
+    { label: t.dayRangeMonth || 'Past 30 Days', value: 30 }
+  ];
 
   return (
-    <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-      {/* Header Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2DCC8]/50 pb-3 gap-2">
-        <div className="space-y-1 min-w-0">
-          <h3 className="font-extrabold text-[#3A3A3A] text-xs sm:text-sm flex items-center space-x-1.5 space-x-reverse min-w-0">
-            <span className="p-1.5 bg-[#8B9D83]/15 text-[#556E4F] rounded-xl text-sm sm:text-base shrink-0">📈</span>
-            <span className="truncate">الربط الأسبوعي: إنجاز العادات واستقرار المزاج</span>
-          </h3>
-          <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium leading-normal">
-            عرض بياني تفاعلي يوضح تأثير الالتزام بالعادات السلوكية على رفع توازن واستقرار حالتك المزاجية على مدار الأسبوع.
-          </p>
+    <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-3xl p-4 sm:p-6 space-y-4 font-sans shadow-3xs" dir={langInfo.dir}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 space-x-reverse">
+          <div className="p-2 bg-[#8B9D83]/15 text-[#5A5A40] rounded-xl">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-sm sm:text-base text-[#2B3E50]">{t.weeklyHabitsMoodTitle || 'Weekly Habits & Mood Tracking'}</h3>
+            <p className="text-[11px] text-gray-500">{t.weeklyHabitsMoodDesc || 'Visual correlation between habit consistency and mood balance'}</p>
+          </div>
         </div>
 
+        {/* Range Selector */}
         <div className="relative">
           <button
-            type="button"
             onClick={() => setShowRangeMenu(!showRangeMenu)}
-            className="text-[10px] font-black text-[#556E4F] bg-[#EEF1EB] hover:bg-[#E2E8DC] border border-[#DCE4D8] px-3 py-1.5 rounded-xl self-start sm:self-auto shrink-0 flex items-center gap-1.5 cursor-pointer transition-all shadow-2xs active:scale-95"
-            title="تغيير النطاق الزمني للمقارنة"
+            className="text-xs font-bold bg-white border border-[#E2DCC8] px-3 py-1.5 rounded-xl text-[#5A5A40] hover:bg-[#F9F7F2] transition flex items-center gap-1 cursor-pointer shadow-3xs"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
-            <span>مقارنة {daysCount} أيام</span>
+            <span>{rangeOptions.find(o => o.value === daysCount)?.label}</span>
+            <span className="text-[10px]">▼</span>
           </button>
 
           {showRangeMenu && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
-                onClick={() => setShowRangeMenu(false)} 
-              />
-              <div className="absolute left-0 mt-1.5 w-36 bg-white border border-[#E2DCC8] rounded-2xl shadow-xl p-2 z-50 text-xs font-bold space-y-1 dir-rtl animate-fade-in">
-                {[
-                  { value: 7, label: 'آخر 7 أيام' },
-                  { value: 14, label: 'آخر 14 يوم' },
-                  { value: 30, label: 'آخر 30 يوم' },
-                ].map(opt => (
+              <div className="fixed inset-0 z-10" onClick={() => setShowRangeMenu(false)} />
+              <div className="absolute end-0 mt-1 bg-white border border-[#E2DCC8] rounded-xl shadow-lg py-1 z-20 w-36 overflow-hidden">
+                {rangeOptions.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => {
                       setDaysCount(opt.value as any);
                       setShowRangeMenu(false);
                     }}
-                    className={`w-full text-right py-1.5 px-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-between ${
-                      daysCount === opt.value
-                        ? 'bg-[#8B9D83] text-white font-extrabold'
-                        : 'text-gray-700 hover:bg-[#F9F7F2]'
+                    className={`w-full text-start px-3 py-2 text-xs font-bold transition flex items-center justify-between ${
+                      daysCount === opt.value ? 'bg-[#8B9D83]/15 text-[#5A5A40]' : 'text-gray-600 hover:bg-[#F9F7F2]'
                     }`}
                   >
                     <span>{opt.label}</span>
@@ -159,15 +139,15 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
       {/* Summary Stat Badges */}
       <div className="grid grid-cols-3 gap-2 py-1">
         <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-2.5 rounded-2xl text-center space-y-0.5">
-          <span className="text-[10px] text-gray-400 font-bold block">معدل العادات</span>
+          <span className="text-[10px] text-gray-400 font-bold block">{t.avgHabitsRate || 'Habits Rate'}</span>
           <span className="text-sm font-black text-[#8B9D83] font-mono">{avgHabitRate}%</span>
         </div>
         <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-2.5 rounded-2xl text-center space-y-0.5">
-          <span className="text-[10px] text-gray-400 font-bold block">متوسط المزاج</span>
+          <span className="text-[10px] text-gray-400 font-bold block">{t.avgMoodRate || 'Avg Mood'}</span>
           <span className="text-sm font-black text-[#D4A373] font-mono">{avgMood} / 10</span>
         </div>
         <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-2.5 rounded-2xl text-center space-y-0.5">
-          <span className="text-[10px] text-gray-400 font-bold block">أفضل يوم مزاجي</span>
+          <span className="text-[10px] text-gray-400 font-bold block">{t.bestMoodDay || 'Best Day'}</span>
           <span className="text-xs font-black text-[#3A3A3A] truncate block">{bestDay?.day?.split(' ')[0] || '-'}</span>
         </div>
       </div>
@@ -205,28 +185,28 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
                 borderColor: '#E2DCC8',
                 fontSize: '11px',
                 fontWeight: 'bold',
-                direction: 'rtl'
+                direction: langInfo.dir
               }}
             />
             
             <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
             
             {/* Bar for Habit Completion Rate */}
-            <Bar 
-              yAxisId="left" 
-              dataKey="نسبة إنجاز العادات (%)" 
-              fill="#8B9D83" 
-              radius={[6, 6, 0, 0]} 
-              barSize={20} 
+            <Bar
+              yAxisId="left"
+              dataKey={habitsKey}
+              fill="#8B9D83"
+              radius={[6, 6, 0, 0]}
+              barSize={20}
             />
-            
+
             {/* Line for Mood Stability Score */}
-            <Line 
-              yAxisId="right" 
-              type="monotone" 
-              dataKey="استقرار المزاج (من 10)" 
-              stroke="#D4A373" 
-              strokeWidth={3} 
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey={moodKey}
+              stroke="#D4A373"
+              strokeWidth={3}
               dot={{ r: 5, fill: "#D4A373", strokeWidth: 2, stroke: "#ffffff" }}
               activeDot={{ r: 7 }}
             />
@@ -235,10 +215,10 @@ export const WeeklyHabitsMoodChart: React.FC<WeeklyHabitsMoodChartProps> = ({ ha
       </div>
 
       {/* Explanatory Correlation Insight */}
-      <div className="bg-[#EEF1EB] border border-[#DCE4D8] p-3.5 rounded-2xl flex items-start space-x-2.5 space-x-reverse">
+      <div className="bg-[#EEF1EB] border border-[#DCE4D8] p-3.5 rounded-2xl flex items-start gap-2.5">
         <TrendingUp className="w-4 h-4 text-[#556E4F] shrink-0 mt-0.5" />
         <p className="text-[11px] text-[#4E685B] leading-relaxed font-semibold">
-          <strong>الاستنتاج المعرفي:</strong> تُظهر البيانات وجود علاقة إيجابية مباشرة بين الالتزام بالعادات واستقرار المزاج؛ الأيام التي تتجاوز فيها نسبة إنجاز العادات 70% تشهد ارتفاعاً ملموساً في مؤشر التوازن النفسي وتقليل نوبات القلق.
+          <strong>{t.cognitiveInsightLabel || 'Cognitive Insight:'}</strong> {t.weeklyChartInsight || 'Data shows a strong direct correlation between habit adherence and mood balance; days exceeding 70% habit completion experience significantly elevated emotional stability.'}
         </p>
       </div>
     </div>

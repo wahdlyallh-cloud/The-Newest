@@ -135,3 +135,17 @@ export function getJournalTypeConfig(type?: string): JournalTypeConfig {
   const normalized = (type as JournalEntryType) || 'diary';
   return JOURNAL_TYPES_CONFIG[normalized] || JOURNAL_TYPES_CONFIG.diary;
 }
+
+export function getJournalTypeLabel(type?: string, t?: any): string {
+  const cfg = getJournalTypeConfig(type);
+  if (!t) return cfg.labelEn;
+  const key = 'journal_type_' + cfg.type;
+  return t[key] || cfg.labelEn;
+}
+
+export function getJournalTypeDescription(type?: string, t?: any): string {
+  const cfg = getJournalTypeConfig(type);
+  if (!t) return cfg.descriptionEn;
+  const key = 'journal_desc_' + cfg.type;
+  return t[key] || cfg.descriptionEn;
+}

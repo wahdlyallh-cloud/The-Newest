@@ -176,8 +176,8 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     setShowWaterReminderModal(true);
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        new Notification('💧 حان وقت شرب الماء!', {
-          body: 'تذكير صحي لطيف: شرب كوب من الماء الانتعاش لصحتك وتنشيط عقلك وحمايتك من الجفاف.',
+        new Notification(t.waterReminderNotifTitle || '💧 Time to Hydrate!', {
+          body: t.waterReminderNotifBody || 'Gentle reminder: Drink a glass of water for health and mental focus.',
           tag: 'water-reminder'
         });
       } catch (e) {
@@ -198,10 +198,10 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           console.error(e);
         }
       }
-      showToast('تم تفعيل التنبيهات الساعية لشرب الماء 💧⏰');
+      showToast(t.waterReminderEnabledToast || 'Hourly water reminders enabled 💧⏰');
       setTimeout(() => triggerWaterReminder(), 400);
     } else {
-      showToast('تم إيقاف تنبيهات شرب الماء 🔕');
+      showToast(t.waterReminderDisabledToast || 'Water reminders disabled 🔕');
     }
   };
 
@@ -248,7 +248,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
       totalCupsDrunk += cups;
       last7Days.push({
         dateStr,
-        dayLabel: i === 0 ? 'اليوم' : dayName,
+        dayLabel: i === 0 ? (t.today || 'Today') : dayName,
         cups,
         target: targetPerDay
       });
@@ -280,18 +280,18 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
   const handleStartWorkoutTimer = () => {
     setIsWorkoutTimerRunning(true);
-    showToast('بدأ مؤقت التمرين الرياضي! ⏱️🏃');
+    showToast(t.workoutTimerStarted || 'Workout timer started! ⏱️🏃');
   };
 
   const handlePauseWorkoutTimer = () => {
     setIsWorkoutTimerRunning(false);
-    showToast('تم إيقاف مؤقت التمرين مؤقتاً ⏸️');
+    showToast(t.workoutTimerPaused || 'Workout timer paused ⏸️');
   };
 
   const handleResetWorkoutTimer = () => {
     setIsWorkoutTimerRunning(false);
     setWorkoutSeconds(0);
-    showToast('تمت إعادة ضبط المؤقت 🔄');
+    showToast(t.workoutTimerReset || 'Workout timer reset 🔄');
   };
 
   const handleSaveWorkoutTimer = (mode: 'add' | 'replace' = 'add') => {
@@ -305,7 +305,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     }
 
     handleUpdateHabit('sports', newTotal);
-    showToast(`تم تسجيل ${elapsedMinutes} دقيقة (${sportsType}) بنجاح! 🏃💪 (المجموع: ${newTotal} دقيقة)`);
+    showToast(t('workoutLoggedSuccess', { mins: elapsedMinutes, type: sportsType, total: newTotal }) || `Logged ${elapsedMinutes} mins (${sportsType})! Total: ${newTotal} mins`);
     setWorkoutSeconds(0);
   };
 
@@ -340,7 +340,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     const updated = medicationsList.map(m => {
       if (m.id === medId) {
         const nextTaken = !m.taken;
-        showToast(nextTaken ? `تم تسجيل أخذ "${m.name}" بنجاح! 💊` : `تم إلغاء تحديد "${m.name}"`);
+        showToast(nextTaken ? (t('medTakenSuccess', { name: m.name }) || `Logged ${m.name}! 💊`) : (t('medUntaken', { name: m.name }) || `Unchecked ${m.name}`));
         return { ...m, taken: nextTaken };
       }
       return m;
@@ -365,14 +365,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     setNewMedName('');
     setNewMedTime('10:00 ص');
     setShowMedicationModal(false);
-    showToast(`تمت إضافة "${newMed.name}" لقائمة أدوية ومكملات اليوم! 💊`);
+    showToast(t('medAddedSuccess', { name: newMed.name }) || `Added ${newMed.name}! 💊`);
   };
 
   // Delete medication
   const handleDeleteMedication = (medId: string) => {
     const updated = medicationsList.filter(m => m.id !== medId);
     handleUpdateHabit('medication', updated);
-    showToast('تم حذف المكمل/الدواء من القائمة.');
+    showToast(t.medDeleted || 'Removed from medication list.');
   };
 
   // Calculate metrics for selected date / period
@@ -438,7 +438,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
         // Create
         const newH: Habit = {
           id: `habit-${Date.now()}`,
-          name: habitData.name || 'عادة جديدة',
+          name: habitData.name || (t.newHabitDefaultName || 'New Habit'),
           category: habitData.category || 'custom',
           habitType: habitData.habitType || 'boolean',
           question: habitData.question,
@@ -462,7 +462,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   };
 
   const handleDeleteHabit = (habitId: string) => {
-    if (confirm('هل أنت متأكد من حذف هذه العادة نهائياً؟')) {
+    if (confirm(t.confirmDeleteHabit || 'Are you sure you want to permanently delete this habit?')) {
       if (setHabits) {
         setHabits(prev => prev.filter(h => h.id !== habitId));
       }
@@ -495,7 +495,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           }`}
         >
           <ListTodo className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8B9D83] shrink-0" />
-          <span className="truncate">اليومية والمهام</span>
+          <span className="truncate">{t.tasksSubTabDaily || "Daily & Tasks"}</span>
         </button>
 
         <button
@@ -507,7 +507,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           }`}
         >
           <Grid className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#2B529A] shrink-0" />
-          <span className="truncate">جدول العادات</span>
+          <span className="truncate">{t.tasksSubTabHabitsGrid || "Habits Grid"}</span>
         </button>
 
         <button
@@ -519,7 +519,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
           }`}
         >
           <SettingsIcon className="w-4 h-4 text-[#D4A373]" />
-          <span>إعدادات العادات والبيانات</span>
+          <span>{t.tasksSubTabSettings || "Habit Settings & Data"}</span>
         </button>
       </div>
 

@@ -48,11 +48,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
       setTimeString(`${hours}:${minutes}`);
 
       const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-      const localeMap: Record<string, string> = {
-        ar: 'ar-EG', en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
-        tr: 'tr-TR', ur: 'ur-PK', ru: 'ru-RU', zh: 'zh-CN', ja: 'ja-JP'
-      };
-      const locale = localeMap[appLanguage] || 'ar-EG';
+      const locale = langInfo.bcp47 || 'ar-EG';
       setDateString(now.toLocaleDateString(locale, options));
     };
 
@@ -294,7 +290,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
                 ? t.pinPadShortcutSub 
                 : t.pinPadSub}
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full inline-block">💡 الرمز الافتراضي: 1234 (يمكنك تغييره من الإعدادات)</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full inline-block">💡 {t.defaultPinHint || 'Default PIN: 1234 (can be changed in Settings)'}</p>
           </div>
 
           {/* Dots & Feedbacks */}

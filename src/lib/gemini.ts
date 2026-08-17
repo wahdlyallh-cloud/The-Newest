@@ -151,11 +151,13 @@ export function getLanguageSystemInstruction(activeLanguage?: string): string {
     fr: { name: 'French',             native: 'Français' },
     de: { name: 'German',             native: 'Deutsch' },
     es: { name: 'Spanish',            native: 'Español' },
-    ru: { name: 'Russian',            native: 'Русский' },
-    zh: { name: 'Chinese Simplified', native: '中文' },
-    tr: { name: 'Turkish',            native: 'Türkçe' },
-    hi: { name: 'Hindi',              native: 'हिन्दी' },
     it: { name: 'Italian',            native: 'Italiano' },
+    tr: { name: 'Turkish',            native: 'Türkçe' },
+    pt: { name: 'Portuguese',         native: 'Português' },
+    ru: { name: 'Russian',            native: 'Русский' },
+    ja: { name: 'Japanese',           native: '日本語' },
+    zh: { name: 'Chinese Simplified', native: '中文' },
+    hi: { name: 'Hindi',              native: 'हिन्दी' },
   };
   const target = langNames[lang] || { name: 'Arabic', native: 'العربية' };
 

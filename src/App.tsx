@@ -12,7 +12,7 @@ import {
   MoreVertical, MoreHorizontal
 } from 'lucide-react';
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
-import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig } from './lib/journalTypes';
+import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from './lib/journalTypes';
 import StaticNotification from './components/StaticNotification';
 import FloatingBall from './components/FloatingBall';
 import DrawingCanvas from './components/DrawingCanvas';
@@ -6466,7 +6466,7 @@ export default function App() {
                     {ALL_JOURNAL_TYPES.map((typeKey) => {
                       const cfg = getJournalTypeConfig(typeKey);
                       const isSelected = (editingDiary.diaryType || 'diary') === typeKey;
-                      const label = isAr ? cfg.labelAr : cfg.labelEn;
+                      const label = getJournalTypeLabel(typeKey, t);
 
                       return (
                         <button
@@ -6487,8 +6487,7 @@ export default function App() {
                   </div>
                   {/* Subtle guidance of the selected type */}
                   {(() => {
-                    const activeCfg = getJournalTypeConfig(editingDiary.diaryType);
-                    const desc = isAr ? activeCfg.descriptionAr : activeCfg.descriptionEn;
+                    const desc = getJournalTypeDescription(editingDiary.diaryType, t);
                     return (
                       <p className="text-[11px] text-[#5A5A40]/80 font-bold bg-[#FBFBFA] border border-[#E2DCC8]/60 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
                         <span>✨</span>
@@ -8445,7 +8444,7 @@ export default function App() {
                       {ALL_JOURNAL_TYPES.map((typeKey) => {
                         const cfg = getJournalTypeConfig(typeKey);
                         const isSelected = diaryTypeFilter === typeKey;
-                        const label = isAr ? cfg.labelAr : cfg.labelEn;
+                        const label = getJournalTypeLabel(typeKey, t);
 
                         return (
                           <button
@@ -8733,7 +8732,7 @@ export default function App() {
                                           const typeCfg = getJournalTypeConfig(diary.diaryType);
                                           return (
                                             <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 border ${typeCfg.pillBadgeClass}`}>
-                                              {isAr ? typeCfg.badgeAr : typeCfg.badgeEn}
+                                              {typeCfg.icon} {getJournalTypeLabel(diary.diaryType, t)}
                                             </span>
                                           );
                                         })()}
