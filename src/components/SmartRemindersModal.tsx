@@ -57,11 +57,11 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
   };
 
   const presetNotes = [
-    "✨ " + (t('presetNote1') || "أنت تقوم بعمل رائع! خذ استراحة قصيرة وتأمل خطواتك اليوم."),
-    "🌱 " + (t('presetNote2') || "الاستمرارية في العادات الصغيرة تؤدي لنتائج عظيمة وراحة بال."),
-    "💖 " + (t('presetNote3') || "رعاية ذاتك وصحتك النفسية ليست رفاهية بل أولوية مطلقة."),
-    "🧘‍♂️ " + (t('presetNote4') || "خذ 3 أنفاس عميقة الآن، واسترخِ بعمق."),
-    "✍️ " + (t('presetNote5') || "تدوين خواطرك يفرغ طاقة التوتر ويمنح عقلك السكينة والوضوح."),
+    t.presetNote1 || 'You are doing great! Take a short mindful pause today.',
+    t.presetNote2 || 'Small consistent habits lead to profound peace of mind.',
+    t.presetNote3 || 'Self-care and mental wellness are an absolute priority.',
+    t.presetNote4 || 'Take 3 deep breaths right now and relax deeply.',
+    t.presetNote5 || 'Journaling clears stress and brings calm clarity.',
     "💧 " + (t('presetNote6') || "شرب الماء والعناية ببدنك يرفع طاقتك وإيجابيتك طوال اليوم.")
   ];
 

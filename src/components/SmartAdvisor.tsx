@@ -43,19 +43,18 @@ const DEFAULT_ADVISOR_PERMISSIONS: AdvisorPermissions = {
 
 const getPermissionsConfig = (lang: AppLanguage) => {
   const t = getTranslation(lang);
-  const isArabic = lang === 'ar';
   return [
-    { key: 'diaries' as const, title: t('onboardingStep1Title') || (isArabic ? 'قسم اليوميات والخواطر' : 'Diaries & Reflections'), desc: isArabic ? 'قراءة المذكرات والملاحظات المكتوبة' : 'Read personal diary entries', icon: '📖' },
-    { key: 'moodLogs' as const, title: isArabic ? 'سجل المزاج والانفعالات اليومية' : 'Daily Mood & Emotion Logs', desc: isArabic ? 'قراءة وتقييم درجات المزاج اليومي' : 'Assess daily mood scores', icon: '📊' },
-    { key: 'habits' as const, title: isArabic ? 'قائمة العادات والالتزام اليومي' : 'Habits & Routines Tracker', desc: isArabic ? 'متابعة نسبة إنجاز وتكرار عاداتك' : 'Track habit completion rates', icon: '🎯' },
-    { key: 'tasks' as const, title: isArabic ? 'المهام وقوائم الإنجاز (Tasks)' : 'Tasks & To-Do Checklists', desc: isArabic ? 'الاطلاع على قائمة مهامك اليومية والأسبوعية' : 'Access daily & weekly tasks', icon: '📝' },
-    { key: 'cbtExercises' as const, title: isArabic ? 'تمارين العلاج المعرفي السلوكي (CBT)' : 'CBT Therapy Exercises', desc: isArabic ? 'قراءة بطاقات التكيف وأفكارك لإعطاء إرشادات' : 'Read coping cards for guidance', icon: '🧠' },
-    { key: 'therapyReports' as const, title: isArabic ? 'تقارير الصحة النفسية الشاملة' : 'Mental Health Reports', desc: isArabic ? 'قراءة ملخصات التقييم النفسي والتحليلات' : 'Analyze psychological summaries', icon: '🩺' },
-    { key: 'voiceNotes' as const, title: isArabic ? 'المذكرات والتسجيلات الصوتية' : 'Voice Notes & Recordings', desc: isArabic ? 'تحليل نصوص التسجيلات والملاحظات الصوتية' : 'Analyze audio transcripts', icon: '🗣️' },
-    { key: 'books' as const, title: isArabic ? 'المكتبة والكتب المفضلة' : 'Favorite Books & Library', desc: isArabic ? 'قراءة قائمة قراءاتك واقتباساتك الملهمة' : 'Read reading logs & quotes', icon: '📚' },
-    { key: 'gratitude' as const, title: isArabic ? 'شجرة الامتنان والتفكير الإيجابي' : 'Gratitude & Positive Mindset', desc: isArabic ? 'مراجعة أسباب الامتنان والأفكار الإيجابية' : 'Review gratitude items', icon: '🌟' },
-    { key: 'lifeMap' as const, title: isArabic ? 'خريطة الحياة والأهداف المستقبلية' : 'Life Map & Future Goals', desc: isArabic ? 'متابعة رؤيتك المستقبلية وأهدافك طويلة المدى' : 'Follow long-term goals', icon: '🗺️' },
-    { key: 'prosCons' as const, title: isArabic ? 'ميزان القرار والموازنات (Pros & Cons)' : 'Decision Balance (Pros & Cons)', desc: isArabic ? 'مراجعة الموازنات والقرارات الشخصية' : 'Review decision balances', icon: '⚖️' },
+    { key: 'diaries' as const, title: t.smartContextDiariesTitle || 'Diaries & Reflections', desc: t.smartContextDiariesDesc || 'Read personal diary entries', icon: '📖' },
+    { key: 'moodLogs' as const, title: t.smartContextMoodLogsTitle || 'Daily Mood & Emotion Logs', desc: t.smartContextMoodLogsDesc || 'Assess daily mood scores', icon: '📊' },
+    { key: 'habits' as const, title: t.smartContextHabitsTitle || 'Habits & Routines Tracker', desc: t.smartContextHabitsDesc || 'Track habit completion rates', icon: '🎯' },
+    { key: 'tasks' as const, title: t.smartContextTasksTitle || 'Tasks & To-Do Checklists', desc: t.smartContextTasksDesc || 'Access daily & weekly tasks', icon: '📝' },
+    { key: 'cbtExercises' as const, title: t.smartContextCbtTitle || 'CBT Therapy Exercises', desc: t.smartContextCbtDesc || 'Read coping cards for guidance', icon: '🧠' },
+    { key: 'therapyReports' as const, title: t.smartContextReportsTitle || 'Mental Health Reports', desc: t.smartContextReportsDesc || 'Analyze psychological summaries', icon: '🩺' },
+    { key: 'voiceNotes' as const, title: t.smartContextVoiceTitle || 'Voice Notes & Recordings', desc: t.smartContextVoiceDesc || 'Analyze audio transcripts', icon: '🗣️' },
+    { key: 'books' as const, title: t.smartContextBooksTitle || 'Favorite Books & Library', desc: t.smartContextBooksDesc || 'Read reading logs & quotes', icon: '📚' },
+    { key: 'gratitude' as const, title: t.smartContextGratitudeTitle || 'Gratitude & Positive Mindset', desc: t.smartContextGratitudeDesc || 'Review gratitude items', icon: '🌟' },
+    { key: 'lifeMap' as const, title: t.smartContextLifeMapTitle || 'Life Map & Future Goals', desc: t.smartContextLifeMapDesc || 'Follow long-term goals', icon: '🗺️' },
+    { key: 'prosCons' as const, title: t.smartContextProsConsTitle || 'Decision Balance (Pros & Cons)', desc: t.smartContextProsConsDesc || 'Review decision balances', icon: '⚖️' },
   ];
 };
 
@@ -303,7 +302,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
 
     setVoiceStatus('listening');
-    setVoiceTranscript(appLanguage === 'ar' ? 'جاري الاستماع... تفضل بالتحدث معي...' : 'Listening... Speak freely...');
+    setVoiceTranscript(t.voiceListeningPrompt || 'Listening... Speak freely...');
 
     manager.startSession({
       lang: langInfo.speechLang,
@@ -969,8 +968,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const handleClearHistory = () => {
     const isGeneral = activeAdvisorTab === 'general';
     const confirmMsg = isGeneral
-      ? (isAr ? "هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار العام؟" : "Are you sure you want to clear General AI chat history?")
-      : (isAr ? "هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار الذكي؟" : "Are you sure you want to clear the AI advisor chat history?");
+      ? (t.confirmClearGeneralChat || 'Are you sure you want to clear General AI chat history?')
+      : (t.confirmClearAdvisorChat || 'Are you sure you want to clear the AI advisor chat history?');
 
     if (window.confirm(confirmMsg)) {
       if (isGeneral) {
@@ -1462,7 +1461,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 ? 'bg-[#D4A373] text-white animate-pulse ring-4 ring-[#D4A373]/20'
                 : 'bg-[#F0EDE4] text-[#3A3A3A] hover:bg-[#E2DCC8]'
             }`}
-            title={isRecording ? (isAr ? 'اضغط لإنهاء الإملاء' : 'Click to stop dictation') : (isAr ? 'إملاء صوتي ذكي للرسالة' : 'Smart Voice Dictation')}
+            title={isRecording ? (t.stopDictationTitle || 'Click to stop dictation') : (t.smartDictationTitle || 'Smart Voice Dictation')}
           >
             <Mic className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
           </button>
@@ -1474,10 +1473,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
             placeholder={
               isRecording
-                ? (isAr ? 'جاري الاستماع لصوتك...' : 'Listening...')
+                ? (t.listeningVoice || 'Listening...')
                 : activeAdvisorTab === 'general'
-                ? (isAr ? 'اسأل المستشار العام أو أرفق ملفاً...' : 'Ask General AI or attach files...')
-                : (isAr ? 'اسأل المستشار عن يومياتك...' : 'Ask advisor about your diary...')
+                ? (t.askGeneralAiPlaceholder || 'Ask General AI or attach files...')
+                : (t.askAdvisorPlaceholder || 'Ask advisor about your diary...')
             }
             disabled={isRecording}
             className="min-w-0 flex-1 bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8]/60 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] rounded-xl px-2.5 sm:px-3.5 py-2 sm:py-2.5 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none transition-colors truncate"
@@ -1514,7 +1513,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 activeAdvisorTab === 'general' ? 'bg-[#2B3E50]/15 text-[#2B3E50]' : 'bg-[#8B9D83]/15 text-[#8B9D83]'
               }`}>
                 {activeAdvisorTab === 'general' 
-                  ? (isAr ? 'المساعد الصوتي الذكي العام 🌐' : 'General Voice Companion 🌐')
+                  ? (t.generalVoiceCompanionTitle || 'General Voice Companion 🌐')
                   : (t.voiceCompanionTitle || 'المساعد الصوتي العيادي المستمر')
                 }
               </span>
@@ -1560,8 +1559,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <p className="text-xs text-gray-500 font-medium mb-1">{t.voiceLiveTranscript || 'النسخ التلقائي للمحادثة:'}</p>
               <p className="text-sm text-[#3A3A3A] font-medium leading-relaxed">
                 {voiceTranscript || (activeAdvisorTab === 'general'
-                  ? (appLanguage === 'ar' ? 'تحدث بطلاقة، وسيقوم المستشار الذكي العام بالإجابة عن كافة أسئلتك واستفساراتك بالصوت...' : 'Speak freely, the general AI assistant will answer all your questions via voice...')
-                  : (appLanguage === 'ar' ? 'تكلم بطلاقة، وسيقوم المساعد بقراءة تدويناتك وتحليلها والرد عليك فوراً بالصوت...' : 'Speak freely, the assistant will process your entries and speak back to you...')
+                  ? (t.generalVoiceModalDesc || 'Speak freely, the AI assistant will answer all your questions...')
+                  : (t.advisorVoiceModalDesc || 'Speak freely, the assistant will process your entries and speak back...')
                 )}
               </p>
             </div>

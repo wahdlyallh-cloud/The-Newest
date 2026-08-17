@@ -88,7 +88,7 @@ export default function OfflineSyncBanner({
             <div>
               {!isOnline ? (
                 <span>
-                  {t.offlineStatusOffline || (isRtl ? 'وضع عدم الاتصال بالإنترنت - يتم الحفظ محلياً بآمان' : 'Offline Mode - Saving state locally')}
+                  {t.offlineStatusOffline || 'Offline Mode - Saving state locally'}
                 </span>
               ) : pendingCount > 0 ? (
                 <span>
@@ -98,7 +98,7 @@ export default function OfflineSyncBanner({
                 </span>
               ) : (
                 <span>
-                  {t.offlineSyncSuccess || (isRtl ? 'تمت مزامنة جميع البيانات المحفوظة محلياً بنجاح ✨' : 'All offline data synced successfully ✨')}
+                  {t.offlineSyncSuccess || 'All offline data synced successfully ✨'}
                 </span>
               )}
             </div>
@@ -112,7 +112,7 @@ export default function OfflineSyncBanner({
               className="px-3 py-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-gray-950 font-black text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? (isRtl ? 'جاري المزامنة...' : 'Syncing...') : (isRtl ? 'مزامنة الآن 🔄' : 'Sync Now 🔄')}</span>
+              <span>{isSyncing ? (t.syncing || 'Syncing...') : (t.syncNowBtn || 'Sync Now 🔄')}</span>
             </button>
           )}
         </div>

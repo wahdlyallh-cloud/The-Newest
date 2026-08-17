@@ -49,7 +49,7 @@ export default function BehavioralCorrelationCard({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-black text-emerald-300 uppercase tracking-wider">
-                {t.behavioralCorrelationsTitle || (isRtl ? 'محرك التحليلات السلوكية المتقدمة' : 'Behavioral Correlation Engine')}
+                {t.behavioralCorrelationsTitle || 'Behavioral Correlation Engine'}
               </span>
               <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-[10px] font-extrabold rounded-full">
                 AI Analytics ✨

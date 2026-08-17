@@ -252,10 +252,9 @@ export default function PasskeyAuth({
           <Fingerprint className="w-4 h-4 text-white" />
           <span>
             {isLoading
-              ? (appLanguage === 'ar' ? 'جاري الفحص وربط البصمة...' : 'Scanning Biometrics...')
+              ? (t.scanningBiometrics || 'Scanning Biometrics...')
               : biometricCredentialId
-              ? (appLanguage === 'ar' ? 'تحديث أو إعادة ربط البصمة 👆👤' : 'Update Device Biometric 👆👤')
-              : (appLanguage === 'ar' ? 'ربط وتفعيل بصمة الجهاز الآن 👆👤' : 'Link Device Biometric Now 👆👤')}
+              ? (t.updateBiometricBtn || 'Update Device Biometric 👆👤') : (t.linkBiometricBtn || 'Link Device Biometric Now 👆👤')}
           </span>
         </button>
       </div>

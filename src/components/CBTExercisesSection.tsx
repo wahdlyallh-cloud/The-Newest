@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
-import { 
-  Brain, 
-  Plus, 
-  Trash2, 
-  Check, 
-  Sparkles, 
-  ArrowDown, 
-  Archive, 
-  Layers, 
-  Compass, 
-  Clock, 
-  TrendingDown, 
-  ShieldCheck, 
-  Activity, 
-  Eye, 
-  Hand, 
-  Volume2, 
-  Smile, 
-  HelpCircle, 
-  ChevronRight, 
-  ChevronLeft, 
+import {
+  Brain,
+  Plus,
+  Trash2,
+  Check,
+  Sparkles,
+  ArrowDown,
+  Archive,
+  Layers,
+  Compass,
+  Clock,
+  TrendingDown,
+  ShieldCheck,
+  Activity,
+  Eye,
+  Hand,
+  Volume2,
+  Smile,
+  HelpCircle,
+  ChevronRight,
+  ChevronLeft,
   RefreshCw,
   BarChart2,
   FileText,
@@ -91,7 +91,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
   >('thought_records');
 
   // Extract all CBT Worksheets across all diaries
-  const allCbtWorksheets = diaries.flatMap(d => 
+  const allCbtWorksheets = diaries.flatMap(d =>
     (d.cbtWorksheets || []).map(w => ({
       ...w,
       diaryDate: d.createdAt ? d.createdAt.split('T')[0] : selectedDate
@@ -258,11 +258,11 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
   // Render Category Tab Switcher
   return (
     <div className={`space-y-6 ${isDarkMode ? 'text-gray-200' : 'text-[#3A3A3A]'}`} dir={langInfo.dir} id="cbt-exercises-section-main">
-      
+
       {/* Top Banner Header */}
       <div className={`p-6 rounded-3xl border relative overflow-hidden ${
-        isDarkMode 
-          ? 'bg-[#1A1917] border-gray-800' 
+        isDarkMode
+          ? 'bg-[#1A1917] border-gray-800'
           : 'bg-gradient-to-br from-[#8B9D83]/15 via-white to-[#F0EDE4]/60 border-[#E2DCC8]'
       }`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -320,7 +320,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       {/* TAB 1: THOUGHT RECORDS (أوراق الهيكلة المعرفية) */}
       {activeTab === 'thought_records' && (
         <div className="space-y-6">
-          
+
           <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
@@ -366,7 +366,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 const distortionInfo = localizedDistortions.find(d => d.id === item.cognitiveDistortion);
 
                 return (
-                  <div 
+                  <div
                     key={item.id}
                     className={`p-5 rounded-3xl border space-y-3 transition-all relative ${
                       isDarkMode ? 'bg-[#1A1917] border-gray-800' : 'bg-white border-[#E2DCC8] hover:shadow-xs'
@@ -395,7 +395,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     <div className="space-y-2 text-xs">
                       <div>
                         <span className="text-[10px] font-bold text-gray-400 block">🚩 {isAr ? "الموقف أو المحفز:" : "Trigger Event:"}</span>
-                        <p className="font-bold text-gray-800">{item.triggerEvent || (isAr ? 'غير محدد' : 'Not specified')}</p>
+                        <p className="font-bold text-gray-800">{item.triggerEvent || (t.notSpecified || 'Not specified')}</p>
                       </div>
 
                       <div>
@@ -533,7 +533,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       {/* TAB 3: WORRY BOX & WORRY TIME (صندوق المخاوف) */}
       {activeTab === 'worry_box' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+
           {/* Left: Deposit Worry Box Form */}
           <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 space-y-4">
             <div className="space-y-1">
@@ -622,10 +622,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     createdAt: new Date().toISOString(),
                     triggerEvent: isAr ? 'صندوق القلق' : 'Worry Box',
                     negativeThoughts: worryText,
-                    cognitiveDistortion: worryCategory === 'actionable' ? (isAr ? 'مشكلة حقيقية' : 'Real problem') : (isAr ? 'خوف غير مسيطر عليه' : 'Uncontrollable fear'),
-                    rationalAlternative: worryCategory === 'actionable' 
-                      ? `${isAr ? 'خطة العمل:' : 'Action plan:'} ${worryStep1 || (isAr ? 'تحديد موعد للحل' : 'Set resolution time')} - ${worryStep2 || ''}` 
-                      : (isAr ? 'تطبيق التقبل والتخلي عن الأفكار الخيالية غير الخاضعة للتحكم.' : 'Apply acceptance and let go of uncontrollable thoughts.'),
+                    cognitiveDistortion: worryCategory === 'actionable' ? (t.realProblemLabel || 'Real problem') : (t.uncontrollableFearLabel || 'Uncontrollable fear'),
+                    rationalAlternative: worryCategory === 'actionable'
+                      ? `${t.actionPlanLabel || 'Action plan:'} ${worryStep1 || (t.setResolutionTime || 'Set resolution time')} - ${worryStep2 || ''}`
+                      : (t.applyAcceptanceDesc || 'Apply acceptance and let go of uncontrollable thoughts.'),
                     emotionBefore: 8,
                     emotionAfter: 3,
                     exerciseType: 'worry_box',
@@ -635,7 +635,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   setWorryText('');
                   setWorryStep1('');
                   setWorryStep2('');
-                  alert(isAr ? 'تم إغلاق الفكرة وإسكابها في صندوق المخاوف بنجاح! 🔒✨' : 'Thought successfully deposited and locked in the Worry Container! 🔒✨');
+                  alert(t.worryBoxDepositSuccess || 'Thought successfully deposited and locked in the Worry Container! 🔒✨');
                 }}
                 className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
@@ -674,7 +674,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       : 'bg-amber-600 hover:bg-amber-700 text-white'
                   }`}
                 >
-                  {worryTimerRunning ? (isAr ? 'إيقاف مؤقت ⏸️' : 'Pause ⏸️') : (isAr ? 'بدء ساعة القلق (15 دقيقة) ⏱️' : 'Start Worry Time (15m) ⏱️')}
+                  {worryTimerRunning ? (t.pauseBtn || 'Pause ⏸️') : (t.startWorryTimerBtn || 'Start Worry Time (15m) ⏱️')}
                 </button>
                 <button
                   type="button"
@@ -792,7 +792,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Render Pre-built cards + Custom Cards */}
             {[...localizedCopingCards, ...customCards].map((card: any) => (
-              <div 
+              <div
                 key={card.id}
                 className="p-5 rounded-3xl border bg-gradient-to-br from-white via-pink-50/20 to-pink-100/30 border-pink-200 space-y-3 shadow-2xs hover:shadow-xs transition-all relative"
               >
@@ -818,7 +818,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(card.text);
-                        alert(isAr ? 'تم نسخ نص بطاقة المواجهة بنجاح! 📋' : 'Coping card text copied! 📋');
+                        alert(t.copingCardCopied || 'Coping card text copied! 📋');
                       }}
                       className="p-1 bg-white/80 hover:bg-pink-100 text-pink-600 rounded-lg text-xs transition-colors cursor-pointer border border-pink-200"
                       title={isAr ? "نسخ النص 📋" : "Copy text 📋"}
@@ -855,11 +855,11 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="flex justify-between items-center px-4 py-2 bg-teal-50/60 rounded-2xl border border-teal-100 text-xs font-bold text-teal-900">
             <span>{isAr ? `الخطوة ${groundingStep} من 5` : `Step ${groundingStep} of 5`}</span>
             <span>
-              {groundingStep === 1 && (isAr ? '👁️ 5 أشياء يمكنك رؤيتها' : '👁️ 5 things you can see')}
-              {groundingStep === 2 && (isAr ? '✋ 4 أشياء يمكنك لمسها' : '✋ 4 things you can touch')}
-              {groundingStep === 3 && (isAr ? '👂 3 أصوات يمكنك سماعها' : '👂 3 things you can hear')}
-              {groundingStep === 4 && (isAr ? '👃 شيئان يمكنك شمهما' : '👃 2 things you can smell')}
-              {groundingStep === 5 && (isAr ? '👅 شيء واحد يمكنك تذوقه' : '👅 1 thing you can taste')}
+              {groundingStep === 1 && (t.groundingStep1Label || '👁️ 5 things you can see')}
+              {groundingStep === 2 && (t.groundingStep2Label || '✋ 4 things you can touch')}
+              {groundingStep === 3 && (t.groundingStep3Label || '👂 3 things you can hear')}
+              {groundingStep === 4 && (t.groundingStep4Label || '👃 2 things you can smell')}
+              {groundingStep === 5 && (t.groundingStep5Label || '👅 1 thing you can taste')}
             </span>
           </div>
 
@@ -996,7 +996,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             ) : (
               <button
                 onClick={() => {
-                  alert(isAr ? 'أحسنت! خذ نفساً عميقاً، واستشعر السكينة والاستقرار في حواسك الآن. 🌿✨' : 'Well done! Take a deep breath and feel the calm in your senses now. 🌿✨');
+                  alert(t.groundingCompleteSuccess || 'Well done! Take a deep breath and feel the calm in your senses now. 🌿✨');
                   setGroundingStep(1);
                 }}
                 className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
@@ -1012,7 +1012,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       {activeTab === 'analytics' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
+
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 space-y-2">
               <span className="text-[10px] font-bold text-gray-400 block">{isAr ? "إجمالي تمارين CBT المكتملة" : "Total Completed CBT Exercises"}</span>
               <span className="text-2xl font-black text-purple-700 font-mono">{allCbtWorksheets.length}</span>
@@ -1062,7 +1062,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       <span className="font-mono text-purple-700">{count} {isAr ? "مرّة" : "times"} ({pct}%)</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div 
+                      <div
                         className="bg-purple-600 h-full rounded-full transition-all duration-500"
                         style={{ width: `${pct}%` }}
                       />
@@ -1147,7 +1147,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     className="py-1 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>{trAiLoading ? (isAr ? 'جاري التحليل...' : 'Analyzing...') : (isAr ? 'اقتراح بديل بالذكاء الاصطناعي' : 'Suggest AI Alternative')}</span>
+                    <span>{trAiLoading ? (t.analyzing || 'Analyzing...') : (t.suggestAiAlternativeBtn || 'Suggest AI Alternative')}</span>
                   </button>
                 </div>
 
@@ -1215,7 +1215,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     };
                     saveCbtItemToDiary(newW);
                     setShowThoughtWizard(false);
-                    alert(isAr ? 'تم حفظ تمرين إعادة الهيكلة بنجاح في مذكرتك لليوم! 🎉🧠' : 'Thought record saved successfully to your diary! 🎉🧠');
+                    alert(t.thoughtRecordSavedSuccess || 'Thought record saved successfully to your diary! 🎉🧠');
                   }}
                   className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
@@ -1321,7 +1321,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       triggerEvent: isAr ? 'سهم التفكير للأسفل' : 'Downward Arrow',
                       negativeThoughts: daTrigger,
                       cognitiveDistortion: isAr ? 'معتقد أساسي عميق' : 'Deep core belief',
-                      rationalAlternative: daHealthyBelief || (isAr ? 'معتقد متزن بديل' : 'Balanced alternative belief'),
+                      rationalAlternative: daHealthyBelief || (t.balancedBeliefDefault || 'Balanced alternative belief'),
                       emotionBefore: 9,
                       emotionAfter: 4,
                       exerciseType: 'downward_arrow',
@@ -1330,7 +1330,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     };
                     saveCbtItemToDiary(newArrow);
                     setShowArrowWizard(false);
-                    alert(isAr ? 'تم حفظ تمرين سهم التفكير للأسفل بنجاح! 🎯✨' : 'Downward arrow exercise saved successfully! 🎯✨');
+                    alert(t.downwardArrowSavedSuccess || 'Downward arrow exercise saved successfully! 🎯✨');
                   }}
                   className="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
@@ -1436,7 +1436,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   };
                   saveCbtItemToDiary(newLadder);
                   setShowExposureWizard(false);
-                  alert(isAr ? 'تم إنشاء سلم التعريض التدريجي وحفظه بنجاح! 🪜✨' : 'Exposure ladder created and saved successfully! 🪜✨');
+                  alert(t.exposureLadderSavedSuccess || 'Exposure ladder created and saved successfully! 🪜✨');
                 }}
                 className="py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
               >

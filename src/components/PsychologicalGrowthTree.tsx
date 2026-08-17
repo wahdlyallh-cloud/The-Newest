@@ -127,7 +127,7 @@ export default function PsychologicalGrowthTree({
               </span>
               <span className={`px-2.5 py-0.5 text-[10px] ${isLevel5AncientTree ? 'bg-amber-400/30 text-amber-200 border-amber-300/50' : 'bg-amber-400/20 text-amber-300 border-amber-400/30'} border rounded-full font-black flex items-center gap-1`}>
                 {isLevel5AncientTree && <Crown className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />}
-                Level {stageLevel} {isLevel5AncientTree && (isRtl ? '• 365 يوماً' : '• 365 Days')}
+                Level {stageLevel} {isLevel5AncientTree && (t.ancientTreeTag || '• 365 Days')}
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-black text-white mt-0.5 flex items-center gap-2">
@@ -357,7 +357,7 @@ export default function PsychologicalGrowthTree({
             <span>{totalXP} XP</span>
           </span>
           <span className="text-amber-300 font-extrabold">
-            {stageLevel === 5 ? (isRtl ? 'أعلى مستوى نمو متاح 🌟' : 'Max Level Achieved 🌟') : `${progressPercent}% ${isRtl ? 'مكتمل للمستوى التالي' : 'To Next Stage'}`}
+            {stageLevel === 5 ? (t.maxTreeLevelBadge || 'Max Level Achieved 🌟') : `${progressPercent}% ${t.toNextTreeStage || 'To Next Stage'}`}
           </span>
         </div>
 
@@ -514,8 +514,7 @@ export default function PsychologicalGrowthTree({
                     <Crown className="w-4 h-4 text-amber-300" />
                     <span>
                       {test365Mode
-                        ? (isRtl ? 'إلغاء معاينة إنجاز 365 يوماً 🔄' : 'Disable 365 Days Preview 🔄')
-                        : (isRtl ? 'اختبار معاينة مستوى شجرة الحكمة المعمرة (365 يوماً) 🧪' : 'Test Preview 365 Days Wisdom Tree Stage 🧪')}
+                        ? (t.disableTreePreview || 'Disable 365 Days Preview 🔄') : (t.enableTreePreview || 'Test Preview 365 Days Wisdom Tree Stage 🧪')}
                     </span>
                   </button>
                 </div>

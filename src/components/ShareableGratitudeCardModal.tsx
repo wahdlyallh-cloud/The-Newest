@@ -72,10 +72,10 @@ export default function ShareableGratitudeCardModal({
 
   const [cardText, setCardText] = useState(
     initialData?.text || 
-    (isRtl ? 'الحمد لله على نعمة الهدوء والسلام الداخلي والصحة والعافية' : 'Grateful for the peace, quiet moments, and inner health today.')
+    t.defaultGratitudeCardQuote || 'Grateful for peace, calm moments, and health today.'
   );
-  const [authorName, setAuthorName] = useState(initialData?.author || (isRtl ? 'رحلتي مع الوعي' : 'My Mindful Journey'));
-  const [cardCategory, setCardCategory] = useState(initialData?.category || (isRtl ? 'لحظة امتنان 💖' : 'Gratitude Moment 💖'));
+  const [authorName, setAuthorName] = useState(initialData?.author || (t.defaultAuthorName || 'My Mindful Journey'));
+  const [cardCategory, setCardCategory] = useState(initialData?.category || (t.defaultCardCategory || 'Gratitude Moment 💖'));
   const [selectedTheme, setSelectedTheme] = useState<CardThemeId>('emerald');
   const [selectedFormat, setSelectedFormat] = useState<CardFormat>('1:1');
   const [showWatermark, setShowWatermark] = useState(true);
@@ -331,11 +331,11 @@ export default function ShareableGratitudeCardModal({
       }, 30000);
 
       setDownloadSuccess(true);
-      showToast(isRtl ? '✅ تم تحميل بطاقة الامتنان بنجاح' : '✅ Gratitude card downloaded successfully', 'success');
+      showToast(t.gratitudeDownloaded || '✅ Gratitude card downloaded successfully', 'success');
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err: any) {
       console.error('[GratitudeExport] error during download:', err?.message, err?.stack);
-      showToast(isRtl ? '⚠️ تعذر تحميل الصورة، يرجى المحاولة ثانية' : '⚠️ Failed to download image, please retry', 'error');
+      showToast(t.gratitudeDownloadFailed || '⚠️ Failed to download image, please retry', 'error');
     } finally {
       setIsExporting(false);
       setExportAction(null);
@@ -409,15 +409,15 @@ export default function ShareableGratitudeCardModal({
         const copiedOk = await copyToClipboard(`«${cardText}» - ${authorName}`);
         if (copiedOk) {
           setCopied(true);
-          showToast(isRtl ? '📋 تم نسخ نص البطاقة للمشاركة' : '📋 Card text copied for sharing', 'info');
+          showToast(t.gratitudeCardCopied || '📋 Card text copied for sharing', 'info');
           setTimeout(() => setCopied(false), 2500);
         } else {
-          showToast(isRtl ? '⚠️ تعذر فتح المشاركة على هذا الجهاز' : '⚠️ Sharing not supported on this device', 'error');
+          showToast(t.gratitudeShareUnsupported || '⚠️ Sharing not supported on this device', 'error');
         }
       }
     } catch (err: any) {
       console.error('[GratitudeExport] error during share:', err?.message, err?.stack);
-      showToast(isRtl ? '⚠️ تعذر تجهيز المشاركة' : '⚠️ Failed to prepare share', 'error');
+      showToast(t.gratitudeShareFailed || '⚠️ Failed to prepare share', 'error');
     } finally {
       setIsExporting(false);
       setExportAction(null);
@@ -431,10 +431,10 @@ export default function ShareableGratitudeCardModal({
     const ok = await copyToClipboard(fullText);
     if (ok) {
       setCopied(true);
-      showToast(isRtl ? '📋 تم نسخ النص إلى الحافظة' : '📋 Text copied to clipboard', 'success');
+      showToast(t.gratitudeTextCopied || '📋 Text copied to clipboard', 'success');
       setTimeout(() => setCopied(false), 2500);
     } else {
-      showToast(isRtl ? '⚠️ تعذر النسخ للحافظة' : '⚠️ Failed to copy to clipboard', 'error');
+      showToast(t.gratitudeCopyFailed || '⚠️ Failed to copy to clipboard', 'error');
     }
   };
 
@@ -475,10 +475,10 @@ export default function ShareableGratitudeCardModal({
             </div>
             <div>
               <h3 className="font-extrabold text-[#2B3E50] text-base sm:text-lg flex items-center gap-2">
-                <span>{t.shareableGratitudeTitle || (isRtl ? 'بطاقات الامتنان والافتخار القابلة للمشاركة 🎨' : 'Shareable Gratitude Cards 🎨')}</span>
+                <span>{t.shareableGratitudeTitle || 'Shareable Gratitude Cards 🎨'}</span>
               </h3>
               <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-                {t.shareableGratitudeSub || (isRtl ? 'صمم بطاقتك الجميلة وشارك أفكارك الملهمة مع أصدقائك' : 'Design beautiful visual cards for social media sharing')}
+                {t.shareableGratitudeSub || 'Design beautiful visual cards for sharing'}
               </p>
             </div>
           </div>
@@ -679,10 +679,10 @@ export default function ShareableGratitudeCardModal({
                   <Download className="w-4 h-4 text-amber-300" />
                   <span>
                     {isExporting && exportAction === 'download'
-                      ? (isRtl ? '⏳ جاري تجهيز الصورة...' : '⏳ Preparing Image...')
+                      ? (t.preparingImage || '⏳ Preparing Image...')
                       : downloadSuccess
-                      ? (isRtl ? 'تم التحميل! 💾' : 'Downloaded! 💾')
-                      : (isRtl ? 'تحميل صورة PNG' : 'Download PNG')}
+                      ? (t.downloadedBtn || 'Downloaded! 💾')
+                      : (t.downloadPngBtn || 'Download PNG')}
                   </span>
                 </button>
 
@@ -695,8 +695,8 @@ export default function ShareableGratitudeCardModal({
                   <Share2 className="w-4 h-4" />
                   <span>
                     {isExporting && exportAction === 'share'
-                      ? (isRtl ? '⏳ جاري تجهيز المشاركة...' : '⏳ Preparing Share...')
-                      : (isRtl ? 'مشاركة مباشرة' : 'Share Card')}
+                      ? (t.preparingShare || '⏳ Preparing Share...')
+                      : (t.directShareBtn || 'Share Card')}
                   </span>
                 </button>
               </div>
@@ -711,8 +711,8 @@ export default function ShareableGratitudeCardModal({
                 {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#4E685B]" />}
                 <span>
                   {copied
-                    ? (isRtl ? 'تم النسخ بنجاح! ✨' : 'Copied successfully! ✨')
-                    : (isRtl ? '📋 نسخ النص إلى الحافظة' : '📋 Copy text to clipboard')}
+                    ? (t.copiedSuccessBtn || 'Copied successfully! ✨')
+                    : (t.copyTextBtn || '📋 Copy text to clipboard')}
                 </span>
               </button>
             </div>
