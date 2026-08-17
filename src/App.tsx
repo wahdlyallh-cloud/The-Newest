@@ -63,6 +63,51 @@ import OnboardingTourModal from './components/OnboardingTourModal';
 import { SpeechRecognitionManager } from './lib/speechRecognition';
 import { formatDate, formatTime, formatDateTime, formatNumber } from './lib/formatters';
 
+// Dynamic Mood & Tag Localization Helpers
+export function getMoodLabel(mood?: string, t?: any): string {
+  if (!mood) return '';
+  if (!t) return mood;
+  const moodMap: Record<string, string> = {
+    'سعيد': t.mood_happy || 'Happy',
+    'سعيد جدًا': t.mood_very_happy || 'Very Happy',
+    'ممتن': t.mood_grateful || 'Grateful',
+    'مطمئن': t.mood_calm || 'Calm',
+    'أمل': t.mood_hopeful || 'Hopeful',
+    'مرتاح': t.mood_relaxed || 'Relaxed',
+    'حماس': t.mood_enthusiastic || 'Enthusiastic',
+    'متحمس': t.mood_excited || 'Excited',
+    'قلق': t.mood_anxious || 'Anxious',
+    'حزين': t.mood_sad || 'Sad',
+    'خوف': t.mood_afraid || 'Fearful',
+    'أرق': t.mood_insomnia || 'Insomnia',
+    'مرهق': t.mood_exhausted || 'Exhausted',
+    'غضب': t.mood_angry || 'Angry',
+    'طبيعي': t.mood_normal || 'Normal'
+  };
+  return moodMap[mood] || mood;
+}
+
+export function getTagLabel(tag?: string, t?: any): string {
+  if (!tag) return '';
+  if (!t) return tag;
+  const tagMap: Record<string, string> = {
+    'دراسة': t.tag_study || 'Study',
+    'عائلة': t.tag_family || 'Family',
+    'أمل': t.tag_hope || 'Hope',
+    'أرق': t.tag_insomnia || 'Insomnia',
+    'قلق': t.tag_anxiety || 'Anxiety',
+    'تحدي': t.tag_challenge || 'Challenge',
+    'إنجاز': t.tag_achievement || 'Achievement',
+    'سعادة': t.tag_happiness || 'Happiness',
+    'قراءة': t.tag_reading || 'Reading',
+    'تأمل': t.tag_mindfulness || 'Mindfulness',
+    'عمل': t.tag_work || 'Work',
+    'رياضة': t.tag_sports || 'Sports'
+  };
+  return tagMap[tag] || tag;
+}
+
+
 // Recharts components for gorgeous analytics
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
@@ -11069,10 +11114,10 @@ export default function App() {
                               </div>
                               <div className="flex flex-wrap gap-1 pt-2 border-t border-[#E2DCC8]/30">
                                 {dayEntry.moods.map((m, idx) => (
-                                  <span key={idx} className="text-[10px] font-bold bg-[#8B9D83]/10 text-[#5A5A40] border border-[#8B9D83]/20 px-2 py-0.5 rounded-full">
-                                    {m}
-                                  </span>
-                                ))}
+                                <span key={idx} className="text-[10px] font-bold bg-[#8B9D83]/10 text-[#5A5A40] border border-[#8B9D83]/20 px-2 py-0.5 rounded-full">
+                                  {getMoodLabel(m, t)}
+                                </span>
+                              ))}
                               </div>
                             </div>
 
