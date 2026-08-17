@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { AppLanguage } from '../types';
 
-export type AppLanguage = 'ar' | 'en' | 'fr' | 'de' | 'es' | 'ru' | 'zh' | 'tr' | 'hi' | 'it';
+export type { AppLanguage };
 
 export interface LanguageInfo {
   code: AppLanguage;
@@ -9,20 +10,23 @@ export interface LanguageInfo {
   flag: string;
   dir: 'rtl' | 'ltr';
   speechLang: string;
+  bcp47: string;
   aiPromptLang: string;
 }
 
 export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', dir: 'rtl', speechLang: 'ar-SA', aiPromptLang: 'Arabic (العربية)' },
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', dir: 'ltr', speechLang: 'en-US', aiPromptLang: 'English' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', dir: 'ltr', speechLang: 'fr-FR', aiPromptLang: 'French (Français)' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', dir: 'ltr', speechLang: 'de-DE', aiPromptLang: 'German (Deutsch)' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', dir: 'ltr', speechLang: 'es-ES', aiPromptLang: 'Spanish (Español)' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', dir: 'ltr', speechLang: 'ru-RU', aiPromptLang: 'Russian (Русский)' },
-  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳', dir: 'ltr', speechLang: 'zh-CN', aiPromptLang: 'Chinese Simplified (中文)' },
-  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', dir: 'ltr', speechLang: 'tr-TR', aiPromptLang: 'Turkish (Türkçe)' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', dir: 'ltr', speechLang: 'hi-IN', aiPromptLang: 'Hindi (हिन्दी)' },
-  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', dir: 'ltr', speechLang: 'it-IT', aiPromptLang: 'Italian (Italiano)' }
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', dir: 'rtl', speechLang: 'ar-SA', bcp47: 'ar-EG', aiPromptLang: 'Arabic (العربية)' },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', dir: 'ltr', speechLang: 'en-US', bcp47: 'en-US', aiPromptLang: 'English' },
+  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', dir: 'ltr', speechLang: 'fr-FR', bcp47: 'fr-FR', aiPromptLang: 'French (Français)' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', dir: 'ltr', speechLang: 'de-DE', bcp47: 'de-DE', aiPromptLang: 'German (Deutsch)' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', dir: 'ltr', speechLang: 'es-ES', bcp47: 'es-ES', aiPromptLang: 'Spanish (Español)' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', dir: 'ltr', speechLang: 'it-IT', bcp47: 'it-IT', aiPromptLang: 'Italian (Italiano)' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', dir: 'ltr', speechLang: 'tr-TR', bcp47: 'tr-TR', aiPromptLang: 'Turkish (Türkçe)' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷', dir: 'ltr', speechLang: 'pt-BR', bcp47: 'pt-BR', aiPromptLang: 'Portuguese (Português)' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', dir: 'ltr', speechLang: 'ru-RU', bcp47: 'ru-RU', aiPromptLang: 'Russian (Русский)' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵', dir: 'ltr', speechLang: 'ja-JP', bcp47: 'ja-JP', aiPromptLang: 'Japanese (日本語)' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳', dir: 'ltr', speechLang: 'zh-CN', bcp47: 'zh-CN', aiPromptLang: 'Chinese Simplified (中文)' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', dir: 'ltr', speechLang: 'hi-IN', bcp47: 'hi-IN', aiPromptLang: 'Hindi (हिन्दी)' }
 ];
 
 export function getLanguageInfo(code?: AppLanguage | string | null): LanguageInfo {
@@ -30,6 +34,17 @@ export function getLanguageInfo(code?: AppLanguage | string | null): LanguageInf
   const found = SUPPORTED_LANGUAGES.find((l) => l.code === code);
   return found || SUPPORTED_LANGUAGES[0];
 }
+
+export function isRtlLanguage(code?: AppLanguage | string | null): boolean {
+  return (code || 'ar') === 'ar';
+}
+
+export function getBcp47Tag(code?: AppLanguage | string | null): string {
+  const info = getLanguageInfo(code);
+  return info.bcp47 || info.speechLang || 'en-US';
+}
+
+export type TranslationKey = string;
 
 const AR_DICT: Record<string, any> = {
   interactiveTourTitle: 'اكتشف حياة AI 🧭',
@@ -7741,18 +7756,203 @@ const IT_DICT: Record<string, any> = {
   therapyReportSubtitle: "Report della settimana corrente - Preparazione al follow-up"
 };
 
+const PT_DICT: Record<string, any> = {
+  appName: "Hayat AI",
+  homeTab: "Início",
+  diariesTab: "Diários",
+  advisorTab: "Conselheiro",
+  analyticsTab: "Progresso e Dados",
+  settingsTab: "Configurações",
+  yes: "Sim",
+  no: "Não",
+  closeBtn: "Fechar",
+  retryBtn: "Tentar novamente",
+  cancelBtn: "Cancelar",
+  save_btn: "Salvar",
+  saveAndCloseBtn: "Salvar e Fechar",
+  sendBtn: "Enviar",
+  clearBtn: "Limpar",
+  back_btn: "Voltar",
+  "nav.home": "Início",
+  "nav.diaries": "Diários",
+  "nav.advisor": "Conselheiro IA",
+  "nav.progress": "Progresso e Dados",
+  "nav.settings": "Configurações",
+  "nav.hayat_ai": "Hayat AI",
+  "nav.sign_in": "Entrar",
+  "nav.switch_language": "Mudar Idioma",
+  "nav.fullscreen": "Tela Cheia",
+  "nav.lock_app": "Bloquear App",
+  "nav.account_title": "Minha Conta",
+  "nav.back_btn": "Voltar",
+  "nav.auto_saved": "Salvo automaticamente",
+  "nav.saving": "Salvando...",
+  "nav.subtitle": "Seu espaço seguro de reflexão",
+  "nav.dhikr": "Lembrança e Paz",
+  "nav.daily_tasks": "Tarefas Diárias",
+  "nav.my_thoughts": "Pensamentos e Reflexões",
+  "nav.therapy_session": "Sessão de Apoio",
+  "nav.moreOptions": "Mais opções e ferramentas",
+  "nav.rateFeedback": "Avaliação e Feedback",
+  "nav.smartReminders": "Lembretes Inteligentes",
+  selectLanguageTitle: "Selecione seu idioma",
+  selectLanguageSubtitle: "Escolha o idioma preferido para o Hayat AI",
+  languagesTitle: "Idiomas do App 🌐",
+  languagesSub: "Mude o idioma e personalize a interface",
+  languageTabLabel: "Idioma e Região",
+  fontAndSpacingTabLabel: "Fonte e Espaçamento 🔤",
+  confirmDeleteDiaryPermanent: "Tem certeza de que deseja excluir este diário permanentemente? Esta ação não pode ser desfeita.",
+  confirmEmptyTrashAll: "Tem certeza de que deseja esvaziar a lixeira? Todas as notas excluídas serão perdidas permanentemente.",
+  emailBackupInvalidEmail: "Por favor, insira um endereço de e-mail válido.",
+  emailBackupSending: "Enviando backup para o e-mail...",
+  emailBackupNetworkError: "Ocorreu um erro de conexão de rede.",
+  emailBackupSentSuccess: "Backup enviado com sucesso para o seu e-mail! 📬",
+  quoteCopied: "Citação copiada para a área de transferência! 🌸",
+  copyQuoteTitle: "Copiar citação",
+  aiTranscribeUnavailable: "A transcrição por IA está temporariamente indisponível.",
+  noValidAudioRecording: "Nenhuma gravação de áudio válida encontrada para transcrição.",
+  writeNewNoteBtn: "Escrever Novo Diário",
+  cancelSearchBtn: "Cancelar pesquisa",
+  filterTagsLabel: "Filtrar tags:",
+  predictiveTitle: "Saúde Preditiva 🔮",
+  voiceJournalTitle: "Diário de Voz 🎙️",
+  fullCalendar: "Calendário Completo e Visualização Diária",
+  fullCalendarSub: "Toque para navegar pelos diários, livros e insights de IA de qualquer dia",
+  greetingDesc: "Hoje é um novo dia para crescer e encontrar harmonia interior. Registrar seus pensamentos ajuda seu orientador de IA a oferecer recomendações personalizadas.",
+  directUploadTitle: "Acesso Direto aos Arquivos e Anexos",
+  freeWrite: "Escrita Livre",
+  freeWriteSub: "Abrir Editor",
+  attachPhoto: "Anexar Foto",
+  attachPhotoSub: "Da Galeria",
+  phoneVideo: "Vídeo",
+  phoneVideoSub: "Enviar Vídeo",
+  audioFile: "Arquivo de Áudio",
+  audioFileSub: "Gravar Áudio",
+  bookDoc: "Documento",
+  bookDocSub: "Carregar PDF",
+  aiAdvisor: "Conselheiro IA",
+  aiAdvisorSub: "Insights Inteligentes",
+  streakTitle: "Sequência de Hábitos",
+  dayStreak: "Dias Seguidos",
+  daysUnit: "Dias",
+  longestStreak: "Maior Sequência:",
+  recentWeek: "Progresso da Última Semana:",
+  selectDateTitle: "Selecione uma data para registrar ou visualizar atividades:",
+  quoteTitle: "Sabedoria Diária e Motivação 🌿",
+  aiInspirationBtn: "(IA) Inspiração Inteligente 🪄",
+  moodScaleTitle: "Escala Rápida de Humor (1 - 10)",
+  moodScaleDesc: "Arraste o controle deslizante para registrar seu humor atual em um segundo.",
+  moodRating: "Avaliação do Humor:",
+  issuedDate: "Data de Emissão:",
+  reportGeneratedSecurely: "Este relatório foi gerado de forma automática e segura pelo Hayat AI em"
+};
+
+const JA_DICT: Record<string, any> = {
+  appName: "Hayat AI",
+  homeTab: "ホーム",
+  diariesTab: "日記",
+  advisorTab: "アドバイザー",
+  analyticsTab: "進捗とデータ",
+  settingsTab: "設定",
+  yes: "はい",
+  no: "いいえ",
+  closeBtn: "閉じる",
+  retryBtn: "再試行",
+  cancelBtn: "キャンセル",
+  save_btn: "保存",
+  saveAndCloseBtn: "保存して閉じる",
+  sendBtn: "送信",
+  clearBtn: "クリア",
+  back_btn: "戻る",
+  "nav.home": "ホーム",
+  "nav.diaries": "日記",
+  "nav.advisor": "AIアドバイザー",
+  "nav.progress": "進捗とデータ",
+  "nav.settings": "設定",
+  "nav.hayat_ai": "Hayat AI",
+  "nav.sign_in": "ログイン",
+  "nav.switch_language": "言語を変更",
+  "nav.fullscreen": "全画面表示",
+  "nav.lock_app": "アプリをロック",
+  "nav.account_title": "マイアカウント",
+  "nav.back_btn": "戻る",
+  "nav.auto_saved": "自動保存されました",
+  "nav.saving": "保存中...",
+  "nav.subtitle": "あなただけの安全なメンタル空間",
+  "nav.dhikr": "心の安らぎ",
+  "nav.daily_tasks": "毎日のタスク",
+  "nav.my_thoughts": "私の思考と考察",
+  "nav.therapy_session": "カウンセリング",
+  "nav.moreOptions": "その他のオプションとツール",
+  "nav.rateFeedback": "評価とフィードバック",
+  "nav.smartReminders": "スマートリマインダー",
+  selectLanguageTitle: "言語を選択",
+  selectLanguageSubtitle: "Hayat AI で使用する言語を選択してください",
+  languagesTitle: "言語設定 🌐",
+  languagesSub: "言語と表示設定の変更",
+  languageTabLabel: "言語と地域",
+  fontAndSpacingTabLabel: "フォントと行間 🔤",
+  confirmDeleteDiaryPermanent: "この日記を完全に削除してもよろしいですか？この操作は元に戻せません。",
+  confirmEmptyTrashAll: "ゴミ箱を空にしてもよろしいですか？削除されたすべてのメモが完全に失われます。",
+  emailBackupInvalidEmail: "有効なメールアドレスを入力してください。",
+  emailBackupSending: "バックアップをメールに送信中...",
+  emailBackupNetworkError: "ネットワーク接続エラーが発生しました。",
+  emailBackupSentSuccess: "バックアップがメールに正常に送信されました！📬",
+  quoteCopied: "名言がクリップボードにコピーされました！🌸",
+  copyQuoteTitle: "引用をコピー",
+  aiTranscribeUnavailable: "AI文字起こしは現在利用できません。",
+  noValidAudioRecording: "文字起こし可能な有効な音声録音がありません。",
+  writeNewNoteBtn: "新しい日記を書く",
+  cancelSearchBtn: "検索をキャンセル",
+  filterTagsLabel: "タグを絞り込む:",
+  predictiveTitle: "予測メンタルケア 🔮",
+  voiceJournalTitle: "音声日記 🎙️",
+  fullCalendar: "カレンダーと日別ビュー",
+  fullCalendarSub: "タップして日記、本、AIインサイトを確認",
+  greetingDesc: "今日は成長と心の調和のための新しい一日です。思考を記録することで、AIアドバイザーが最適なアドバイスを提供します。",
+  directUploadTitle: "ファイルと添付データへの直接アクセス",
+  freeWrite: "自由記述",
+  freeWriteSub: "エディタを開く",
+  attachPhoto: "写真を添付",
+  attachPhotoSub: "ギャラリーから",
+  phoneVideo: "動画",
+  phoneVideoSub: "クリップをアップロード",
+  audioFile: "音声ファイル",
+  audioFileSub: "音声を録音",
+  bookDoc: "文書・本",
+  bookDocSub: "PDFをアップロード",
+  aiAdvisor: "AIアドバイザー",
+  aiAdvisorSub: "スマートインサイト",
+  streakTitle: "連続記録トラッカー",
+  dayStreak: "日連続",
+  daysUnit: "日",
+  longestStreak: "最長記録:",
+  recentWeek: "先週の進捗:",
+  selectDateTitle: "アクティビティを記録・表示する日付を選択:",
+  quoteTitle: "今日の言葉とモチベーション 🌿",
+  aiInspirationBtn: "(AI) スマートインスピレーション 🪄",
+  moodScaleTitle: "クイック気分スケール (1 - 10)",
+  moodScaleDesc: "スライダーを動かして現在の気分を1秒で記録できます。",
+  moodRating: "気分スコア:",
+  issuedDate: "発行日:",
+  reportGeneratedSecurely: "このレポートは Hayat AI によって安全に自動生成されました："
+};
+
 export const BASELINE_DICTIONARIES: Record<string, any> = {
   ar: AR_DICT,
   en: EN_DICT,
   fr: FR_DICT,
   de: DE_DICT,
   es: ES_DICT,
-  ru: RU_DICT,
-  zh: ZH_DICT,
-  tr: TR_DICT,
-  hi: HI_DICT,
   it: IT_DICT,
+  tr: TR_DICT,
+  pt: PT_DICT,
+  ru: RU_DICT,
+  ja: JA_DICT,
+  zh: ZH_DICT,
+  hi: HI_DICT,
 };
+
 
 // Formats unhandled key identifiers to readable human titles if all fallbacks are exhausted
 function formatKeyFallback(key: string): string {
@@ -7770,7 +7970,8 @@ function formatKeyFallback(key: string): string {
 function resolveKeyInDicts(key: string, lang: string = 'ar', customFallback?: string): string {
   if (!key || typeof key !== 'string') return customFallback || '';
 
-  const targetDict = BASELINE_DICTIONARIES[lang] || BASELINE_DICTIONARIES.ar;
+  const safeLang = (typeof lang === 'string' && lang.trim()) ? lang : 'ar';
+  const targetDict = BASELINE_DICTIONARIES[safeLang] || BASELINE_DICTIONARIES.ar;
 
   // 1. Direct key in target dictionary
   if (targetDict && targetDict[key] !== undefined && typeof targetDict[key] === 'string' && targetDict[key].trim() !== '') {
@@ -7793,12 +7994,12 @@ function resolveKeyInDicts(key: string, lang: string = 'ar', customFallback?: st
   }
 
   // 3. Fallback to English dictionary
-  if (EN_DICT[key] !== undefined && typeof EN_DICT[key] === 'string' && EN_DICT[key].trim() !== '') {
+  if (EN_DICT && EN_DICT[key] !== undefined && typeof EN_DICT[key] === 'string' && EN_DICT[key].trim() !== '') {
     return EN_DICT[key];
   }
 
   // 4. Fallback to Arabic dictionary
-  if (AR_DICT[key] !== undefined && typeof AR_DICT[key] === 'string' && AR_DICT[key].trim() !== '') {
+  if (AR_DICT && AR_DICT[key] !== undefined && typeof AR_DICT[key] === 'string' && AR_DICT[key].trim() !== '') {
     return AR_DICT[key];
   }
 

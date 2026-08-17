@@ -208,11 +208,11 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     printWindow.document.write(`
-      <html dir="rtl" lang="ar">
+      <html dir="${langInfo.dir}" lang="${langInfo.code}">
         <head>
-          <title>تقرير جلسة العلاج النفسي - حياة AI</title>
+          <title>${t.therapyReportTitle || 'Therapist Report'} - Hayat AI</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
             h1 { color: #5A5A40; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
             h2 { color: #0f172a; margin-top: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
             .meta { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
@@ -223,29 +223,29 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           </style>
         </head>
         <body>
-          <h1>🎓 تقرير جاهز لجلسة العلاج النفسي</h1>
+          <h1>🎓 ${t.therapyReportTitle || 'Therapy Report'}</h1>
           <div class="meta">
-            <strong>الفترة الزمنية للتقرير:</strong> من ${startDate} إلى ${endDate}<br/>
-            <strong>عدد اليوميات المدونة:</strong> ${totalEntries} مذكرة شخصية<br/>
-            <strong>تاريخ وموعد الصدور:</strong> ${new Date().toLocaleString('ar-EG')}
+            <strong>${t.reportPeriodLabel || 'Period:'}</strong> ${startDate} - ${endDate}<br/>
+            <strong>${t.totalEntriesCount || 'Total Entries:'}</strong> ${totalEntries}<br/>
+            <strong>${t.exportDateTitle || 'Date:'}</strong> ${new Date().toLocaleString(langInfo.bcp47)}
           </div>
 
           <div class="grid">
             <div class="stat-box">
-              <strong>💤 متوسط ساعات النوم:</strong> ${averageSleep} ساعة / ليلة
+              <strong>💤 ${t.avgSleep || 'Avg Sleep:'}</strong> ${averageSleep} ${t.hoursUnit || 'h'}
             </div>
             <div class="stat-box">
-              <strong>🏃 إجمالي وقت الرياضة:</strong> ${totalSports} دقيقة
+              <strong>🏃 ${t.sportsTime || 'Sports:'}</strong> ${totalSports} ${t.minutesUnit || 'm'}
             </div>
           </div>
 
-          <h2>📋 التقرير التحليلي للذكاء الاصطناعي (مستشار الصحة النفسية)</h2>
+          <h2>📋 ${t.aiPsychAdvisor || 'AI Analysis'}</h2>
           <div style="font-size: 15px;">
             ${reportText.replace(/\n/g, '<br/>')}
           </div>
 
           <div class="footer">
-            تم توليد هذا التقرير تلقائياً وبسرية تامة بواسطة منصة Hayat AI (حياة AI).
+            Hayat AI
           </div>
           <script>window.print();</script>
         </body>
@@ -256,7 +256,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
 
   const handleCopyText = async () => {
     try {
-      const textToCopy = `تقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
+      const textToCopy = `${t.therapyReportTitle || 'Therapy Report'} - Hayat AI\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 3000);
@@ -266,25 +266,24 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   };
 
   const handleDownloadTxt = () => {
-    // Add UTF-8 BOM (\uFEFF) at the start so mobile/desktop text readers render Arabic properly without Mojibake
-    const textContent = `\uFEFFتقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
+    const textContent = `\uFEFF${t.therapyReportTitle || 'Therapy Report'} - Hayat AI\n${startDate} - ${endDate}\n\n${reportText}`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.txt`;
+    link.download = `Therapy_Report_${startDate}_${endDate}.txt`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   const handleDownloadDoc = () => {
     const htmlDocContent = `\uFEFF<!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="${langInfo.dir}" lang="${langInfo.code}">
 <head>
   <meta charset="UTF-8">
-  <title>تقرير العلاج النفسي</title>
+  <title>${t.therapyReportTitle || 'Therapy Report'}</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: rtl; text-align: right; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
     h1 { color: #5A5A40; border-bottom: 2px solid #E2DCC8; padding-bottom: 8px; font-size: 20px; }
     .meta { background-color: #F9F7F2; padding: 12px; border-radius: 8px; border: 1px solid #E2DCC8; margin-bottom: 16px; font-size: 13px; }
     .report-body { font-size: 14px; white-space: pre-wrap; line-height: 1.8; }
@@ -292,35 +291,35 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   </style>
 </head>
 <body>
-  <h1>🎓 تقرير جلسة العلاج النفسي - حياة AI</h1>
+  <h1>🎓 ${t.therapyReportTitle || 'Therapy Report'}</h1>
   <div class="meta">
-    <p><strong>الفترة الزمنية:</strong> من ${startDate} إلى ${endDate}</p>
-    <p><strong>إحصائيات المذكرات:</strong> ${totalEntries} | <strong>متوسط ساعات النوم:</strong> ${averageSleep} ساعة | <strong>وقت التمارين:</strong> ${totalSports} دقيقة</p>
+    <p><strong>${startDate} - ${endDate}</strong></p>
+    <p>${totalEntries} | ${averageSleep} | ${totalSports}</p>
   </div>
   <div class="report-body">
     ${reportText.replace(/\n/g, '<br/>')}
   </div>
-  <div class="footer">تم إنشاء هذا التقرير تلقائياً وبسرية تامة عبر حياة AI</div>
+  <div class="footer">Hayat AI</div>
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.doc`;
+    link.download = `Therapy_Report_${startDate}_${endDate}.doc`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="space-y-6 font-sans text-right" dir="rtl" id="therapy-report-panel">
+    <div className="space-y-6 font-sans text-start" dir={langInfo.dir} id="therapy-report-panel">
       {/* 🎓 Therapist Session Banner & Master AI Clinical Report Button */}
       <div className="bg-gradient-to-l from-[#2B3E50] via-[#3B5066] to-[#5A5A40] text-white p-5 sm:p-6 rounded-3xl shadow-md border border-[#E2DCC8]/30 flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
         
         {/* Subtle Background Accent Glow */}
         <div className="absolute -top-12 -left-12 w-48 h-48 bg-[#8B9D83]/20 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div className="flex items-center space-x-4 space-x-reverse relative z-10">
+        <div className="flex items-center gap-4 relative z-10">
           <div className="p-3.5 bg-white/10 rounded-2xl border border-white/15 shrink-0 shadow-inner">
             <Brain className="w-7 h-7 text-[#FEFAE0] animate-pulse" />
           </div>

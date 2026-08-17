@@ -1136,7 +1136,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <div className="whitespace-pre-wrap">{msg.text}</div>
               <div className="flex items-center justify-between gap-4 mt-2 pt-1 border-t border-dashed border-gray-100">
                 <span className={`block text-[9px] ${msg.sender === 'user' ? 'text-[#F9F7F2]/85' : 'text-gray-400'} text-left`}>
-                  {new Date(msg.createdAt).toLocaleTimeString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.code, { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(msg.createdAt).toLocaleTimeString(langInfo.bcp47 || 'ar-EG', { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 
                 {msg.sender === 'ai' && (

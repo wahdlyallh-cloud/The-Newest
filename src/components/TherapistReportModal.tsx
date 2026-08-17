@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { Calendar, Brain, FileText, CheckCircle, AlertTriangle, Sparkles, Printer, ArrowRight, Download, Copy, Check, FileCode } from 'lucide-react';
 import { DiaryEntry } from '../types';
+import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 
 interface TherapistReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   diaries: DiaryEntry[];
   userApiKey?: string;
-  appLanguage?: string;
+  appLanguage?: AppLanguage;
 }
 
 export default function TherapistReportModal({ isOpen, onClose, diaries, userApiKey, appLanguage = 'ar' }: TherapistReportModalProps) {
-  const isEn = appLanguage === 'en';
+  const langInfo = getLanguageInfo(appLanguage);
+  const t = getTranslation(appLanguage);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 14); // default 2 weeks ago
@@ -38,7 +40,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   const totalEntries = filteredDiaries.length;
   const averageSleep = filteredDiaries.length > 0 
     ? (filteredDiaries.reduce((sum, d) => sum + (d.sleepHours || 0), 0) / filteredDiaries.filter(d => d.sleepHours).length || 8).toFixed(1)
-    : (isEn ? "N/A" : "غير متوفر");
+    : (t.notRecorded || "N/A");
   
   const totalSports = filteredDiaries.reduce((sum, d) => sum + (d.sportsDuration || 0), 0);
   
@@ -74,11 +76,11 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
         setReportText(data.answer);
         setReportSource(data.source);
       } else {
-        setReportText(isEn ? "Sorry, an error occurred while connecting to the Smart Advisor." : "عذراً، حدث خطأ أثناء الاتصال بالمستشار الذكي.");
+        setReportText(t.aiConnectionError || "Sorry, an error occurred while connecting to the Smart Advisor.");
       }
     } catch (e) {
       console.error(e);
-      setReportText(isEn ? "Sorry, unable to connect to the Smart Advisor currently." : "عذراً، لم نتمكن من الوصول للمستشار الذكي حالياً.");
+      setReportText(t.aiConnectionError || "Sorry, unable to connect to the Smart Advisor currently.");
     } finally {
       setLoading(false);
     }
@@ -88,9 +90,9 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     printWindow.document.write(`
-      <html dir="${isEn ? 'ltr' : 'rtl'}" lang="${appLanguage}">
+      <html dir="${langInfo.dir}" lang="${langInfo.code}">
         <head>
-          <title>${isEn ? 'Therapy Session Report - Hayat AI' : 'تقرير جلسة العلاج النفسي - حياة AI'}</title>
+          <title>${t.therapistReportTitle || 'Therapy Session Report - Hayat AI'}</title>
           <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
             h1 { color: #4f46e5; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
@@ -104,29 +106,29 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
           </style>
         </head>
         <body>
-          <h1>🎓 ${isEn ? 'Prepared Therapy Session Report' : 'تقرير جاهز لجلسة العلاج النفسي'}</h1>
+          <h1>🎓 ${t.therapistReportTitle || 'Prepared Therapy Session Report'}</h1>
           <div class="meta">
-            <strong>${isEn ? 'Period:' : 'الفترة الزمنية للتقرير:'}</strong> ${isEn ? 'From' : 'من'} ${startDate} ${isEn ? 'to' : 'إلى'} ${endDate}<br/>
-            <strong>${isEn ? 'Logged Entries:' : 'عدد اليوميات المدونة:'}</strong> ${totalEntries} ${isEn ? 'personal entries' : 'مذكرة شخصية'}<br/>
-            <strong>${isEn ? 'Issued Date:' : 'تاريخ وموعد الصدور:'}</strong> ${new Date().toLocaleString(isEn ? 'en-US' : 'ar-EG')}
+            <strong>${t.timePeriod || 'Period:'}</strong> ${t.from || 'From'} ${startDate} ${t.to || 'to'} ${endDate}<br/>
+            <strong>${t.diariesCount || 'Logged Entries:'}</strong> ${totalEntries} ${t.personalEntriesCount || 'personal entries'}<br/>
+            <strong>${t.issuedDate || 'Issued Date:'}</strong> ${new Date().toLocaleString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47)}
           </div>
 
           <div class="grid">
             <div class="stat-box">
-              <strong>💤 ${isEn ? 'Avg Sleep Hours:' : 'متوسط ساعات النوم:'}</strong> ${averageSleep} ${isEn ? 'hours / night' : 'ساعة / ليلة'}
+              <strong>💤 ${t.avgSleep || 'Avg Sleep Hours:'}</strong> ${averageSleep} ${t.hoursPerNight || 'hours / night'}
             </div>
             <div class="stat-box">
-              <strong>🏃 ${isEn ? 'Total Exercise Time:' : 'إجمالي وقت الرياضة:'}</strong> ${totalSports} ${isEn ? 'minutes' : 'دقيقة'}
+              <strong>🏃 ${t.sportsTime || 'Total Exercise Time:'}</strong> ${totalSports} ${t.minutesUnit || 'minutes'}
             </div>
           </div>
 
-          <h2>📋 ${isEn ? 'AI Mental Health Advisor Clinical Report' : 'التقرير التحليلي للذكاء الاصطناعي (مستشار الصحة النفسية)'}</h2>
+          <h2>📋 ${t.aiClinicalAnalysisTitle || 'AI Mental Health Advisor Clinical Report'}</h2>
           <div style="font-size: 15px;">
             ${reportText.replace(/\n/g, '<br/>')}
           </div>
 
           <div class="footer">
-            ${isEn ? 'Generated automatically and confidentially by Hayat AI.' : 'تم توليد هذا التقرير تلقائياً وبسرية تامة بواسطة منصة Hayat AI (حياة AI).'}
+            ${t.reportGeneratedSecurely || 'Generated automatically and confidentially by Hayat AI.'}
           </div>
           <script>window.print();</script>
         </body>
@@ -137,9 +139,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
 
   const handleCopyText = async () => {
     try {
-      const textToCopy = isEn
-        ? `Therapy Session Report - Hayat AI\nPeriod: From ${startDate} to ${endDate}\n\nStatistics:\n- Logged Entries: ${totalEntries}\n- Avg Sleep: ${averageSleep} hours\n- Exercise Time: ${totalSports} minutes\n\nAnalytical Report:\n${reportText}`
-        : `تقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
+      const textToCopy = `${t.therapistReportTitle || 'Therapy Session Report - Hayat AI'}\n${t.timePeriod || 'Period:'} ${startDate} - ${endDate}\n\n${t.statistics || 'Statistics:'}\n- ${t.diariesCount || 'Logged Entries:'} ${totalEntries}\n- ${t.avgSleep || 'Avg Sleep:'} ${averageSleep} ${t.hoursUnit || 'hours'}\n- ${t.sportsTime || 'Exercise Time:'} ${totalSports} ${t.minutesUnit || 'minutes'}\n\n${t.aiClinicalAnalysisTitle || 'Analytical Report:'}\n${reportText}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 3000);
@@ -149,26 +149,24 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   };
 
   const handleDownloadTxt = () => {
-    const textContent = isEn
-      ? `\uFEFFTherapy Session Report - Hayat AI\nPeriod: From ${startDate} to ${endDate}\n\nStatistics:\n- Logged Entries: ${totalEntries}\n- Avg Sleep: ${averageSleep} hours\n- Exercise Time: ${totalSports} minutes\n\nAnalytical Report:\n${reportText}`
-      : `\uFEFFتقرير مجهز لجلسة العلاج النفسي - حياة AI\nالفترة: من ${startDate} إلى ${endDate}\n\nإحصائيات مكملة:\n- عدد المذكرات: ${totalEntries}\n- متوسط النوم: ${averageSleep} ساعة\n- وقت الرياضة: ${totalSports} دقيقة\n\nالتقرير التحليلي:\n${reportText}`;
+    const textContent = `\uFEFF${t.therapistReportTitle || 'Therapy Session Report - Hayat AI'}\n${t.timePeriod || 'Period:'} ${startDate} - ${endDate}\n\n${t.statistics || 'Statistics:'}\n- ${t.diariesCount || 'Logged Entries:'} ${totalEntries}\n- ${t.avgSleep || 'Avg Sleep:'} ${averageSleep} ${t.hoursUnit || 'hours'}\n- ${t.sportsTime || 'Exercise Time:'} ${totalSports} ${t.minutesUnit || 'minutes'}\n\n${t.aiClinicalAnalysisTitle || 'Analytical Report:'}\n${reportText}`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = isEn ? `Therapy_Report_${startDate}_to_${endDate}.txt` : `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.txt`;
+    link.download = `Therapy_Report_${startDate}_to_${endDate}.txt`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   const handleDownloadDoc = () => {
     const htmlDocContent = `\uFEFF<!DOCTYPE html>
-<html dir="${isEn ? 'ltr' : 'rtl'}" lang="${appLanguage}">
+<html dir="${langInfo.dir}" lang="${langInfo.code}">
 <head>
   <meta charset="UTF-8">
-  <title>${isEn ? 'Therapy Report' : 'تقرير العلاج النفسي'}</title>
+  <title>${t.therapistReportTitle || 'Therapy Report'}</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: ${isEn ? 'ltr' : 'rtl'}; text-align: ${isEn ? 'left' : 'right'}; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
     h1 { color: #5A5A40; border-bottom: 2px solid #E2DCC8; padding-bottom: 8px; font-size: 20px; }
     .meta { background-color: #F9F7F2; padding: 12px; border-radius: 8px; border: 1px solid #E2DCC8; margin-bottom: 16px; font-size: 13px; }
     .report-body { font-size: 14px; white-space: pre-wrap; line-height: 1.8; }
@@ -176,28 +174,28 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   </style>
 </head>
 <body>
-  <h1>🎓 ${isEn ? 'Therapy Session Report - Hayat AI' : 'تقرير جلسة العلاج النفسي - حياة AI'}</h1>
+  <h1>🎓 ${t.therapistReportTitle || 'Therapy Session Report - Hayat AI'}</h1>
   <div class="meta">
-    <p><strong>${isEn ? 'Period:' : 'الفترة الزمنية:'}</strong> ${isEn ? 'From' : 'من'} ${startDate} ${isEn ? 'to' : 'إلى'} ${endDate}</p>
-    <p><strong>${isEn ? 'Diaries:' : 'إحصائيات المذكرات:'}</strong> ${totalEntries} | <strong>${isEn ? 'Avg Sleep:' : 'متوسط ساعات النوم:'}</strong> ${averageSleep} ${isEn ? 'hrs' : 'ساعة'} | <strong>${isEn ? 'Exercise:' : 'وقت التمارين:'}</strong> ${totalSports} ${isEn ? 'mins' : 'دقيقة'}</p>
+    <p><strong>${t.timePeriod || 'Period:'}</strong> ${t.from || 'From'} ${startDate} ${t.to || 'to'} ${endDate}</p>
+    <p><strong>${t.diariesCount || 'Logged Entries:'}</strong> ${totalEntries} | <strong>${t.avgSleep || 'Avg Sleep:'}</strong> ${averageSleep} ${t.hoursUnit || 'hrs'} | <strong>${t.sportsTime || 'Exercise:'}</strong> ${totalSports} ${t.minutesUnit || 'mins'}</p>
   </div>
   <div class="report-body">
     ${reportText.replace(/\n/g, '<br/>')}
   </div>
-  <div class="footer">${isEn ? 'Generated automatically and confidentially via Hayat AI' : 'تم إنشاء هذا التقرير تلقائياً وبسرية تامة عبر حياة AI'}</div>
+  <div class="footer">${t.reportGeneratedSecurely || 'Generated automatically and confidentially via Hayat AI'}</div>
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = isEn ? `Therapy_Report_${startDate}_to_${endDate}.doc` : `تقرير_العلاج_النفسي_${startDate}_إلى_${endDate}.doc`;
+    link.download = `Therapy_Report_${startDate}_to_${endDate}.doc`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={isEn ? 'ltr' : 'rtl'}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={langInfo.dir}>
       <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94vh] md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
@@ -207,8 +205,8 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
               <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#FEFAE0]" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold truncate">{isEn ? '🎓 Prepare Therapy Session Report' : '🎓 تجهيز تقرير جلسة العلاج'}</h2>
-              <p className="text-[11px] sm:text-xs text-[#E2DCC8] truncate">{isEn ? 'Generate a comprehensive report for your therapist in seconds' : 'توليد تقرير احترافي شامل لمعالجك النفسي في ثوانٍ'}</p>
+              <h2 className="text-base sm:text-lg font-bold truncate">{t.prepareTherapyReportTitle || '🎓 Prepare Therapy Session Report'}</h2>
+              <p className="text-[11px] sm:text-xs text-[#E2DCC8] truncate">{t.prepareTherapyReportSub || 'Generate a comprehensive report for your therapist in seconds'}</p>
             </div>
           </div>
           <button
@@ -227,7 +225,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
             <div>
               <label className="block text-xs font-bold text-[#5A5A40] mb-1.5 flex items-center space-x-1 space-x-reverse">
                 <Calendar className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                <span>{isEn ? 'Start Date:' : 'تاريخ البدء:'}</span>
+                <span>{t.startDateLabel || 'Start Date:'}</span>
               </label>
               <input
                 type="date"
@@ -239,7 +237,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
             <div>
               <label className="block text-xs font-bold text-[#5A5A40] mb-1.5 flex items-center space-x-1 space-x-reverse">
                 <Calendar className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                <span>{isEn ? 'End Date:' : 'تاريخ الانتهاء:'}</span>
+                <span>{t.endDateLabel || 'End Date:'}</span>
               </label>
               <input
                 type="date"
@@ -253,16 +251,16 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
           {/* Local Range Statistics Info */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div className="p-2.5 sm:p-3 bg-[#F0EDE4] rounded-xl border border-[#E2DCC8] text-center">
-              <span className="block text-[10px] font-bold text-gray-500">{isEn ? 'Total Entries' : 'عدد اليوميات'}</span>
+              <span className="block text-[10px] font-bold text-gray-500">{t.totalEntriesCount || 'Total Entries'}</span>
               <span className="text-base sm:text-lg font-extrabold text-[#5A5A40]">{totalEntries}</span>
             </div>
             <div className="p-2.5 sm:p-3 bg-[#CCD5AE]/30 rounded-xl border border-[#CCD5AE]/60 text-center">
-              <span className="block text-[10px] font-bold text-gray-500">{isEn ? 'Avg Sleep' : 'متوسط ساعات النوم'}</span>
-              <span className="text-base sm:text-lg font-extrabold text-[#8B9D83]">{averageSleep} {isEn ? 'h' : 'س'}</span>
+              <span className="block text-[10px] font-bold text-gray-500">{t.avgSleep || 'Avg Sleep'}</span>
+              <span className="text-base sm:text-lg font-extrabold text-[#8B9D83]">{averageSleep} {t.hoursUnit || 'h'}</span>
             </div>
             <div className="p-2.5 sm:p-3 bg-[#FAEDCD]/40 rounded-xl border border-[#E2DCC8] text-center">
-              <span className="block text-[10px] font-bold text-gray-500">{isEn ? 'Sports Time' : 'التمارين الرياضية'}</span>
-              <span className="text-base sm:text-lg font-extrabold text-[#D4A373]">{totalSports} {isEn ? 'm' : 'د'}</span>
+              <span className="block text-[10px] font-bold text-gray-500">{t.sportsTime || 'Sports Time'}</span>
+              <span className="text-base sm:text-lg font-extrabold text-[#D4A373]">{totalSports} {t.minutesUnit || 'm'}</span>
             </div>
           </div>
 
@@ -270,7 +268,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
           {filteredDiaries.length === 0 ? (
             <div className="bg-[#FAEDCD]/50 border border-[#D4A373]/30 rounded-xl p-3 sm:p-4 text-center text-[#D4A373] text-xs sm:text-sm flex items-center justify-center space-x-2 space-x-reverse">
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>{isEn ? 'No entries found in selected period. Please log diaries or adjust date range!' : 'لا توجد مذكرات مدونة في الفترة المحددة. يرجى تدوين مذكرات أو تعديل نطاق التاريخ أولاً!'}</span>
+              <span>{t.noEntriesInPeriodWarning || 'No entries found in selected period. Please log diaries or adjust date range!'}</span>
             </div>
           ) : (
             !reportText && !loading && (
@@ -279,7 +277,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
                 className="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-colors flex items-center justify-center space-x-2 space-x-reverse cursor-pointer group"
               >
                 <Brain className="w-4 h-4 animate-pulse group-hover:scale-110 transition-transform text-[#FEFAE0]" />
-                <span>{isEn ? 'Analyze Data & Generate AI Medical Report 🧠' : 'تحليل البيانات وتوليد التقرير الطبي بالذكاء الاصطناعي 🧠'}</span>
+                <span>{t.analyzeAndGenerateReportBtn || 'Analyze Data & Generate AI Medical Report 🧠'}</span>
               </button>
             )
           )}
@@ -292,8 +290,8 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
                 <div className="absolute inset-0 rounded-full border-4 border-[#8B9D83] border-t-transparent animate-spin"></div>
               </div>
               <div className="space-y-1">
-                <h4 className="font-bold text-xs sm:text-sm text-[#5A5A40]">{isEn ? 'Reading and analyzing your entries...' : 'جاري قراءة وتحليل مذكراتك...'}</h4>
-                <p className="text-[11px] sm:text-xs text-gray-500">{isEn ? 'AI is evaluating mood, activities, and psychological patterns to compose a clinical report.' : 'يقوم الذكاء الاصطناعي بفحص الحالة المزاجية، الأنشطة، والأنماط النفسية وصياغة تقرير عيادي.'}</p>
+                <h4 className="font-bold text-xs sm:text-sm text-[#5A5A40]">{t.analyzingEntriesHeader || 'Reading and analyzing your entries...'}</h4>
+                <p className="text-[11px] sm:text-xs text-gray-500">{t.analyzingEntriesSub || 'AI is evaluating mood, activities, and psychological patterns to compose a clinical report.'}</p>
               </div>
             </div>
           )}
@@ -304,11 +302,11 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
               <div className="bg-[#F0EDE4] p-2.5 sm:p-3 px-3 sm:px-4 border-b border-[#E2DCC8] flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center space-x-2 space-x-reverse text-xs font-bold text-[#5A5A40]">
                   <Sparkles className="w-4 h-4 text-[#D4A373] shrink-0" />
-                  <span>{isEn ? 'Report generated by ' : 'التقرير النفسي المولد بواسطة '}{reportSource === 'gemini' ? 'Gemini 🚀' : (isEn ? 'Local Advisor 🖥️' : 'المستشار المحلي 🖥️')}</span>
+                  <span>{t.reportGeneratedBy || 'Report generated by '} {reportSource === 'gemini' ? 'Gemini 🚀' : (t.localAdvisor || 'Local Advisor 🖥️')}</span>
                 </div>
                 {reportSource !== 'gemini' && (
                   <span className="text-[10px] bg-[#D4A373]/10 text-[#D4A373] border border-[#D4A373]/20 px-2 py-0.5 rounded-full font-semibold">
-                    {isEn ? 'Demo Version' : 'نسخة تجريبية'}
+                    {t.demoVersionLabel || 'Demo Version'}
                   </span>
                 )}
               </div>
@@ -328,7 +326,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
               className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-[#5A5A40] hover:bg-white/50 rounded-lg transition-colors cursor-pointer text-center"
               disabled={loading}
             >
-              {isEn ? 'Regenerate 🔄' : 'إعادة توليد 🔄'}
+              {t.regenerateBtn || 'Regenerate 🔄'}
             </button>
             <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
               <button
@@ -337,7 +335,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
                 className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
               >
                 {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
-                <span>{copySuccess ? (isEn ? 'Copied!' : 'تم!') : (isEn ? 'Copy' : 'نسخ')}</span>
+                <span>{copySuccess ? (t.copied || 'Copied!') : (t.copyBtn || 'Copy')}</span>
               </button>
 
               <button
@@ -364,7 +362,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
                 className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 sm:px-4 sm:py-2 bg-[#5A5A40] hover:bg-[#5A5A40]/90 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5 text-white" />
-                <span>{isEn ? 'Print' : 'طباعة'}</span>
+                <span>{t.printReportBtn || 'Print'}</span>
               </button>
             </div>
           </div>

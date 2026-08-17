@@ -788,33 +788,33 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   // Download formatted Word document (.doc)
   const handleDownloadDoc = () => {
     const htmlDocContent = `\uFEFF<!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="${langInfo.dir}" lang="${langInfo.code}">
 <head>
   <meta charset="UTF-8">
   <title>${periodTitle}</title>
   <style>
-    body { font-family: 'Cairo', 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: rtl; text-align: right; }
+    body { font-family: 'Cairo', 'Segoe UI', Arial, sans-serif; padding: 25px; line-height: 1.8; color: #2B3E50; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
     h1 { color: #5A5A40; border-bottom: 2px solid #E2DCC8; padding-bottom: 8px; font-size: 20px; text-align: center; }
     .meta { background-color: #F9F7F2; padding: 16px; border-radius: 12px; border: 1px solid #E2DCC8; margin-bottom: 20px; font-size: 13px; }
     .report-body { background: #FAF8F5; padding: 16px; border-radius: 12px; border: 1px solid #E2DCC8; font-size: 14px; white-space: pre-wrap; line-height: 1.8; margin-top: 15px; }
     .footer { text-align: center; margin-top: 30px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 10px; }
   </style>
 </head>
-<body>
+<body dir="${langInfo.dir}">
   <h1>🎓 ${periodTitle}</h1>
   <div class="meta">
-    <p><strong>${isEn ? 'Time Period:' : 'الفترة الزمنية:'}</strong> ${periodLabel}</p>
-    <p><strong>${isEn ? 'Diaries:' : 'عدد المذكرات:'}</strong> ${stats.totalDiaries} | <strong>${isEn ? 'Avg Sleep:' : 'متوسط ساعات النوم:'}</strong> ${stats.avgSleep} ${isEn ? 'hrs' : 'ساعة'} | <strong>${isEn ? 'Mood Score:' : 'معدل المزاج:'}</strong> ${stats.avgMood}/10 | <strong>${isEn ? 'Exercise:' : 'وقت التمارين:'}</strong> ${stats.totalSportsMinutes} ${isEn ? 'min' : 'دقيقة'}</p>
+    <p><strong>${t.timePeriod || 'Time Period:'}</strong> ${periodLabel}</p>
+    <p><strong>${t.diariesCount || 'Diaries:'}</strong> ${stats.totalDiaries} | <strong>${t.avgSleep || 'Avg Sleep:'}</strong> ${stats.avgSleep} ${t.hoursUnit || 'hrs'} | <strong>${t.moodScore || 'Mood Score:'}</strong> ${stats.avgMood}/10 | <strong>${t.sportsTime || 'Exercise:'}</strong> ${stats.totalSportsMinutes} ${t.minutesUnit || 'min'}</p>
   </div>
-  <h3>${isEn ? '📋 AI Advisor Clinical Analysis & Report' : '📋 التقرير والتحليل السريري للمستشار الذكي'}</h3>
+  <h3>${t.aiClinicalAnalysisTitle || '📋 AI Advisor Clinical Analysis & Report'}</h3>
   <div class="report-body">
-    ${(aiAnalysisText || (isEn ? 'Comprehensive report evaluating mood stability, behavioral balance, and sleep.' : 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي والنوم.')).replace(/\n/g, '<br/>')}
+    ${(aiAnalysisText || t.clinicalSummaryPlaceholder || 'Comprehensive report evaluating mood stability, behavioral balance, and sleep.').replace(/\n/g, '<br/>')}
   </div>
   ${patientNotes ? `
-    <h3>${isEn ? '📝 Notes & Questions for Therapist' : '📝 ملاحظات وأسئلة موجهة للمعالج'}</h3>
+    <h3>${t.therapistNotesTitle || '📝 Notes & Questions for Therapist'}</h3>
     <div class="report-body">${patientNotes.replace(/\n/g, '<br/>')}</div>
   ` : ''}
-  <div class="footer">${isEn ? 'This report was generated automatically & securely via Hayat AI on ' : 'تم إنشاء هذا التقرير تلقائياً وبسرية تامة عبر حياة AI بتاريخ '}${new Date().toLocaleDateString(isEn ? 'en-US' : 'ar-EG')}</div>
+  <div class="footer">${t.reportGeneratedSecurely || 'This report was generated automatically & securely via Hayat AI on '} ${new Date().toLocaleDateString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47)}</div>
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
@@ -941,15 +941,15 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
     doc.open();
     doc.write(`
       <!DOCTYPE html>
-      <html dir="rtl" lang="ar">
+      <html dir="${langInfo.dir}" lang="${langInfo.code}">
         <head>
           <meta charset="utf-8">
-          <title>${periodTitle} - حياة AI</title>
+          <title>${periodTitle} - Hayat AI</title>
           <script src="https://cdn.tailwindcss.com"></script>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
             * { box-sizing: border-box; }
-            body { font-family: 'Cairo', sans-serif; padding: 20px; color: #1e293b; background: #fff; line-height: 1.6; direction: rtl; text-align: right; }
+            body { font-family: 'Cairo', sans-serif; padding: 20px; color: #1e293b; background: #fff; line-height: 1.6; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
             svg { max-width: 100%; height: auto; }
             @media print {
               body { padding: 0; margin: 0; }
@@ -988,13 +988,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             </div>
             <div className="min-w-0">
               <h2 className="text-sm sm:text-base font-black text-white flex items-center gap-2 flex-wrap truncate">
-                <span>{isEn ? 'Export Mental Health Report (Custom PDF)' : 'تصدير تقرير الصحة النفسية (PDF المخصص)'}</span>
+                <span>{t.exportMentalHealthReport || 'Export Mental Health Report (Custom PDF)'}</span>
                 <span className="bg-[#FEFAE0] text-[#5A5A40] text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">
-                  {isEn ? 'Custom Period' : 'فترة مخصصة'}
+                  {t.customPeriod || 'Custom Period'}
                 </span>
               </h2>
               <p className="text-[11px] text-[#E2DCC8] font-medium truncate hidden sm:block">
-                {isEn ? 'Comprehensive structured document customizable by date range for sharing with therapists & doctors' : 'وثيقة منظمة وشاملة قابلة للتخصيص حسب الفترة الزمانية لمشاركتها مع المعالجين والأطباء النفسيين'}
+                {t.exportReportSub || 'Comprehensive structured document customizable by date range for sharing with therapists & doctors'}
               </p>
             </div>
           </div>
@@ -1002,7 +1002,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           <button
             onClick={onClose}
             className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer shrink-0"
-            title={isEn ? 'Close' : 'إغلاق'}
+            title={t.closeBtn || 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -1014,13 +1014,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           {/* Row 1: Period Type Horizontal Scrollable Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none max-w-full">
             {[
-              { id: 'daily', label: isEn ? '☀️ Daily' : '☀️ يومي' },
-              { id: 'weekly', label: isEn ? '📅 Weekly' : '📅 أسبوعي' },
-              { id: 'monthly', label: isEn ? '📆 Monthly' : '📆 شهري' },
-              { id: 'quarterly', label: isEn ? '🧱 Quarterly' : '🧱 ربع سنوي' },
-              { id: 'semi-annually', label: isEn ? '🌓 Semi-Annual' : '🌓 نصف سنوي' },
-              { id: 'yearly', label: isEn ? '📊 Yearly' : '📊 سنوي' },
-              { id: 'custom', label: isEn ? '⚙️ Custom' : '⚙️ مخصص' },
+              { id: 'daily', label: t.dailyTab || '☀️ Daily' },
+              { id: 'weekly', label: t.weeklyTab || '📅 Weekly' },
+              { id: 'monthly', label: t.monthlyTab || '📆 Monthly' },
+              { id: 'quarterly', label: t.quarterlyTab || '🧱 Quarterly' },
+              { id: 'semi-annually', label: t.semiAnnualTab || '🌓 Semi-Annual' },
+              { id: 'yearly', label: t.yearlyTab || '📊 Yearly' },
+              { id: 'custom', label: t.customTab || '⚙️ Custom' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1197,8 +1197,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           <div 
             ref={reportRef}
             id="monthly-pdf-report-canvas"
-            className="bg-white border border-[#E2DCC8] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-md max-w-4xl mx-auto space-y-4 sm:space-y-6 text-right text-[#3A3A3A] font-sans break-words [overflow-wrap:anywhere]"
-            dir="rtl"
+            className="bg-white border border-[#E2DCC8] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-md max-w-4xl mx-auto space-y-4 sm:space-y-6 text-start text-[#3A3A3A] font-sans break-words [overflow-wrap:anywhere]"
+            dir={langInfo.dir}
           >
             {/* PDF Header Section */}
             <div className="border-b-2 border-[#5A5A40] pb-3 sm:pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

@@ -144,12 +144,12 @@ export default function DrawingCanvas({ initialDataUrl, onSave, onCancel }: Draw
   };
 
   return (
-    <div className="flex flex-col bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl overflow-hidden shadow-xs h-full font-sans" dir="rtl">
+    <div className="flex flex-col bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl overflow-hidden shadow-xs h-full font-sans">
       {/* Canvas Toolbars */}
       <div className="flex flex-wrap items-center justify-between p-3 bg-white border-b border-[#E2DCC8] gap-2">
         {/* Colors Palette */}
-        <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto pb-1 max-w-full">
-          <Palette className="w-4 h-4 text-gray-400 mr-1 shrink-0" />
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+          <Palette className="w-4 h-4 text-gray-400 me-1 shrink-0" />
           {colors.map((c) => (
             <button
               key={c}
@@ -163,8 +163,8 @@ export default function DrawingCanvas({ initialDataUrl, onSave, onCancel }: Draw
         </div>
 
         {/* Brush Size Slider */}
-        <div className="flex items-center space-x-2 space-x-reverse">
-          <Brush className="w-4 h-4 text-[#8B9D83]" />
+        <div className="flex items-center gap-2">
+          <Brush className="w-4 h-4 text-[#8B9D83] shrink-0" />
           <input
             type="range"
             min="1"

@@ -124,9 +124,9 @@ export default function LanguagesModal({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search language / ابحث عن لغتك..."
-                className="w-full pl-9 pr-9 py-2.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#4E685B] shadow-3xs"
+                className="w-full px-9 py-2.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#4E685B] shadow-3xs"
               />
-              <Search className="w-4 h-4 text-gray-400 absolute right-3 top-3" />
+              <Search className="w-4 h-4 text-gray-400 absolute end-3 top-3" />
             </div>
           )}
         </div>
@@ -152,7 +152,7 @@ export default function LanguagesModal({
                       <span className="text-2xl shrink-0 group-hover:scale-110 transition-transform">
                         {lang.flag}
                       </span>
-                      <div className="text-right rtl:text-right ltr:text-left">
+                      <div className="text-start">
                         <span className="block font-black text-sm">
                           {lang.nativeName}
                         </span>

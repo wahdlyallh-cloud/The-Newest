@@ -61,6 +61,7 @@ import PredictiveHealthInsightsModal from './components/PredictiveHealthInsights
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
 import OnboardingTourModal from './components/OnboardingTourModal';
 import { SpeechRecognitionManager } from './lib/speechRecognition';
+import { formatDate, formatTime, formatDateTime, formatNumber } from './lib/formatters';
 
 // Recharts components for gorgeous analytics
 import { 
@@ -895,7 +896,7 @@ function localizeDiaryEntry(entry: DiaryEntry, isAr: boolean): DiaryEntry {
   return {
     ...entry,
     moods: entry.moods?.map(m => arabicToEnMap[m] || m),
-    tags: entry.tags?.map(tag => arabicToEnMap[t] || t)
+    tags: entry.tags?.map(tag => arabicToEnMap[tag] || tag)
   };
 }
 
@@ -1061,7 +1062,7 @@ export default function App() {
 
   const displayedHabits = useMemo(() => {
     if (!Array.isArray(habits)) return [];
-    return habits.map(h => localizeHabit(h, isAr, settings?.appLanguage));
+    return habits.map(h => localizeHabit(h, isAr));
   }, [habits, isAr]);
 
   const displayedGratitudeCards = useMemo(() => {
@@ -1153,6 +1154,15 @@ export default function App() {
     document.body.style.fontFamily = fontCss;
     document.body.style.lineHeight = `${lhCss}`;
   }, [settings.appFont, settings.appLineHeight]);
+
+  // Synchronize document dir and lang dynamically across all 12 locales
+  useEffect(() => {
+    const info = getLanguageInfo(settings.appLanguage || 'ar');
+    document.documentElement.setAttribute('dir', info.dir);
+    document.documentElement.setAttribute('lang', info.code);
+    document.documentElement.dir = info.dir;
+    document.documentElement.lang = info.code;
+  }, [settings.appLanguage]);
 
   // Mobile Auto-Hiding Top Header State
   const [isHeaderCollapsedOnMobile, setIsHeaderCollapsedOnMobile] = useState(false);
@@ -1535,21 +1545,21 @@ export default function App() {
 
   const performCloudSync = async (forceData?: { diaries?: DiaryEntry[], habits?: Habit[], settings?: AppSettings, gratitudeCards?: GratitudeCard[] }) => {
     setIsCloudSyncing(true);
+    const payload = {
+      diaries: forceData?.diaries || diaries,
+      habits: forceData?.habits || habits,
+      settings: forceData?.settings || settings,
+      gratitudeCards: forceData?.gratitudeCards || gratitudeCards,
+      chatMessages: (() => {
+        try {
+          const raw = localStorage.getItem('yawmiyati_chat_messages');
+          return raw ? JSON.parse(raw) : [];
+        } catch { return []; }
+      })(),
+      activeTab: localStorage.getItem('yawmiyati_active_tab') || 'dashboard',
+      syncTime: new Date().toISOString()
+    };
     try {
-      const payload = {
-        diaries: forceData?.diaries || diaries,
-        habits: forceData?.habits || habits,
-        settings: forceData?.settings || settings,
-        gratitudeCards: forceData?.gratitudeCards || gratitudeCards,
-        chatMessages: (() => {
-          try {
-            const raw = localStorage.getItem('yawmiyati_chat_messages');
-            return raw ? JSON.parse(raw) : [];
-          } catch { return []; }
-        })(),
-        activeTab: localStorage.getItem('yawmiyati_active_tab') || 'dashboard',
-        syncTime: new Date().toISOString()
-      };
       
       const token = authToken || localStorage.getItem('yawmiyati_auth_token');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -3095,14 +3105,14 @@ export default function App() {
 
   // --- Permanent Delete ---
   const handlePermanentDeleteDiary = (id: string) => {
-    if (window.confirm(isEn ? 'Are you sure you want to delete this diary permanently?' : 'هل أنت متأكد من رغبتك في حذف هذه اليومية نهائياً؟ لا يمكن الاستعادة بعد ذلك.')) {
+    if (window.confirm(t.confirmDeletePermanent || 'Are you sure you want to delete this diary permanently?')) {
       setDiaries(prev => prev.filter(d => d.id !== id));
     }
   };
 
   // --- Empty Trash ---
   const handleEmptyTrash = () => {
-    if (window.confirm(isEn ? 'Are you sure you want to empty the trash? All deleted notes will be permanently lost.' : 'هل أنت متأكد من رغبتك في تفريغ سلة المهملات بالكامل؟ سيتم فقدان كل المذكرات المحذوفة نهائياً.')) {
+    if (window.confirm(t.confirmEmptyTrash || 'Are you sure you want to empty the trash? All deleted notes will be permanently lost.')) {
       setDiaries(prev => prev.filter(d => !d.isTrash));
     }
   };
@@ -3825,11 +3835,12 @@ export default function App() {
           if (parts.length === 2) {
             const byteChars = atob(parts[1]);
             const byteNumbers = new Array(byteChars.length);
-          for (let i = 0; i < byteChars.length; i++) {
-            byteNumbers[i] = byteChars.charCodeAt(i);
+            for (let i = 0; i < byteChars.length; i++) {
+              byteNumbers[i] = byteChars.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            audioBlob = new Blob([byteArray], { type: rec.mimeType || 'audio/webm' });
           }
-          const byteArray = new Uint8Array(byteNumbers);
-          audioBlob = new Blob([byteArray], { type: rec.mimeType || 'audio/webm' });
         }
       }
 
@@ -3968,12 +3979,12 @@ export default function App() {
           return { ...prev, content: updatedContent };
         });
       } else {
-        const errMsg = (isEn ? 'AI transcription is currently unavailable for this audio file.' : 'تعذر التفريغ بالذكاء الاصطناعي حالياً.');
+        const errMsg = t.aiTranscriptionUnavailable || 'AI transcription is currently unavailable for this audio file.';
         updateAudioTranscriptionAtomic(newRecId, errMsg);
       }
     } catch (err: any) {
       console.error('Audio upload & transcribe error:', err);
-      updateAudioTranscriptionAtomic(newRecId, isEn ? 'AI transcription is currently unavailable.' : 'تعذر التفريغ بالذكاء الاصطناعي حالياً.');
+      updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable || 'AI transcription is currently unavailable.');
     } finally {
       setAudioUploadLoading(false);
       setTranscribingAudioId(null);
@@ -4048,7 +4059,7 @@ export default function App() {
     const manager = SpeechRecognitionManager.getInstance();
     if (manager.isSupported()) {
       manager.startSession({
-        lang: isEn ? 'en-US' : 'ar-EG',
+        lang: langInfo.speechLang || 'ar-EG',
         continuous: true,
         callbacks: {
           onTranscriptChange: (state) => {
@@ -4403,20 +4414,19 @@ export default function App() {
       updated.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       return updated;
     });
-    alert(isEn 
-      ? `Successfully imported ${entries.length} diaries into your timeline! 🎉`
-      : `تم استيراد ${entries.length} يومية بنجاح باهر إلى خطك الزمني! 🎉`
+    alert(
+      `${t.diariesImportSuccess || 'Successfully imported entries into your timeline! 🎉'} (${entries.length})`
     );
   };
 
   const handleSendEmailBackup = async () => {
     if (!backupEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(backupEmail)) {
-      setEmailBackupStatus(isEn ? 'Please enter a valid email address.' : 'الرجاء إدخال بريد إلكتروني صحيح.');
+      setEmailBackupStatus(t.invalidEmailError || 'Please enter a valid email address.');
       return;
     }
     
     setIsSendingEmailBackup(true);
-    setEmailBackupStatus(isEn ? 'Sending backup to email...' : 'جاري إرسال النسخة الاحتياطية للبريد الإلكتروني...');
+    setEmailBackupStatus(t.sendingEmailBackup || 'Sending backup to email...');
     
     try {
       const payload = {
@@ -4444,19 +4454,17 @@ export default function App() {
 
       const data = await response.json();
       if (data.success) {
-        setEmailBackupStatus(isEn 
-          ? `Backup successfully sent to ${backupEmail}! 🎉` 
-          : `تم إرسال النسخة الاحتياطية بنجاح إلى ${backupEmail}! 🎉`
+        setEmailBackupStatus(
+          `${t.emailBackupSuccess || 'Backup successfully sent to'} ${backupEmail}! 🎉`
         );
       } else {
-        setEmailBackupStatus(isEn 
-          ? `Failed: ${data.message || 'Unknown error'}` 
-          : `فشل الإرسال: ${data.message || 'خطأ غير معروف'}`
+        setEmailBackupStatus(
+          `${t.emailBackupFailed || 'Failed:'} ${data.message || 'Unknown error'}`
         );
       }
     } catch (error) {
       console.error("Email backup error:", error);
-      setEmailBackupStatus(isEn ? 'Network error occurred.' : 'حدث خطأ في الاتصال بالخادم.');
+      setEmailBackupStatus(t.serverError || 'Network error occurred.');
     } finally {
       setIsSendingEmailBackup(false);
     }
@@ -4859,7 +4867,7 @@ export default function App() {
       {/* ➕ Modal: إضافة عادة جديدة */}
       {showAddHabitModal && (
         <div className="fixed inset-0 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" dir="rtl">
+          <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" dir={langInfo.dir}>
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                 <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">🎯</span>
@@ -5210,8 +5218,8 @@ export default function App() {
                     ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
                     : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
                 }`}
-                title={isEn ? 'More options & tools' : 'المزيد من الخيارات والأدوات'}
-                aria-label={isEn ? 'More options & tools' : 'المزيد من الخيارات والأدوات'}
+                title={t('nav.more_options') || 'More options & tools'}
+                aria-label={t('nav.more_options') || 'More options & tools'}
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
@@ -5264,7 +5272,7 @@ export default function App() {
                   >
                     <div className="flex items-center gap-2">
                       <BellRing className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                      <span>{isEn ? 'Smart Reminders' : 'التنبيهات الذكية'}</span>
+                      <span>{t('nav.smart_reminders') || 'Smart Reminders'}</span>
                     </div>
                     <span className="text-[10px] bg-[#8B9D83]/20 text-[#5A5A40] px-1.5 py-0.5 rounded-md font-bold">
                       {settings.reminders?.length || 0}
@@ -5282,7 +5290,7 @@ export default function App() {
                   >
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>{isEn ? 'Rate & Feedback' : 'التقييم والملاحظات'}</span>
+                      <span>{t('nav.rate_feedback') || 'Rate & Feedback'}</span>
                     </div>
                     <span className="text-[10px] text-gray-400">★ ★ ★ ★ ★</span>
                   </button>
@@ -5403,8 +5411,8 @@ export default function App() {
                     <Brain className="w-4 h-4 text-amber-300" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{t('predictiveTitle') || (isEn ? 'Predictive Health 🔮' : 'استشعار القلق 🔮')}</h4>
-                    <p className="text-[10px] text-blue-100/80 truncate">{t('predictiveSub')}</p>
+                    <h4 className="font-extrabold text-xs truncate">{t.predictiveTitle || 'Predictive Health 🔮'}</h4>
+                    <p className="text-[10px] text-blue-100/80 truncate">{t.predictiveSub}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-amber-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -5420,8 +5428,8 @@ export default function App() {
                     <Mic className="w-4 h-4 text-purple-200" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-extrabold text-xs truncate">{t('voiceJournalTitle') || (isEn ? 'Voice Journaling 🎙️' : 'التدوين الصوتي 🎙️')}</h4>
-                    <p className="text-[10px] text-purple-100/80 truncate">{t('voiceJournalSub')}</p>
+                    <h4 className="font-extrabold text-xs truncate">{t.voiceJournalTitle || 'Voice Journaling 🎙️'}</h4>
+                    <p className="text-[10px] text-purple-100/80 truncate">{t.voiceJournalSub}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-purple-200 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -5453,10 +5461,10 @@ export default function App() {
               <div className="space-y-1">
                 <h3 className="text-xs sm:text-sm font-black text-[#4E685B] flex items-center space-x-1.5 space-x-reverse">
                   <span>📅</span>
-                  <span>{t.fullCalendar || (isEn ? 'Full Calendar & Day View' : 'التقويم الكامل واستعراض الأيام')}</span>
+                  <span>{t.fullCalendar || 'Full Calendar & Day View'}</span>
                 </h3>
                 <p className="text-[10px] sm:text-xs text-[#5A5A40]/80 leading-relaxed">
-                  {t.fullCalendarSub || (isEn ? 'Tap to browse diaries, books, and AI insights logged on any day' : 'اضغط لتصفح كل ما حدث في أي يوم (يومياتي، كتب، أنشطة، واستشارات AI)')}
+                  {t.fullCalendarSub || 'Tap to browse diaries, books, and AI insights logged on any day'}
                 </p>
               </div>
               <div className="p-3 bg-white border border-[#E2DCC8] rounded-2xl text-rose-500 shadow-xs shrink-0 group-hover:scale-105 transition-transform flex items-center justify-center">
@@ -5645,10 +5653,10 @@ export default function App() {
                   </motion.div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 tracking-wider block">{t.streakTitle || (isEn ? 'Streak Tracker' : 'سلسلة الالتزام والتدوين')}</span>
+                    <span className="text-[10px] font-bold text-gray-400 tracking-wider block">{t.streakTitle || 'Streak Tracker'}</span>
                     <div className="flex items-baseline space-x-1 space-x-reverse">
                       <span className="text-2xl font-extrabold text-[#3A3A3A]">{streakInfo.currentStreak}</span>
-                      <span className="text-xs text-[#5A5A40] font-semibold">{t.dayStreak || (isEn ? 'Days' : 'يوم متتالي')}</span>
+                      <span className="text-xs text-[#5A5A40] font-semibold">{t.dayStreak || 'Days'}</span>
                     </div>
                   </div>
                 </div>
@@ -5658,14 +5666,14 @@ export default function App() {
                   <p className="text-xs text-[#5A5A40] leading-relaxed font-medium">
                     {streakInfo.hasLoggedToday ? (
                       <span className="text-emerald-700 flex items-center space-x-1 space-x-reverse">
-                        <span>✨ {t('streakActiveMsg')}</span>
+                        <span>✨ {t.streakActiveMsg || 'Great job! You maintained your streak today.'}</span>
                       </span>
                     ) : (
                       <span>
                         {streakInfo.currentStreak === 0 ? (
-                          t('streakInactiveZero')
+                          t.streakInactiveZero || 'Start your streak today by logging a thought or habit.'
                         ) : (
-                          t('streakInactiveOneLeft')
+                          t.streakInactiveOneLeft || 'Keep the momentum going by writing an entry today.'
                         )}
                       </span>
                     )}
@@ -5675,10 +5683,10 @@ export default function App() {
                 {/* Right Side: Quick Stats Badges */}
                 <div className="flex flex-col items-end justify-center shrink-0 border-r md:border-r border-t md:border-t-0 border-[#E2DCC8]/60 pt-3 md:pt-0 pr-4 md:pr-4 pl-4 md:pl-0">
                   <div className="text-right">
-                    <span className="text-[10px] text-gray-400 block font-medium">{t.longestStreak || (isEn ? 'Longest Streak:' : 'أطول سلسلة تاريخية:')}</span>
+                    <span className="text-[10px] text-gray-400 block font-medium">{t.longestStreak || 'Longest Streak:'}</span>
                     <span className="text-sm font-bold text-[#8B9D83] flex items-center justify-end space-x-1 space-x-reverse">
                       <span>🏆</span>
-                      <span>{streakInfo.maxStreak} {isEn ? 'Days' : 'يوم'}</span>
+                      <span>{streakInfo.maxStreak} {t.daysUnit || 'Days'}</span>
                     </span>
                   </div>
                 </div>
@@ -5687,7 +5695,7 @@ export default function App() {
 
               {/* 7-Day Visual Calendar Tracker */}
               <div className="border-t border-[#E2DCC8]/50 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <span className="text-[10px] font-bold text-gray-400">{t.recentWeek || (isEn ? 'Recent Week Progress:' : 'متابعة الأسبوع الأخير:')}</span>
+                <span className="text-[10px] font-bold text-gray-400">{t.recentWeek || 'Recent Week Progress:'}</span>
                 <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto scrollbar-none pb-1">
                   {getWeekDays().map((day, idx) => {
                     // Check if diaries has an entry on this day
@@ -5717,7 +5725,7 @@ export default function App() {
 
             {/* Day Selector Calendar Matrix */}
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-4 shadow-xs space-y-3">
-              <span className="text-xs font-bold text-[#5A5A40] block mb-1">{t.selectDateTitle || (isEn ? 'Select a date to log or view activities:' : 'اختر اليوم لتسجيل أو عرض الأنشطة:')}</span>
+              <span className="text-xs font-bold text-[#5A5A40] block mb-1">{t.selectDateTitle || 'Select a date to log or view activities:'}</span>
               <div className="grid grid-cols-7 gap-2">
                 {getWeekDays().map((day, idx) => (
                   <button
@@ -7275,15 +7283,15 @@ export default function App() {
 
                     {/* Audio Upload Loading Banner */}
                     {audioUploadLoading && (
-                      <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold col-span-full animate-pulse shadow-sm" dir="rtl">
+                      <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold col-span-full animate-pulse shadow-sm" dir={langInfo.dir}>
                         <RefreshCw className="w-4 h-4 animate-spin text-emerald-700 shrink-0" />
-                        <span>⏳ جاري تفريغ التسجيل بالذكاء الاصطناعي بدقة عالية...</span>
+                        <span>⏳ {t.aiTranscriptionLoading || 'جاري تفريغ التسجيل بالذكاء الاصطناعي بدقة عالية...'}</span>
                       </div>
                     )}
 
                     {/* Interactive Real-Time Live Recording Card */}
                     {isRecording && (
-                      <div className="w-full mt-2 p-3.5 sm:p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300/80 rounded-2xl flex flex-col space-y-3 shadow-md col-span-full animate-fadeIn text-xs" dir="rtl">
+                      <div className="w-full mt-2 p-3.5 sm:p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300/80 rounded-2xl flex flex-col space-y-3 shadow-md col-span-full animate-fadeIn text-xs" dir={langInfo.dir}>
                         <div className="flex items-center justify-between gap-2 border-b border-red-200/60 pb-2.5">
                           <div className="flex items-center gap-2">
                             <span className="relative flex h-3 w-3">
@@ -7637,9 +7645,9 @@ export default function App() {
                                     value={editingTranscriptText}
                                     onChange={(e) => setEditingTranscriptText(e.target.value)}
                                     rows={3}
-                                    placeholder="اكتب النص المفرغ الصوتي هنا..."
+                                    placeholder={t.typeVoiceTranscriptPlaceholder || "اكتب النص المفرغ الصوتي هنا..."}
                                     className="w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-xl p-2.5 text-xs text-[#3A3A3A] leading-relaxed resize-y font-medium shadow-2xs"
-                                    dir="rtl"
+                                    dir={langInfo.dir}
                                     autoFocus
                                   />
                                   <div className="flex items-center justify-end gap-2 pt-1">
@@ -8200,14 +8208,7 @@ export default function App() {
                             {msg.text}
                           </div>
                           <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
-                            {msg.sender === 'user' ? (t.meLabel || (isEn ? "Me" : "أنا")) : (t.aiPsychAdvisor || (isEn ? "AI Counselor" : "مستشارك النفسي AI"))} • {(() => {
-                              const d = new Date(msg.createdAt);
-                              if (isNaN(d.getTime())) return msg.createdAt;
-                              const isAr = (settings?.appLanguage || 'ar') === 'ar';
-                              const datePart = d.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                              const timePart = d.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
-                              return `${datePart} - ${timePart}`;
-                            })()}
+                            {msg.sender === 'user' ? (t.meLabel || "Me") : (t.aiPsychAdvisor || "AI Counselor")} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
                           </span>
                         </div>
                       ))
@@ -8521,7 +8522,7 @@ export default function App() {
 
                     {/* Write New Note Button - Separate floating button */}
                     <button
-                      onClick={startNewDiary}
+                      onClick={() => startNewDiary()}
                       className="w-full flex items-center justify-center space-x-2 space-x-reverse py-3.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs hover:scale-[1.01] active:scale-95"
                     >
                       <Plus className="w-4 h-4" />
@@ -8625,7 +8626,7 @@ export default function App() {
                               </div>
 
                               <span className="text-[10px] md:text-xs font-bold text-[#5A5A40] bg-[#F9F7F2] border border-[#E2DCC8]/60 px-3 py-1 rounded-xl self-start sm:self-auto">
-                                {dayEntries.length} {dayEntries.length === 1 ? (t.subNoteSingular || (isEn ? "sub-entry" : "مذكرة فرعية")) : (t.subNotePlural || (isEn ? "sub-entries" : "مذكرات فرعية"))}
+                                <span>{dayEntries.length} {t.subNotesCount || 'sub-entries'}</span>
                               </span>
                             </div>
 
@@ -8633,18 +8634,7 @@ export default function App() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {dayEntries.map((diary) => {
                                 // Format the precise entry time safely
-                                const preciseTime = (() => {
-                                  try {
-                                    const d = new Date(diary.createdAt);
-                                    if (isNaN(d.getTime())) return '12:00 م';
-                                    return d.toLocaleTimeString('ar-EG', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    });
-                                  } catch {
-                                    return '12:00 م';
-                                  }
-                                })();
+                                const preciseTime = formatTime(diary.createdAt, settings?.appLanguage || 'ar');
                                 
                                 return (
                                   <div
@@ -8659,8 +8649,8 @@ export default function App() {
                                       diary.color || 'bg-[#F9F7F2]/45'
                                     }`}
                                   >
-                                    {/* Top Corner: precise entry time, edit flag, and ratings aligned with the screenshot */}
-                                    <div className="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-gray-500 w-full max-w-full" dir="rtl">
+                                    {/* Top Corner: precise entry time, edit flag, and ratings */}
+                                    <div className="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-gray-500 w-full max-w-full" dir={langInfo.dir}>
                                       {/* Star Ratings & Actions on the Right in RTL */}
                                       <div className="flex flex-wrap items-center gap-1.5 max-w-full">
                                         {/* Direct Favorite Toggle Button */}
@@ -10257,7 +10247,7 @@ export default function App() {
 
       {/* ⚡ Triggered Reminder Notification Popup */}
       {triggeredReminder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn" dir="rtl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn" dir={langInfo.dir}>
           <div className="bg-[#FAF8F5] border-2 border-[#D4A373] rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <div className="flex items-center space-x-3 space-x-reverse">
               <span className="text-3xl bg-[#FCF5DE] p-3 rounded-2xl border border-[#E9E1C4] shadow-xs">
@@ -10331,9 +10321,9 @@ export default function App() {
                 </div>
               </div>
               <div className="text-left">
-                <div className="text-[10px] text-gray-400 font-bold">تاريخ التصدير ومستند الحفظ</div>
+                <div className="text-[10px] text-gray-400 font-bold">{t.exportDateTitle || 'Export Date:'}</div>
                 <div className="text-xs text-gray-600 font-bold mt-1" style={{ direction: 'ltr' }}>
-                  {new Date().toLocaleString('ar-EG', { dateStyle: 'long', timeStyle: 'short' })}
+                  {formatDateTime(new Date(), settings?.appLanguage || 'ar')}
                 </div>
               </div>
             </div>
@@ -10344,9 +10334,9 @@ export default function App() {
               {/* Note Metadata Block */}
               <div className="bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl p-6 grid grid-cols-3 gap-4">
                 <div>
-                  <span className="block text-[10px] text-gray-400 font-bold mb-1">تاريخ كتابة المذكرة:</span>
+                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.entryDateLabel || 'Entry Date:'}</span>
                   <span className="text-xs text-[#3A3A3A] font-extrabold">
-                    {new Date(editingDiary.createdAt).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {formatDate(editingDiary.createdAt, settings?.appLanguage || 'ar', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
                 <div>
@@ -10470,8 +10460,8 @@ export default function App() {
 
       {/* 🧠 CBT Step-by-Step Restructuring Wizard Modal */}
       {showAddCbtModal && (
-        <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto" dir="rtl">
-          <div className="bg-white border border-[#E2DCC8] rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-fade-in text-right">
+        <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto" dir={langInfo.dir}>
+          <div className="bg-white border border-[#E2DCC8] rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-fade-in text-start">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E2DCC8]/60">
@@ -10819,7 +10809,7 @@ export default function App() {
         const dayBooks = books.filter(b => b.createdAt.split('T')[0] === selectedCalendarDate);
 
         // Helper to get formatted date label
-        const formattedDateLabel = new Date(selectedCalendarDate + 'T12:00:00').toLocaleDateString('ar-EG', {
+        const formattedDateLabel = formatDate(selectedCalendarDate + 'T12:00:00', settings?.appLanguage || 'ar', {
           weekday: 'long',
           year: 'numeric',
           month: 'long',
@@ -10875,7 +10865,7 @@ export default function App() {
         };
 
         return (
-          <div className="fixed inset-0 bg-black/55 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-50 transition-all font-sans" dir="rtl">
+          <div className="fixed inset-0 bg-black/55 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-50 transition-all font-sans" dir={langInfo.dir}>
             <div className="bg-white border border-[#E2DCC8] rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[92vh] md:h-[680px] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               
               {/* Header */}
@@ -11990,7 +11980,7 @@ export default function App() {
 
       {/* 📥 Archive Action Toast Notification */}
       {archiveToast && (
-        <div className="fixed bottom-20 sm:bottom-8 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-auto bg-[#2B3E50] text-white p-4 rounded-2xl shadow-2xl border border-[#8B9D83]/40 flex items-center justify-between space-x-3 space-x-reverse animate-slideUp transition-all" dir="rtl">
+        <div className="fixed bottom-20 sm:bottom-8 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-auto bg-[#2B3E50] text-white p-4 rounded-2xl shadow-2xl border border-[#8B9D83]/40 flex items-center justify-between space-x-3 space-x-reverse animate-slideUp transition-all" dir={langInfo.dir}>
           <div className="flex items-center space-x-3 space-x-reverse min-w-0">
             <div className="p-2 bg-[#8B9D83] text-white rounded-xl text-lg shrink-0">
               {archiveToast.action === 'archived' ? '📥' : '📤'}
@@ -12008,7 +11998,7 @@ export default function App() {
               }}
               className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer"
             >
-              تراجع (Undo)
+              {t.undoBtn || "تراجع (Undo)"}
             </button>
             <button
               type="button"
@@ -12023,7 +12013,7 @@ export default function App() {
 
       {/* 👁️ Modal to Preview Archived Diary/Thought */}
       {viewArchivedDiary && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fadeIn" dir="rtl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fadeIn" dir={langInfo.dir}>
           <div className="bg-white w-full max-w-2xl rounded-3xl p-6 space-y-5 shadow-2xl border border-[#E2DCC8] max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-3">
@@ -12129,8 +12119,8 @@ export default function App() {
 
       {/* 📱 Lock Screen Widget Instructions Modal */}
       {showLockScreenWidgetInfoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn" dir="rtl">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border-2 border-[#D4A373] space-y-4 text-right">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn" dir={langInfo.dir}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border-2 border-[#D4A373] space-y-4 text-start">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-[#D4A373]" />

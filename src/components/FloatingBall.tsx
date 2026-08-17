@@ -23,7 +23,7 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
   return (
     <div 
-      className={`fixed bottom-18 sm:bottom-20 left-3 sm:left-6 z-40 font-sans transition-all duration-300 transform ${
+      className={`fixed bottom-18 sm:bottom-20 start-3 sm:start-6 z-40 font-sans transition-all duration-300 transform ${
         isCollapsed 
           ? 'max-sm:translate-y-28 max-sm:opacity-0 max-sm:pointer-events-none' 
           : 'max-sm:translate-y-0 max-sm:opacity-100'
@@ -35,13 +35,13 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
         <div className="flex flex-col items-center space-y-3 mb-4 animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Quick AI Advisor */}
           <div className="flex items-center group">
-            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
-              🧠 {isEn ? 'Ask AI Advisor' : 'اسأل المستشار الذكي'}
+            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity me-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
+              🧠 {t.aiAdvisor || 'Ask AI Advisor'}
             </span>
             <button
               onClick={() => handleAction('ai')}
               className="p-2.5 sm:p-3 bg-gradient-to-tr from-[#D4A373] to-[#FEFAE0] text-[#5A5A40] rounded-full shadow-lg hover:scale-110 hover:rotate-12 transition-transform cursor-pointer"
-              title={t.aiAdvisor}
+              title={t.aiAdvisor || 'Ask AI Advisor'}
             >
               <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -49,13 +49,13 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
           {/* Quick Task */}
           <div className="flex items-center group">
-            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
-              ☑️ {isEn ? 'Add New Task' : 'إضافة مهمة جديدة'}
+            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity me-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
+              ☑️ {t.addNewTask || 'Add New Task'}
             </span>
             <button
               onClick={() => handleAction('task')}
               className="p-2.5 sm:p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:scale-110 hover:rotate-12 transition-transform cursor-pointer"
-              title={t.task}
+              title={t.task || 'Add New Task'}
             >
               <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -63,13 +63,13 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
           {/* Quick Mood Log */}
           <div className="flex items-center group">
-            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
-              😊 {isEn ? 'Log Daily Mood' : 'تسجيل المزاج اليومي'}
+            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity me-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
+              😊 {t.logDailyMood || 'Log Daily Mood'}
             </span>
             <button
               onClick={() => handleAction('mood')}
               className="p-2.5 sm:p-3 bg-[#D4A373] text-white rounded-full shadow-lg hover:scale-110 hover:rotate-12 transition-transform cursor-pointer"
-              title={t.mood}
+              title={t.mood || 'Log Daily Mood'}
             >
               <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -77,13 +77,13 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
           {/* Snap Photo */}
           <div className="flex items-center group">
-            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
-              📷 {isEn ? 'Add New Photo' : 'إضافة لقطة جديدة'}
+            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity me-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
+              📷 {t.attachPhoto || 'Add New Photo'}
             </span>
             <button
               onClick={() => handleAction('photo')}
               className="p-2.5 sm:p-3 bg-[#CCD5AE] text-[#5A5A40] rounded-full shadow-lg hover:scale-110 hover:rotate-12 transition-transform cursor-pointer"
-              title={t.photo}
+              title={t.attachPhoto || 'Add New Photo'}
             >
               <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -91,13 +91,13 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
           {/* Quick Recording */}
           <div className="flex items-center group">
-            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
-              🎤 {isEn ? 'Quick Voice Record' : 'تسجيل صوتي سريع'}
+            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity me-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
+              🎤 {t.voiceJournalTitle || 'Quick Voice Record'}
             </span>
             <button
               onClick={() => handleAction('voice')}
               className="p-2.5 sm:p-3 bg-[#8B9D83] text-white rounded-full shadow-lg hover:scale-110 hover:rotate-12 transition-transform cursor-pointer"
-              title={t.voiceRecord}
+              title={t.voiceRecord || 'Quick Voice Record'}
             >
               <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -105,13 +105,13 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
           {/* New Note / Diary */}
           <div className="flex items-center group">
-            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
-              📝 {isEn ? 'Write New Entry' : 'كتابة يومية جديدة'}
+            <span className="bg-[#5A5A40] text-[#F9F7F2] text-[11px] py-1 px-2.5 rounded-lg opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity me-2 border border-[#8B9D83] shadow-lg pointer-events-none whitespace-nowrap">
+              📝 {t.writeNewNoteBtn || 'Write New Entry'}
             </span>
             <button
               onClick={() => handleAction('new_note')}
               className="p-2.5 sm:p-3 bg-[#5A5A40] text-white rounded-full shadow-lg hover:scale-110 hover:rotate-12 transition-transform cursor-pointer"
-              title={t.write}
+              title={t.write || 'Write New Entry'}
             >
               <PenTool className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>

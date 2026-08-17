@@ -87,13 +87,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 }) => {
   const isAr = appLanguage === "ar";
   const isEn = appLanguage === "en";
+  const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const CATEGORY_NAMES: Record<string, string> = {
     health: t('catPhysicalHealth'),
     mind: t('catMindMeditation'),
     sport: t('catSportActivity'),
     culture: t('catCultureReading'),
-    custom: t('customGoals') || (isEn ? 'Other Goals 🎯' : 'أهداف أخرى 🎯')
+    custom: t('customGoals') || 'Other Goals 🎯'
   };
   // Sub-view inside Tasks & Activities
   const [subView, setSubView] = useState<'daily_checklist' | 'habits_matrix' | 'habit_settings'>('daily_checklist');
@@ -481,7 +482,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   };
 
   return (
-    <div className={`space-y-6 ${isDarkMode ? 'text-gray-200' : 'text-[#3A3A3A]'}`} id="daily-tasks-main-section" dir="rtl">
+    <div className={`space-y-6 ${isDarkMode ? 'text-gray-200' : 'text-[#3A3A3A]'}`} id="daily-tasks-main-section" dir={langInfo.dir}>
       
       {/* 1. Sub-Tab Switcher inside "المهام اليومية والنشاط" */}
       <div className="flex bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-2xs gap-1 overflow-x-auto">

@@ -4,7 +4,7 @@ import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip as ChartTooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import { Habit, DiaryEntry } from '../types';
+import { Habit, DiaryEntry, AppLanguage } from '../types';
 import { Sparkles, TrendingUp } from 'lucide-react';
 
 interface WeeklyHabitsMoodChartProps {

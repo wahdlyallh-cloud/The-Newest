@@ -72,7 +72,7 @@ export default function RatingModal({ isOpen, onClose, appLanguage = 'ar' }: Rat
                 </p>
                 
                 {/* Stars container */}
-                <div className="flex items-center justify-center space-x-1.5 space-x-reverse py-3">
+                <div className="flex items-center justify-center gap-1.5 py-3">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}

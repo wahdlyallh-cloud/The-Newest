@@ -100,6 +100,7 @@ export default function DailyProsConsModal({
   onSaveSuccess
 }: DailyProsConsModalProps) {
   const isAr = appLanguage === "ar";
+  const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const [aiPositives, setAiPositives] = useState<string[]>([]);
   const [aiNegatives, setAiNegatives] = useState<string[]>([]);
@@ -646,10 +647,10 @@ ${isAr ? 'تم التوليد بواسطة تطبيق حياة AI 🌿' : 'Gener
 
     const printContent = `
       <!DOCTYPE html>
-      <html dir="rtl" lang="ar">
+      <html dir="${langInfo.dir}" lang="${langInfo.code}">
       <head>
         <meta charset="utf-8">
-        <title>تقرير الإيجابيات والسلبيات اليومية - ${displayDate}</title>
+        <title>${t.prosConsBtnLabel || 'Pros & Cons'} - ${displayDate}</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -657,8 +658,8 @@ ${isAr ? 'تم التوليد بواسطة تطبيق حياة AI 🌿' : 'Gener
             font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
             background-color: #ffffff;
             color: #2D3748;
-            direction: rtl;
-            text-align: right;
+            direction: ${langInfo.dir};
+            text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'};
             padding: 15px;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -1118,7 +1119,7 @@ ${isAr ? 'تم التوليد بواسطة تطبيق حياة AI 🌿' : 'Gener
     <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
       
       {/* Printable Area Wrapper */}
-      <div id="pros-cons-modal-printable-card" className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-right font-sans my-auto" dir="rtl">
+      <div id="pros-cons-modal-printable-card" className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-start font-sans my-auto" dir={langInfo.dir}>
         
         {/* Modal Top Header Bar */}
         <div className="bg-gradient-to-r from-[#2B3E50] via-[#3B5066] to-[#5A5A40] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#E2DCC8]/30 shrink-0">

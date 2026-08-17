@@ -166,17 +166,17 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
   };
 
   return (
-    <div className={`space-y-6 ${isDarkMode ? 'text-gray-100' : 'text-[#3A3A3A]'}`} dir="rtl">
+    <div className={`space-y-6 ${isDarkMode ? 'text-gray-100' : 'text-[#3A3A3A]'}`} dir={langInfo.dir}>
       
       {/* Top Header */}
       <div className="flex items-center justify-between p-4 bg-white border border-[#E2DCC8] rounded-3xl shadow-xs">
-        <div className="flex items-center space-x-3 space-x-reverse">
+        <div className="flex items-center gap-3">
           <button
             onClick={onBack}
             className="p-2 hover:bg-gray-100 rounded-2xl transition-all cursor-pointer text-[#5A5A40]"
-            title="رجوع"
+            title={t.backBtn || "رجوع"}
           >
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className={`w-5 h-5 ${langInfo.dir === 'rtl' ? '' : 'rotate-180'}`} />
           </button>
           <div>
             <h3 className="font-extrabold text-base text-[#3A3A3A] flex items-center gap-1.5">
@@ -470,7 +470,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                               tag: 'lockscreen-widget',
                               requireInteraction: true,
                               renotify: true
-                            });
+                            } as any);
                             sent = true;
                           }
                         } catch (swErr) {
@@ -542,7 +542,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
 
               {/* Mock Android Phone Screen Graphic */}
               <div className="md:col-span-5 flex justify-center">
-                <div className="w-56 bg-slate-900 rounded-[28px] p-2.5 border-4 border-slate-700 shadow-xl relative overflow-hidden text-right" dir="rtl">
+                <div className="w-56 bg-slate-900 rounded-[28px] p-2.5 border-4 border-slate-700 shadow-xl relative overflow-hidden text-start" dir={langInfo.dir}>
                   {/* Phone Top Notch */}
                   <div className="flex items-center justify-between px-2 text-[9px] font-bold text-slate-400 mb-2">
                     <span>12:45</span>

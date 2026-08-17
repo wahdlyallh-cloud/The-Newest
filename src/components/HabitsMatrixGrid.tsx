@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Plus, 
   Filter, 
@@ -48,8 +48,10 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
   isDarkMode = false,
   appLanguage = 'ar'
 }) => {
+  const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isRtl = appLanguage === 'ar';
+  const isRtl = langInfo.dir === 'rtl';
+
   // Periodicity / Date Range Filter State
   const [rangeMode, setRangeMode] = useState<
     'day' | 'week' | 'month' | 'quarter' | 'semi_annual' | 'year' | 'custom'
@@ -61,7 +63,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
     selectedDate || new Date().toISOString().split('T')[0]
   );
 
-  // Filter & Sort state (Images 6 & 7)
+  // Filter & Sort state
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [hideArchived, setHideArchived] = useState(true);
   const [hideCompleted, setHideCompleted] = useState(false);
@@ -82,79 +84,70 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
     else if (rangeMode === 'quarter') daysCount = 90;
     else if (rangeMode === 'semi_annual') daysCount = 180;
     else if (rangeMode === 'year') daysCount = 365;
-
-    let dateList: { dateStr: string; dayName: string; dayNumber: number }[] = [];
-
-    if (rangeMode === 'custom') {
+    else if (rangeMode === 'custom') {
       const start = new Date(customRangeStart);
       const end = new Date(customRangeEnd);
-      const cur = new Date(start);
-      while (cur <= end && dateList.length < 365) {
-        const dStr = cur.toISOString().split('T')[0];
-        const dayName = cur.toLocaleDateString('ar-EG', { weekday: 'short' });
-        const dayNumber = cur.getDate();
-        dateList.push({ dateStr: dStr, dayName, dayNumber });
-        cur.setDate(cur.getDate() + 1);
-      }
-    } else {
-      for (let i = daysCount - 1; i >= 0; i--) {
-        const d = new Date(baseDate);
-        d.setDate(d.getDate() - i);
-        const dStr = d.toISOString().split('T')[0];
-        const dayName = d.toLocaleDateString('ar-EG', { weekday: 'short' });
-        const dayNumber = d.getDate();
-        dateList.push({ dateStr: dStr, dayName, dayNumber });
-      }
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      daysCount = Math.max(1, Math.min(365, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1));
     }
 
-    if (habitSettings?.reverseDayOrder ?? true) {
-      dateList = dateList.reverse();
+    const columns: { dateStr: string; dayName: string; dayNumber: number }[] = [];
+    const DAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+    for (let i = daysCount - 1; i >= 0; i--) {
+      const d = new Date(baseDate);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      columns.push({
+        dateStr,
+        dayName: DAY_NAMES[d.getDay()],
+        dayNumber: d.getDate()
+      });
     }
 
-    return dateList;
+    if (habitSettings?.reverseDayOrder) {
+      return columns.reverse();
+    }
+    return columns;
   };
 
   const dateColumns = getDateColumns();
 
-  // Filter & Sort Habits
-  let processedHabits = habits.filter(h => {
-    if (hideArchived && h.isArchived) return false;
-    if (hideCompleted && h.isCompleted) return false;
+  const filteredHabits = useMemo(() => {
+    let result = [...habits];
 
-    // Filter by frequency matching if custom frequency is set
-    if (h.frequency === 'custom' && h.customStartDate && h.customEndDate) {
-      if (selectedDate < h.customStartDate || selectedDate > h.customEndDate) {
-        // still display in custom mode matrix
-      }
+    if (hideArchived) {
+      result = result.filter(h => !h.isArchived);
     }
-    return true;
-  });
 
-  // Sort logic
-  processedHabits.sort((a, b) => {
-    if (sortMethod === 'name') return a.name.localeCompare(b.name, 'ar');
-    if (sortMethod === 'color') return (a.color || '').localeCompare(b.color || '');
-    if (sortMethod === 'score') {
-      const scoreA = Object.keys(a.history || {}).length;
-      const scoreB = Object.keys(b.history || {}).length;
-      return scoreB - scoreA;
+    if (hideCompleted) {
+      result = result.filter(h => {
+        const val = h.history[selectedDate];
+        if (h.habitType === 'boolean') return !val;
+        if (h.habitType === 'measurable') return (Number(val) || 0) < (h.targetValue || 1);
+        return true;
+      });
     }
-    if (sortMethod === 'status') {
-      const compA = !!a.history[selectedDate];
-      const compB = !!b.history[selectedDate];
-      return compA === compB ? 0 : compA ? -1 : 1;
-    }
-    return (a.order || 0) - (b.order || 0);
-  });
 
-  // Reordering helpers
+    if (sortMethod === 'name') {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortMethod === 'color') {
+      result.sort((a, b) => (a.color || '').localeCompare(b.color || ''));
+    } else if (sortMethod === 'score') {
+      result.sort((a, b) => (Object.keys(b.history || {}).length) - (Object.keys(a.history || {}).length));
+    }
+
+    return result;
+  }, [habits, hideArchived, hideCompleted, sortMethod, selectedDate]);
+
+  const processedHabits = filteredHabits;
+
   const handleMoveUp = (index: number) => {
     if (index <= 0) return;
     const reordered = [...processedHabits];
     const temp = reordered[index - 1];
     reordered[index - 1] = reordered[index];
     reordered[index] = temp;
-    reordered.forEach((h, idx) => (h.order = idx));
     onReorderHabits(reordered);
   };
 
@@ -164,11 +157,9 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
     const temp = reordered[index + 1];
     reordered[index + 1] = reordered[index];
     reordered[index] = temp;
-    reordered.forEach((h, idx) => (h.order = idx));
     onReorderHabits(reordered);
   };
 
-  // Cell Click Handler
   const handleCellClick = (habit: Habit, dateStr: string) => {
     if (habit.habitType === 'measurable') {
       const currentVal = habit.history[dateStr];
@@ -179,7 +170,6 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
       setEditingValueHabit({ habit, dateStr });
       setNumericInputValue(existingVal || habit.targetValue || 1);
     } else {
-      // Boolean toggle or skip
       const currentVal = habit.history[dateStr];
       if (habitSettings?.enableSkipDays && currentVal === true) {
         onToggleHabit(habit.id, dateStr, 'skip');
@@ -197,13 +187,13 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
   };
 
   return (
-    <div className={`space-y-5 ${isDarkMode ? 'text-gray-100' : 'text-[#3A3A3A]'}`} dir="rtl">
+    <div className={`space-y-5 ${isDarkMode ? 'text-gray-100' : 'text-[#3A3A3A]'}`} dir={langInfo.dir}>
       
       {/* 1. Header Action Bar (Image 2) */}
       <div className="flex items-center justify-between p-4 bg-white border border-[#E2DCC8] rounded-3xl shadow-xs">
         <h3 className="font-black text-lg text-[#2B3E50] flex items-center gap-2">
           <span>📊</span>
-          <span>عادات</span>
+          <span>{t.habits || 'Habits'}</span>
         </h3>
 
         <div className="flex items-center gap-2">
@@ -538,7 +528,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
 
       {/* Modal for editing measurable numeric value */}
       {editingValueHabit && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-3xs flex items-center justify-center p-4 z-55" dir="rtl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-3xs flex items-center justify-center p-4 z-55" dir={langInfo.dir}>
           <div className="bg-white border border-gray-200 rounded-3xl p-5 w-full max-w-xs shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b pb-2">
               <h4 className="font-bold text-sm text-gray-800">

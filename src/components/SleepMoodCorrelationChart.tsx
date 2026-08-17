@@ -4,6 +4,7 @@ import {
   Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, ReferenceLine 
 } from 'recharts';
 import { DiaryEntry, AppLanguage } from '../types';
+import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { Moon, Smile, TrendingUp, Sparkles, Calendar, Activity, Zap, Info, ShieldCheck } from 'lucide-react';
 
 interface SleepMoodCorrelationChartProps {
@@ -12,6 +13,8 @@ interface SleepMoodCorrelationChartProps {
 }
 
 export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps> = ({ diaries, appLanguage = 'ar' }) => {
+  const langInfo = getLanguageInfo(appLanguage);
+  const t = getTranslation(appLanguage);
   const [timeRange, setTimeRange] = useState<'30' | '14' | '7'>('30');
 
   // Process data for past 30 / 14 / 7 days
@@ -135,7 +138,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-[#2B3E50] text-white p-3.5 rounded-2xl shadow-xl border border-gray-700 text-xs space-y-2 min-w-[200px]" dir="rtl">
+        <div className="bg-[#2B3E50] text-white p-3.5 rounded-2xl shadow-xl border border-gray-700 text-xs space-y-2 min-w-[200px]" dir={langInfo.dir}>
           <div className="flex items-center justify-between border-b border-gray-600/80 pb-2">
             <span className="font-black text-[#D4A373] flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />

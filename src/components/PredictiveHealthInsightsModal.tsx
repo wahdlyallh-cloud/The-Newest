@@ -94,10 +94,10 @@ export default function PredictiveHealthInsightsModal({
             </div>
             <div>
               <h3 className="font-black text-base sm:text-lg flex items-center gap-2">
-                <span>{t.predictiveTitle || (isEn ? 'Predictive Health & Sleep Insights' : 'نظام التحليلات المتنبئة للمزاج والنوم 🔮')}</span>
+                <span>{t.predictiveTitle || 'Predictive Health & Sleep Insights 🔮'}</span>
               </h3>
               <p className="text-xs text-blue-100/80 font-medium">
-                {t.predictiveSub || (isEn ? 'AI-powered early warning system for anxiety triggers' : 'استشعار مبكر لمؤشرات القلق واضطرابات النوم بالذكاء الاصطناعي')}
+                {t.predictiveSub || 'AI-powered early warning system for anxiety triggers'}
               </p>
             </div>
           </div>
@@ -127,16 +127,16 @@ export default function PredictiveHealthInsightsModal({
               <div>
                 <h4 className="font-extrabold text-xs sm:text-sm">
                   {anxietyRiskPercent > 50 
-                    ? (t.predictiveStatusWarning || (isEn ? 'Warning: Impending Anxiety Triggers' : 'تنبيه: محفزات قلق مرتقبة ⚠️'))
-                    : (t.predictiveStatusGood || (isEn ? 'Stable & Balanced ✨' : 'مستقر ومتوازن ✨'))}
+                    ? (t.predictiveStatusWarning || 'Warning: Impending Anxiety Triggers ⚠️')
+                    : (t.predictiveStatusGood || 'Stable & Balanced ✨')}
                 </h4>
                 <p className="text-[11px] opacity-80 mt-0.5">
-                  {isEn ? `Based on analysis of last ${recentEntries.length} entries & metrics` : `بناءً على تحليل آخر ${recentEntries.length} مذكرات ومؤشرات حيوية`}
+                  {t.predictiveBasedOn || 'Based on recent entries & vital metrics'} ({recentEntries.length})
                 </p>
               </div>
             </div>
             <span className="text-xs font-black bg-white/80 px-3 py-1 rounded-full border border-current">
-              {anxietyRiskPercent}% Risk
+              {anxietyRiskPercent}% {t.riskLabel || 'Risk'}
             </span>
           </div>
 
@@ -148,7 +148,7 @@ export default function PredictiveHealthInsightsModal({
               <div className="flex justify-between items-center text-xs font-extrabold text-[#5A5A40]">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-amber-500" />
-                  <span>{t.predictiveAnxietyRisk || (isEn ? 'Future Anxiety Risk Level' : 'مستوى استشعار القلق المستقبلي')}</span>
+                  <span>{t.predictiveAnxietyRisk || 'Future Anxiety Risk Level'}</span>
                 </span>
                 <span className="text-amber-600 font-black">{anxietyRiskPercent}%</span>
               </div>
@@ -160,8 +160,8 @@ export default function PredictiveHealthInsightsModal({
               </div>
               <p className="text-[10px] text-gray-500">
                 {anxietyRiskPercent > 50 
-                  ? (isEn ? 'Elevated vulnerability due to irregular sleep or high tasks' : 'ارتفاع القابلية بسبب عدم انتظام النوم أو تراكم المهام')
-                  : (isEn ? 'Low anxiety risk forecast over the next 48 hours' : 'مؤشر قلق منخفض ومتوقع استقراره خلال 48 ساعة')}
+                  ? (t.elevatedAnxietyDesc || 'Elevated vulnerability due to irregular sleep or high tasks')
+                  : (t.lowAnxietyDesc || 'Low anxiety risk forecast over the next 48 hours')}
               </p>
             </div>
 
@@ -170,7 +170,7 @@ export default function PredictiveHealthInsightsModal({
               <div className="flex justify-between items-center text-xs font-extrabold text-[#5A5A40]">
                 <span className="flex items-center gap-1.5">
                   <Moon className="w-4 h-4 text-indigo-500" />
-                  <span>{t.predictiveSleepRisk || (isEn ? 'Sleep Disturbance Indicator' : 'مستوى مؤشر اضطراب النوم')}</span>
+                  <span>{t.predictiveSleepRisk || 'Sleep Disturbance Indicator'}</span>
                 </span>
                 <span className="text-indigo-600 font-black">{sleepRiskPercent}%</span>
               </div>
@@ -181,7 +181,7 @@ export default function PredictiveHealthInsightsModal({
                 />
               </div>
               <p className="text-[10px] text-gray-500">
-                {isEn ? `Average sleep duration: ${avgSleep} hrs/night` : `متوسط ساعات النوم المسجلة: ${avgSleep} ساعة/ليلة`}
+                {t.avgSleepLabel || 'Average sleep duration:'} {avgSleep} {t.hoursUnit || 'hrs'}
               </p>
             </div>
 
@@ -191,17 +191,17 @@ export default function PredictiveHealthInsightsModal({
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-4.5 rounded-2xl space-y-3">
             <h4 className="font-extrabold text-xs sm:text-sm text-[#5A5A40] flex items-center gap-2">
               <Zap className="w-4 h-4 text-amber-500" />
-              <span>{t.predictiveGuidance || (isEn ? 'Early Preventive Recommendations' : 'التوصيات الوقائية المبكرة')}</span>
+              <span>{t.predictiveGuidance || 'Early Preventive Recommendations'}</span>
             </h4>
             
             <div className="space-y-2 text-xs text-gray-700 font-medium">
               <div className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-[#E2DCC8]/60">
                 <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>{isEn ? 'Maintain daily physical exercise (at least 20-30 mins) to absorb cortisol spikes.' : 'الاستمرار في النشاط البدني اليومي (20-30 دقيقة على الأقل) لتفريغ هرمونات القلق.'}</span>
+                <span>{t.predictiveTipExercise || 'Maintain daily physical exercise (at least 20-30 mins) to absorb cortisol spikes.'}</span>
               </div>
               <div className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-[#E2DCC8]/60">
                 <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>{isEn ? 'Practice 4-7-8 breathing exercises before sleeping if thoughts feel racing.' : 'ممارسة تمرين التنفس 4-7-8 قبل النوم بخمس دقائق في حال تزاحم الأفكار.'}</span>
+                <span>{t.predictiveTipBreathing || 'Practice 4-7-8 breathing exercises before sleeping if thoughts feel racing.'}</span>
               </div>
             </div>
 
@@ -223,14 +223,14 @@ export default function PredictiveHealthInsightsModal({
             className="px-4 py-2.5 bg-gradient-to-r from-[#2B3E50] to-[#3B5266] hover:from-[#1E2D3B] hover:to-[#2B3E50] text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Sparkles className={`w-4 h-4 text-amber-300 ${isAnalyzing ? 'animate-spin' : ''}`} />
-            <span>{isAnalyzing ? (isEn ? 'Analyzing...' : 'جاري التحليل...') : (t.predictiveAnalyzeBtn || (isEn ? 'Run New Predictive Analysis 🧠' : 'إجراء تحليل تنبؤي جديد 🧠'))}</span>
+            <span>{isAnalyzing ? (t.analyzingPrompt || 'Analyzing...') : (t.predictiveAnalyzeBtn || 'Run New Predictive Analysis 🧠')}</span>
           </button>
 
           <button
             onClick={onClose}
             className="px-4 py-2.5 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer"
           >
-            {t.common?.closeBtn || (isEn ? 'Close' : 'إغلاق')}
+            {t.closeBtn || 'Close'}
           </button>
         </div>
 

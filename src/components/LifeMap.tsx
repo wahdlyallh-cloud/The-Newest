@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, Heart, Pill, Activity, Moon, BookOpen, Brain, Sparkles, Mic, FileText, Image as ImageIcon } from 'lucide-react';
 import { DiaryEntry, LifeMapEvent } from '../types';
-import { AppLanguage, getTranslation } from '../lib/languages';
+import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 
 interface LifeMapProps {
   selectedDate: string; // ISO split Date 'YYYY-MM-DD'
@@ -10,8 +10,8 @@ interface LifeMapProps {
 }
 
 export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: LifeMapProps) {
+  const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
-  const isEn = appLanguage === 'en';
 
   // Find diary entry for the selected date
   const diaryToday = diaries.find(d => d.createdAt && (typeof d.createdAt === 'string' ? d.createdAt.split('T')[0] : new Date(d.createdAt).toISOString().split('T')[0]) === selectedDate);
@@ -34,9 +34,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'sleep',
         type: 'sleep',
-        title: t('sleepPeriodTitle'),
-        time: '08:00 ص',
-        description: `أخذت قسطاً من الراحة والنوم بمعدل ${diaryToday.sleepHours} ساعات لترميم الطاقة النفسية والذهنية.`,
+        title: t.sleepPeriodTitle || 'Sleep & Rest Period 💤',
+        time: '08:00',
+        description: `${t.sleepLogged || 'Logged sleep & recovery duration:'} ${diaryToday.sleepHours} ${t.hoursUnit || 'hours'}.`,
         icon: 'moon'
       });
     }
@@ -49,9 +49,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
         events.push({
           id: `med-${med.id}`,
           type: 'medication',
-          title: `تناول الدواء: ${med.name} 💊`,
-          time: med.time || '10:00 ص',
-          description: med.taken ? 'تم أخذ الجرعة العيادية المقررة في موعدها الصحيح.' : 'متبقي / لم يؤخذ بعد.',
+          title: `${t.medicationTrackTitle || 'Medication:'} ${med.name} 💊`,
+          time: med.time || '10:00',
+          description: med.taken ? (t.medicationTakenBtn || 'Taken on time.') : (t.medicationPendingBtn || 'Pending / Not taken yet.'),
           icon: 'pill',
           moodColor: med.taken ? 'text-emerald-500' : 'text-amber-500'
         });
@@ -64,9 +64,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'sports',
         type: 'sports',
-        title: 'النشاط البدني وتفريغ التوتر 🏃',
-        time: '05:30 م',
-        description: `قمت بممارسة الرياضة وتنشيط الدورة الدموية لمدة ${diaryToday.sportsDuration} دقيقة.`,
+        title: t.physicalActivityTitle || 'Physical Activity & De-stressing 🏃',
+        time: '17:30',
+        description: `${t.sportsDurationLogged || 'Logged workout activity for'} ${diaryToday.sportsDuration} ${t.minutesUnit || 'minutes'}.`,
         icon: 'sports'
       });
     }
@@ -84,9 +84,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       events.push({
         id: 'mood',
         type: 'mood',
-        title: 'رصد المشاعر والحالة الوجدانية 🧠',
-        time: '07:00 م',
-        description: `المشاعر المسيطرة على اليوم: ${diaryToday.moods.join(' • ')}`,
+        title: t.moodStateTitle || 'Logged Mood & Emotion 🧠',
+        time: '19:00',
+        description: `${t.dominantMoods || 'Dominant moods:'} ${diaryToday.moods.join(' • ')}`,
         icon: 'mood'
       });
     }
@@ -95,9 +95,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
     events.push({
       id: 'note',
       type: 'note',
-      title: 'كتابة اليوميات والتوثيق النفسي 📝',
-      time: diaryToday.createdAt.split('T')[1]?.substring(0, 5) || '09:00 م',
-      description: `تمت كتابة وتوثيق مذكرة بعنوان: "${diaryToday.title || 'بدون عنوان'}"`,
+      title: t.diaryEntryEventTitle || 'Diary Entry & Reflection 📝',
+      time: diaryToday.createdAt.split('T')[1]?.substring(0, 5) || '21:00',
+      description: `${t.writtenEntryDesc || 'Documented diary entry:'} "${diaryToday.title || t.untitledEntry || 'Untitled'}"`,
       icon: 'note'
     });
   }
@@ -123,7 +123,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
   const balanceScore = calculateBalanceScore();
 
   return (
-    <div className="space-y-6 font-sans" dir="rtl">
+    <div className="space-y-6 font-sans" dir={langInfo.dir}>
       
       {/* 📊 Interactive Dashboard Header Gauges */}
       <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6">
@@ -133,8 +133,8 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               <Brain className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-[#3A3A3A] text-base">{t('dailyLifeMapTitle')}</h3>
-              <p className="text-xs text-gray-400">لوحة تحليلية متكاملة لربط الأنشطة السلوكية بجودة صحتك النفسية</p>
+              <h3 className="font-extrabold text-[#3A3A3A] text-base">{t.dailyLifeMapTitle || 'Daily Life Map & Indicators'}</h3>
+              <p className="text-xs text-gray-400">{t.dailyLifeMapSub || 'Integrated dashboard connecting behavioral habits to your mental well-being'}</p>
             </div>
           </div>
           <span className="text-xs bg-[#F9F7F2] text-[#5A5A40] border border-[#E2DCC8]/60 px-3 py-1.5 rounded-full font-bold self-start sm:self-auto">
@@ -150,12 +150,12 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               {/* Day Quality Indicator (Circular Gauge feel) */}
               <div className="bg-[#F9F7F2]/60 border border-[#E2DCC8]/50 rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5A5A40]">{t('dailyBalanceIndexLabel')}</span>
+                  <span className="text-xs font-bold text-[#5A5A40]">{t.dailyBalanceIndexLabel || 'Daily Balance Index:'}</span>
                   <Sparkles className="w-4 h-4 text-[#D4A373] animate-pulse" />
                 </div>
                 <div className="flex items-baseline space-x-2 space-x-reverse">
                   <span className="text-4xl font-black text-[#8B9D83]">{balanceScore}%</span>
-                  <span className="text-xs text-gray-400 font-semibold">توازن ممتاز</span>
+                  <span className="text-xs text-gray-400 font-semibold">{t.excellentBalance || 'Balanced Day'}</span>
                 </div>
                 <div className="space-y-1.5">
                   <div className="w-full bg-gray-100 rounded-full h-2">
@@ -165,7 +165,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                     ></div>
                   </div>
                   <p className="text-[10px] text-gray-500 leading-relaxed">
-                    تم حساب توازن يومك تلقائياً برصد النوم، الأنشطة البدنية، التزام الأدوية وسجل يومياتك النفسي.
+                    {t.balanceScoreCalculatedDesc || 'Calculated from sleep, sports, medication compliance, and daily reflections.'}
                   </p>
                 </div>
               </div>
@@ -176,11 +176,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Sleep Metrics */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>💤 جودة النوم</span>
+                    <span>💤 {t.sleepQuality || 'Sleep Quality'}</span>
                     <Moon className="w-4 h-4 text-blue-500" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {diaryToday.sleepHours ? `${diaryToday.sleepHours} ساعات` : 'غير مسجل'}
+                    {diaryToday.sleepHours ? `${diaryToday.sleepHours} ${t.hoursUnit || 'hours'}` : (t.notRecorded || 'Not logged')}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${sleepProgress}%` }}></div>
@@ -190,11 +190,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Sports Metrics */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>🏃 الحركة والرياضة</span>
+                    <span>🏃 {t.sportsActivity || 'Movement & Exercise'}</span>
                     <Activity className="w-4 h-4 text-emerald-500" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {diaryToday.sportsDuration ? `${diaryToday.sportsDuration} دقيقة` : 'لا نشاط بدني'}
+                    {diaryToday.sportsDuration ? `${diaryToday.sportsDuration} ${t.minutesUnit || 'minutes'}` : (t.noSportsLogged || 'No sports logged')}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${sportsProgress}%` }}></div>
@@ -204,11 +204,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Medication Compliance */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>💊 التزام الأدوية</span>
+                    <span>💊 {t.medicationAdherence || 'Medication Adherence'}</span>
                     <Pill className="w-4 h-4 text-[#D4A373]" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {medTotalCount > 0 ? `${medTakenCount} من أصل ${medTotalCount}` : 'لا يوجد جرعات اليوم'}
+                    {medTotalCount > 0 ? `${medTakenCount} / ${medTotalCount}` : (t.noDosesToday || 'No doses today')}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-[#D4A373] h-1.5 rounded-full" style={{ width: medTotalCount > 0 ? `${(medTakenCount / medTotalCount) * 100}%` : '0%' }}></div>
