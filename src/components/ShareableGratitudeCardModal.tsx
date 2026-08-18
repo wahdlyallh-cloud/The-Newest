@@ -360,7 +360,7 @@ export default function ShareableGratitudeCardModal({
       const file = new File([blob], filename, { type: 'image/png' });
 
       const shareTitle = t.gratitudeCardShareTitle || 'Gratitude Card 🌸';
-      const shareText = `«${cardText}» - ${authorName}\n${isRtl ? 'عبر تطبيق حياة AI 🌿' : 'via Hayat AI 🌿'}`;
+      const shareText = `«${cardText}» - ${authorName}\n${t.viaHayatAiBadge || "via Hayat AI 🌿"}`;
 
       let shareHandled = false;
 
@@ -562,7 +562,7 @@ export default function ShareableGratitudeCardModal({
                           : 'border-[#E2DCC8] bg-white text-gray-700 hover:border-[#8B9D83]'
                       }`}
                     >
-                      <span>{isRtl ? item.nameAr : item.nameEn}</span>
+                      <span>{item[appLanguage] || item.nameEn || item.nameAr}</span>
                     </button>
                   );
                 })}
@@ -611,7 +611,7 @@ export default function ShareableGratitudeCardModal({
                 onChange={(e) => setShowWatermark(e.target.checked)}
                 className="w-4 h-4 rounded text-[#4E685B] accent-[#4E685B]"
               />
-              <span>{isRtl ? 'إظهار شعار التطبيق والتاريخ' : 'Show app watermark & date'}</span>
+              <span>{t.showWatermarkAndDate || "Show app watermark & date"}</span>
             </label>
 
           </div>
@@ -619,7 +619,7 @@ export default function ShareableGratitudeCardModal({
           {/* LIVE EXPORT CANVAS PREVIEW (7 Cols) */}
           <div className="md:col-span-7 flex flex-col items-center justify-center bg-gray-200/50 p-4 rounded-3xl border border-[#E2DCC8]/80">
             <span className="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider">
-              {isRtl ? 'معاينة البطاقة النهائية:' : 'Live Render Preview:'}
+              {t.liveCardPreview || "Live Render Preview:"}
             </span>
 
             {/* EXPORTABLE CARD CONTAINER NODE */}

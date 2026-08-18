@@ -338,6 +338,15 @@ const getHabitCategoryLabel = (category?: string): string => {
   }
 };
 
+const getReminderDisplayName = (rem: { id?: string; title: string } | undefined | null, t?: any): string => {
+  if (!rem) return '';
+  const trans = t || DEFAULT_GLOBAL_TRANSLATION_PROXY;
+  if (rem.id === 'rem-1') return trans.defaultReminder1Title || rem.title;
+  if (rem.id === 'rem-2') return trans.defaultReminder2Title || rem.title;
+  if (rem.id === 'rem-3') return trans.defaultReminder3Title || rem.title;
+  return rem.title;
+};
+
 const getHabitDisplayName = (habit: { id?: string; name: string }): string => {
   if (habit.id === 'habit-1') return t.defaultHabit1Name || habit.name;
   if (habit.id === 'habit-2') return t.defaultHabit2Name || habit.name;
@@ -1602,7 +1611,7 @@ export default function App() {
       });
       const data = await response.json();
       if (data.success) {
-        setCloudSyncMessage(data.message || `مزامنة سحابية ناجحة: ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'))}`);
+        setCloudSyncMessage(data.message || `${t.cloudSyncSuccess || "Cloud sync successful"}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
       } else {
         setCloudSyncMessage('فشل التزامن السحابي التلقائي');
       }
@@ -1610,9 +1619,9 @@ export default function App() {
       console.error('Cloud Sync error:', e);
       try {
         localStorage.setItem('yawmiyati_cloud_sync_backup', JSON.stringify(payload));
-        setCloudSyncMessage(`تمت المزامنة وحفظ النسخة الاحتياطية سحابياً ومحلياً 🔒: ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'))}`);
+        setCloudSyncMessage(`${t.backupSavedSuccess || "Backup saved locally and in cloud 🔒"}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
       } catch (err) {
-        setCloudSyncMessage(`تمت المزامنة السحابية بنجاح 🔒: ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'))}`);
+        setCloudSyncMessage(`${t.cloudSyncSuccess || "Cloud sync successful 🔒"}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
       }
     } finally {
       setIsCloudSyncing(false);
@@ -9280,7 +9289,7 @@ export default function App() {
                             <div className="flex items-center gap-3">
                               <span className="text-sm">⏰</span>
                               <div>
-                                <span className="text-xs font-black text-[#2B3E50] block">{rem.title}</span>
+                                <span className="text-xs font-black text-[#2B3E50] block">{getReminderDisplayName(rem, t)}</span>
                                 <span className="text-[10px] text-gray-400 font-mono font-bold">{rem.time}</span>
                               </div>
                             </div>

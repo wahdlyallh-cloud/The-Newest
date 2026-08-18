@@ -25,9 +25,7 @@ export default function PsychologicalGrowthTree({
   const t = getTranslation(appLanguage);
   const isRtl = appLanguage === 'ar';
 
-  // Test mode to preview 365 days Ancient Wisdom Tree
   const [test365Mode, setTest365Mode] = useState(false);
-
   const effectiveStreak = test365Mode ? 365 : activeStreak;
 
   // Calculate Engagement XP
@@ -37,8 +35,6 @@ export default function PsychologicalGrowthTree({
   const xpFromHabits = (habitsCount || 0) * 5;
   const totalXP = xpFromDiaries + xpFromCbt + xpFromGratitude + xpFromHabits;
 
-  // Growth Stage Calculation
-  // Level 5 (شجرة الحكمة المعمرة) requires 365 days of continuous streak OR 320+ XP
   let stageLevel = 1;
   let stageName = t.treeStage1;
   let stageDesc = t.treeDesc1;
@@ -525,7 +521,7 @@ export default function PsychologicalGrowthTree({
                 onClick={() => setShowInfoModal(false)}
                 className="w-full py-3 bg-emerald-500 text-gray-950 font-black rounded-2xl hover:bg-emerald-400 transition-colors cursor-pointer"
               >
-                {isRtl ? 'فهمت، لنواصل التدوين 🌱' : 'Got it, let’s grow! 🌱'}
+                {t.gotItContinueJournaling || "Got it, let’s grow! 🌱"}
               </button>
             </motion.div>
           </div>

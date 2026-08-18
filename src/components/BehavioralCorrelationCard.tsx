@@ -49,45 +49,47 @@ export default function BehavioralCorrelationCard({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-black text-emerald-300 uppercase tracking-wider">
-                {t.behavioralCorrelationsTitle}
+                {t.behavioralCorrelationsTitle || 'Smart Analytics'}
               </span>
               <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-[10px] font-extrabold rounded-full">
-                AI Analytics ✨
+                AI Matrix
               </span>
             </div>
-            <h3 className="text-base font-black text-white mt-0.5">
-              {isRtl ? 'ترابط العادات الصحية مع استقرار القلق والمزاج' : 'Health Habits & Anxiety Correlations'}
+            <h3 className="text-base font-extrabold text-white mt-0.5">
+              {t.habitsAnxietyCorrelationTitle || 'Health Habits & Anxiety Correlations'}
             </h3>
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-2xl border border-white/10 text-xs text-emerald-200">
-          <Info className="w-3.5 h-3.5 text-amber-300" />
-          <span>{stats.totalAnalyzedDays} {isRtl ? 'يوم تحليلي' : 'Days Analyzed'}</span>
+        {/* Total Days Analyzed Badge */}
+        <div className="text-right">
+          <span className="text-xs font-black text-emerald-300 bg-white/10 border border-white/15 px-3 py-1.5 rounded-full inline-block">
+            <span>{stats.totalAnalyzedDays} {t.daysAnalyzedLabel || 'Days Analyzed'}</span>
+          </span>
         </div>
       </div>
 
-      {/* Overview Metric Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-black/30 border border-white/10 p-3 rounded-2xl text-center space-y-1">
-          <span className="text-[10px] font-bold text-emerald-300/80 block">{isRtl ? 'متوسط النوم' : 'Avg Sleep'}</span>
-          <span className="text-sm font-black text-white">{stats.avgSleepHours} {isRtl ? 'ساعة' : 'hrs'}</span>
+      {/* Snapshot Habit Metrics Grid */}
+      <div className="grid grid-cols-4 gap-2 text-center bg-black/20 rounded-2xl p-3 border border-white/5">
+        <div className="p-1">
+          <span className="text-[10px] font-bold text-emerald-300/80 block">{t.avgSleepLabel || 'Avg Sleep'}</span>
+          <span className="text-sm font-black text-white">{stats.avgSleepHours}h</span>
         </div>
-        <div className="bg-black/30 border border-white/10 p-3 rounded-2xl text-center space-y-1">
-          <span className="text-[10px] font-bold text-sky-300/80 block">{isRtl ? 'متوسط المياه' : 'Avg Water'}</span>
-          <span className="text-sm font-black text-white">{stats.avgWaterCups} {isRtl ? 'أكواب' : 'cups'}</span>
+        <div className="p-1 border-x border-white/10">
+          <span className="text-[10px] font-bold text-sky-300/80 block">{t.avgWaterLabel || 'Avg Water'}</span>
+          <span className="text-sm font-black text-white">{stats.avgWaterCups} {t.cupsUnit || 'cups'}</span>
         </div>
-        <div className="bg-black/30 border border-white/10 p-3 rounded-2xl text-center space-y-1">
-          <span className="text-[10px] font-bold text-amber-300/80 block">{isRtl ? 'الرياضة اليومية' : 'Avg Exercise'}</span>
-          <span className="text-sm font-black text-white">{stats.avgExerciseMins} {isRtl ? 'دقيقة' : 'mins'}</span>
+        <div className="p-1 border-r border-white/10">
+          <span className="text-[10px] font-bold text-amber-300/80 block">{t.avgExerciseLabel || 'Avg Exercise'}</span>
+          <span className="text-sm font-black text-white">{stats.avgExerciseMins} {t.minutesUnit || 'mins'}</span>
         </div>
-        <div className="bg-black/30 border border-white/10 p-3 rounded-2xl text-center space-y-1">
-          <span className="text-[10px] font-bold text-purple-300/80 block">{isRtl ? 'مؤشر المزاج' : 'Avg Mood'}</span>
+        <div className="p-1">
+          <span className="text-[10px] font-bold text-purple-300/80 block">{t.avgMoodLabel || 'Avg Mood'}</span>
           <span className="text-sm font-black text-white">{stats.avgMoodScore}/10</span>
         </div>
       </div>
 
-      {/* Correlation Insight Cards */}
+      {/* Insights Accordion List */}
       <div className="space-y-3">
         {insights.map((insight) => {
           const isExpanded = expandedId === insight.id;
@@ -95,73 +97,83 @@ export default function BehavioralCorrelationCard({
           return (
             <div
               key={insight.id}
-              className={`bg-black/25 border transition-all duration-300 rounded-2xl overflow-hidden ${isExpanded ? 'border-emerald-400/50 bg-black/40 shadow-lg' : 'border-white/10 hover:border-white/20'}`}
+              className={`rounded-2xl border transition-all overflow-hidden ${
+                isExpanded
+                  ? 'bg-white/10 border-emerald-400/40 shadow-lg'
+                  : 'bg-white/5 border-white/10 hover:bg-white/[0.08]'
+              }`}
             >
               <button
                 type="button"
                 onClick={() => setExpandedId(isExpanded ? null : insight.id)}
-                className="w-full p-4 flex items-center justify-between text-right rtl:text-right ltr:text-left cursor-pointer"
+                className="w-full p-4 flex items-center justify-between gap-3 text-left focus:outline-none cursor-pointer"
               >
-                <div className="flex items-start gap-3">
-                  <div className="p-2.5 bg-white/10 rounded-2xl border border-white/10 shrink-0 mt-0.5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-black/30 rounded-xl shrink-0 border border-white/10">
                     {getIcon(insight.iconName)}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-white">{insight.title}</h4>
-                      <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-black rounded-full flex items-center gap-1">
-                        -{insight.percentageChange}% {isRtl ? 'قلق وتوتر' : 'Anxiety'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-emerald-100/90 font-medium mt-1 leading-relaxed">
-                      {insight.description}
+                    <h4 className="font-extrabold text-sm text-white flex items-center gap-2">
+                      <span>{insight.title}</span>
+                      {insight.percentageChange > 0 && (
+                        <span className="text-[10px] font-black px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full">
+                          -{insight.percentageChange}% {t.anxietyScoreLabel || 'Anxiety'}
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-xs text-gray-300/90 font-medium line-clamp-1 mt-0.5">
+                      {insight.summary}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-1.5 bg-white/10 rounded-xl text-emerald-200 shrink-0 mr-2">
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                <div className="p-1.5 bg-white/10 rounded-full text-gray-300 shrink-0">
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${
+                      isExpanded ? 'rotate-180 text-emerald-300' : ''
+                    }`}
+                  />
                 </div>
               </button>
 
-              {/* Expanded Breakdown */}
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="px-4 pb-4 pt-2 border-t border-white/10 text-xs text-emerald-200/90 space-y-3"
+                    transition={{ duration: 0.2 }}
+                    className="border-t border-white/10 px-4 pb-4 pt-3 space-y-3 bg-black/10"
                   >
-                    <div className="grid grid-cols-2 gap-2 bg-black/40 p-3 rounded-xl border border-white/5">
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-emerald-300 font-bold block">
-                          {isRtl ? 'الأيام المتوازنة (نوم وماء ورياضة)' : 'Optimal Habit Days'}
+                    {/* Stat Breakdown Comparison */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl space-y-1">
+                        <span className="text-[10px] font-bold text-emerald-300 block">
+                          {t.optimalHabitDaysLabel || 'Optimal Habit Days'}
                         </span>
-                        <div className="flex items-center gap-1.5 text-white font-black text-sm">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                          <span>{insight.details.goodDaysAvg}/10 {isRtl ? 'استقرار نفسي' : 'Balance'}</span>
+                        <div className="flex items-center justify-between text-white font-extrabold">
+                          <span>{insight.details.goodDaysAvg}/10 {t.psychologicalBalanceLabel || 'Balance'}</span>
+                          <span className="text-[10px] text-emerald-400 font-black">({insight.details.goodDaysCount} d)</span>
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-amber-300 font-bold block">
-                          {isRtl ? 'أيام نقص النوم أو الماء' : 'Suboptimal Days'}
+                      <div className="p-2.5 bg-rose-950/30 border border-rose-500/30 rounded-xl space-y-1">
+                        <span className="text-[10px] font-bold text-rose-300 block">
+                          {t.suboptimalDaysLabel || 'Suboptimal Days'}
                         </span>
-                        <div className="flex items-center gap-1.5 text-white font-black text-sm">
-                          <span className="text-amber-400 font-bold">⚠️</span>
-                          <span>{insight.details.badDaysAvg}/10 {isRtl ? 'ارتفاع القلق' : 'Higher Anxiety'}</span>
+                        <div className="flex items-center justify-between text-white font-extrabold">
+                          <span>{insight.details.badDaysAvg}/10 {t.higherAnxietyLabel || 'Higher Anxiety'}</span>
+                          <span className="text-[10px] text-rose-400 font-black">({insight.details.badDaysCount} d)</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-emerald-500/10 border border-emerald-400/20 rounded-xl text-[11px] text-emerald-200 font-medium flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
-                      <span>
-                        {isRtl
-                          ? 'نصيحة ذكية: الاستمرار على شرب 2L ماء يومياً مع 7.5h نوم يقلل من نوبات التوتر المفاجئة بنسبة ملحوظة.'
-                          : 'Smart Tip: Keeping 2L daily water & 7.5h sleep significantly buffers against sudden panic spikes.'}
-                      </span>
+                    {/* Actionable Clinical Recommendation */}
+                    <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-start gap-2.5 text-xs text-emerald-200">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <p className="font-semibold leading-relaxed">
+                        {insight.recommendation}
+                      </p>
                     </div>
                   </motion.div>
                 )}

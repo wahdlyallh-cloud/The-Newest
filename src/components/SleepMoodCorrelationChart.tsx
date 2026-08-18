@@ -264,7 +264,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="flex items-center justify-between px-2 text-xs font-bold text-gray-500">
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span>
-            <span>ساعات النوم (العمود باللون البنفسجي/الأزرق)</span>
+            <span>{t.sleepHoursLabel || "Sleep Hours"} (العمود باللون البنفسجي/الأزرق)</span>
           </span>
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
@@ -325,7 +325,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
               <Bar 
                 yAxisId="sleep" 
                 dataKey="sleepHours" 
-                name="ساعات النوم اليومية" 
+                name={t.sleepHoursLabel || "Daily Sleep Hours"} 
                 fill="url(#sleepBarGradient)" 
                 radius={[6, 6, 0, 0]} 
                 barSize={timeRange === '30' ? 12 : timeRange === '14' ? 18 : 28}
@@ -345,7 +345,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
                 yAxisId="mood" 
                 type="monotone" 
                 dataKey="moodScore" 
-                name="مقياس جودة المزاج (Fast Mood Score)" 
+                name={t.moodScoreLabel || "Mood Score"} 
                 stroke="#D97706" 
                 strokeWidth={3} 
                 dot={{ r: timeRange === '30' ? 3 : 4, fill: '#D97706', strokeWidth: 1.5, stroke: '#FFFFFF' }}
@@ -353,7 +353,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
               />
 
               {/* Health Benchmark Lines */}
-              <ReferenceLine yAxisId="sleep" y={8} stroke="#10B981" strokeDasharray="4 4" label={{ value: 'مثالي: 8 ساعات نوم', fill: '#059669', fontSize: 9, position: 'insideTopLeft' }} />
+              <ReferenceLine yAxisId="sleep" y={8} stroke="#10B981" strokeDasharray="4 4" label={{ value: t.idealSleepHoursLabel || 'Optimal: 8h Sleep', fill: '#059669', fontSize: 9, position: 'insideTopLeft' }} />
               <ReferenceLine yAxisId="mood" y={7} stroke="#F59E0B" strokeDasharray="2 2" />
             </ComposedChart>
           </ResponsiveContainer>

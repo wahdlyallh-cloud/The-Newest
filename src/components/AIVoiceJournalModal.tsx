@@ -253,13 +253,11 @@ Return pure JSON only in the following schema:
     try {
       const now = new Date();
       const isAr = (appLanguage || 'ar') === 'ar';
-      const dayName = now.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long' });
-      const timeStr = now.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+      const dayName = now.toLocaleDateString(t.voiceJournalTitle || "Smart Voice Journal", { weekday: 'long' });
+      const timeStr = now.toLocaleTimeString(t.voiceJournalTitle || "Smart Voice Journal", { hour: '2-digit', minute: '2-digit' });
       const typeConfig = getJournalTypeConfig(chosenType);
 
-      const voiceBadge = isAr
-        ? '🎙️ تفريغ المساعد الصوتي التفاعلي للتدوين'
-        : '🎙️ Interactive Voice Journaling Assistant Transcript';
+      const voiceBadge = t.voiceJournalTitle || "Smart Voice Journal";
 
       const formattedContent = `${voiceBadge}\n\n${processedResult.content}`;
 
