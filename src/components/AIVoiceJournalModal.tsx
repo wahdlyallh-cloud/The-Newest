@@ -218,7 +218,7 @@ Return pure JSON only in the following schema:
       const finalCleanContent = parsed?.content || rawSpeechText;
       const finalMoods = Array.isArray(parsed?.moods) && parsed.moods.length > 0
         ? parsed.moods
-        : (isAr ? ['مرتاح', 'منجز'] : ['Calm', 'Productive']);
+        : [t.mood_calm || 'Calm', t.mood_productive || 'Productive'];
 
       setProcessedResult({
         title: finalTitle,
@@ -234,7 +234,7 @@ Return pure JSON only in the following schema:
         title: `${t.voiceJournalTitle} - ${new Date().toLocaleTimeString(langInfo.bcp47, { hour: '2-digit', minute: '2-digit' })}`,
         content: rawSpeechText,
         rawTranscript: rawSpeechText,
-        moods: (appLanguage || 'ar') === 'ar' ? ['تأملي'] : ['Reflective'],
+        moods: [t.mood_reflective || 'Reflective'],
       });
     } finally {
       setIsAnalyzing(false);
@@ -296,7 +296,7 @@ Return pure JSON only in the following schema:
         sportsDuration: processedResult.sportsDuration,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
-        tags: [isAr ? 'مذكرة صوتية' : 'Voice Journal', isAr ? 'مساعد ذكي' : 'AI Assistant', typeConfig.labelAr],
+        tags: [t.voice_journal || 'Voice Journal', t.ai_assistant || 'AI Assistant', getJournalTypeLabel(typeConfig.type, t)],
         importance: 4,
         audioRecordings: audioRecordingsList,
         isLocked: false
@@ -400,10 +400,10 @@ Return pure JSON only in the following schema:
                         <span className="text-2xl shrink-0">{cfg.icon}</span>
                         <div className="flex flex-col">
                           <span className={`text-xs font-black ${cfg.colorText}`}>
-                            {(appLanguage || 'ar') === 'ar' ? cfg.labelAr : cfg.labelEn}
+                            {getJournalTypeLabel(cfg.type, t)}
                           </span>
                           <span className="text-[10px] text-gray-500 line-clamp-1">
-                            {(appLanguage || 'ar') === 'ar' ? cfg.descriptionAr : cfg.descriptionEn}
+                            {getJournalTypeDescription(cfg.type, t)}
                           </span>
                         </div>
                       </div>

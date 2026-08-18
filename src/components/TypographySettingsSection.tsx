@@ -62,9 +62,9 @@ export default function TypographySettingsSection({
             const fontNameKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Name`;
             const fontCatKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Category`;
             const fontSampleKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Sample`;
-            const fontName = t[fontNameKey] || (isArabic ? fontItem.nameAr : fontItem.nameEn);
-            const fontCat = t[fontCatKey] || (isArabic ? fontItem.categoryAr : fontItem.categoryEn);
-            const fontSample = t[fontSampleKey] || (isArabic ? fontItem.sampleTextAr : fontItem.sampleTextEn);
+            const fontName = t[fontNameKey] || fontItem.id;
+            const fontCat = t[fontCatKey] || '';
+            const fontSample = t[fontSampleKey] || t.fontDefaultSample || 'The quick brown fox jumps over the lazy dog.';
 
             return (
               <button
@@ -125,8 +125,8 @@ export default function TypographySettingsSection({
             const isSelected = appLineHeight === lhItem.id;
             const lhNameKey = `lineHeight${lhItem.id.charAt(0).toUpperCase() + lhItem.id.slice(1)}Name`;
             const lhDescKey = `lineHeight${lhItem.id.charAt(0).toUpperCase() + lhItem.id.slice(1)}Desc`;
-            const lhName = t[lhNameKey] || (isArabic ? lhItem.nameAr : lhItem.nameEn);
-            const lhDesc = t[lhDescKey] || (isArabic ? lhItem.descAr : lhItem.descEn);
+            const lhName = t[lhNameKey] || lhItem.id;
+            const lhDesc = t[lhDescKey] || '';
 
             return (
               <button

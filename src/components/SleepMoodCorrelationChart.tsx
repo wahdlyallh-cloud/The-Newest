@@ -31,7 +31,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
       diaryTitle?: string;
     }[] = [];
 
-    const arabicDays = appLanguage === 'ar' ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const arabicDays = [t.weekdaySunShort || 'Sun', t.weekdayMonShort || 'Mon', t.weekdayTueShort || 'Tue', t.weekdayWedShort || 'Wed', t.weekdayThuShort || 'Thu', t.weekdayFriShort || 'Fri', t.weekdaySatShort || 'Sat'];
 
     // Map existing diaries by date string YYYY-MM-DD
     const diaryByDate: Record<string, DiaryEntry> = {};

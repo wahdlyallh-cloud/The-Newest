@@ -322,8 +322,8 @@ export default function BackupSyncModal({
                 }}
                 className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 text-right px-4 cursor-pointer flex items-center justify-between"
               >
-                <span>{appLanguage === 'ar' ? '📖 يومياتي (WriteDiary Backup)' : '📖 WriteDiary Backup'}</span>
-                <span className="text-[9px] bg-rose-200 text-rose-800 px-2 py-0.5 rounded-full font-black">{appLanguage === 'ar' ? 'مستحسن' : 'Recommended'}</span>
+                <span>{t.writeDiaryBackupLabel || '📖 WriteDiary Backup'}</span>
+                <span className="text-[9px] bg-rose-200 text-rose-800 px-2 py-0.5 rounded-full font-black">{t.recommendedBadge || 'Recommended'}</span>
               </button>
               <button type="button" className="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-xs rounded-xl border border-gray-200 text-right px-4 cursor-pointer">
                 📝 Notion Workspace (.json / .zip)

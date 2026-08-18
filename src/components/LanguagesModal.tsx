@@ -182,7 +182,7 @@ export default function LanguagesModal({
             <div className="space-y-2">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <Type className="w-4 h-4 text-[#8B9D83]" />
-                <span>{isArabic ? 'نوع الخط الرئيسي (Arabic & International Fonts):' : 'Main Font Family:'}</span>
+                <span>{t.selectMainFontLabel || 'Main Font Family:'}</span>
               </label>
 
               <div className="grid grid-cols-1 gap-2">
@@ -202,7 +202,7 @@ export default function LanguagesModal({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-extrabold text-sm">
-                            {isArabic ? fontItem.nameAr : fontItem.nameEn}
+                            {t['font' + fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1) + 'Name'] || fontItem.id}
                           </span>
                           {fontItem.badge && (
                             <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${isSelected ? 'bg-amber-300 text-gray-900' : 'bg-amber-100 text-amber-900'}`}>
@@ -211,7 +211,7 @@ export default function LanguagesModal({
                           )}
                         </div>
                         <p className={`text-[11px] font-bold mt-1 ${isSelected ? 'text-amber-100' : 'text-gray-500'}`} style={{ fontFamily: fontItem.fontFamilyCss }}>
-                          {isArabic ? fontItem.sampleTextAr : fontItem.sampleTextEn}
+                          {t['font' + fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1) + 'Sample'] || t.fontDefaultSample || 'The quick brown fox jumps over the lazy dog.'}
                         </p>
                       </div>
 
@@ -230,7 +230,7 @@ export default function LanguagesModal({
             <div className="space-y-2 pt-3 border-t border-[#E2DCC8]">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <AlignLeft className="w-4 h-4 text-[#D4A373]" />
-                <span>{isArabic ? 'تباعد الأسطر وراحة القراءة:' : 'Line Height Spacing:'}</span>
+                <span>{t.lineSpacingLabel || 'Line Height Spacing:'}</span>
               </label>
 
               <div className="grid grid-cols-2 gap-2">
@@ -248,10 +248,10 @@ export default function LanguagesModal({
                       }`}
                     >
                       <span className="block font-black text-xs">
-                        {isArabic ? lhItem.nameAr : lhItem.nameEn}
+                        {t['lineHeight' + lhItem.id.charAt(0).toUpperCase() + lhItem.id.slice(1) + 'Name'] || lhItem.id}
                       </span>
                       <span className={`text-[9px] font-bold block mt-0.5 ${isSelected ? 'text-amber-100' : 'text-gray-500'}`}>
-                        {isArabic ? lhItem.descAr : lhItem.descEn}
+                        {t['lineHeight' + lhItem.id.charAt(0).toUpperCase() + lhItem.id.slice(1) + 'Desc'] || ''}
                       </span>
                     </button>
                   );

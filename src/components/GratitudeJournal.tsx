@@ -1209,7 +1209,7 @@ export default function GratitudeJournal({
                             : 'border-gray-200/40 text-current opacity-80'
                         }`}
                       >
-                        {isAr ? col.nameAr || col.name : col.nameEn || col.name}
+                        {col.name || ''}
                       </button>
                     );
                   })}

@@ -558,13 +558,12 @@ const TAG_DICTIONARY_AR: Record<string, string> = {
   'mental_health': 'صحة نفسية'
 };
 
-export function getTranslatedTag(tag: string, isAr: boolean): string {
+export function getTranslatedTag(tag: string, langOrT?: any): string {
   if (!tag) return '';
-  if (isAr) {
-    return TAG_DICTIONARY_AR[tag] || tag;
-  } else {
-    return TAG_DICTIONARY_EN[tag] || tag;
-  }
+  const t = typeof langOrT === 'object' && langOrT !== null ? langOrT : getTranslation(langOrT);
+  const canonicalKey = 'tag_' + tag.toLowerCase().replace(/[^a-z0-9_]/g, '');
+  if (t[canonicalKey]) return t[canonicalKey];
+  return tag;
 }
 
 export function getInitialDiaries(lang: AppLanguage): DiaryEntry[] {
@@ -773,11 +772,11 @@ export function getInitialDiaries(lang: AppLanguage): DiaryEntry[] {
 }
 
 export function getInitialHabits(lang: AppLanguage): Habit[] {
-  const isAr = lang === 'ar';
+  const t = getTranslation(lang);
   return [
     {
       id: 'habit-1',
-      name: isAr ? 'شرب 2 لتر ماء دافئ' : 'Drink 2L Warm Water',
+      name: t.habitWater2L || 'Drink 2L Warm Water',
       category: 'health',
       frequency: 'daily',
       reminderTime: '08:00',
@@ -791,7 +790,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
     },
     {
       id: 'habit-2',
-      name: isAr ? 'تأمل واسترخاء العضلات (10 د)' : '10 min Meditation & Muscle Relaxation',
+      name: t.habitMeditation10min || '10 min Meditation & Muscle Relaxation',
       category: 'mind',
       frequency: 'daily',
       reminderTime: '07:30',
@@ -804,7 +803,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
     },
     {
       id: 'habit-3',
-      name: isAr ? 'المشي السريع أو تمرين منزلي' : 'Brisk Walking or Home Workout',
+      name: t.habitBriskWalk || 'Brisk Walking or Home Workout',
       category: 'sport',
       frequency: 'daily',
       reminderTime: '17:00',
@@ -818,7 +817,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
     },
     {
       id: 'habit-4',
-      name: isAr ? 'قراءة 10 صفحات في كتاب' : 'Read 10 Pages of a Book',
+      name: t.habitRead10Pages || 'Read 10 Pages of a Book',
       category: 'culture',
       frequency: 'daily',
       reminderTime: '21:00',
@@ -834,31 +833,28 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
 }
 
 export function getInitialGratitudeCards(lang: AppLanguage): GratitudeCard[] {
-  const isAr = lang === 'ar';
+  const t = getTranslation(lang);
   return [
     {
       id: 'grat-1',
-      text: isAr ? 'رؤية شروق الشمس اليوم والبدء بيوم جديد مليء بالفرص والأمل' : 'Watching the warm morning sun rise and starting a brand new day with peace and hope',
-      color: 'bg-[#FEF9E7]',
-      createdAt: '2026-08-01T08:00:00.000Z',
-      likes: 3,
-      tags: isAr ? ['امتنان', 'صباح'] : ['gratitude', 'morning']
+      text: t.gratitudeCardSample1 || 'Watching the warm morning sun rise and starting a brand new day with peace and hope',
+      category: 'life',
+      createdAt: '2026-07-14T08:00:00.000Z',
+      tags: [t.tag_gratitude || 'gratitude', t.tag_morning || 'morning']
     },
     {
       id: 'grat-2',
-      text: isAr ? 'شرب فنجان قهوة ساخن وممتع بمشاركة صديق مقرب والحديث الدافئ معه' : 'Drinking a hot, perfect cup of coffee with my family and having a warm chat',
-      color: 'bg-[#F4ECF7]',
-      createdAt: '2026-08-02T16:30:00.000Z',
-      likes: 5,
-      tags: isAr ? ['عائلة', 'دفء'] : ['family', 'warmth']
+      text: t.gratitudeCardSample2 || 'Drinking a hot, perfect cup of coffee with my family and having a warm chat',
+      category: 'relationships',
+      createdAt: '2026-07-15T09:30:00.000Z',
+      tags: [t.tag_family || 'family', t.tag_warmth || 'warmth']
     },
     {
       id: 'grat-3',
-      text: isAr ? 'الوصول لحل مشكلة معقدة في العمل والشعور بالرضا والانجاز' : 'Finding solutions to a tough coding challenge and feeling the joy of personal progress',
-      color: 'bg-[#EBF5FB]',
-      createdAt: '2026-08-03T20:15:00.000Z',
-      likes: 2,
-      tags: isAr ? ['إنجاز', 'تطور'] : ['achievement', 'growth']
+      text: t.gratitudeCardSample3 || 'Finding solutions to a tough coding challenge and feeling the joy of personal progress',
+      category: 'work',
+      createdAt: '2026-07-16T14:15:00.000Z',
+      tags: [t.tag_achievement || 'achievement', t.tag_growth || 'growth']
     }
   ];
 }
@@ -8766,7 +8762,7 @@ export default function App() {
                                       <div className="shrink-0">
                                         {diary.tags && diary.tags.length > 0 ? (
                                           <span className="text-[9px] text-[#8B9D83] font-black">
-                                            #{getTranslatedTag(diary.tags[0], isAr)}
+                                            #{getTranslatedTag(diary.tags[0], t)}
                                           </span>
                                         ) : (
                                           <span className="text-[9px] text-gray-300 font-bold">#{t.generalTag}</span>

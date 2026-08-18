@@ -143,10 +143,10 @@ export default function PasskeyAuth({
           </div>
           <div>
             <h3 className="text-sm font-black text-[#2B3E50]">
-              {appLanguage === 'ar' ? 'إعدادات القفل والبصمة (Passkey & PIN)' : 'Passkey & PIN Security'}
+              {t.passkeyAndPinSecurity || 'Passkey & PIN Security'}
             </h3>
             <p className="text-[11px] text-gray-500 font-bold">
-              {appLanguage === 'ar' ? 'حماية الخصوصية عبر الـ PIN وبصمة الإصبع/الوجه' : 'Protect your app with PIN & Biometric Authentication'}
+              {t.protectAppWithPinBiometrics || 'Protect your app with PIN & Biometric Authentication'}
             </p>
           </div>
         </div>
@@ -190,11 +190,11 @@ export default function PasskeyAuth({
           <div className="flex items-center space-x-2 space-x-reverse">
             <KeyRound className="w-4 h-4 text-[#8B9D83]" />
             <span className="text-xs font-black text-[#2B3E50]">
-              {appLanguage === 'ar' ? 'رمز الـ PIN المكون من 4 أرقام' : '4-Digit Secret PIN Code'}
+              {t.pinCode4Digits || '4-Digit Secret PIN Code'}
             </span>
           </div>
           <span className="text-[10px] text-gray-400 font-bold">
-            {appLanguage === 'ar' ? 'الافتراضي: 1234' : 'Default: 1234'}
+            {t.defaultPin1234 || 'Default: 1234'}
           </span>
         </div>
 
@@ -221,18 +221,18 @@ export default function PasskeyAuth({
           <div className="flex items-center space-x-2 space-x-reverse">
             <Fingerprint className="w-5 h-5 text-amber-600" />
             <h4 className="text-xs font-black text-[#2B3E50]">
-              {appLanguage === 'ar' ? 'بصمة الإصبع / الوجه (Biometrics & Passkey)' : 'Device Biometrics & Passkey'}
+              {t.deviceBiometricsPasskey || 'Device Biometrics & Passkey'}
             </h4>
           </div>
 
           {biometricCredentialId ? (
             <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-lg flex items-center space-x-1 space-x-reverse">
               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-              <span>{appLanguage === 'ar' ? 'مربوط ومفعّل ✅' : 'Linked & Active ✅'}</span>
+              <span>{t.linkedAndActive || 'Linked & Active ✅'}</span>
             </span>
           ) : (
             <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-1 rounded-lg">
-              {appLanguage === 'ar' ? 'غير مربوط ⚠️' : 'Not Linked ⚠️'}
+              {t.notLinked || 'Not Linked ⚠️'}
             </span>
           )}
         </div>
@@ -264,7 +264,7 @@ export default function PasskeyAuth({
         <Smartphone className="w-4 h-4 text-[#8B9D83] shrink-0 mt-0.5" />
         <div>
           <span className="font-black text-[#2B3E50]">
-            {appLanguage === 'ar' ? 'تطبيقات الأندرويد المحولة (Capacitor APK):' : 'Android APK Native Biometrics:'}
+            {t.androidCapacitorBiometrics || 'Android APK Native Biometrics:'}
           </span>
           <p className="text-gray-500 font-medium leading-relaxed mt-0.5">
             {appLanguage === 'ar'
