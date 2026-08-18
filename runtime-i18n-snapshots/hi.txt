@@ -1,0 +1,1377 @@
+========================================
+RUNTIME LOCALIZATION SNAPSHOT: HI
+Total Schema Keys: 1371
+Generated At: 2026-08-18T13:12:46.310Z
+========================================
+
+interactiveTourTitle: इंटरएक्टिव टूर 🧭
+interactiveTourSub: चरण-दर-चरण उपयोग गाइड
+safeEncryptedSpace: आपका सुरक्षित और पूरी तरह से एनक्रिप्टेड मनोवैज्ञानिक स्थान
+streakActiveMsg: बहुत बढ़िया! आपने आज अपने विचार दर्ज किए और अपनी लकीर को जीवित रखा!
+streakInactiveZero: अपनी दैनिक श्रृंखला को सक्रिय करने के लिए आज ही एक ब्लॉग लिखें!
+streakInactiveOneLeft: एक अंतिम कदम! अपनी श्रृंखला को जारी रखने के लिए आज ही विचार दर्ज करें।
+waterTargetReached: 🏆 उत्कृष्ट! दैनिक जलयोजन लक्ष्य प्राप्त किया!
+breathInhaleMsg: 💨 सांस लें... अपने फेफड़ों को शांति और सुकून से भरें
+breathHold1Msg: 🛑 रोकें... अपने शरीर में शांत ऊर्जा महसूस करें
+breathExhaleMsg: 💨 सांस छोड़ें... तनाव, चिंता और थकान से मुक्त हों
+breathHold2Msg: 🛑 रोकें... आंतरिक शांति और मौन का अनुभव करें
+secondsRemaining: सेकंड शेष
+completedCycles: पूरा हुआ चक्र:
+cyclesCount: चक्र गणना
+autoSaveLabel: स्वचालित सहेजा गया
+hoursUnit: घंटे
+minutesUnit: मिनट
+medicationTakenBtn: ✓ ले लिया
+medicationPendingBtn: लंबित
+habitsTrackerSub: कैलेंडर से एक तिथि चुनें और अपनी आदतों को चिह्नित करें।
+nav.home: होम
+nav.diaries: डायरी
+nav.advisor: एआई सलाहकार
+nav.progress: प्रगति और डेटा
+nav.settings: सेटिंग्स
+nav.hayat_ai: Hayat AI
+nav.active_now: अभी सक्रिय
+nav.fullscreen: पूर्ण स्क्रीन
+nav.account_title: आपका प्रोफ़ाइल
+nav.lock_app: लॉक करें
+nav.switch_language: भाषा
+nav.dhikr: स्मरण और ध्यान
+nav.dhikr_title: जिक्र काउंटर
+nav.daily_tasks: दैनिक कार्य
+nav.gratitude: कृतज्ञता दीवार
+nav.my_thoughts: मेरे विचार
+nav.journal_records: डायरी
+nav.therapy_session: सहायता सत्र
+nav.back_btn: वापस
+nav.back_title: वापस
+nav.back_mobile_title: वापस
+nav.auto_saved: स्वतः सहेजा
+nav.saving: सहेज रहे हैं...
+nav.current_page: वर्तमान पृष्ठ
+nav.subtitle: आपका व्यक्तिगत सुरक्षित स्थान
+nav.tasks: कार्य
+nav.edit_diary: संपादित करें
+nav.sign_in: साइन इन
+nav.reveal_header_pill: हेडर दिखाएं
+appName: Hayat AI
+homeTab: होम
+diariesTab: डायरी
+advisorTab: सलाहकार
+analyticsTab: विश्लेषण
+settingsTab: सेटिंग्स
+yes: हाँ
+no: नहीं
+closeBtn: बंद करें
+retryBtn: पुनः प्रयास
+cancelBtn: रद्द करें
+save_btn: सहेजें
+saveAndCloseBtn: सहेजें और बंद करें
+sendBtn: भेजें
+clearBtn: साफ़ करें
+back_btn: वापस
+understoodBtn: समझ गया
+confirmImportBtn: पुष्टि करें
+deleteKeyBtn: हटाएं
+saveKeyBtn: सहेजें
+photo: Photo 📸
+video: Video 🎥
+audio: Audio 🎙️
+document: Document 📄
+task: कार्य 📋
+advisor: सलाहकार 🤖
+mood: मनोदशा 🌿
+voiceRecord: वॉयस रिकॉर्डिंग 🎙️
+write: लिखें ✍️
+attachPhoto: फोटो संलग्न करें
+attachPhotoSub: तस्वीर के साथ पल संजोएं
+phoneVideo: फ़ोन वीडियो 🎥
+phoneVideoSub: वीडियो में भावनाओं का विश्लेषण करें
+audioFile: वॉइस नोट 🎙️
+audioFileSub: आवाज़ को ट्रांसक्राइब व विश्लेषण करें
+bookDoc: किताब या दस्तावेज़ 📖
+bookDocSub: महत्वपूर्ण सीख और विचार निकालें
+freeWrite: मुक्त लेखन ✍️
+freeWriteSub: बिना किसी सीमा के विचार व्यक्त करें
+aiAdvisor: एआई सलाहकार 🤖
+aiAdvisorSub: त्वरित मनोवैज्ञानिक मार्गदर्शन
+aiPsychAdvisor: मनोवैज्ञानिक एआई सलाहकार 🧠
+dhikrTitle: जिक्र और शांति काउंटर 📿
+dhikrSub: अल्लाह की याद में दिलों को सुकून मिलता है
+dhikrMainQuote: अल्लाह की याद में दिलों को सुकून मिलता है 🌿
+dhikrBlessing: अल्लाह हमें उनमें से बनाए जो उसे अधिक याद करते हैं ✨
+dhikrCounterBtn: गिनने के लिए टैप करें 📿
+dhikrCountLabel: कुल
+dhikrFooter: सुब्हानल्लाह व बिहम्दिही
+notificationActiveNow: सूचनाएं सक्रिय 🔔
+notificationHowAreYou: आज आपका मन कैसा है? 🌿
+notificationTapShortcut: ऐप खोलने के लिए टैप करें
+notificationsTitle: सूचनाएं 🔔
+notificationsSub: वेलनेस रिमाइंडर सक्षम करें
+remindersTitle: स्मार्ट रिमाइंडर ⏰
+remindersSub: दैनिक जर्नलिंग रिमाइंडर शेड्यूल करें
+reminderTime: रिमाइंडर समय
+faceIdBtn: फेस आईडी
+fingerprintBtn: फिंगरप्रिंट
+biometricScanTitle: बायोमेट्रिक प्रमाणीकरण 🔐
+biometricScanInstruction: कृपया अपना चेहरा या फिंगरप्रिंट स्कैन करें
+biometricSuccessTitle: प्रमाणीकरण सफल! 🎉
+biometricFailedTitle: प्रमाणीकरण विफल ❌
+biometricNotLinkedTitle: बायोमेट्रिक्स लिंक नहीं है
+biometricNotLinkedDesc: पहले सेटिंग्स में पंजीकरण करें
+biometricAlreadyRegistered: बायोमेट्रिक पहले से पंजीकृत 🔐
+biometricNotSupported: डिवाइस असमर्थित
+biometricUserCanceled: उपयोगकर्ता द्वारा रद्द
+pinCodeBtn: पिन कोड
+usePinInsteadBtn: PIN उपयोग करें
+lockscreenBtn: लॉकस्क्रीन शॉर्टकट 📌
+lockscreenHint: अनलॉक करने के लिए बायोमेट्रिक या पिन पर टैप करें
+lockscreenSecured: पूरी तरह से एन्क्रिप्टेड और सुरक्षित
+appLockTitle: ऐप PIN लॉक 🔐
+appLockSub: अपनी डायरी सुरक्षित रखें
+welcomeSafeSpace: आपका पूरी तरह सुरक्षित और निजी स्थान 🌿
+safeSpaceDesc: स्वतंत्र रूप से लिखें, एन्क्रिप्टेड और AI के साथ।
+greetingDesc: आज विकास और आंतरिक सद्भाव का एक नया दिन है। अपने विचारों को दर्ज करने से आपका एआई सलाहकार व्यक्तिगत मार्गदर्शन प्रदान कर सकता है।
+streakTitle: स्ट्रीक
+dayStreak: लगातार दिन
+longestStreak: सबसे लंबी स्ट्रीक
+streakEncouragement: मानसिक संतुलन के लिए रोजाना लिखते रहें!
+aiInspirationBtn: स्मार्ट प्रेरणा (एआई) 🪄
+quickPromptSuggestionsTitle: त्वरित सुझाव:
+askAiWriterHeader: अपने सलाहकार से पूछें:
+expressMindPlaceholder: अपने विचार स्वतंत्र रूप से व्यक्त करें...
+journal.subtab_journal: डायरी और विचार
+journal.subtab_tasks: कार्य
+journal.subtab_gratitude: कृतज्ञता
+journal.subtab_cbt: CBT व्यायाम
+journal.subtab_proscons: फायदे और नुकसान
+journal.write_new: नया नोट
+journal.import_btn: आयात करें
+journal.search_placeholder: खोजें...
+journal.filter_all: सभी
+journal.filter_diaries: डायरी
+journal.filter_thoughts: विचार
+journal.filter_archived: संग्रह
+journal.filter_trash: ट्रैश
+journal.editor_title_new: नया नोट
+journal.editor_title_edit: संपादित करें
+journal.title_placeholder: नोट शीर्षक...
+journal.content_placeholder: स्वतंत्र रूप से लिखें...
+journal.mood_label: आप अभी कैसा महसूस कर रहे हैं?
+journal.save_btn: सहेजें
+journal.save_success: नोट सहेजा गया! 🎉
+dailyJournalSubtab: दैनिक डायरी
+dailyTasksSubtabLabel: कार्य और चेकलिस्ट
+gratitudeSubtab: कृतज्ञता दीवार
+cbtSubtabLabel: CBT व्यायाम
+allFilterTab: सभी
+diariesFilterTab: डायरी
+thoughtsFilterTab: विचार
+writeNewNoteBtn: नया नोट ✍️
+searchDiariesPlaceholder: डायरी में खोजें...
+noMatchingDiariesNow: कोई मेल खाने वाली प्रविष्टि नहीं।
+deleteDiaryPermanently: स्थायी रूप से हटाएं
+saveDiarySuccessBtn: सहेजा गया ✓
+exportPdfBtn: PDF निर्यात करें
+exportingPdfProgress: निर्यात हो रहा है...
+restoreAction: पुनर्स्थापित करें
+archiveAction: संग्रहित करें 📥
+meLabel: Me
+writingTherapeuticResponse: सलाहकार प्रतिक्रिया लिख रहा है...
+quickOneClickActions: एक क्लिक में वर्तमान प्रविष्टि का विश्लेषण करने के लिए त्वरित कार्रवाई:
+summarizeEntryBtn: प्रविष्टि सारांश
+extractCognitiveErrorsBtn: संज्ञानात्मक विकृतियां
+practicalPlanTomorrowBtn: कल की कार्य योजना
+moodHappy: खुश
+moodExcited: उत्साहित
+moodRelaxed: आराम
+moodNormal: Normal
+moodSad: दुखी
+moodDepressed: उदास
+moodAnxious: चिंतित
+moodAngry: क्रोधित
+moodExhausted: थका हुआ
+moodGrateful: कृतज्ञ
+gratitude.title: कृतज्ञता दीवार
+cbtExercisesTab: CBT व्यायाम
+rationalAlternative: तर्कसंगत विकल्प
+behavioralCorrelationsTitle: व्यवहार विश्लेषण इंजन
+balanceIndex: संतुलन सूचकांक
+sleepQuality: नींद की गुणवत्ता
+exerciseActivity: शारीरिक गतिविधि
+waterTrackerTitle: दैनिक इंटरैक्टिव जल काउंटर 💧
+waterTrackerDesc: पीए गए पानी को दर्ज करने के लिए नीचे दिए गए कपों पर टैप करें। जलयोजन तंत्रिका तंत्र को शांत करता है।
+symptomsTitle: दैनिक शारीरिक और भावनात्मक लक्षण
+symptomsDesc: आज महसूस किए गए लक्षणों को चिह्नित करें ताकि एआई मन-शरीर के संबंधों को ट्रैक कर सके।
+voiceCompanionTitle: निरंतर वॉयस साथी 🎙️
+voiceStatusListening: ध्यान से सुन रहे हैं...
+voiceStatusAnalyzing: सोच रहे हैं...
+voiceStatusSpeaking: अभी बोल रहे हैं...
+voiceStatusIdle: शुरू करने के लिए तैयार
+voiceLiveTranscript: लाइव ट्रांसक्रिप्ट:
+voiceStartSpeaking: शुरू करें 🎙️
+voiceEndSession: समाप्त करें 📞
+settingsTitle: सामान्य सेटिंग्स
+apiKeyTitle: आपकी API कुंजी 🔑
+languagesTitle: ऐप भाषाएं 🌐
+selectLanguageTitle: भाषा चुनें 🌐
+darkModeTitle: डार्क मोड ☀️/🌙
+backupTitle: बैकअप और सिंक ☁️
+contactTitle: डेवलपर से संपर्क 📬
+rateTitle: ऐप को रेट करें ⭐
+favoritesTitle: पसंदीदा ❤️
+archiveTitle: संग्रह 📦
+trashTitle: ट्रैश 🗑️
+personalAccountTitle: व्यक्तिगत खाता 👤
+guestUser: अतिथि 👤
+registeredUser: सत्यापित उपयोगकर्ता 👤
+geminiKeyTitle: Gemini API कुंजी सेटअप 🔑
+welcomeModalTitle: Hayat AI में स्वागत है 👋
+rateModalTitle: रेट करें ⭐
+rateModalThanks: धन्यवाद! ❤️
+contactOwnerTitle: डेवलपर से संपर्क करें
+generalTag: General 📌
+diaryBadge: डायरी 📔
+thoughtBadge: विचार 💭
+editedBadge: संपादित ✍️
+symptomHeadache: सिरदर्द / सिर का भारीपन
+symptomFatigue: सामान्य थकान
+symptomBackTension: मांसपेशियों में खिंचाव / पीठ दर्द 🧘
+symptomPoorSleep: अनिद्रा / खराब नींद 😴
+symptomRapidHeart: तेज़ दिल की धड़कन
+symptomShortnessBreath: सांस की हल्की तकलीफ
+symptomStomach: पेट की ख़राबी / बेचैनी 🤢
+symptomTremors: पसीना आना / कंपकंपी 🥶
+waterConsumed: खपत की गई मात्रा:
+waterRemaining: 💡 अपने आदर्श लक्ष्य तक पहुँचने के लिए कुछ ही गिलास शेष हैं।
+pinPadSub: आगे बढ़ने के लिए अपना 4 अंकों का पिन कोड दर्ज करें
+pinHint: PIN आपकी डायरी की रक्षा करता है
+incorrectPin: गलत PIN ❌
+noActiveAlarms: कोई सक्रिय अलार्म नहीं।
+addNewAlarmTitle: अलार्म जोड़ें:
+alarmTitlePlaceholder: उदा: लेखन सत्र, पानी पीने का ब्रेक...
+addAlarmBtn: + जोड़ें
+archiveSearchPlaceholder: संग्रह में खोजें...
+filterAll: सभी
+filterDiaries: डायरी
+filterThoughts: विचार
+archiveEmptyTitle: संग्रह खाली है।
+archiveEmptyDesc: डायरी टैब से नोट संग्रहित करें।
+goToDiariesToArchive: डायरी पर जाएं ✍️
+untitledNote: बिना शीर्षक
+previewAndRead: पूर्वावलोकन और पढ़ें
+restoreBtn: पुनर्स्थापित करें
+moveToTrash: ट्रैश में भेजें
+trashEmpty: ट्रैश खाली है 🗑️
+emptyTrashBtn: ट्रैश खाली करें 🗑️
+deletePermanently: स्थायी रूप से हटाएं
+smartRemindersCardTitle: स्मार्ट रिमाइंडर सिस्टम
+smartRemindersCardDesc: प्रेरक नोट्स के साथ रिमाइंडर प्रबंधित करें
+lockScreenWidgetTitle: लॉक स्क्रीन पिन किया विजेट
+lockScreenWidgetDesc: लॉक स्क्रीन पर शॉर्टकट दिखाएं।
+appVersionCredits: Hayat AI — स्थिर संस्करण 1.0.0
+privacyCredits: पूर्ण गोपनीयता और AI के साथ विकसित।
+typographyTitle: टाइपोग्राफी और पढ़ने की सुविधा
+typographyDesc: फ़ॉन्ट और पंक्ति रिक्ति चुनें
+selectMainFontLabel: मुख्य फ़ॉन्ट चुनें:
+lineSpacingLabel: पंक्ति ऊंचाई:
+livePreviewTitle: लाइव पूर्वावलोकन:
+fontAndSpacingTabLabel: फ़ॉन्ट और स्पेसिंग 🔤
+languageTabLabel: भाषा और क्षेत्र 🌐
+searchLanguagePlaceholder: भाषा खोजें...
+fullCalendar: पूर्ण कैलेंडर
+directUploadTitle: फ़ाइलों और अनुलग्नकों तक सीधी पहुंच 📁
+quoteTitle: आज का विचार और मनोवैज्ञानिक प्रेरणा 🌿
+recentWeek: हालिया सप्ताह
+moodScaleTitle: त्वरित डिजिटल मनोदशा पैमाना (1 - 10) 😐
+moodScaleDesc: एक सेकंड में अपनी वर्तमान मनोदशा दर्ज करने के लिए स्लाइडर खींचें।
+apiKeySubAuto: यदि कुंजी प्रदान नहीं की तो निःशुल्क कुंजी स्वतः उपयोग होती है
+floatingBallTitle: त्वरित नियंत्रण उपकरण
+proBadge: Pro
+predictiveTitle: भविष्यसूचक स्वास्थ्य विश्लेषण 🔮
+predictiveAnalyzeBtn: नया विश्लेषण चलाएं 🧠
+predictiveStatusGood: स्थिर और संतुलित ✨
+newJournalHeader: नई प्रविष्टि 📝
+editJournalHeader: प्रविष्टि संपादित करें 📝
+cancelAndSaveDraft: रद्द और ड्राफ्ट सहेजें 💾
+journalTitleLabel: प्रविष्टि शीर्षक 📌
+journalTitlePlaceholder: अपने दिन के लिए शीर्षक...
+starRatingLabel: दिन की रेटिंग
+outOfFiveStars: 5 में से
+entryClassificationLabel: श्रेणी
+myNormalDiariesChoice: सामान्य डायरी 📝
+myPrivateThoughtsChoice: निजी विचार 🔐
+behavioralMoodLabel: प्रमुख मनोदशा
+writeFeelingsLabel: अपनी भावनाएं और विचार स्वतंत्र रूप से लिखें
+importGratitudeBtn: कृतज्ञता से आयात 🌸
+bulletListLabel: बुलेट सूची
+fontColorsBtn: फ़ॉन्ट रंग 🎨
+moreFeaturesBtn: अधिक सुविधाएं ✨
+aiWriterBtn: AI सहायक 🤖
+editorTextareaPlaceholder: अपने मन की बात व्यक्त करें...
+addChecklistItemBtn: चेकलिस्ट आइटम जोड़ें ➕
+authModalTitle: व्यक्तिगत खाता और सिंक
+authModalSub: डेटा सुरक्षित रूप से सिंक करें
+loginErrorEmpty: ईमेल और पासवर्ड दर्ज करें
+loginSuccessMsg: लॉग इन हो गए! 🎉
+incorrectPassword: गलत पासवर्ड
+registerErrorEmpty: सभी फ़ील्ड भरें
+passwordTooShort: पासवर्ड कम से कम 6 अक्षर का होना चाहिए
+passwordsDoNotMatch: पासवर्ड मेल नहीं खाते
+registerSuccessMsg: खाता बनाया गया! 🎉
+emailAlreadyRegistered: ईमेल पहले से पंजीकृत
+connectedSynced: जुड़ा और सिंक
+syncNowBtn: अभी सिंक करें 🔄
+logoutBtn: लॉगआउट 🚪
+loginTab: लॉगिन
+registerTab: खाता बनाएं
+emailLabel: ईमेल
+passwordLabel: पासवर्ड
+hide: छुपाएं
+show: दिखाएं
+loginSubmit: लॉगिन 🔑
+nameLabel: पूरा नाम
+confirmPasswordLabel: पासवर्ड की पुष्टि
+registerSubmit: खाता पंजीकृत करें ✨
+syncInProgress: सिंक हो रहा है...
+backupHourly: प्रत्येक घंटे ⏰
+backupDaily: दैनिक 📅
+backupWeekly: साप्ताहिक 🗓️
+backupOff: अक्षम 🛑
+key: Key
+voiceJournalTitle: AI वॉयस जर्नलिंग सहायक 🎙️
+onboardingWelcomeTitle: Hayat AI में स्वागत है 👋
+onboardingStep1Title: डायरी और विचार 📝
+onboardingStep1Desc: AI मूड विश्लेषण के साथ स्वतंत्र रूप से लिखें।
+onboardingStep2Title: स्मार्ट AI सलाहकार 🧠
+onboardingStep2Desc: अपने AI मनोवैज्ञानिक सलाहकार से चैट करें।
+onboardingStep3Title: आदतें और विकास 📊
+onboardingStep3Desc: आदतें ट्रैक करें और विकास वृक्ष देखें।
+onboardingStep4Title: गोपनीयता और सुरक्षा 🔒
+onboardingStep4Desc: प्रविष्टियां एन्क्रिप्टेड और सुरक्षित।
+onboardingNext: अगला ➔
+onboardingPrev: पिछला
+onboardingFinish: यात्रा शुरू करें 🚀
+onboardingSkip: टूर छोड़ें
+onboardingStepIndicator: चरण {step} / {total}
+voiceRecordBtn: रिकॉर्डिंग शुरू करें 🎙️
+voiceStopBtn: रोकें और विश्लेषण ⏹️
+moodRating: मूड का मूल्यांकन:
+advisorQuickQ1: तनाव का सबसे बड़ा कारण क्या है?
+advisorQuickQ2: मेरी हाल की प्रविष्टियों का सारांश दें
+advisorQuickQ3: मैं आखिरी बार खुश कब था?
+advisorQuickQ4: इस सप्ताह की तुलना पिछले महीने से करें।
+advisorQuickQ5: आज मेरे लिए क्या सलाह है?
+promptSummarizeEntry: 📝 मेरी प्रविष्टि का संक्षेप में सारांश दें
+promptExtractCognitiveErrors: 💡 संज्ञानात्मक विकृतियों को निकालें और सलाह दें
+promptPracticalPlanTomorrow: 🎯 कल के लिए एक व्यावहारिक योजना का सुझाव दें
+quoteDefaultText: याद रखें कि चिंता कल के दर्द को नहीं रोकती, यह केवल आज की शांति चुराती है।
+quoteDefaultAuthor: आपका मित्र मनोवैज्ञानिक
+boxBreathingTitle: रिलैक्सिंग बॉक्स ब्रीदिंग असिस्टेंट (वेगस तंत्रिका उत्तेजना)
+boxBreathingDesc: हृदय गति को शांत करने और आंतरिक शांति को बढ़ावा देने के लिए सांस लेने की तकनीक (प्रत्येक चरण में 4 सेकंड)।
+startBreathingBtn: ▶️ सांस लेने का व्यायाम शुरू करें
+stopBreathingBtn: ⏹️ सत्र रोकें
+selfCareGoalsTitle: आत्म-देखभाल और मानसिक स्वास्थ्य लक्ष्य
+sleepHoursLabel: नींद के घंटे:
+sportsDurationLabel: खेल और कसरत:
+medicationDoseLabel: दवा और विटामिन:
+habitsTrackerTitle: व्यवहार संबंधी आदतें और दिनचर्या ट्रैकर
+addHabitBtnLabel: + आदत जोड़ें
+habitWarmWater: 2 लीटर गर्म पानी पिएं
+habitRelaxation: ध्यान और मांसपेशी विश्राम (10 मिनट)
+habitBriskWalking: तेज़ चलना / होम वर्कआउट
+habitReading10Pages: किताब के 10 पन्ने पढ़ें
+catPhysicalHealth: शारीरिक स्वास्थ्य 🥦
+catMindMeditation: मन और ध्यान 🧠
+catSportActivity: खेल और गतिविधि 🏃
+catCultureReading: संस्कृति और पठन 📚
+aiBehavioralAssessmentTitle: एआई व्यवहार संबंधी मूल्यांकन और रिपोर्ट
+generateBehavioralReportBtn: एआई व्यवहार मूल्यांकन रिपोर्ट तैयार करें
+dailyLifeMapTitle: दैनिक जीवन मानचित्र और संकेतक
+dailyBalanceIndexLabel: दैनिक संतुलन सूचकांक:
+integratedTimelineTitle: एकल दैनिक समय रेखा:
+sleepPeriodTitle: दैनिक नींद और आराम की अवधि 💤
+dailyPsychTipTitle: दैनिक मानसिक स्वास्थ्य टिप
+calendarModalTitle: व्यापक कैलेंडर और पुस्तकालय 📖🗓️
+myActivitiesTab: मेरी डायरियां और गतिविधियां ☀️
+myLibraryTab: मेरा पुस्तकालय 📖
+noEntriesForDate: इस दिन के लिए कोई प्रविष्टि नहीं है
+readingRecommendationsTitle: पठन और मानसिक कल्याण के लिए सिफारिशें
+therapyReportTitle: 🎓 थेरेपी सत्र की तैयारी और व्यापक नैदानिक ​​रिपोर्ट
+therapyReportSubtitle: वर्तमान सप्ताह की रिपोर्ट - मानसिक स्वास्थ्य अनुवर्ती तैयारी
+habitsFilterAndSort: आदतों के फ़िल्टर और क्रमबद्धता
+filterAndSortBtn: फ़िल्टर और क्रमबद्ध करें
+filterAndSortHeader: आदतों को फ़िल्टर और क्रमबद्ध करें
+hideArchived: संग्रहीत छिपाएं
+hideCompleted: पूर्ण किए गए छिपाएं
+sortMethod: क्रमबद्ध करने की विधि:
+sortManual: मैनुअल ⬆
+sortByName: नाम से
+sortByColor: रंग से
+sortByScore: अंक से
+sortByStatus: स्थिति से
+habitsSettingsTitle: आदतें और डेटा सेटिंग्स
+periodicityFilter: प्रदर्शन सीमा और आवृत्ति:
+daysDisplayed: {count} दिन प्रदर्शित
+dayRangeDay: 📅 दिन
+dayRangeWeek: 📆 सप्ताह
+dayRangeMonth: 🗓️ माह
+dayRangeQuarter: 📊 तिमाही
+dayRangeSemiAnnual: 📈 छमाही
+dayRangeYear: 📅 वर्ष
+dayRangeCustom: 🎯 कस्टम (से/तक)
+fromDate: आरंभ तिथि:
+toDate: अंतिम तिथि:
+habitsAndRoutinesTitle: आदतें और दिनचर्या
+recordValue: मान दर्ज करें: {name}
+quantity: {date} के लिए मात्रा ({unit}):
+saveValue: मान सहेजें
+photoIcon: Photo
+fontJakartaName: Plus Jakarta Sans
+fontJakartaCategory: Modern Sans-Serif
+fontJakartaSample: Modern & Clean Typography for All Screens
+fontSystemName: System Default Font
+fontSystemCategory: Native System Typography
+fontSystemSample: Your device native typography font automatically
+allAccessBadge: (All Access)
+cbtBadge: (CBT)
+prosConsBadge: (Pros & Cons)
+pdfBadge: PDF Document
+e2eePairingCodeTitle: Cross-Device Unified Pairing Code
+e2eePairingCodeDesc: Use this code to pair your phone, tablet, or desktop
+e2eeStatusEncrypted: Fully Encrypted 256-bit AES
+aiMoodAnalysisUpdateNotice: Analysis updates automatically as you write
+importGratitudeTitle: आयात Gratitude Cards
+undoTooltip: Undo (Ctrl+Z)
+redoTooltip: Redo (Ctrl+Y)
+boldTooltip: Bold (Ctrl+B)
+italicTooltip: Italic (Ctrl+I)
+underlineTooltip: Underline (Ctrl+U)
+strikethroughTooltip: Strikethrough
+h1Tooltip: Heading 1 (H1)
+h2Tooltip: Heading 2 (H2)
+quoteTooltip: Quote
+bulletListTooltip: Bullet List
+fontColorsTooltip: Font Color Formatting
+attachFileTitle: Attach File
+addAudioTitle: जोड़ें Audio Recording
+photoTitle: जोड़ें Photo
+backgroundColorTitle: वापसground Color
+colorTitle: Font Color
+fontEffectTitle: Font Effect
+fontTitle: Font Style
+subsequentAdditionsTitle: Subsequent जोड़ेंitions & Updates
+subsequentAdditionsNotice: जोड़ेंitions are saved with independent timestamp
+historicalEditsTitle: Historical संपादित करेंs Log
+containsEditsPrefix: Contains
+appendedEditsSuffix: appended edits
+biometricCanceled: Biometric scan canceled
+biometricFailed: Biometric authentication failed
+biometricStep1: Preparing scanner...
+biometricStep2: Reading biometric data...
+biometricStep3: Verifying identity...
+biometricSuccess: Verified successfully!
+faceScanInstruction: Point face toward camera for verification
+faceScanTitle: Face ID Verification
+faceSuccessTitle: Face recognized successfully
+fingerprintScanInstruction: Place finger on scanner
+fingerprintScanTitle: Fingerprint Verification
+lockScreenAlertSuccess: Unlocked successfully
+enterPinNowBtn: Enter PIN Now
+syncOptionsTitle: Cloud Sync Options
+linkGoogleAccount: Link with Google Account 🌐
+restoreCloudBackup: Restore Cloud वापसup ☁️
+importManual: Manual JSON/CSV आयात
+importFromWriteDiary: आयात from WriteDiary
+autoBackupFrequency: Auto-वापसup Frequency
+secureEmailBackup: Send वापसup to Email 📧
+emailPlaceholder: name@example.com
+supportedFormats: Supported Formats: JSON, CSV, WriteDiary वापसup
+uploadAnotherFile: Upload Another File 📁
+selectAllBtn: Select All
+text: Text
+section: Section
+offlineStatusOffline: You are currently offline
+offlineSyncSuccess: Data synced and updated offline successfully
+resetConfirm: Are you sure you want to reset?
+resetCounter: Reset Counter
+muteClickSound: Mute Click Sound
+enableClickSound: Enable Click Sound
+pwaInstructionTitle: Install App on Your Device
+pwaStep1: Open browser menu (⋮ or साझा करें)
+pwaStep2: Select "जोड़ें to Home Screen"
+pwaStep3: Install the app and enjoy a fast experience
+welcomeBackOpening: Welcome back! ✨
+presetNote1: Gratitude for today
+presetNote2: Evening reflection on achievements
+presetNote3: Plans and goals for tomorrow
+presetNote4: Reflection and emotional release
+presetNote5: New creative ideas
+presetNote6: Relaxation and peace session
+howToStep4: Use AI to analyze emotions and get recommendations
+cameraDeniedError: Camera permission denied
+multiFormatTitle: Multi-Format निर्यात & आयात 📦
+exportJson: Full JSON वापसup
+exportCsv: CSV Spreadsheet (Excel)
+exportEncrypted: Secure Encrypted File (ENC)
+importEncrypted: आयात Encrypted File
+voiceRecordingStarted: Listening to your voice & capturing emotions...
+voiceListening: Listening attentively...
+lineHeightCompactName: Compact (1.45x)
+lineHeightCompactDesc: Compact view for dense lists and quick stats
+lineHeightNormalName: Standard (1.65x)
+lineHeightNormalDesc: Standard spacing for general navigation
+lineHeightRelaxedName: Relaxed (1.85x) - Recommended
+lineHeightSpaciousName: Spacious (2.15x)
+lineHeightSpaciousDesc: Maximum line spacing for immersive reading sessions
+actionsHeader: Actions
+habitBooleanLabel: ✓ पूर्ण / अपूर्ण
+moveUpTitle: Move Up
+moveDownTitle: Move Down
+measurableUnitDefault: Unit
+quoteCopiedAlert: Quote copied to clipboard! 🌸
+copyQuoteTooltip: Copy quote
+scrollHint: Scroll ↔
+waterCupLabel: Cup {number}
+moodSevereDistress: Severe distress & sadness 😭
+moodContentPeaceful: Content & peaceful 😊
+videoRecordBtn: Video Clip 🎥
+quickVentBtn: Quick Venting ✍️
+webLinkBtn: Web Link 🌐
+attachFileIcon: Attach File
+addAudioIcon: जोड़ें Audio
+sketchIcon: Draw
+bgColorIcon: वापसground Color
+addChecklistItem: + जोड़ें Item (List)
+depthRatingLabel: आयातance & Self Depth Rating:
+starsOutOfFive: stars
+cbtWorksheets: Thought Reframing Sheets
+thoughtRecord: Automatic Thoughts Record
+postSessionMood: Greatly Improved
+reviewProsConsTitle: Pros & Cons Review
+prosConsBtnLabel: Pros & Cons ⚖️
+exerciseMoodBoostTitle: Effect of Exercise & Activity
+cbtEffectivenessTitle: Effectiveness of CBT Exercises
+cbtEffectivenessDesc: Reframing negative automatic thoughts reduces distress by {percent}%.
+accountSubGuest: Safe local account on this device
+psychologicalGrowthTreeTitle: मनोवैज्ञानिक विकास और संतुलन का पेड़ 🌳
+treeStage1: पहला बीज (जागरूकता की शुरुआत)
+treeStage2: अंकुर (आदतों का निर्माण)
+treeStage3: छोटा पौधा (भावनात्मक स्थिरता)
+treeStage4: खिलता हुआ पेड़ (लचीलापन और समृद्धि)
+treeStage5: फलदायी परिपक्व पेड़ (ज्ञान और आंतरिक शांति)
+treeDesc1: Beginning of self-care and emotional discovery.
+treeDesc3: Your thoughts find a safe outlet and grow deeply.
+treeDesc4: Emotional stability and inner peace fill your day.
+treeDesc5: पूर्ण mental balance and wise self-reflection.
+rateAppFeedbackLabel: Feedback & Suggestions:
+rateAppSubmit: Submit Rating ⭐
+contactOwnerModalTitle: Contact Developer 📬
+contactOwnerModalDesc: We love receiving direct feedback to develop the app
+contactOwnerMessage: Your message or feedback:
+copyEmail: Copy Email 📋
+restoreDataBtn: Restore Data from JSON File 📥
+howToExportTitle: How to export & restore data:
+howToStep1: 1. Click export to get an encrypted JSON file containing your journals.
+howToStep3: 3. To restore on another device, select file and click restore.
+accountTitle: Personal Account & Login
+guestUserLabel: Guest (Unregistered)
+userEmailSynced: Logged in: {email} • Access journals from any device
+guestUserDesc: Sign in with your personal account to sync and access your data across devices
+appLockDetailsTitle: 🔐 Screen & Data Lock (PIN, Fingerprint & Face ID):
+appLockDetailsDesc: When app lock is enabled, security verification (Fingerprint/Face ID or PIN) is required upon leaving or locking the screen.
+pinCodeLabel: Secret PIN Code (4 digits)
+defaultPinHint: डिफ़ॉल्ट पिन: 1234 (सेटिंग्स में बदला जा सकता है)
+pinPlaceholder: Current Code (1234)
+linkBiometricsTitle: Link Fingerprint & Face ID (Passkey):
+biometricNotActiveBadge: ⚠️ Not Linked
+biometricDesc: Link your official device biometrics (fingerprint or face ID) to unlock the app with a single touch.
+biometricUpdateBtn: Update or Re-link Device Biometric 👆👤
+biometricLinkBtn: Link & Enable Device / Face Biometric Now 👆👤
+biometricAlertTitle: आयातant Protection Notice:
+biometricAlertDesc: When tapping "Link Device Biometric", your OS will prompt for fingerprint or face scan. The app will then only unlock with the registered biometrics.
+archiveEmptySearch: No matching results found in archive.
+thoughtBadgeShort: ✍️ Reflection
+diaryBadgeShort: 📓 डायरी
+itemsInTrash: items in trash
+remindersCountBadge: reminder(s)
+behavioralAiBadge: Behavioral AI
+testSoundTitle: Test Alert Sound
+testSoundBtn: Test Sound
+addNewSmartReminderTitle: जोड़ें New Smart Reminder
+addNewSmartReminderBtn: जोड़ें New Smart Reminder
+reminderTitleLabel: Reminder Title or Goal
+reminderIconLabel: Icon
+alertTimeLabel: Alert Time
+alertFrequencyLabel: Frequency
+freqCustomDays: Specific दिन of Week
+selectDaysPrompt: Select days to be reminded on:
+optionalLabel: Optional
+motivationalNotePlaceholder: Enter a motivational quote to uplift you when alert fires...
+presetSamplesPrompt: Preset motivational samples (click to pick):
+addReminderBtn: जोड़ें Reminder
+noRemindersYetTitle: No reminders scheduled yet
+createFirstReminderBtn: Create First Reminder Now
+disabledBadge: Disabled
+cbtTipTitle: Cognitive Behavioral Therapy (CBT) Tip:
+alertsMonitoredFooter: Alerts monitored automatically in-app
+catGeneral: General Alert
+catJournal: डायरी & Writing
+catMeditation: Meditation & Rest
+catFitness: Fitness & Movement
+catReading: Reading & Learning
+catMotivation: Positive Motivation
+recommendedBadge: अनुशंसित
+testLockScreenNotificationBtn: Pin / Test Notification on Lock Screen Now 📌
+howLockScreenWorksBtn: How does lock screen widget work? ℹ️
+fullscreenModeTitle: Fullscreen Mode & Hide Browser जोड़ेंress Bar
+fullscreenModeDesc: Hide browser address bar (URL) and navigation UI for a distraction-free full-screen app experience.
+toggleFullscreenBtn: Toggle Fullscreen Mode Now 🖥️
+pwaMethodBtn: Permanent PWA Hide Method ℹ️
+appWideBadge: App-wide
+e2eeTitle: Encrypted Cloud Sync (E2EE) 🔐
+e2eeSub: End-to-end encryption across all your devices
+e2eePassphrasePlaceholder: Enter your custom encryption passphrase...
+pinPadShortcutSub: त्वरित कार्रवाई निष्पादित करने के लिए पिन दर्ज करें
+pinVerified: Correct PIN Code
+powerButtonTooltip: Lock App Immediately
+screenOffTitle: Screen Secured
+screenOffDesc: Click to unlock app
+importNotePreserveDates: Original dates and tags are preserved
+analyzingFile: Analyzing file...
+uploadDropZoneText: Drag file here or click to select
+apiKeyVerified: API Key verified successfully! ✅
+apiKeyVerifyFailed: Failed to verify API Key
+verifyingKey: Verifying API Key...
+copied: Copied to clipboard! 📋
+sendMessageNow: Send Message Now 🚀
+chooseFontStyle: Choose Font Style:
+aiWriterTopicPlaceholder: Ask any topic from AI...
+generatingAiText: Generating...
+sendPromptBtn: Send ✨
+aiGeneratingTitle: Generating by AI...
+aiModelDraftingDesc: Smart model is drafting thoughts professionally now
+readyToInsertBadge: Ready to Insert
+copiedTextSuccess: ✓ Copied text
+copyTextBtn: 📋 टेक्स्ट क्लिपबोर्ड पर कॉपी करें
+suggestAnotherTopic: Suggest another topic
+generateAction: Generate →
+aiChatSessionTitle: Interactive AI Venting & Psychological Analysis Session
+liveInteractionBadge: Live Interaction
+sendBtnLabel: Send
+voiceInterruptAndSpeak: Interrupt & Speak ⏹️
+totalRemindersLabel: Total Reminders:
+getFreeKeyLink: Get a free API key from Google AI Studio 🔑
+pwaHowToBtn: How to Install as PWA 📱
+predictiveGuidance: भविष्यवाणी स्वास्थ्य मार्गदर्शन
+importerErrorMsg: Error reading file, please verify format
+resultsCountSuffix: results
+filterTagsLabel: फ़िल्टर tags:
+checkSpellingOrFilter: Check spelling or try filtering by tags.
+audioDrawingsOnly: Media & Drawings Only
+modifiedBadge: Modified
+fontDrawerTitle: Font
+fontSizeLabel: Font Size
+settingsSubtitle: Customize AI assistant, security & language
+apiKeySub: Enter Gemini API key for continuous AI capabilities
+languagesSub: Change user interface language
+selectLanguageSubtitle: Hayat AI supports multiple global languages
+typographyTabTitle: Font & Spacing
+typographyTabSub: Select font style and line height for comfortable reading
+fontStyleIcon: Font Style
+darkModeSub: Switch between light and dark theme
+backupSub: निर्यात and restore your data safely
+contactSub: Feedback and inquiries to improve the app
+rateSub: Your opinion helps improve Hayat AI
+biometricSettingsTitle: सुरक्षा और बायोमेट्रिक लॉक 🛡️
+biometricSettingsSub: फेस आईडी, फिंगरप्रिंट या पिन से डेटा सुरक्षित करें
+biometricToggleFaceId: फेस आईडी अनलॉक सक्षम करें
+biometricToggleFingerprint: फिंगरप्रिंट अनलॉक सक्षम करें
+biometricToggleFaceIdDesc: ऐप को तेज़ी से खोलने के लिए चेहरे की पहचान का उपयोग करें
+biometricToggleFingerprintDesc: अनलॉक करने के लिए फिंगरप्रिंट सेंसर को स्पर्श करें
+biometricHardwareUnavailable: इस उपकरण पर बायोमेट्रिक सेंसर उपलब्ध नहीं है
+biometricDeviceNotSupported: आपका उपकरण बायोमेट्रिक्स का समर्थन नहीं करता है
+biometricVerifyToDisable: अक्षम करने के लिए कृपया अपनी पहचान सत्यापित करें
+biometricAuthPrompt: जारी रखने के लिए अपनी पहचान की पुष्टि करें
+biometricDisableSuccess: बायोमेट्रिक लॉक सफलतापूर्वक अक्षम किया गया
+biometricSetupSuccess: बायोमेट्रिक लॉक सफलतापूर्वक सेट हो गया! 🎉
+biometricAppLockActive: आपकी सुरक्षा के लिए ऐप लॉक है
+biometricUnlockWithFaceId: फेस आईडी से अनलॉक करें
+biometricUnlockWithFingerprint: फिंगरप्रिंट से अनलॉक करें
+biometricPINFallbackBtn: पिन कोड का उपयोग करें 🔢
+geminiKeyModalTitle: Gemini एपीआई कुंजी प्रबंधक 🔑
+geminiKeyModalSubtitle: असीमित एआई विश्लेषण के लिए अपनी व्यक्तिगत Google Gemini कुंजी सेट करें
+geminiKeyDesc: आपकी कुंजी आपके ब्राउज़र के सुरक्षित स्थानीय संग्रहण में सहेजी जाती है।
+geminiGetKeyLink: Google AI Studio से निःशुल्क API कुंजी प्राप्त करें ↗
+geminiKeyPlaceholder: अपनी Gemini API कुंजी यहाँ चिपकाएँ (AIza... से शुरू)
+geminiKeySave: कुंजी सहेजें 💾
+geminiKeyDelete: कुंजी हटाएं 🗑️
+geminiKeySavedSuccess: API कुंजी सफलतापूर्वक सहेजी और सक्रिय की गई! 🎉
+geminiKeyDeletedSuccess: API कुंजी हटा दी गई; डिफ़ॉल्ट पर रीसेट
+geminiKeyRequiredWarning: कृपया एक मान्य Gemini API कुंजी दर्ज करें
+geminiSecurityNotice: आपकी कुंजी किसी तीसरे पक्ष के सर्वर से नहीं गुजरती और आपके डिवाइस पर रहती है।
+geminiKeyActive: कुंजी सक्रिय है
+geminiKeyCustomBadge: कस्टम
+geminiKeyDefaultBadge: डिफ़ॉल्ट साझा
+lifeMapTitle: जीवन का नक्शा और व्यक्तिगत संतुलन 🧭
+lifeMapSub: सद्भाव और संतुष्टि के लिए अपने जीवन के क्षेत्रों का मूल्यांकन करें
+lifeBalanceScore: समग्र संतुलन स्कोर
+lifeSpiritual: अध्यात्म और आंतरिक शांति
+lifeHealth: शारीरिक स्वास्थ्य और ऊर्जा
+lifeCareer: करियर और उपलब्धि
+lifeRelationships: रिश्ते और परिवार
+lifeFinances: वित्त और आर्थिक सुरक्षा
+lifePersonalGrowth: व्यक्तिगत विकास और सीखना
+cbtExercisesTitle: संज्ञानात्मक व्यवहार थेरेपी (सीबीटी) अभ्यास 🧠
+cbtExercisesSub: मन को शांत करने के लिए संज्ञानात्मक विकृतियों को पहचानें और पुनर्गठित करें
+cbtNewExerciseBtn: नया सीबीटी अभ्यास ✍️
+cbtThoughtRecord: स्वचालित विचार रिकॉर्ड
+cbtDistortionCat: संज्ञानात्मक विकृति का प्रकार
+cbtEvidenceFor: इस विचार का समर्थन करने वाले साक्ष्य
+cbtEvidenceAgainst: इस विचार का खंडन करने वाले साक्ष्य
+cbtBalancedThought: संतुलित और यथार्थवादी वैकल्पिक विचार
+gratitudeJournalTitle: कृतज्ञता और आभार की दीवार 🌸
+gratitudeJournalSub: दैनिक आशीषों को संजोएं और आंतरिक शांति को बढ़ाएं
+gratitudeNewCardBtn: नया कृतज्ञता कार्ड ✨
+gratitudeCardPlaceholder: आज आप किस बात के लिए आभारी हैं? दिल से लिखें...
+gratitudeCardSavedSuccess: कृतज्ञता कार्ड सफलतापूर्वक सहेजा गया! 🌸
+gratitudeCardDeleteConfirm: क्या आप वाकई इस कृतज्ञता कार्ड को हटाना चाहते हैं?
+gratitudeShareCardBtn: कार्ड साझा करें 📤
+clinicalReportTitle: क्लिनिकल रिपोर्ट और थेरेपी सारांश 📑
+clinicalReportSub: आपके मूड, आदतों और प्रगति का व्यापक विश्लेषण
+clinicalSeverityMinimal: न्यूनतम / स्थिर
+clinicalSeverityMild: हल्का
+clinicalSeverityModerate: मध्यम
+clinicalSeveritySevere: गंभीर / ध्यान देने की आवश्यकता
+clinicalExportPdfBtn: पीडीएफ के रूप में निर्यात करें 📄
+clinicalExportWordBtn: Word (DOCX) के रूप में निर्यात करें 📝
+clinicalPrintBtn: रिपोर्ट प्रिंट करें 🖨️
+clinicalConfidentialNotice: यह रिपोर्ट पूरी तरह से गोपनीय है और आपके एन्क्रिप्टेड व्यक्तिगत डेटा से तैयार की गई है।
+backupSyncTitle: बैकअप और एंड-टू-एंड एन्क्रिप्टेड सिंक (E2EE) ☁️
+backupSyncSub: बिना किसी मध्यवर्ती सर्वर के अपने उपकरणों के बीच डेटा को सुरक्षित रूप से सिंक करें
+backupSyncGenerateKey: नई पेयरिंग कुंजी बनाएं 🔑
+backupSyncEnterKey: दूसरे डिवाइस की पेयरिंग कुंजी दर्ज करें
+backupSyncExportJson: बैकअप फ़ाइल निर्यात करें (JSON) 💾
+backupSyncImportJson: फ़ाइल से पुनर्स्थापित करें (JSON) 📂
+backupSyncRestoreSuccess: बैकअप सफलतापूर्वक पुनर्स्थापित हुआ! 🎉
+canvasTitle: ड्राइंग कैनवास और भावनात्मक स्केच 🎨
+canvasBrushSmall: बारीक ब्रश
+canvasBrushMedium: मध्यम ब्रश
+canvasBrushLarge: मोटा ब्रश
+canvasBrushEraser: इरेज़र 🧽
+canvasUndo: पूर्ववत करें ↩️
+canvasRedo: फिर से करें ↪️
+canvasClear: सभी साफ़ करें 🗑️
+canvasSaveToEntry: ड्राइंग को नोट से जोड़ें 📎
+rateAppModalTitle: Hayat AI के साथ अपने अनुभव को रेट करें ⭐
+rateAppThankYou: आपकी बहुमूल्य प्रतिक्रिया के लिए धन्यवाद! ❤️
+rateAppThankYouDesc: आपकी राय हमें आपकी भलाई के लिए Hayat AI को बेहतर बनाने में मदद करती है।
+rateAppQuestion: आपको ऐप कैसा लगा और हम इसे कैसे सुधार सकते हैं?
+rateAppSubmitBtn: प्रतिक्रिया भेजें 🚀
+rateAppPlaceholder: अपने अनुभव, विचार या सुझाव साझा करें...
+reportFromDate: से:
+reportToDate: तक:
+reportRangeLabel: अवधि:
+today: आज
+yesterday: कल
+daysAgo: {count} दिन पहले
+currentWeek: यह सप्ताह
+lastWeek: पिछला सप्ताह
+weeksAgo: {count} सप्ताह पहले
+currentMonth: यह महीना
+lastMonth: पिछला महीना
+monthsAgo: {count} महीने पहले
+currentQuarter: वर्तमान तिमाही
+previousQuarter: पिछली तिमाही
+quartersAgo: {count} तिमाही पहले
+currentHalf: वर्तमान छमाही
+previousHalf: पिछली छमाही
+halvesAgo: {count} छमाही पहले
+currentYearLabel: वर्तमान वर्ष ({year})
+lastYearLabel: पिछला वर्ष ({year})
+yearLabelN: वर्ष {year}
+reportsHistory: इतिहास ({count}) 📜
+aiSummaryBtn: एआई सारांश 🧠
+analyzingStatus: विश्लेषण हो रहा है...
+copyTextTooltip: टेक्स्ट कॉपी करें
+copiedSuccess: कॉपी हो गया!
+copyBtn: कॉपी
+printReportTooltip: प्रिंट
+loggedDiariesStat: दर्ज की गई डायरियाँ
+entriesUnit: प्रविष्टियाँ
+avgSleepStat: औसत नींद
+moodScoreStat: मूड स्कोर
+exerciseTimeStat: व्यायाम का समय
+sleepMoodChartTitle: नींद और मूड प्रवृत्ति चार्ट
+timelineLabel: समय रेखा
+clinicalAnalysisTitle: नैदानिक मनोवैज्ञानिक विश्लेषण (एआई सलाहकार)
+clickAiSummaryHint: इस अवधि के लिए व्यवहार और मनोदशा विश्लेषण शामिल करने के लिए ऊपर 'एआई सारांश 🧠' पर क्लिक करें।
+topLoggedFeelingsTitle: शीर्ष दर्ज की गई भावनाएं:
+sampleFeelings: शांत, शांतिपूर्ण, आशावादी
+preparingPdf: पीडीएफ तैयार हो रहा है...
+exportPdfNow: अब पीडीएफ निर्यात करें
+reportsHistoryTitle: सहेजे गए मानसिक स्वास्थ्य रिपोर्ट इतिहास 📜
+reportsHistorySubtitle: तिथियों और नोट्स के साथ पिछली रिपोर्टों का इतिहास
+searchReportsPlaceholder: शीर्षक या तिथि से रिपोर्ट खोजें...
+totalReportsCount: कुल रिपोर्ट: {count}
+noReportsInHistory: इतिहास में कोई सहेजी गई रिपोर्ट नहीं मिली
+clickSaveReportHint: अपनी रिपोर्ट को संग्रहीत करने के लिए ऊपर 'रिपोर्ट सहेजें' पर क्लिक करें।
+accountSubUser: Active & cloud synced
+activeBadge: Active
+activeRemindersListTitle: Active & Scheduled Reminders List
+aiAnalyticsBadge: AI Analytics
+aiMoodAnalysisNotice: * This analysis is automatically updated as soon as you click "Save Note Successfully ✓" based on written words.
+aiMoodAnalysisTitle: Gemini Smart Mood Analysis:
+archiveBtnLabel: Archive this note 📥
+archiveSub: Archived entries
+audioRecordBtn: Voice Note 🎙️
+autoAiMoodAnalysisTitle: Auto AI Mood Analysis
+backupSyncDesc: Save backup or restore data anytime
+behavioralCorrelationsSub: Discover connections between habits & mood
+biometricActiveBadge: ✅ Active & Linked
+cancelSearchBtn: Cancel search
+catCare: Health & Care
+catWater: Drink Water
+cbtTipDesc: Reminders paired with positive motivational quotes increase adherence and daily routine compliance by 68% compared to standard alerts.
+checklistSectionTitle: Daily Checklist
+chooseBgColor: Choose Note Background Color:
+clearSearchTitle: Clear search
+clearSearchWordBtn: Clear search word
+clickWriteNewNotePrompt: Click "Write New Note" to start expressing yourself!
+confirmDeleteReminder: Are you sure you want to delete this reminder?
+createNewDiaryWithText: Create new entry with this text
+delete: हटाएं
+deleteAdditionBtn: Delete Addition
+deleteAlarmTitle: Delete Alarm
+drawTitle: Mind Drawing Canvas
+edit: संपादित करें
+editHabitTitle: Edit Habit Title
+editSmartReminderTitle: Edit Smart Reminder
+emailBackupDesc: Receive a full backup of your diaries in your inbox
+entriesCountLabel: Entries Count
+exerciseMoodBoostDesc: Exercising 20+ minutes correlates with a {percent}% boost in positive mood.
+favoritesSub: Highlighted notes & reflections
+floatingBallSub: Quick access to tools and AI advisor
+fontAlmaraiCategory: Ultra Clean Sans
+fontAlmaraiName: Almarai Clean
+fontAlmaraiSample: Clear thoughts begin with mindful writing.
+fontAmiriCategory: Classic Literary Naskh
+fontAmiriName: Amiri Classic Naskh
+fontAmiriSample: Every story written holds wisdom for tomorrow.
+fontCairoCategory: Modern & Balanced
+fontCairoName: Cairo Modern
+fontCairoSample: Journaling brings clarity and peace to your mind.
+fontNotoCategory: Traditional Clear Naskh
+fontNotoName: Noto Naskh Traditional
+fontNotoSample: An elegant diary preserving your memories.
+fontNoto_naskhCategory: Classic & Elegant
+fontNoto_naskhName: Noto Naskh Traditional
+fontNoto_naskhSample: Classic Naskh script for graceful reading
+fontTajawalCategory: Modern Soft Geometric
+fontTajawalName: Tajawal Soft
+fontTajawalSample: Reflect on your daily thoughts and feelings comfortably.
+freqDaily: Daily (Every day)
+freqWeekly: Weekly (Once a week)
+fullCalendarSub: Review all past diary entries in detail
+geminiKeyNotice: Security note: Key is saved locally encrypted on your device only.
+howToStep2: 2. Save the file in a safe place on your device or cloud.
+importFromOtherApps: Import from Other Apps 📲
+importFromOtherAppsDesc: Supports JSON, CSV, and TXT files
+importFromOtherAppsTitle: Import Entries & Diaries
+importGratitudeMoments: Import Gratitude Moments
+importNoteAiNotice: Note: AI will automatically analyze your imported diaries
+importerSuccessMsg: Data imported successfully! 🎉
+insertInCurrentEntry: Insert in current entry
+lineHeightRelaxedDesc: Optimal comfort for reading long diary entries
+litersUnit: Liters Unit
+mindMapBtn: Mind Map / Drawing 🎨
+moodJoyfulHighEnergy: Mood Joyful High Energy
+moodStableNeutral: Mood Stable Neutral
+motivationalNoteLabel: Inspiring Motivational Note (Shown with alert)
+multiFormatDesc: Choose your preferred format to export or restore your diaries
+noHabitsFiltered: No Habits Filtered
+noMatchFoundFor: No entry found matching:
+noMatchingEntries: No matching diary entries found
+noRemindersYetDesc: Add daily or weekly reminders for journals, habits, or meditation breaks with inspiring notes.
+ofEightCups: Of Eight Cups
+pdfDocBtn: PDF Document 📄
+photoUploadBtn: Photo Attachment 📸
+predictiveAnxietyRisk: Future Anxiety Risk Level
+predictiveSleepRisk: Sleep Disturbance Indicator
+predictiveStatusWarning: Warning: Impending Anxiety Triggers ⚠️
+predictiveSub: AI-powered early warning system for anxiety triggers & sleep disturbances
+primaryCategoryLabel: Primary Entry Category:
+promptArticleTitle: Write an Article
+promptFutureTitle: Future Trends
+promptHealthTitle: Generate Health Tips
+promptMarketingTitle: Marketing & Customer Service
+promptProjectsTitle: Project Management
+pwaBadge: PWA 🖥️
+recordingProgress: Audio Recording in Progress...
+reminderTitlePlaceholder: e.g., Daily Gratitude Journal, Drink Water, Meditation Session...
+samplePreviewParagraph: This live preview demonstrates how your diary entries and long notes will render across the app. Using your selected font paired with custom line spacing ensures maximum legibility and effortless reading.
+saveChangesBtn: परिवर्तन सहेजें
+searchParsedPlaceholder: Search in diaries or thoughts...
+searchResultsFor: Search results for:
+selectAllHint: Select all entries for import
+selectDateTitle: Select a Date to View Entries
+shareableGratitudeSub: प्रेरक क्षण साझा करने के लिए सुंदर दृश्य कार्ड डिज़ाइन करें
+shareableGratitudeTitle: साझा करने योग्य कृतज्ञता कार्ड 🎨
+sleepWaterAnxietyDesc: On days with 8 cups of water and 7+ hours of sleep, your anxiety drops by {percent}%.
+sleepWaterAnxietyTitle: Effect of Sleep & Water on Anxiety
+smartRemindersBadge: Frequency & Notes
+smartRemindersModalSub: Set reminder frequency and add motivational notes to inspire you on each alert
+subNoteDefaultTitle: Sub-note
+subNotePlural: Sub-notes
+subNoteSingular: Sub-note
+subsequentAdditionsPlaceholder: Add new reflections to this entry...
+taskInputPlaceholder: Write a new task here...
+tasksBadge: (Tasks)
+trashSub: Temporarily deleted notes
+treeDesc2: Daily journaling builds your mental resilience.
+voiceAutoSaved: Voice diary entry saved successfully! 🎉
+voiceJournalSub: Speak freely and AI will format your voice into structured diary entries
+voiceProcessingAI: Processing audio & analyzing emotions with AI...
+voiceSaveBtn: Save as Diary Entry 💾
+writeDiaryImporterSub: Import diaries from other apps
+writeDiaryImporterTitle: Import Journals 📥
+distortion_catastrophizing: 🌋 अत्यधिक अनिष्ट की आशंका
+distortion_desc_catastrophizing: सबसे खराब स्थिति की उम्मीद करना और जोखिमों को बढ़ा-चढ़ाकर देखना।
+distortion_mind_reading: 🔮 दूसरों के मन को पढ़ना
+distortion_desc_mind_reading: बिना सबूत के यह मान लेना कि दूसरे आपके बारे में नकारात्मक सोच रहे हैं।
+distortion_all_or_nothing: 🌗 सब-या-कुछ-नहीं सोच
+distortion_desc_all_or_nothing: चीजों को केवल सही या गलत के रूप में देखना: पूर्ण सफलता या पूरी विफलता।
+cbtTabThoughtRecords: 🧠 विचार रिकॉर्ड कार्यपत्रक
+cbtTabDownwardArrow: ⬇️ अधोमुखी तीर तकनीक
+cbtTabWorryBox: 📦 चिंता पेटी और स्थगन
+cbtTabExposureLadder: 🪜 क्रमिक जोखिम सीढ़ी
+cbtTabCopingCards: 📇 सामना करने वाले कार्ड
+cbtTabGrounding: 🧘 5-4-3-2-1 संवेदी ग्राउंडिंग
+cbtTabAnalytics: 📊 विचार विकृति विश्लेषण
+tasksSubTabDaily: दैनिक और कार्य
+tasksSubTabHabitsGrid: आदत ग्रिड
+tasksSubTabSettings: आदत सेटिंग्स और डेटा
+waterReminderNotifTitle: 💧 पानी पीने का समय!
+waterReminderNotifBody: याद दिलाएं: अपने स्वास्थ्य और एकाग्रता के लिए एक गिलास पानी पिएं।
+waterReminderEnabledToast: प्रति घंटा पानी के अनुस्मारक सक्षम 💧⏰
+waterReminderDisabledToast: पानी के अनुस्मारक अक्षम 🔕
+workoutTimerStarted: कसरत टाइमर शुरू हो गया! ⏱️🏃
+workoutTimerPaused: कसरत टाइमर रोक दिया गया ⏸️
+workoutTimerReset: कसरत टाइमर रीसेट 🔄
+workoutLoggedSuccess: {mins} मिनट ({type}) दर्ज किए गए! कुल: {total} मिनट 🏃💪
+medTakenSuccess: '{name}' लेना दर्ज किया गया! 💊
+medUntaken: '{name}' अनचेक किया गया
+medAddedSuccess: '{name}' को दवा सूची में जोड़ा गया! 💊
+medDeleted: दवा सूची से हटा दिया गया।
+newHabitDefaultName: नई आदत
+confirmDeleteHabit: क्या आप वाकई इस आदत को स्थायी रूप से हटाना चाहते हैं?
+updateBiometricBtn: डिवाइस बायोमेट्रिक अपडेट करें 👆👤
+linkBiometricBtn: अब डिवाइस बायोमेट्रिक लिंक करें 👆👤
+confirmDeleteProsCons: क्या आप वाकई इस दिन के पक्ष और विपक्ष रिकॉर्ड को हटाना चाहते हैं?
+prosConsDeleted: दैनिक रिकॉर्ड सफलतापूर्वक हटा दिया गया।
+noProsConsToExport: निर्यात के लिए अभी तक कोई रिकॉर्ड नहीं है।
+exportedWordSuccess: पूरा रिकॉर्ड वर्ड दस्तावेज़ के रूप में निर्यात किया गया 📝
+ancientTreeTag: • 365 दिन
+maxTreeLevelBadge: अधिकतम स्तर प्राप्त 🌟
+toNextTreeStage: अगले चरण तक
+disableTreePreview: 365 दिनों का पूर्वावलोकन अक्षम करें 🔄
+enableTreePreview: 365 दिनों के ज्ञान वृक्ष चरण का पूर्वावलोकन परीक्षण करें 🧪
+defaultGratitudeCardQuote: आज शांति, शांत पलों और आंतरिक स्वास्थ्य के लिए आभारी हूँ।
+defaultAuthorName: मेरी सचेत यात्रा
+defaultCardCategory: कृतज्ञता का क्षण 💖
+gratitudeDownloaded: ✅ कृतज्ञता कार्ड सफलतापूर्वक डाउनलोड किया गया
+gratitudeDownloadFailed: ⚠️ छवि डाउनलोड करने में विफल, कृपया पुनः प्रयास करें
+gratitudeCardCopied: 📋 साझा करने के लिए कार्ड टेक्स्ट कॉपी किया गया
+gratitudeShareUnsupported: ⚠️ इस डिवाइस पर शेयरिंग समर्थित नहीं है
+gratitudeShareFailed: ⚠️ शेयर तैयार करने में विफल
+gratitudeTextCopied: 📋 टेक्स्ट क्लिपबोर्ड पर कॉपी किया गया
+gratitudeCopyFailed: ⚠️ क्लिपबोर्ड पर कॉपी करने में विफल
+preparingImage: ⏳ छवि तैयार की जा रही है...
+downloadedBtn: डाउनलोड किया गया! 💾
+downloadPngBtn: PNG डाउनलोड करें
+preparingShare: ⏳ शेयर तैयार किया जा रहा है...
+directShareBtn: कार्ड साझा करें
+copiedSuccessBtn: सफलतापूर्वक कॉपी किया गया! ✨
+voiceListeningPrompt: सुन रहा हूँ... खुलकर बोलें...
+confirmClearGeneralChat: क्या आप वाकई सामान्य एआई चैट इतिहास साफ़ करना चाहते हैं?
+confirmClearAdvisorChat: क्या आप वाकई एआई सलाहकार चैट इतिहास साफ़ करना चाहते हैं?
+stopDictationTitle: डिक्टेशन रोकने के लिए क्लिक करें
+smartDictationTitle: स्मार्ट वॉयस डिक्टेशन
+listeningVoice: आपकी आवाज़ सुन रहा हूँ...
+askGeneralAiPlaceholder: सामान्य एआई से पूछें या फ़ाइलें संलग्न करें...
+askAdvisorPlaceholder: सलाहकार से अपनी डायरी के बारे में पूछें...
+generalVoiceCompanionTitle: सामान्य वॉयस साथी 🌐
+generalVoiceModalDesc: खुलकर बोलें, सामान्य एआई सहायक आपके सभी प्रश्नों का उत्तर आवाज़ में देगा...
+advisorVoiceModalDesc: खुलकर बोलें, सहायक आपकी प्रविष्टियों का विश्लेषण करेगा और आवाज़ में उत्तर देगा...
+mood_happy: खुश
+mood_very_happy: बहुत खुश
+mood_grateful: आभारी
+mood_calm: शांत
+mood_hopeful: आशावादी
+mood_relaxed: आराम से
+mood_enthusiastic: उत्साही
+mood_excited: उत्साहित
+mood_anxious: चिंतित
+mood_sad: उदास
+mood_afraid: भयभीत
+mood_insomnia: अनिद्रा
+mood_exhausted: थका हुआ
+mood_angry: क्रोधित
+mood_normal: सामान्य
+tag_study: अध्ययन
+tag_family: परिवार
+tag_hope: आशा
+tag_insomnia: अनिद्रा
+tag_anxiety: चिंता
+tag_challenge: चुनौती
+tag_achievement: उपलब्धि
+tag_happiness: खुशी
+tag_reading: पठन
+tag_mindfulness: सचेतनता
+tag_work: कार्य
+tag_sports: खेल
+diaryImportanceLabel: व्यक्तिगत गहराई और महत्व:
+diaryMoodsRecordedLabel: दर्ज की गई मनोदशा:
+noMoodSelected: कोई मनोदशा नहीं चुनी गई
+untitledDiaryDefault: शीर्षकहीन डायरी प्रविष्टि
+prosConsModalTitle: दैनिक पक्ष और विपक्ष संतुलन
+prosConsTopicPlaceholder: आज संतुलित करने के लिए विषय या निर्णय लिखें...
+prosInputPlaceholder: एक पक्ष जोड़ें (उदा. सीखने का अवसर)
+consInputPlaceholder: एक विपक्ष जोड़ें (उदा. अतिरिक्त समय चाहिए)
+saveDailyRecordBtn: दैनिक रिकॉर्ड सहेजें
+exportWordBtn: वर्ड दस्तावेज़ निर्यात करें
+lockScreenAthkarTitle: लॉक स्क्रीन स्मरण और ध्यान
+integratedTherapyReportTitle: एकीकृत मनोवैज्ञानिक और थेरेपी रिपोर्ट
+generateClinicalReportBtn: एआई नैदानिक रिपोर्ट उत्पन्न करें
+exportReportPdfBtn: रिपोर्ट को पीडीएफ के रूप में निर्यात करें
+monthlyMentalHealthReportTitle: मासिक मानसिक स्वास्थ्य रिपोर्ट
+downloadReportPdfBtn: रिपोर्ट पीडीएफ के रूप में डाउनलोड करें
+editHabitModalTitle: आदत संपादित करें
+addHabitModalTitle: नई आदत जोड़ें
+habitNamePlaceholder: उदा. एक किताब के 15 पन्ने पढ़ें
+habitBestTimePlaceholder: उदा. सुबह जल्दी
+habitGoalPlaceholder: उदा. ध्यान और ज्ञान में सुधार के लिए
+habitLocationPlaceholder: उदा. अध्ययन की मेज पर
+enableDailyHabitReminder: इस आदत के लिए दैनिक अनुस्मारक सक्षम करें
+enableHabitXpReward: XP पॉइंट इनाम प्रणाली सक्षम करें
+addHabitNowBtn: अब आदत जोड़ें
+habitSettingsScreenTitle: आदत सेटिंग्स और बैकअप
+exportHabitsJsonBtn: बैकअप निर्यात करें (JSON)
+importHabitsJsonBtn: बैकअप आयात करें (JSON)
+resetHabitsDefaultBtn: डिफ़ॉल्ट आदतों पर रीसेट करें
+saveAllSettingsBtn: सभी सेटिंग्स सहेजें
+geminiKeyPoolTitle: मिथुन एपीआई कुंजी पूल
+geminiKeyInputPlaceholder: यहाँ Google मिथुन एपीआई कुंजी चिपकाएँ...
+addKeyToPoolBtn: पूल में कुंजी जोड़ें
+testAllKeysBtn: अब सभी कुंजियों का परीक्षण करें
+skipTourBtn: दौरा छोड़ें
+prevBtn: पिछला
+nextBtn: अगला
+startJourneyBtn: अपनी यात्रा अभी शुरू करें
+dhikrCounterTitle: इंटरैक्टिव स्मरण काउंटर
+resetCounterBtn: रीसेट
+changeTargetBtn: लक्ष्य बदलें
+fullAthkarTitle: व्यापक स्मरण विश्वकोश
+searchAthkarPlaceholder: प्रार्थनाओं में खोजें...
+dashboardTitle: डैशबोर्ड और मानसिक स्वास्थ्य
+quickActionNewDiary: त्वरित डायरी प्रविष्टि
+welcomeGreeting: वापसी पर स्वागत है, आपका दिन शांतिपूर्ण हो
+dailyQuote: शांति तूफानों की अनुपस्थिति नहीं, बल्कि उनके बीच आपके दिल का सुकून है।
+diariesTimelineTitle: समयरेखा और विचार
+writeNewDiaryBtn: नई प्रविष्टि लिखें
+saveDiaryBtn: प्रविष्टि सहेजें
+deleteDiaryBtn: प्रविष्टि हटाएं
+smartAdvisorTitle: स्मार्ट मनोवैज्ञानिक सलाहकार (Hayat AI)
+smartAdvisorSubtitle: अभिव्यक्ति और सीबीटी अंतर्दृष्टि के लिए आपका सुरक्षित स्थान
+suggestAiAlternativeBtn: एआई विकल्प का सुझाव दें
+gratitudeTabTitle: कृतज्ञता डायरी
+gratitudeTreeTitle: कृतज्ञता और प्रचुरता का वृक्ष
+addGratitudeBtn: कृतज्ञता जोड़ें
+saveGratitudeBtn: कृतज्ञता सहेजें
+shareGratitudeBtn: कृतज्ञता कार्ड साझा करें
+cbtTherapyTitle: सीबीटी थेरेपी सूट
+worryBoxTitle: चिंता और व्याकुलता बॉक्स
+thoughtRecordTitle: स्वचालित विचार रिकॉर्ड
+groundingTitle: 5-4-3-2-1 संवेदी ग्राउंडिंग तकनीक
+exposureLadderTitle: क्रमिक एक्सपोज़र पदानुक्रम सीढ़ी
+actionPlanLabel: कार्य योजना:
+realProblemLabel: कार्रवाई योग्य / वास्तविक समस्या
+habitsTabTitle: आदतें और दिनचर्या
+addHabitBtn: नई आदत जोड़ें
+analyticsTitle: विश्लेषण और मनोवैज्ञानिक मेट्रिक्स
+habitsCompletionRate: आदत पूर्णता दर
+moodTrendsTitle: मनोदशा के रुझान
+weeklySummaryTitle: साप्ताहिक व्यापक सारांश
+calendarTabTitle: कैलेंडर और अनुसूची
+calendarViewTitle: भावनात्मक और समयरेखा कैलेंडर
+todayBtn: आज
+monthView: महीना दृश्य
+weekView: सप्ताह दृश्य
+libraryTabTitle: पुस्तकालय और किताबें
+favoriteBooksTitle: पसंदीदा किताबें और पठन लॉग
+addBookBtn: नई किताब जोड़ें
+readingProgressTitle: पठन प्रगति
+appearanceSection: दिखावट और थीम
+backupAndSyncTitle: क्लाउड सिंक और बैकअप
+lockScreenTitle: ऐप लॉक और सुरक्षा
+lockScreenSubtitle: अपनी डायरी को सुरक्षित रूप से एक्सेस करने के लिए पिन दर्ज करें
+enterPinPrompt: 4 अंकों का पिन दर्ज करें
+unlockAppBtn: अनलॉक करें
+pinModalTitle: पिन कोड बदलें
+enterCurrentPin: वर्तमान पिन:
+enterNewPin: नया पिन:
+confirmNewPin: नए पिन की पुष्टि करें:
+savePinBtn: पिन सहेजें
+attachVideo: वीडियो संलग्न करें
+attachAudio: ऑडियो संलग्न करें
+attachFile: फ़ाइल संलग्न करें
+recordAudioBtn: ऑडियो रिकॉर्ड करें
+enableNotificationsPrompt: सूचनाएं और स्मार्ट अनुस्मारक सक्षम करें
+testNotificationBtn: परीक्षण सूचना भेजें
+saveRemindersBtn: अनुस्मारक सहेजें
+onboardingTitle: आपके व्यापक जीवन साथी में आपका स्वागत है
+rateAppSubtitle: आपकी प्रतिक्रिया हमें बेहतर बनाने में मदद करती है
+submitRatingBtn: रेटिंग सबमिट करें
+laterBtn: बाद में
+contactOwnerSubtitle: हम आपके प्रश्नों और विचारों में मदद के लिए यहां हैं
+sendMessageBtn: संदेश भेजें
+smartContextDiariesTitle: डायरी और विचार
+smartContextDiariesDesc: व्यक्तिगत डायरी प्रविष्टियाँ पढ़ें
+smartContextMoodLogsTitle: दैनिक मूड और भावना लॉग
+smartContextMoodLogsDesc: दैनिक मूड स्कोर का आकलन करें
+smartContextHabitsTitle: आदतें और दिनचर्या ट्रैकर
+smartContextHabitsDesc: आदत पूर्णता दर ट्रैक करें
+smartContextTasksTitle: कार्य और कार्य सूची
+smartContextTasksDesc: दैनिक और साप्ताहिक कार्यों तक पहुँचें
+smartContextCbtTitle: सीबीटी थेरेपी अभ्यास
+smartContextCbtDesc: मार्गदर्शन के लिए मुकाबला कार्ड पढ़ें
+smartContextReportsTitle: मानसिक स्वास्थ्य रिपोर्ट
+smartContextReportsDesc: मनोवैज्ञानिक सारांशों का विश्लेषण करें
+smartContextVoiceTitle: वॉयस नोट्स और रिकॉर्डिंग
+smartContextVoiceDesc: ऑडियो प्रतिलेखों का विश्लेषण करें
+smartContextBooksTitle: पसंदीदा किताबें और पुस्तकालय
+smartContextBooksDesc: पठन लॉग और उद्धरण पढ़ें
+smartContextGratitudeTitle: कृतज्ञता और सकारात्मक मानसिकता
+smartContextGratitudeDesc: कृतज्ञता वस्तुओं की समीक्षा करें
+smartContextLifeMapTitle: जीवन का नक्शा और भविष्य के लक्ष्य
+smartContextLifeMapDesc: दीर्घकालिक लक्ष्यों का पालन करें
+smartContextProsConsTitle: निर्णय संतुलन (पक्ष और विपक्ष)
+smartContextProsConsDesc: निर्णय संतुलनों की समीक्षा करें
+journal_type_diary: डायरी
+journal_type_diary_desc: दैनिक घटनाएं, जीवन के अनुभव और यादें
+journal_type_thought: विचार
+journal_type_thought_desc: व्यक्तिगत विचार, भावनाएं और आंतरिक संवाद
+journal_type_gratitude: कृतज्ञता
+journal_type_gratitude_desc: आशीर्वाद, खुशी के पल और आभारी नोट्स गिनना
+journal_type_wisdom: ज्ञान
+journal_type_wisdom_desc: जीवन के सबक, गहरी अंतर्दृष्टि और सिद्धांत
+journal_type_quote: उद्धरण
+journal_type_quote_desc: प्रेरक उद्धरण, अंश और साहित्यिक वाक्यांश
+journal_type_idea: त्वरित विचार
+journal_type_idea_desc: ब्रेनस्टॉर्म, अचानक प्रेरणा और परियोजना अवधारणाएं
+journal_type_free_writing: मुक्त लेखन
+journal_type_free_writing_desc: विचारों का अनफ़िल्टर्ड प्रवाह
+journal_type_memory: दृश्य यादें
+journal_type_memory_desc: तस्वीरों और रेखाचित्रों में कैद विशेष पल
+biometricsNotSupportedFallbackPin: इस ब्राउज़र में बायोमेट्रिक्स उपलब्ध नहीं है। पिन कोड लॉक सक्षम है।
+biometricsPermissionDenied: बायोमेट्रिक अनुमति अस्वीकार कर दी गई
+biometricsAuthFailed: बायोमेट्रिक्स प्रमाणीकरण त्रुटि
+environmentUnavailable: पर्यावरण अनुपलब्ध
+webAuthnUnsupported: यह ब्राउज़र WebAuthn / Passkey तकनीक का समर्थन नहीं करता है
+biometricSensorUnavailable: इस डिवाइस पर कोई बायोमेट्रिक सेंसर नहीं मिला
+biometricSensorConnectFailed: इस ब्राउज़र में बायोमेट्रिक सेंसर से कनेक्ट करने में असमर्थ
+generatedReportNotice: आपके सहेजे गए व्यक्तिगत प्रविष्टियों से उत्पन्न
+summary: सारांश
+positiveProgressMessage: आपकी प्रविष्टियाँ जागरूक प्रगति और स्वस्थ संतुलन दिखाती हैं।
+maintainConsistencyPrompt: दैनिक जर्नलिंग और आदत ट्रैकिंग बनाए रखें।
+mindfulnessAdvicePrompt: सोने से पहले गहरी सांस लेने और विश्राम का अभ्यास करें।
+matchingResultsTitle: आपके रिकॉर्ड में खोज और विश्लेषण परिणाम
+smartAdvisorDefaultResponse: मैं आपका व्यक्तिगत माइंडफुलनेस सलाहकार हूँ, जो संतुलन की ओर आपका मार्गदर्शन करता है।
+reminder_morning_athkar: सुबह की सचेतनता और विचार ☀️
+reminder_water: पानी पिएं और हाइड्रेटेड रहें 💧
+reminder_evening_athkar: शाम का चिंतन और शांति 🌙
+reminder_daily_diary: दैनिक डायरी और विचारों को लिखना ✍️
+habitWaterName: 2 लीटर गुनगुना पानी पिएं
+habitMeditationName: 10 मिनट ध्यान और मांसपेशियों का विश्राम
+habitWalkingName: तेज़ चलना या घरेलू कसरत
+habitReadingName: एक किताब के 10 पृष्ठ पढ़ें
+gratitudeDemoText1: सुबह के सूरज को उगते देखना और शांति व आशा के साथ नए दिन की शुरुआत करना
+gratitudeDemoText2: अपनों के साथ गरमा-गरम कॉफी पीना और दिल छू लेने वाली बातचीत करना
+gratitudeDemoText3: एक कठिन चुनौती का समाधान खोजना और व्यक्तिगत प्रगति की खुशी महसूस करना
+diaryDemoTitle1: साप्ताहिक योजना, पारिवारिक दोपहर का भोजन और आशा की भावना
+diaryDemoContent1: दिन की शुरुआत कुछ चिंता से हुई, लेकिन परिवार के साथ दोपहर के भोजन ने मन को शांति और कृतज्ञता से भर दिया।
+diaryDemoTitle2: आधी रात का अनिद्रा और भविष्य पर अत्यधिक सोचना
+diaryDemoContent2: अत्यधिक सोचने के कारण नींद नहीं आई। शाम को 45 मिनट की सैर ने मन को शांत करने में मदद की।
+diaryDemoTitle3: परियोजना की उपलब्धि और शाम का अध्ययन
+diaryDemoContent3: आज अपनी परियोजना प्रस्तुति सफलतापूर्वक पूरी की। सोने से पहले चाय के साथ एक अध्याय पढ़ा।
+mood_joyful: आनंदित
+mood_satisfied: संतुष्ट
+tag_gratitude: कृतज्ञता
+tag_morning: सुबह
+tag_warmth: आत्मीयता
+tag_growth: विकास
+passkeyAndPinSecurity: पासकी और पिन सुरक्षा सेटिंग्स
+protectAppWithPinBiometrics: पिन और बायोमेट्रिक प्रमाणीकरण के साथ अपनी गोपनीयता की रक्षा करें
+pinCode4Digits: 4-अंकीय गुप्त पिन कोड
+defaultPin1234: डिफ़ॉल्ट: 1234
+deviceBiometricsPasskey: डिवाइस बायोमेट्रिक्स और पासकी
+linkedAndActive: लिंक किया गया और सक्रिय ✅
+notLinked: लिंक नहीं किया गया ⚠️
+androidCapacitorBiometrics: एंड्रॉइड नेटिव बायोमेट्रिक्स (कैपेसिटर):
+writeDiaryBackupLabel: 📖 WriteDiary बैकअप
+weekdaySunShort: रवि
+weekdayMonShort: सोम
+weekdayTueShort: मंगल
+weekdayWedShort: बुध
+weekdayThuShort: गुरु
+weekdayFriShort: शुक्र
+weekdaySatShort: शनि
+smartAdvisorChatClearedPrompt: चैट इतिहास साफ़ हो गया। आज मैं आपकी डायरी की समीक्षा और विश्लेषण में कैसे मदद कर सकता हूँ? 🧠
+smartAdvisorDiaryProTab: डायरी प्रो सलाहकार
+smartAdvisorGeneralTab: सामान्य एआई सलाहकार 🌐
+smartAdvisorDiaryProTitle: एआई स्मार्ट सलाहकार प्रो
+smartAdvisorDiaryProDesc: व्यवहार के पैटर्न, मनोदशा के रुझान और समय-सीमा के सहसंबंधों का विश्लेषण करें
+smartAdvisorStartVoiceChat: निरंतर वॉयस चैट शुरू करें
+smartAdvisorVoiceChatBtn: वॉयस चैट
+smartAdvisorAccessPermissions: सलाहकार पहुंच अनुमतियाँ
+smartAdvisorPermissionsBtn: अनुमतियाँ
+smartAdvisorDiariesAccess: डायरी पहुंच अनुमति
+smartAdvisorGeneralTitle: सामान्य एआई सलाहकार
+smartAdvisorGeneralDesc: सामान्य उत्तर, विज्ञान और मल्टीमॉडल फ़ाइलों का विश्लेषण
+smartAdvisorIndependentContext: स्वतंत्र संदर्भ
+smartAdvisorStopAudio: ऑडियो रोकें
+smartAdvisorListenAudio: ऑडियो सुनें
+smartAdvisorAnalyzingLifeLog: सलाहकार आपके रिकॉर्ड का विश्लेषण कर रहा है...
+smartAdvisorWebLinkOption: 🌐 वेब लिंक
+smartAdvisorVideoOption: 🎥 वीडियो
+smartAdvisorEnterWebLink: संदर्भ वेब लिंक दर्ज करें:
+smartAdvisorAddLinkBtn: लिंक जोड़ें
+smartAdvisorEnterVideoUrl: वीडियो URL दर्ज करें:
+smartAdvisorAddVideoBtn: वीडियो जोड़ें
+smartAdvisorEnterPdfInfo: संलग्न पीडीएफ जानकारी दर्ज करें:
+smartAdvisorPdfNamePlaceholder: फ़ाइल का नाम (उदा. report.pdf)
+smartAdvisorPdfUrlPlaceholder: देखने का लिंक...
+smartAdvisorAddPdfBtn: पीडीएफ जोड़ें
+smartAdvisorAddAttachmentHeader: चैट में अनुलग्नक जोड़ें:
+smartAdvisorMediaUploadOption: छवि / वीडियो / दस्तावेज़ / ऑडियो
+smartAdvisorWebLinkCategory: वेबसाइट लिंक
+smartAdvisorVideoLinkCategory: संदर्भ वीडियो लिंक
+smartAdvisorPdfDocCategory: पीडीएफ दस्तावेज़ जानकारी
+smartAdvisorAttachFilesTooltip: छवि, पीडीएफ, ऑडियो, लिंक या वीडियो संलग्न करें
+smartAdvisorClearChatTooltip: चैट इतिहास साफ़ करें
+smartAdvisorPermissionsTitle: स्मार्ट सलाहकार पहुंच अनुमतियाँ 🛡️
+smartAdvisorPermissionsSubtitle: उन डेटा क्षेत्रों का चयन करें जिनका विश्लेषण करने की अनुमति है
+smartAdvisorEnableAllAccess: सभी पहुंच सक्षम करें
+smartAdvisorEnableAllAccessDesc: सक्षम होने पर, सलाहकार सभी गतिविधियों में व्यापक अंतर्दृष्टि प्रदान कर सकता है
+smartAdvisorPreferencesNote: 🔒 प्राथमिकताएं स्थानीय रूप से सहेजी जाती हैं और तुरंत लागू होती हैं।
+smartAdvisorSaveApplyBtn: सहेजें और लागू करें 💾
+tag_imported: आयातित
+tag_diaries: डायरी
+mood_reflective: चिंतनशील
+fontDefaultSample: हर नया दिन सचेतनता, शांति और व्यक्तिगत विकास के नए अवसर लेकर आता है।
+aiPositivesHeader: एआई-जनित सकारात्मक बिंदु:
+aiNegativesHeader: एआई-जनित चुनौतियाँ:
+userManualPositivesHeader: उपयोगकर्ता द्वारा दर्ज सकारात्मक बिंदु:
+userManualNegativesHeader: उपयोगकर्ता द्वारा दर्ज चुनौतियाँ:
+generatedByHayatAiNotice: हयात एआई द्वारा उत्पन्न 🌿
+prosConsReportTitle: पक्ष और विपक्ष रिपोर्ट
+dailyProsConsReportTitle: दैनिक पक्ष और विपक्ष रिपोर्ट
+dateLabelColon: दिनांक:
+comprehensiveProsConsHistoryTitle: व्यापक पक्ष और विपक्ष इतिहास
+comprehensiveProsConsLogAllDays: सभी दिनों के लिए व्यापक पक्ष और विपक्ष लॉग
+dailyProsConsLogHeader: ⚖️ दैनिक पक्ष और विपक्ष लॉग
+fullHistoryArchiveBadge: पूर्ण इतिहास संग्रह 🧠
+prosConsArchiveDescription: एआई या मैन्युअल रूप से समय के साथ दर्ज की गई ताकत, अवसरों और चुनौतियों का कालानुक्रमिक संग्रह।
+exportFullLogBtn: पूरा लॉग निर्यात करें (Word / PDF) 📄
+totalDaysTrackedLabel: कुल ट्रैक किए गए दिन
+daysUnit: दिन
+totalPositivesLoggedLabel: कुल दर्ज सकारात्मक बिंदु
+itemsUnit: आइटम
+totalChallengesNegativesLabel: कुल चुनौतियाँ और नकारात्मक बातें
+positiveBalanceRatioLabel: सकारात्मक संतुलन अनुपात
+searchProsConsPlaceholder: दिनांक या कीवर्ड द्वारा खोजें...
+filterMostlyPositive: अधिकतर सकारात्मक 🟢
+filterHigherChallenges: उच्च चुनौतियाँ 🔴
+noMatchingRecordsFound: कोई मेल खाता रिकॉर्ड नहीं मिला
+goToJournalForProsConsPrompt: डायरी टैब पर जाएं और रिपोर्ट बनाने के लिए ⚖️ आइकन पर क्लिक करें।
+loggedDateLabel: दर्ज तिथि:
+editDetailsBtn: विवरण संपादित करें
+deleteRecordTooltip: रिकॉर्ड हटाएं
+positivesLabel: सकारात्मक बातें
+totalPrefix: कुल 
+noPositivesLoggedToday: इस दिन के लिए कोई सकारात्मक बात दर्ज नहीं है।
+challengesAndNegativesLabel: चुनौतियाँ और नकारात्मक बातें
+noNegativesLoggedToday: इस दिन के लिए कोई चुनौती दर्ज नहीं है।
+habitWater2L: 2 लीटर गुनगुना पानी पिएं
+habitMeditation10min: 10 मिनट ध्यान और मांसपेशियों को आराम
+habitBriskWalk: तेज़ चलना या घरेलू कसरत
+habitRead10Pages: एक किताब के 10 पृष्ठ पढ़ें
+gratitudeCardSample1: सुबह का सूर्योदय देखना और शांति और आशा के साथ एक नए दिन की शुरुआत करना
+gratitudeCardSample2: अपने परिवार के साथ गर्म कॉफी का एक कप पीना और अच्छी बातचीत करना
+gratitudeCardSample3: एक कठिन चुनौती का समाधान खोजना और व्यक्तिगत प्रगति का अनुभव करना
+voice_journal: वॉयस डायरी
+ai_assistant: एआई सहायक
+cbtSuiteTitle: उन्नत सीबीटी और मनोवैज्ञानिक सूट
+cbtSuiteSubtitle: संज्ञानात्मक पुनर्गठन और मानसिक प्रतिक्रिया उपकरण 🧠✨
+cbtSuiteDescription: विचारों के पुनर्गठन, मूल विश्वासों की पहचान करने और लचीलापन बनाने के लिए वैज्ञानिक रूप से सिद्ध मनोवैज्ञानिक उपकरण।
+cbtGroundingDescription: घबराहट को रोकने और शांति बहाल करने के लिए वर्तमान क्षण से जुड़ने का संवेदी ग्राउंडिंग अभ्यास।
+stepOf5: कदम {step} / 5
+cbtGrounding5SeePrompt: चारों ओर देखें और 5 चीजें बताएं जो आप देख सकते हैं:
+itemISeePrefix: दिखने वाली वस्तु
+cbtGrounding4TouchPrompt: स्पर्श पर ध्यान दें और 4 चीजें बताएं जिन्हें आप महसूस कर सकते हैं:
+itemITouchPrefix: स्पर्श की जाने वाली वस्तु
+cbtGrounding3HearPrompt: शांति से सुनें और अपने आस-पास सुनाई देने वाली 3 ध्वनियाँ बताएं:
+soundIHearPrefix: सुनी जाने वाली ध्वनि
+cbtGrounding2SmellPrompt: सुगंधों पर ध्यान दें और 2 चीजें बताएं जिन्हें आप सूंघ सकते हैं:
+scentISmellPrefix: सूंघी जाने वाली गंध
+cbtGrounding1TastePrompt: 1 ऐसी चीज़ बताएं जिसका आप स्वाद ले सकते हैं या याद कर सकते हैं:
+cbtGroundingTastePlaceholder: कॉफी का स्वाद, पानी का स्वाद, पुदीना...
+previousStepArrow: ← पिछला कदम
+nextStepArrow: अगला कदम →
+completeGroundingBtn: ✓ ग्राउंडिंग पूरा करें और शांति प्राप्त करें
+totalCompletedCbtExercises: कुल पूर्ण सीबीटी अभ्यास
+documentedCognitiveSessions: दस्तावेजीकृत सत्र
+averageAnxietyRelief: औसत चिंता राहत
+pointsUnit: अंक
+emotionalImprovementRate: भावनात्मक सुधार दर
+favoriteCopingCards: पसंदीदा मुकाबला कार्ड
+supportiveCardsDistress: संकट के क्षणों में सहायक कार्ड
+cognitiveDistortionsDistribution: सबसे लगातार संज्ञानात्मक विकृतियों का वितरण
+timesUnit: बार
+cbtRestructuringStepOf5: संज्ञानात्मक पुनर्गठन विज़ार्ड - कदम {step} / 5
+cbtStep1TriggerLabel: कदम 1: ट्रिगर करने वाली घटना / स्थिति
+cbtStep1Placeholder: परेशान महसूस करने से पहले क्या स्थिति हुई थी? (उदा. प्रबंधक से एक सूचना मिली...)
+cbtStep2ThoughtLabel: कदम 2: स्वचालित नकारात्मक विचार
+cbtStep2Placeholder: आपके दिमाग में तुरंत कौन सा विचार आया? (उदा. मुझे निश्चित रूप से नौकरी से निकाल दिया जाएगा...)
+cbtStep3DistortionLabel: कदम 3: संभावित संज्ञानात्मक विकृति का चयन करें
+cbtStep4AlternativeLabel: कदम 4: तर्कसंगत संतुलित विकल्प
+cbtStep4Placeholder: तथ्यों पर आधारित एक संतुलित, तर्कसंगत विकल्प लिखें...
+cbtStep5RatingLabel: कदम 5: अभ्यास के बाद चिंता के स्तर का मूल्यांकन करें (0 - 10)
+cbtThoughtRecordsLogHeader: सीबीटी विचार रिकॉर्ड लॉग
+cbtThoughtRecordsDescription: स्वचालित नकारात्मक विचारों का विश्लेषण करें और तर्कसंगत विकल्प बनाएं।
+newThoughtRecordBtn: नया विचार रिकॉर्ड
+noThoughtRecordsLogged: अभी तक कोई विचार रिकॉर्ड दर्ज नहीं है।
+clickNewThoughtRecordHint: परेशान करने वाले विचारों का विश्लेषण शुरू करने के लिए "नया विचार रिकॉर्ड" पर क्लिक करें।
+anxietyReliefPrefix: चिंता से राहत:
+triggerEventPrefix: ट्रिगर घटना:
+automaticNegativeThoughtPrefix: स्वचालित नकारात्मक विचार:
+cognitiveDistortionPrefix: संज्ञानात्मक विकृति:
+rationalAlternativePrefix: तर्कसंगत विकल्प:
+anxietyBeforeLabel: पहले चिंता:
+anxietyAfterLabel: बाद में चिंता:
+downwardArrowTechniqueHeader: डाउनवर्ड एरो तकनीक
+downwardArrowDescription: गहरे मूल विश्वासों को उजागर करने वाली एक खोजपूर्ण तकनीक जो पुरानी चिंता को बढ़ाती है।
+startDownwardArrowBtn: डाउनवर्ड एरो शुरू करें
+initialThoughtLabel: प्रारंभिक विचार
+initialThoughtExample: उदा. "मेरे मुवक्किल ने जवाब देने में देर की।"
+whatDoesThatMeanLabel: इसका आपके लिए क्या अर्थ है?
+whatDoesThatMeanExample: "इसका मतलब है कि वे नाराज हैं और रद्द कर देंगे।"
+whatIfCancelledLabel: और अगर यह रद्द हो गया?
+whatIfCancelledExample: "इसका मतलब है कि मैं असफल हूँ।"
+healthyAlternativeBeliefHeader: स्वस्थ वैकल्पिक विश्वास
+healthyAlternativeBeliefExample: "मेरा आत्म-मूल्य दैनिक प्रतिक्रियाओं से बंधा नहीं है।"
+noDownwardArrowLogged: अभी तक कोई डाउनवर्ड एरो अभ्यास दर्ज नहीं है।
+useDownwardArrowHint: इस तकनीक का उपयोग तब करें जब आपके नकारात्मक विचार गहरे अनकहे डर को छिपाते हैं।
+downwardArrowExerciseTitle: डाउनवर्ड एरो अभ्यास
+initialAutomaticThoughtPrefix: प्रारंभिक स्वचालित विचार:
+healthyAlternativeBeliefPrefix: स्वस्थ वैकल्पिक विश्वास:
+homeNav: होम

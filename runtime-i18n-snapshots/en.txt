@@ -1,0 +1,1377 @@
+========================================
+RUNTIME LOCALIZATION SNAPSHOT: EN
+Total Schema Keys: 1371
+Generated At: 2026-08-18T13:12:46.216Z
+========================================
+
+interactiveTourTitle: Discover Hayat AI 🧭
+interactiveTourSub: A quick tour to explore key capabilities
+safeEncryptedSpace: Your Safe & Fully Encrypted Psychological Space
+streakActiveMsg: Great job! You logged your thoughts today and kept your streak alive!
+streakInactiveZero: Write a log today to activate your daily streak!
+streakInactiveOneLeft: One final step! Log your thoughts today to keep your streak going.
+waterTargetReached: 🏆 Excellent! Daily hydration target reached!
+breathInhaleMsg: 💨 Inhale... fill your lungs with calm and peace
+breathHold1Msg: 🛑 Hold... feel the peaceful energy in your body
+breathExhaleMsg: 💨 Exhale... release stress, anxiety, and fatigue
+breathHold2Msg: 🛑 Hold... embrace the inner stillness and quiet
+secondsRemaining: sec remaining
+completedCycles: Completed Cycles:
+cyclesCount: Cycles Count
+autoSaveLabel: Auto-saved
+hoursUnit: hrs
+minutesUnit: min
+medicationTakenBtn: ✓ Taken
+medicationPendingBtn: Pending
+habitsTrackerSub: Select a date from calendar then check habits to track your daily behavior.
+nav.home: Home
+nav.diaries: Diaries
+nav.advisor: AI Advisor
+nav.progress: Progress & Data
+nav.settings: Settings
+nav.hayat_ai: Hayat AI
+nav.active_now: Active Now
+nav.fullscreen: Fullscreen
+nav.account_title: Your Profile
+nav.lock_app: Lock App
+nav.switch_language: Language
+nav.dhikr: Dhikr & Mindfulness
+nav.dhikr_title: Dhikr & Peace Counter
+nav.daily_tasks: Daily Tasks
+nav.gratitude: Gratitude Wall
+nav.my_thoughts: Reflections
+nav.journal_records: Journal Records
+nav.therapy_session: Support Session
+nav.back_btn: Back
+nav.back_title: Back
+nav.back_mobile_title: Back
+nav.auto_saved: Auto-saved
+nav.saving: Saving...
+nav.current_page: Current Page
+nav.subtitle: Your Personal Safe Space
+nav.tasks: Daily Tasks
+nav.edit_diary: Edit Note
+nav.sign_in: Sign In
+nav.reveal_header_pill: Show Header
+appName: Hayat AI
+homeTab: Home
+diariesTab: Diaries
+advisorTab: Advisor
+analyticsTab: Analytics
+settingsTab: Settings
+yes: Yes
+no: No
+closeBtn: Close
+retryBtn: Retry
+cancelBtn: Cancel
+save_btn: Save Note
+saveAndCloseBtn: Save & Close
+sendBtn: Send
+clearBtn: Clear
+back_btn: Back
+understoodBtn: Understood
+confirmImportBtn: Confirm Import
+deleteKeyBtn: Delete Key
+saveKeyBtn: Save Key
+photo: photo
+video: video
+audio: audio
+document: document
+task: Task 📋
+advisor: Advisor 🤖
+mood: Mood 🌿
+voiceRecord: Voice Recording 🎙️
+write: Write ✍️
+attachPhoto: Attach Photo
+attachPhotoSub: Attach Photo Sub
+phoneVideo: Phone Video
+phoneVideoSub: Phone Video Sub
+audioFile: Audio File
+audioFileSub: Audio File Sub
+bookDoc: Book Doc
+bookDocSub: Book Doc Sub
+freeWrite: Free Write
+freeWriteSub: Free Write Sub
+aiAdvisor: Ai Advisor
+aiAdvisorSub: Ai Advisor Sub
+aiPsychAdvisor: Ai Psych Advisor
+dhikrTitle: Dhikr & Peace Counter 📿
+dhikrSub: In the remembrance of Allah do hearts find rest - Relax & Reflect
+dhikrMainQuote: Unquestionably, in the remembrance of Allah do hearts find rest 🌿
+dhikrBlessing: May Allah make us among those who remember Him much ✨
+dhikrCounterBtn: Tap to Count 📿
+dhikrCountLabel: Total Count
+dhikrFooter: Glory be to Allah and Praise Him
+notificationActiveNow: Notifications Active 🔔
+notificationHowAreYou: How is your mind feeling today? 🌿
+notificationTapShortcut: Tap to open app and express your thoughts freely
+notificationsTitle: Notifications & Alerts 🔔
+notificationsSub: Enable check-in, water, and exercise reminders
+remindersTitle: Smart Reminders ⏰
+remindersSub: Schedule daily journaling reminders
+reminderTime: Reminder Time
+faceIdBtn: Face ID
+fingerprintBtn: Fingerprint
+biometricScanTitle: Biometric Scan Title
+biometricScanInstruction: Biometric Scan Instruction
+biometricSuccessTitle: Biometric Success Title
+biometricFailedTitle: Biometric Failed Title
+biometricNotLinkedTitle: Biometric Not Linked Title
+biometricNotLinkedDesc: Register biometric first in security settings
+biometricAlreadyRegistered: Biometric already registered 🔐
+biometricNotSupported: Device unsupported or permission denied
+biometricUserCanceled: Canceled by user
+pinCodeBtn: PIN Code
+usePinInsteadBtn: Use PIN Code Instead
+lockscreenBtn: Lockscreen Shortcut 📌
+lockscreenHint: Tap biometric or PIN button to unlock app
+lockscreenSecured: Fully Encrypted & Secure
+appLockTitle: App PIN Lock 🔐
+appLockSub: Protect your diaries with a private password
+welcomeSafeSpace: Your Completely Safe & Private Space 🌿
+safeSpaceDesc: Write your thoughts freely, encrypted & accompanied by a smart assistant.
+greetingDesc: Greeting Desc
+streakTitle: Streak
+dayStreak: consecutive days
+longestStreak: Longest Streak
+streakEncouragement: Keep daily journaling to maintain mental balance!
+aiInspirationBtn: Ai Inspiration Btn
+quickPromptSuggestionsTitle: Quick prompts to start:
+askAiWriterHeader: Ask your psych advisor or request motivational text:
+expressMindPlaceholder: Express what is on your mind freely, and your assistant will provide warm rational guidance...
+journal.subtab_journal: Journal & Thoughts
+journal.subtab_tasks: Daily Tasks
+journal.subtab_gratitude: Gratitude Wall
+journal.subtab_cbt: CBT Exercises
+journal.subtab_proscons: Pros & Cons Log
+journal.write_new: New Note
+journal.import_btn: Import Journal
+journal.search_placeholder: Search journals and thoughts...
+journal.filter_all: All Entries
+journal.filter_diaries: Diaries
+journal.filter_thoughts: Reflections
+journal.filter_archived: Archive
+journal.filter_trash: Trash
+journal.editor_title_new: New Note
+journal.editor_title_edit: Edit Note
+journal.title_placeholder: Note Title...
+journal.content_placeholder: Write your thoughts freely here...
+journal.mood_label: How are you feeling right now?
+journal.save_btn: Save Note
+journal.save_success: Note saved successfully! 🎉
+dailyJournalSubtab: Daily Journal
+dailyTasksSubtabLabel: Daily Tasks & Checklist
+gratitudeSubtab: Gratitude Wall
+cbtSubtabLabel: CBT Exercises
+allFilterTab: All Entries
+diariesFilterTab: Diaries
+thoughtsFilterTab: Thoughts
+writeNewNoteBtn: Write New Note ✍️
+searchDiariesPlaceholder: Search in entries, thoughts, titles, or tags...
+noMatchingDiariesNow: No matching entries found currently.
+deleteDiaryPermanently: Delete Note Permanently
+saveDiarySuccessBtn: Save Note Successfully ✓
+exportPdfBtn: Export PDF
+exportingPdfProgress: Exporting...
+restoreAction: Restore
+archiveAction: Archive 📥
+archiveBtnLabel: Archive this note 📥
+importGratitudeMoments: Import Gratitude Moments
+clearSearchTitle: Clear search
+searchResultsFor: Search results for:
+resultsCountSuffix: Results Count Suffix
+cancelSearchBtn: Cancel search
+filterTagsLabel: Filter Tags Label
+noMatchFoundFor: No entry found matching:
+checkSpellingOrFilter: Check Spelling Or Filter
+clearSearchWordBtn: Clear search word
+clickWriteNewNotePrompt: Click "Write New Note" to start expressing yourself!
+audioDrawingsOnly: Audio Drawings Only
+modifiedBadge: Modified Badge
+fontDrawerTitle: Font Drawer Title
+fontSizeLabel: Font Size Label
+chooseFontStyle: Choose Font Style
+chooseBgColor: Choose Note Background Color:
+aiWriterTopicPlaceholder: Ai Writer Topic Placeholder
+generatingAiText: Generating Ai Text
+sendPromptBtn: Send Prompt Btn
+aiGeneratingTitle: Ai Generating Title
+aiModelDraftingDesc: Ai Model Drafting Desc
+readyToInsertBadge: Ready To Insert Badge
+insertInCurrentEntry: Insert in current entry
+createNewDiaryWithText: Create new entry with this text
+copiedTextSuccess: Copied Text Success
+copyTextBtn: 📋 Copy text to clipboard
+suggestAnotherTopic: Suggest Another Topic
+promptHealthTitle: Generate Health Tips
+promptArticleTitle: Write an Article
+promptFutureTitle: Future Trends
+promptMarketingTitle: Marketing & Customer Service
+promptProjectsTitle: Project Management
+generateAction: Generate Action
+aiChatSessionTitle: Ai Chat Session Title
+liveInteractionBadge: Live Interaction Badge
+meLabel: Me
+writingTherapeuticResponse: Writing counselor response...
+sendBtnLabel: Send Btn Label
+quickOneClickActions: Quick actions to analyze entry in one click:
+summarizeEntryBtn: Summarize entry
+extractCognitiveErrorsBtn: Cognitive distortions
+practicalPlanTomorrowBtn: Tomorrow's action plan
+audioRecordBtn: Voice Note 🎙️
+photoUploadBtn: Photo Attachment 📸
+videoRecordBtn: Video Record Btn
+quickVentBtn: Quick Vent Btn
+webLinkBtn: Web Link Btn
+mindMapBtn: Mind Map / Drawing 🎨
+pdfDocBtn: PDF Document 📄
+attachFileIcon: Attach File Icon
+addAudioIcon: Add Audio Icon
+sketchIcon: Sketch Icon
+photoIcon: Photo Icon
+bgColorIcon: Bg Color Icon
+addChecklistItem: Add Checklist Item
+depthRatingLabel: Depth Rating Label
+starsOutOfFive: Stars Out Of Five
+primaryCategoryLabel: Primary Entry Category:
+aiMoodAnalysisTitle: Gemini Smart Mood Analysis:
+aiMoodAnalysisNotice: * This analysis is automatically updated as soon as you click "Save Note Successfully ✓" based on written words.
+moodHappy: Happy
+moodExcited: Excited
+moodRelaxed: Relaxed
+moodNormal: Mood Normal
+moodSad: Sad
+moodDepressed: Depressed
+moodAnxious: Anxious
+moodAngry: Angry
+moodExhausted: Exhausted
+moodGrateful: Grateful
+subNoteDefaultTitle: Sub-note
+subNoteSingular: Sub-note
+subNotePlural: Sub-notes
+gratitude.title: Gratitude Wall
+shareableGratitudeTitle: Shareable Gratitude Cards 🎨
+shareableGratitudeSub: Design beautiful visual cards for sharing inspiring moments
+cbtExercisesTab: CBT Exercises
+cbtWorksheets: Cbt Worksheets
+thoughtRecord: Thought Record
+rationalAlternative: Rational Alternative
+postSessionMood: Post Session Mood
+reviewProsConsTitle: Review Pros Cons Title
+prosConsBtnLabel: Pros Cons Btn Label
+behavioralCorrelationsTitle: Behavioral Analytics Engine
+behavioralCorrelationsSub: Discover connections between habits & mood
+sleepWaterAnxietyTitle: Effect of Sleep & Water on Anxiety
+sleepWaterAnxietyDesc: On days with 8 cups of water and 7+ hours of sleep, your anxiety drops by {percent}%.
+exerciseMoodBoostTitle: Exercise Mood Boost Title
+exerciseMoodBoostDesc: Exercising 20+ minutes correlates with a {percent}% boost in positive mood.
+cbtEffectivenessTitle: Cbt Effectiveness Title
+cbtEffectivenessDesc: Cbt Effectiveness Desc
+balanceIndex: Balance Index
+sleepQuality: Sleep Quality
+exerciseActivity: Physical Activity
+waterTrackerTitle: Daily Interactive Water Counter 💧
+waterTrackerDesc: Tap cups below to log consumed water. Hydration calms the nervous system.
+symptomsTitle: Daily Physical & Emotional Symptoms
+symptomsDesc: Symptoms Desc
+voiceCompanionTitle: Continuous Voice Companion 🎙️
+voiceStatusListening: Listening attentively...
+voiceStatusAnalyzing: Thinking & formulating support...
+voiceStatusSpeaking: Speaking now...
+voiceStatusIdle: Ready to start
+voiceLiveTranscript: Live Transcript:
+voiceInterruptAndSpeak: Voice Interrupt And Speak
+voiceStartSpeaking: Start Listening & Speaking 🎙️
+voiceEndSession: End Call 📞
+settingsTitle: General Settings
+settingsSubtitle: Settings Subtitle
+apiKeyTitle: Your API Key 🔑
+apiKeySub: Api Key Sub
+languagesTitle: App Languages 🌐
+languagesSub: Languages Sub
+selectLanguageTitle: Choose App Language 🌐
+selectLanguageSubtitle: Select Language Subtitle
+typographyTabTitle: Typography Tab Title
+typographyTabSub: Typography Tab Sub
+fontStyleIcon: Font Style Icon
+darkModeTitle: Dark Mode ☀️/🌙
+darkModeSub: Dark Mode Sub
+backupTitle: Backup & Sync ☁️
+backupSub: Backup Sub
+contactTitle: Contact Developer 📬
+contactSub: Contact Sub
+rateTitle: Rate App ⭐
+rateSub: Rate Sub
+favoritesTitle: Favorites ❤️
+favoritesSub: Highlighted notes & reflections
+archiveTitle: Archive 📦
+archiveSub: Archived entries
+trashTitle: Trash 🗑️
+trashSub: Temporarily deleted notes
+personalAccountTitle: Personal Account 👤
+guestUser: Guest User 👤
+registeredUser: Verified User 👤
+accountSubGuest: Account Sub Guest
+accountSubUser: Active & cloud synced
+geminiKeyTitle: Gemini API Key Setup 🔑
+geminiKeyDesc: Gemini Key Desc
+geminiKeyNotice: Security note: Key is saved locally encrypted on your device only.
+geminiKeyPlaceholder: Gemini Key Placeholder
+welcomeModalTitle: Welcome to Hayat AI 👋
+rateModalTitle: ⭐ Rate App
+rateModalThanks: Thank you for rating! ❤️
+contactOwnerTitle: Contact Developer
+writeDiaryImporterTitle: Import Journals 📥
+writeDiaryImporterSub: Import diaries from other apps
+importFromOtherApps: Import from Other Apps 📲
+importFromOtherAppsTitle: Import Entries & Diaries
+importFromOtherAppsDesc: Supports JSON, CSV, and TXT files
+importerSuccessMsg: Data imported successfully! 🎉
+generalTag: General Tag
+diaryBadge: Diary 📔
+thoughtBadge: Thought 💭
+editedBadge: Edited ✍️
+symptomHeadache: Headache / Head Pressure
+symptomFatigue: General Fatigue & Exhaustion
+symptomBackTension: Symptom Back Tension
+symptomPoorSleep: Symptom Poor Sleep
+symptomRapidHeart: Rapid Heartbeat / Palpitations
+symptomShortnessBreath: Mild Shortness of Breath
+symptomStomach: Symptom Stomach
+symptomTremors: Symptom Tremors
+waterConsumed: Water Consumed
+waterRemaining: Water Remaining
+psychologicalGrowthTreeTitle: Psychological Growth & Balance Tree 🌳
+treeStage1: First Seed (Beginning of Awareness)
+treeStage2: Sprout (Forming Habits)
+treeStage3: Sapling (Emotional Stability)
+treeStage4: Blossoming Tree (Resilience & Flourishing)
+treeStage5: Fruitful Mature Tree (Wisdom & Inner Harmony)
+treeDesc1: Tree Desc1
+treeDesc2: Daily journaling builds your mental resilience.
+treeDesc3: Tree Desc3
+treeDesc4: Tree Desc4
+treeDesc5: Tree Desc5
+rateAppModalTitle: Rate App Modal Title
+rateAppQuestion: Rate App Question
+rateAppPlaceholder: Rate App Placeholder
+rateAppFeedbackLabel: Rate App Feedback Label
+rateAppSubmit: Rate App Submit
+rateAppThankYou: Rate App Thank You
+rateAppThankYouDesc: Rate App Thank You Desc
+contactOwnerModalTitle: Contact Owner Modal Title
+contactOwnerModalDesc: Contact Owner Modal Desc
+contactOwnerMessage: Contact Owner Message
+copyEmail: Copy Email
+backupSyncTitle: Backup Sync Title
+backupSyncDesc: Save backup or restore data anytime
+restoreDataBtn: Restore Data Btn
+howToExportTitle: How To Export Title
+howToStep1: How To Step1
+howToStep2: 2. Save the file in a safe place on your device or cloud.
+howToStep3: How To Step3
+pinPadSub: Enter your 4-digit PIN code to proceed
+pinHint: PIN code protects your notes with total privacy
+incorrectPin: Incorrect PIN code, try again ❌
+accountTitle: Account Title
+guestUserLabel: Guest User Label
+userEmailSynced: User Email Synced
+guestUserDesc: Guest User Desc
+appLockDetailsTitle: App Lock Details Title
+appLockDetailsDesc: App Lock Details Desc
+pinCodeLabel: Pin Code Label
+defaultPinHint: Default PIN: 1234 (can be changed in Settings)
+pinPlaceholder: Pin Placeholder
+linkBiometricsTitle: Link Biometrics Title
+biometricActiveBadge: ✅ Active & Linked
+biometricNotActiveBadge: Biometric Not Active Badge
+biometricDesc: Biometric Desc
+biometricUpdateBtn: Biometric Update Btn
+biometricLinkBtn: Biometric Link Btn
+biometricAlertTitle: Biometric Alert Title
+biometricAlertDesc: Biometric Alert Desc
+noActiveAlarms: No active alarms currently.
+addNewAlarmTitle: Add New Behavioral Reminder / Alarm:
+alarmTitlePlaceholder: e.g. Free writing session, drink water break...
+addAlarmBtn: + Add
+deleteAlarmTitle: Delete Alarm
+archiveSearchPlaceholder: Search archived journals & thoughts...
+filterAll: All
+filterDiaries: Diaries
+filterThoughts: Reflections
+archiveEmptyTitle: Archive is currently empty.
+archiveEmptySearch: Archive Empty Search
+archiveEmptyDesc: You can archive any journal entry or reflection from the Journals tab to save it here safely.
+goToDiariesToArchive: Go to Journals to Archive Entry ✍️
+thoughtBadgeShort: Thought Badge Short
+diaryBadgeShort: Diary Badge Short
+untitledNote: Untitled
+previewAndRead: Preview & Read
+restoreBtn: Restore
+moveToTrash: Move to Trash
+trashEmpty: Trash can is completely empty 🗑️
+itemsInTrash: Items In Trash
+emptyTrashBtn: 🗑️ Empty Trash Can
+deletePermanently: Delete Permanently
+smartRemindersCardTitle: Smart Reminders & Alerts System
+smartRemindersBadge: Frequency & Notes
+smartRemindersCardDesc: Manage reminders (daily, weekly, specific days) with inspiring motivational notes
+smartRemindersModalSub: Set reminder frequency and add motivational notes to inspire you on each alert
+remindersCountBadge: Reminders Count Badge
+behavioralAiBadge: Behavioral Ai Badge
+testSoundTitle: Test Sound Title
+testSoundBtn: Test Sound Btn
+editSmartReminderTitle: Edit Smart Reminder
+addNewSmartReminderTitle: Add New Smart Reminder Title
+addNewSmartReminderBtn: Add New Smart Reminder Btn
+reminderTitleLabel: Reminder Title Label
+reminderTitlePlaceholder: e.g., Daily Gratitude Journal, Drink Water, Meditation Session...
+reminderIconLabel: Reminder Icon Label
+alertTimeLabel: Alert Time Label
+alertFrequencyLabel: Alert Frequency Label
+freqDaily: Daily (Every day)
+freqWeekly: Weekly (Once a week)
+freqCustomDays: Freq Custom Days
+selectDaysPrompt: Select Days Prompt
+motivationalNoteLabel: Inspiring Motivational Note (Shown with alert)
+optionalLabel: Optional Label
+motivationalNotePlaceholder: Motivational Note Placeholder
+presetSamplesPrompt: Preset Samples Prompt
+saveChangesBtn: Save Changes
+addReminderBtn: Add Reminder Btn
+totalRemindersLabel: Total Reminders Label
+activeRemindersListTitle: Active & Scheduled Reminders List
+noRemindersYetTitle: No Reminders Yet Title
+noRemindersYetDesc: Add daily or weekly reminders for journals, habits, or meditation breaks with inspiring notes.
+createFirstReminderBtn: Create First Reminder Btn
+disabledBadge: Disabled Badge
+activeBadge: Active
+cbtTipTitle: Cbt Tip Title
+cbtTipDesc: Reminders paired with positive motivational quotes increase adherence and daily routine compliance by 68% compared to standard alerts.
+alertsMonitoredFooter: Alerts Monitored Footer
+confirmDeleteReminder: Are you sure you want to delete this reminder?
+catGeneral: Cat General
+catJournal: Cat Journal
+catMeditation: Cat Meditation
+catFitness: Cat Fitness
+catWater: Drink Water
+catCare: Health & Care
+catReading: Cat Reading
+catMotivation: Cat Motivation
+lockScreenWidgetTitle: Pinned Lock Screen Notification Widget
+recommendedBadge: Recommended
+lockScreenWidgetDesc: Show shortcut widget as a pinned notification on your device lock screen when pressing power button.
+testLockScreenNotificationBtn: Test Lock Screen Notification Btn
+howLockScreenWorksBtn: How Lock Screen Works Btn
+fullscreenModeTitle: Fullscreen Mode Title
+pwaBadge: PWA 🖥️
+fullscreenModeDesc: Fullscreen Mode Desc
+toggleFullscreenBtn: Toggle Fullscreen Btn
+pwaMethodBtn: Pwa Method Btn
+appVersionCredits: ✨ Hayat AI — Stable Private Version 1.0.0
+privacyCredits: Developed with 100% privacy protection & smart behavioral AI support for your mental peace.
+typographyTitle: Custom Typography & Reading Comfort
+appWideBadge: App Wide Badge
+typographyDesc: Choose your preferred font family and line spacing for optimal reading comfort during long journaling sessions
+selectMainFontLabel: Select Main App Font Family (Arabic & International Fonts):
+lineSpacingLabel: Line Height / Line Spacing (Eye Comfort):
+livePreviewTitle: Live Reading Comfort Preview:
+samplePreviewParagraph: This live preview demonstrates how your diary entries and long notes will render across the app. Using your selected font paired with custom line spacing ensures maximum legibility and effortless reading.
+fontAndSpacingTabLabel: Font & Spacing 🔤
+languageTabLabel: Language & Region 🌐
+searchLanguagePlaceholder: Search language...
+fontCairoName: Cairo Modern
+fontCairoCategory: Modern & Balanced
+fontCairoSample: Journaling brings clarity and peace to your mind.
+fontTajawalName: Tajawal Soft
+fontTajawalCategory: Modern Soft Geometric
+fontTajawalSample: Reflect on your daily thoughts and feelings comfortably.
+fontAlmaraiName: Almarai Clean
+fontAlmaraiCategory: Ultra Clean Sans
+fontAlmaraiSample: Clear thoughts begin with mindful writing.
+fontAmiriName: Amiri Classic Naskh
+fontAmiriCategory: Classic Literary Naskh
+fontAmiriSample: Every story written holds wisdom for tomorrow.
+fontNotoName: Noto Naskh Traditional
+fontNotoCategory: Traditional Clear Naskh
+fontNotoSample: An elegant diary preserving your memories.
+fullCalendar: Full Calendar
+fullCalendarSub: Review all past diary entries in detail
+directUploadTitle: Direct Upload Title
+quoteTitle: Daily Wisdom & Psychological Motivation 🌿
+recentWeek: Recent Week
+selectDateTitle: Select a Date to View Entries
+moodScaleTitle: Quick Digital Mood Scale (1 - 10) 😐
+moodScaleDesc: Drag slider to log your current mood in one second; saved as daily entry.
+apiKeySubAuto: A free default key is automatically used if no custom key is provided
+floatingBallTitle: Quick Control Tool
+floatingBallSub: Quick access to tools and AI advisor
+getFreeKeyLink: Get Free Key Link
+pwaHowToBtn: Pwa How To Btn
+fontNoto_naskhName: Noto Naskh Traditional
+fontNoto_naskhCategory: Classic & Elegant
+fontNoto_naskhSample: Classic Naskh script for graceful reading
+fontJakartaName: Font Jakarta Name
+fontJakartaCategory: Font Jakarta Category
+fontJakartaSample: Font Jakarta Sample
+fontSystemName: Font System Name
+fontSystemCategory: Font System Category
+fontSystemSample: Font System Sample
+aiAnalyticsBadge: AI Analytics
+allAccessBadge: All Access Badge
+tasksBadge: (Tasks)
+cbtBadge: Cbt Badge
+prosConsBadge: Pros Cons Badge
+proBadge: Pro
+pdfBadge: Pdf Badge
+predictiveTitle: Predictive Health & Sleep Insights 🔮
+predictiveSub: AI-powered early warning system for anxiety triggers & sleep disturbances
+predictiveAnxietyRisk: Future Anxiety Risk Level
+predictiveSleepRisk: Sleep Disturbance Indicator
+predictiveGuidance: Predictive Health Guidance
+predictiveAnalyzeBtn: Run New Predictive Analysis 🧠
+predictiveStatusGood: Stable & Balanced ✨
+predictiveStatusWarning: Warning: Impending Anxiety Triggers ⚠️
+e2eeTitle: E2ee Title
+e2eeSub: E2ee Sub
+e2eePassphrasePlaceholder: E2ee Passphrase Placeholder
+e2eePairingCodeTitle: E2ee Pairing Code Title
+e2eePairingCodeDesc: E2ee Pairing Code Desc
+e2eeStatusEncrypted: E2ee Status Encrypted
+newJournalHeader: New Journal Entry 📝
+editJournalHeader: Edit Journal Entry 📝
+cancelAndSaveDraft: Cancel & Save Draft 💾
+journalTitleLabel: Journal Entry Title 📌
+journalTitlePlaceholder: Write an expressive title for your day...
+starRatingLabel: Day Rating
+outOfFiveStars: out of 5 stars
+entryClassificationLabel: Entry Classification
+myNormalDiariesChoice: Normal Diary Entry 📝
+myPrivateThoughtsChoice: Private Thoughts & Reflections 🔐
+behavioralMoodLabel: Dominant Mood & Feeling
+autoAiMoodAnalysisTitle: Auto AI Mood Analysis
+aiMoodAnalysisUpdateNotice: Ai Mood Analysis Update Notice
+writeFeelingsLabel: Write your feelings & thoughts freely
+importGratitudeTitle: Import Gratitude Title
+importGratitudeBtn: Import from Gratitude Wall 🌸
+undoTooltip: Undo Tooltip
+redoTooltip: Redo Tooltip
+boldTooltip: Bold Tooltip
+italicTooltip: Italic Tooltip
+underlineTooltip: Underline Tooltip
+strikethroughTooltip: Strikethrough Tooltip
+h1Tooltip: H1 Tooltip
+h2Tooltip: H2 Tooltip
+quoteTooltip: Quote Tooltip
+bulletListTooltip: Bullet List Tooltip
+bulletListLabel: Bullet List
+fontColorsTooltip: Font Colors Tooltip
+fontColorsBtn: Font Colors 🎨
+moreFeaturesBtn: More Features ✨
+aiWriterBtn: AI Assistant 🤖
+editorTextareaPlaceholder: Express what is on your mind and heart today...
+attachFileTitle: Attach File Title
+addAudioTitle: Add Audio Title
+recordingProgress: Audio Recording in Progress...
+drawTitle: Mind Drawing Canvas
+photoTitle: Photo Title
+backgroundColorTitle: Background Color Title
+colorTitle: Color Title
+fontEffectTitle: Font Effect Title
+fontTitle: Font Title
+addChecklistItemBtn: Add Checklist Item ➕
+checklistSectionTitle: Daily Checklist
+taskInputPlaceholder: Write a new task here...
+subsequentAdditionsTitle: Subsequent Additions Title
+subsequentAdditionsPlaceholder: Add new reflections to this entry...
+subsequentAdditionsNotice: Subsequent Additions Notice
+historicalEditsTitle: Historical Edits Title
+deleteAdditionBtn: Delete Addition
+containsEditsPrefix: Contains Edits Prefix
+appendedEditsSuffix: Appended Edits Suffix
+biometricCanceled: Biometric Canceled
+biometricFailed: Biometric Failed
+biometricStep1: Biometric Step1
+biometricStep2: Biometric Step2
+biometricStep3: Biometric Step3
+biometricSuccess: Biometric Success
+faceScanInstruction: Face Scan Instruction
+faceScanTitle: Face Scan Title
+faceSuccessTitle: Face Success Title
+fingerprintScanInstruction: Fingerprint Scan Instruction
+fingerprintScanTitle: Fingerprint Scan Title
+lockScreenAlertSuccess: Lock Screen Alert Success
+enterPinNowBtn: Enter Pin Now Btn
+pinPadShortcutSub: Enter PIN code to execute the selected quick action
+pinVerified: Pin Verified
+powerButtonTooltip: Power Button Tooltip
+screenOffTitle: Screen Off Title
+screenOffDesc: Screen Off Desc
+authModalTitle: Personal Account & Sync
+authModalSub: Safely sync your data across devices
+loginErrorEmpty: Please enter email and password
+loginSuccessMsg: Logged in successfully! 🎉
+incorrectPassword: Incorrect password
+registerErrorEmpty: Please fill in all required fields
+passwordTooShort: Password must be at least 6 characters
+passwordsDoNotMatch: Passwords do not match
+registerSuccessMsg: Account created successfully! 🎉
+emailAlreadyRegistered: Email is already registered
+connectedSynced: Connected & Fully Synced
+syncOptionsTitle: Sync Options Title
+syncNowBtn: Sync Now 🔄
+logoutBtn: Logout 🚪
+loginTab: Login
+registerTab: Create Account
+emailLabel: Email Address
+passwordLabel: Password
+hide: Hide
+show: Show
+loginSubmit: Login to Account 🔑
+nameLabel: Full Name
+confirmPasswordLabel: Confirm Password
+registerSubmit: Register New Account ✨
+linkGoogleAccount: Link Google Account
+syncInProgress: Syncing data to cloud...
+restoreCloudBackup: Restore Cloud Backup
+importManual: Import Manual
+importFromWriteDiary: Import From Write Diary
+autoBackupFrequency: Auto Backup Frequency
+backupHourly: Hourly ⏰
+backupDaily: Daily 📅
+backupWeekly: Weekly 🗓️
+backupOff: Disabled 🛑
+secureEmailBackup: Secure Email Backup
+emailBackupDesc: Receive a full backup of your diaries in your inbox
+emailPlaceholder: Email Placeholder
+importNoteAiNotice: Note: AI will automatically analyze your imported diaries
+importNotePreserveDates: Import Note Preserve Dates
+importerErrorMsg: Importer Error Msg
+analyzingFile: Analyzing File
+supportedFormats: Supported Formats
+uploadAnotherFile: Upload Another File
+uploadDropZoneText: Upload Drop Zone Text
+selectAllBtn: Select All Btn
+selectAllHint: Select all entries for import
+apiKeyVerified: Api Key Verified
+apiKeyVerifyFailed: Api Key Verify Failed
+verifyingKey: Verifying Key
+copied: copied
+sendMessageNow: Send Message Now
+text: text
+delete: Delete
+edit: Edit
+key: Key
+section: section
+noMatchingEntries: No matching diary entries found
+offlineStatusOffline: Offline Status Offline
+offlineSyncSuccess: Offline Sync Success
+resetConfirm: Reset Confirm
+resetCounter: Reset Counter
+muteClickSound: Mute Click Sound
+enableClickSound: Enable Click Sound
+pwaInstructionTitle: Pwa Instruction Title
+pwaStep1: Pwa Step1
+pwaStep2: Pwa Step2
+pwaStep3: Pwa Step3
+entriesCountLabel: Entries Count
+searchParsedPlaceholder: Search in diaries or thoughts...
+welcomeBackOpening: Welcome Back Opening
+presetNote1: Preset Note1
+presetNote2: Preset Note2
+presetNote3: Preset Note3
+presetNote4: Preset Note4
+presetNote5: Preset Note5
+presetNote6: Preset Note6
+howToStep4: How To Step4
+cameraDeniedError: Camera Denied Error
+multiFormatTitle: Multi Format Title
+multiFormatDesc: Choose your preferred format to export or restore your diaries
+exportJson: Export Json
+exportCsv: Export Csv
+exportEncrypted: Export Encrypted
+importEncrypted: Import Encrypted
+voiceJournalTitle: AI Voice Journaling Assistant 🎙️
+voiceJournalSub: Speak freely and AI will format your voice into structured diary entries
+voiceRecordingStarted: Voice Recording Started
+voiceListening: Voice Listening
+voiceProcessingAI: Processing audio & analyzing emotions with AI...
+voiceAutoSaved: Voice diary entry saved successfully! 🎉
+onboardingWelcomeTitle: Welcome to Hayat AI 👋
+onboardingStep1Title: Diaries & Reflections 📝
+onboardingStep1Desc: Journal freely with real-time AI mood analysis, voice recordings, attachments, and passcode lock.
+onboardingStep2Title: Smart AI Advisor 🧠
+onboardingStep2Desc: Chat with your AI psychological advisor based on CBT principles for personalized support and clarity.
+onboardingStep3Title: Habit & Growth Tracking 📊
+onboardingStep3Desc: Track daily habits, sleep, and sports while watching your mental growth tree flourish as you journal.
+onboardingStep4Title: Privacy & Security 🔒
+onboardingStep4Desc: Your entries are encrypted and stored safely on your device with biometric lock and cloud backup options.
+onboardingNext: Next ➔
+onboardingPrev: Previous
+onboardingFinish: Start Journey 🚀
+onboardingSkip: Skip Tour
+onboardingStepIndicator: Step {step} of {total}
+voiceRecordBtn: Start Voice Recording 🎙️
+voiceStopBtn: Stop & Analyze ⏹️
+voiceSaveBtn: Save as Diary Entry 💾
+lineHeightCompactName: Line Height Compact Name
+lineHeightCompactDesc: Line Height Compact Desc
+lineHeightNormalName: Line Height Normal Name
+lineHeightNormalDesc: Line Height Normal Desc
+lineHeightRelaxedName: Line Height Relaxed Name
+lineHeightRelaxedDesc: Optimal comfort for reading long diary entries
+lineHeightSpaciousName: Line Height Spacious Name
+lineHeightSpaciousDesc: Line Height Spacious Desc
+moodRating: Mood Rating
+advisorQuickQ1: What causes my stress most?
+advisorQuickQ2: Summarize my recent entries
+advisorQuickQ3: When was I last happy?
+advisorQuickQ4: Compare this week vs last month.
+advisorQuickQ5: What preventive advice fits me today?
+promptSummarizeEntry: 📝 Summarize my current entry concisely and highlight my true emotions
+promptExtractCognitiveErrors: 💡 Extract cognitive distortions and thinking errors from my entry and advise how to balance them rationally
+promptPracticalPlanTomorrow: 🎯 Suggest a simplified practical plan for tomorrow to build resilience and boost productivity
+quoteDefaultText: Remember that anxiety does not prevent tomorrow's pain, it only steals today's peace.
+quoteDefaultAuthor: Your Friendly Psychiatrist
+boxBreathingTitle: Relaxing Box Breathing Assistant (Vagus Nerve Stimulation)
+boxBreathingDesc: Phase breathing technique used by psychiatrists to calm heart rate and stimulate instant inner peace (4s per phase).
+startBreathingBtn: ▶️ Start Breathing Exercise
+stopBreathingBtn: ⏹️ Stop Session
+selfCareGoalsTitle: Self-Care & Mental Health Goals
+sleepHoursLabel: Sleep Hours:
+sportsDurationLabel: Sports & Workouts:
+medicationDoseLabel: Medication & Vitamins:
+habitsTrackerTitle: Behavioral Habits & Routine Tracker
+addHabitBtnLabel: + Add Habit
+habitWarmWater: Drink 2L Warm Water
+habitRelaxation: Meditation & Muscle Relaxation (10m)
+habitBriskWalking: Brisk Walking / Home Workout
+habitReading10Pages: Read 10 Pages of a Book
+catPhysicalHealth: Physical Health 🥦
+catMindMeditation: Mind & Meditation 🧠
+catSportActivity: Sports & Activity 🏃
+catCultureReading: Culture & Reading 📚
+aiBehavioralAssessmentTitle: AI Behavioral Assessment & Smart Reports
+generateBehavioralReportBtn: Generate AI Behavioral Assessment Report
+dailyLifeMapTitle: Daily Life Map & Indicators
+dailyBalanceIndexLabel: Daily Balance & Health Score:
+integratedTimelineTitle: Integrated Daily Timeline & Memory Trace:
+sleepPeriodTitle: Daily Sleep & Rest Period 💤
+dailyPsychTipTitle: Daily Mental Health Tip
+calendarModalTitle: Comprehensive Calendar & Library • Read 📖🗓️
+myActivitiesTab: My Diaries & Activities ☀️
+myLibraryTab: My Comprehensive Library 📖
+noEntriesForDate: No entries or diaries recorded for this day
+readingRecommendationsTitle: Recommendations for Reading & Mental Wellness
+therapyReportTitle: 🎓 Preparation for Therapy Session & Comprehensive Clinical Report
+therapyReportSubtitle: Current Week Report - Mental Health Follow-up Preparation
+actionsHeader: Actions Header
+noHabitsFiltered: No Habits Filtered
+habitBooleanLabel: ✓ Done / Undone
+moveUpTitle: Move Up Title
+moveDownTitle: Move Down Title
+editHabitTitle: Edit Habit Title
+measurableUnitDefault: Measurable Unit Default
+quoteCopiedAlert: Quote Copied Alert
+copyQuoteTooltip: Copy Quote Tooltip
+scrollHint: Scroll Hint
+waterCupLabel: Water Cup Label
+ofEightCups: Of Eight Cups
+litersUnit: Liters Unit
+moodSevereDistress: Mood Severe Distress
+moodStableNeutral: Mood Stable Neutral
+moodContentPeaceful: Mood Content Peaceful
+moodJoyfulHighEnergy: Mood Joyful High Energy
+habitsFilterAndSort: Habits Filter & Sort
+filterAndSortBtn: Filter & Sort
+filterAndSortHeader: Filter & Sort Habits
+hideArchived: Hide Archived
+hideCompleted: Hide Completed
+sortMethod: Sort Method:
+sortManual: Manual ⬆
+sortByName: By Name
+sortByColor: By Color
+sortByScore: By Score
+sortByStatus: By Status
+habitsSettingsTitle: Habits & Data Settings
+periodicityFilter: Display Range & Periodicity:
+daysDisplayed: {count} days displayed
+dayRangeDay: 📅 Day
+dayRangeWeek: 📆 Week
+dayRangeMonth: 🗓️ Month
+dayRangeQuarter: 📊 Quarter
+dayRangeSemiAnnual: 📈 Semi-Annual
+dayRangeYear: 📅 Year
+dayRangeCustom: 🎯 Custom (From/To)
+fromDate: From Date:
+toDate: To Date:
+habitsAndRoutinesTitle: Habits & Routines
+recordValue: Record Value: {name}
+quantity: Quantity ({unit}) for {date}:
+saveValue: Save Value
+biometricSettingsTitle: Biometric Settings Title
+biometricSettingsSub: Biometric Settings Sub
+biometricToggleFaceId: Biometric Toggle Face Id
+biometricToggleFingerprint: Biometric Toggle Fingerprint
+biometricToggleFaceIdDesc: Biometric Toggle Face Id Desc
+biometricToggleFingerprintDesc: Biometric Toggle Fingerprint Desc
+biometricHardwareUnavailable: Biometric Hardware Unavailable
+biometricDeviceNotSupported: Biometric Device Not Supported
+biometricVerifyToDisable: Biometric Verify To Disable
+biometricAuthPrompt: Biometric Auth Prompt
+biometricDisableSuccess: Biometric Disable Success
+biometricSetupSuccess: Biometric Setup Success
+biometricAppLockActive: Biometric App Lock Active
+biometricUnlockWithFaceId: Biometric Unlock With Face Id
+biometricUnlockWithFingerprint: Biometric Unlock With Fingerprint
+biometricPINFallbackBtn: Biometric P I N Fallback Btn
+geminiKeyModalTitle: Gemini Key Modal Title
+geminiKeyModalSubtitle: Gemini Key Modal Subtitle
+geminiGetKeyLink: Gemini Get Key Link
+geminiKeySave: Gemini Key Save
+geminiKeyDelete: Gemini Key Delete
+geminiKeySavedSuccess: Gemini Key Saved Success
+geminiKeyDeletedSuccess: Gemini Key Deleted Success
+geminiKeyRequiredWarning: Gemini Key Required Warning
+geminiSecurityNotice: Gemini Security Notice
+geminiKeyActive: Gemini Key Active
+geminiKeyCustomBadge: Gemini Key Custom Badge
+geminiKeyDefaultBadge: Gemini Key Default Badge
+lifeMapTitle: Life Map Title
+lifeMapSub: Life Map Sub
+lifeBalanceScore: Life Balance Score
+lifeSpiritual: Life Spiritual
+lifeHealth: Life Health
+lifeCareer: Life Career
+lifeRelationships: Life Relationships
+lifeFinances: Life Finances
+lifePersonalGrowth: Life Personal Growth
+cbtExercisesTitle: Cbt Exercises Title
+cbtExercisesSub: Cbt Exercises Sub
+cbtNewExerciseBtn: Cbt New Exercise Btn
+cbtThoughtRecord: Cbt Thought Record
+cbtDistortionCat: Cbt Distortion Cat
+cbtEvidenceFor: Cbt Evidence For
+cbtEvidenceAgainst: Cbt Evidence Against
+cbtBalancedThought: Cbt Balanced Thought
+gratitudeJournalTitle: Gratitude Journal Title
+gratitudeJournalSub: Gratitude Journal Sub
+gratitudeNewCardBtn: Gratitude New Card Btn
+gratitudeCardPlaceholder: Gratitude Card Placeholder
+gratitudeCardSavedSuccess: Gratitude Card Saved Success
+gratitudeCardDeleteConfirm: Gratitude Card Delete Confirm
+gratitudeShareCardBtn: Gratitude Share Card Btn
+clinicalReportTitle: Clinical Report Title
+clinicalReportSub: Clinical Report Sub
+clinicalSeverityMinimal: Clinical Severity Minimal
+clinicalSeverityMild: Clinical Severity Mild
+clinicalSeverityModerate: Clinical Severity Moderate
+clinicalSeveritySevere: Clinical Severity Severe
+clinicalExportPdfBtn: Clinical Export Pdf Btn
+clinicalExportWordBtn: Clinical Export Word Btn
+clinicalPrintBtn: Clinical Print Btn
+clinicalConfidentialNotice: Clinical Confidential Notice
+backupSyncSub: Backup Sync Sub
+backupSyncGenerateKey: Backup Sync Generate Key
+backupSyncEnterKey: Backup Sync Enter Key
+backupSyncExportJson: Backup Sync Export Json
+backupSyncImportJson: Backup Sync Import Json
+backupSyncRestoreSuccess: Backup Sync Restore Success
+canvasTitle: Canvas Title
+canvasBrushSmall: Canvas Brush Small
+canvasBrushMedium: Canvas Brush Medium
+canvasBrushLarge: Canvas Brush Large
+canvasBrushEraser: Canvas Brush Eraser
+canvasUndo: Canvas Undo
+canvasRedo: Canvas Redo
+canvasClear: Canvas Clear
+canvasSaveToEntry: Canvas Save To Entry
+rateAppSubmitBtn: Rate App Submit Btn
+reportFromDate: From:
+reportToDate: To:
+reportRangeLabel: Range:
+today: Today
+yesterday: Yesterday
+daysAgo: {count} Days Ago
+currentWeek: Current Week
+lastWeek: Last Week
+weeksAgo: {count} Weeks Ago
+currentMonth: Current Month
+lastMonth: Last Month
+monthsAgo: {count} Months Ago
+currentQuarter: Current Quarter
+previousQuarter: Previous Quarter
+quartersAgo: {count} Quarters Ago
+currentHalf: Current Half
+previousHalf: Previous Half
+halvesAgo: {count} Halves Ago
+currentYearLabel: Current Year ({year})
+lastYearLabel: Last Year ({year})
+yearLabelN: Year {year}
+reportsHistory: History ({count}) 📜
+aiSummaryBtn: AI Summary 🧠
+analyzingStatus: Analyzing...
+copyTextTooltip: Copy Text
+copiedSuccess: Copied!
+copyBtn: Copy
+printReportTooltip: Print
+loggedDiariesStat: Logged Diaries
+entriesUnit: entries
+avgSleepStat: Avg Sleep
+moodScoreStat: Mood Score
+exerciseTimeStat: Exercise Time
+sleepMoodChartTitle: Sleep vs Mood Trend Chart
+timelineLabel: Timeline
+clinicalAnalysisTitle: Clinical Psychological Analysis (AI Advisor)
+clickAiSummaryHint: Click 'AI Summary' above to include behavior & mood analysis for this period.
+topLoggedFeelingsTitle: Top Logged Feelings:
+sampleFeelings: Calm, Peaceful, Optimistic
+preparingPdf: Preparing PDF...
+exportPdfNow: Export PDF Now
+reportsHistoryTitle: Saved Mental Health Reports History 📜
+reportsHistorySubtitle: History of previous reports with dates and therapist notes
+searchReportsPlaceholder: Search reports by title or date...
+totalReportsCount: Total Reports: {count}
+noReportsInHistory: No saved reports found in history
+clickSaveReportHint: Click 'Save Report' above to archive your report.
+distortion_catastrophizing: 🌋 Catastrophizing
+distortion_desc_catastrophizing: Expecting the worst possible catastrophic scenario and exaggerating risks.
+distortion_mind_reading: 🔮 Mind Reading
+distortion_desc_mind_reading: Assuming you know others are thinking negatively about you without evidence.
+distortion_all_or_nothing: 🌗 All-or-Nothing Thinking
+distortion_desc_all_or_nothing: Seeing things in black-and-white terms: total perfection or complete failure.
+cbtTabThoughtRecords: 🧠 CBT Thought Records
+cbtTabDownwardArrow: ⬇️ Downward Arrow Technique
+cbtTabWorryBox: 📦 Worry Box & Postponement
+cbtTabExposureLadder: 🪜 Exposure Ladder
+cbtTabCopingCards: 📇 Coping Cards
+cbtTabGrounding: 🧘 5-4-3-2-1 Grounding
+cbtTabAnalytics: 📊 Distortions Analytics
+tasksSubTabDaily: Daily & Tasks
+tasksSubTabHabitsGrid: Habits Grid
+tasksSubTabSettings: Habit Settings & Data
+waterReminderNotifTitle: 💧 Time to Hydrate!
+waterReminderNotifBody: Gentle reminder: Drink a fresh cup of water for your health and focus.
+waterReminderEnabledToast: Hourly water reminders enabled 💧⏰
+waterReminderDisabledToast: Water reminders disabled 🔕
+workoutTimerStarted: Workout timer started! ⏱️🏃
+workoutTimerPaused: Workout timer paused ⏸️
+workoutTimerReset: Workout timer reset 🔄
+workoutLoggedSuccess: Logged {mins} mins ({type})! Total: {total} mins 🏃💪
+medTakenSuccess: Logged taking '{name}'! 💊
+medUntaken: Unchecked '{name}'
+medAddedSuccess: Added '{name}' to medication list! 💊
+medDeleted: Removed from medication list.
+newHabitDefaultName: New Habit
+confirmDeleteHabit: Are you sure you want to permanently delete this habit?
+updateBiometricBtn: Update Device Biometric 👆👤
+linkBiometricBtn: Link Device Biometric Now 👆👤
+confirmDeleteProsCons: Are you sure you want to delete this day's Pros & Cons record?
+prosConsDeleted: Daily record deleted successfully.
+noProsConsToExport: No records logged yet for export.
+exportedWordSuccess: Exported full record as Word document 📝
+ancientTreeTag: • 365 Days
+maxTreeLevelBadge: Max Level Achieved 🌟
+toNextTreeStage: To Next Stage
+disableTreePreview: Disable 365 Days Preview 🔄
+enableTreePreview: Test Preview 365 Days Wisdom Tree Stage 🧪
+defaultGratitudeCardQuote: Grateful for the peace, quiet moments, and inner health today.
+defaultAuthorName: My Mindful Journey
+defaultCardCategory: Gratitude Moment 💖
+gratitudeDownloaded: ✅ Gratitude card downloaded successfully
+gratitudeDownloadFailed: ⚠️ Failed to download image, please retry
+gratitudeCardCopied: 📋 Card text copied for sharing
+gratitudeShareUnsupported: ⚠️ Sharing not supported on this device
+gratitudeShareFailed: ⚠️ Failed to prepare share
+gratitudeTextCopied: 📋 Text copied to clipboard
+gratitudeCopyFailed: ⚠️ Failed to copy to clipboard
+preparingImage: ⏳ Preparing Image...
+downloadedBtn: Downloaded! 💾
+downloadPngBtn: Download PNG
+preparingShare: ⏳ Preparing Share...
+directShareBtn: Share Card
+copiedSuccessBtn: Copied successfully! ✨
+voiceListeningPrompt: Listening... Speak freely...
+confirmClearGeneralChat: Are you sure you want to clear General AI chat history?
+confirmClearAdvisorChat: Are you sure you want to clear the AI advisor chat history?
+stopDictationTitle: Click to stop dictation
+smartDictationTitle: Smart Voice Dictation
+listeningVoice: Listening to your voice...
+askGeneralAiPlaceholder: Ask General AI or attach files...
+askAdvisorPlaceholder: Ask advisor about your diary...
+generalVoiceCompanionTitle: General Voice Companion 🌐
+generalVoiceModalDesc: Speak freely, the general AI assistant will answer all your questions via voice...
+advisorVoiceModalDesc: Speak freely, the assistant will process your entries and speak back to you...
+mood_happy: Happy
+mood_very_happy: Very Happy
+mood_grateful: Grateful
+mood_calm: Calm
+mood_hopeful: Hopeful
+mood_relaxed: Relaxed
+mood_enthusiastic: Enthusiastic
+mood_excited: Excited
+mood_anxious: Anxious
+mood_sad: Sad
+mood_afraid: Fearful
+mood_insomnia: Insomnia
+mood_exhausted: Exhausted
+mood_angry: Angry
+mood_normal: Normal
+tag_study: study
+tag_family: family
+tag_hope: hope
+tag_insomnia: insomnia
+tag_anxiety: anxiety
+tag_challenge: challenge
+tag_achievement: achievement
+tag_happiness: happiness
+tag_reading: reading
+tag_mindfulness: Mindfulness
+tag_work: Work
+tag_sports: Sports
+diaryImportanceLabel: Personal Depth & Importance:
+diaryMoodsRecordedLabel: Logged Mood State:
+noMoodSelected: No mood selected
+untitledDiaryDefault: Untitled Diary Entry
+prosConsModalTitle: Daily Pros & Cons Balance
+prosConsTopicPlaceholder: Write the topic or decision to balance today...
+prosInputPlaceholder: Add a pro (e.g. Opportunity to learn and grow)
+consInputPlaceholder: Add a con (e.g. Requires extra time and effort)
+saveDailyRecordBtn: Save Daily Record
+exportWordBtn: Export Word Document
+lockScreenAthkarTitle: Lock Screen Athkar & Mindfulness
+integratedTherapyReportTitle: Integrated Psychological & Therapy Report
+generateClinicalReportBtn: Generate AI Clinical Report
+exportReportPdfBtn: Export Report as PDF
+monthlyMentalHealthReportTitle: Monthly Mental Health Report
+downloadReportPdfBtn: Download Report as PDF
+editHabitModalTitle: Edit Habit
+addHabitModalTitle: Add New Habit
+habitNamePlaceholder: e.g. Read 15 pages of a book
+habitBestTimePlaceholder: e.g. In the early morning
+habitGoalPlaceholder: e.g. To improve focus and wisdom
+habitLocationPlaceholder: e.g. At the study desk
+enableDailyHabitReminder: Enable daily reminder for this habit
+enableHabitXpReward: Enable XP point reward system
+addHabitNowBtn: Add Habit Now
+habitSettingsScreenTitle: Habit Settings & Backup
+exportHabitsJsonBtn: Export Backup (JSON)
+importHabitsJsonBtn: Import Backup (JSON)
+resetHabitsDefaultBtn: Reset to Default Habits
+saveAllSettingsBtn: Save All Settings
+geminiKeyPoolTitle: Gemini API Key Pool
+geminiKeyInputPlaceholder: Paste Google Gemini API Key here...
+addKeyToPoolBtn: Add Key to Pool
+testAllKeysBtn: Test All Keys Now
+skipTourBtn: Skip Tour
+prevBtn: Previous
+nextBtn: Next
+startJourneyBtn: Start Your Journey
+dhikrCounterTitle: Interactive Dhikr Counter
+resetCounterBtn: Reset
+changeTargetBtn: Change Target
+fullAthkarTitle: Comprehensive Athkar Encyclopedia
+searchAthkarPlaceholder: Search athkar and prayers...
+dashboardTitle: Dashboard & Mental Wellness
+quickActionNewDiary: Quick Journal Entry
+welcomeGreeting: Welcome back, wishing you a peaceful day
+dailyQuote: Tranquility is not the absence of storms, but peace within your heart amidst them.
+diariesTimelineTitle: Timeline & Reflections
+writeNewDiaryBtn: Write New Entry
+saveDiaryBtn: Save Entry
+deleteDiaryBtn: Delete Entry
+smartAdvisorTitle: Smart Psychological Advisor (Hayat AI)
+smartAdvisorSubtitle: Your safe space for expression & CBT behavioral insights
+suggestAiAlternativeBtn: Suggest AI Alternative
+gratitudeTabTitle: Gratitude Journal
+gratitudeTreeTitle: Gratitude & Psychological Abundance Tree
+addGratitudeBtn: Add Gratitude Note
+saveGratitudeBtn: Save Gratitude
+shareGratitudeBtn: Share Gratitude Card
+cbtTherapyTitle: CBT Therapy Suite
+worryBoxTitle: Worry & Anxiety Box
+thoughtRecordTitle: Automatic Thought Record
+groundingTitle: 5-4-3-2-1 Sensory Grounding Technique
+exposureLadderTitle: Gradual Exposure Hierarchy Ladder
+actionPlanLabel: Action Plan:
+realProblemLabel: Actionable / Real Problem
+habitsTabTitle: Habits & Routines
+addHabitBtn: Add New Habit
+analyticsTitle: Analytics & Psychological Metrics
+habitsCompletionRate: Habit Completion Rate
+moodTrendsTitle: Mood Trends & Trajectory
+weeklySummaryTitle: Weekly Comprehensive Summary
+calendarTabTitle: Calendar & Schedule
+calendarViewTitle: Emotional & Timeline Calendar
+todayBtn: Today
+monthView: Month View
+weekView: Week View
+libraryTabTitle: Library & Books
+favoriteBooksTitle: Favorite Books & Reading Log
+addBookBtn: Add New Book
+readingProgressTitle: Reading Progress
+appearanceSection: Appearance & Themes
+backupAndSyncTitle: Cloud Sync & Backup
+lockScreenTitle: App Lock & Security
+lockScreenSubtitle: Enter PIN to securely access your journal
+enterPinPrompt: Enter 4-digit PIN
+unlockAppBtn: Unlock
+pinModalTitle: Change PIN Code
+enterCurrentPin: Current PIN:
+enterNewPin: New PIN:
+confirmNewPin: Confirm New PIN:
+savePinBtn: Save PIN
+attachVideo: Attach Video
+attachAudio: Attach Audio Recording
+attachFile: Attach File / Document
+recordAudioBtn: Record Audio
+enableNotificationsPrompt: Enable Notifications & Smart Reminders
+testNotificationBtn: Send Test Notification
+saveRemindersBtn: Save Reminders
+onboardingTitle: Welcome to Your Comprehensive Life Companion
+rateAppSubtitle: Your feedback helps us continuously improve
+submitRatingBtn: Submit Rating
+laterBtn: Later
+contactOwnerSubtitle: We are here to help with your inquiries & ideas
+sendMessageBtn: Send Message
+smartContextDiariesTitle: Diaries & Reflections
+smartContextDiariesDesc: Read personal diary entries
+smartContextMoodLogsTitle: Daily Mood & Emotion Logs
+smartContextMoodLogsDesc: Assess daily mood scores
+smartContextHabitsTitle: Habits & Routines Tracker
+smartContextHabitsDesc: Track habit completion rates
+smartContextTasksTitle: Tasks & To-Do Checklists
+smartContextTasksDesc: Access daily & weekly tasks
+smartContextCbtTitle: CBT Therapy Exercises
+smartContextCbtDesc: Read coping cards for guidance
+smartContextReportsTitle: Mental Health Reports
+smartContextReportsDesc: Analyze psychological summaries
+smartContextVoiceTitle: Voice Notes & Recordings
+smartContextVoiceDesc: Analyze audio transcripts
+smartContextBooksTitle: Favorite Books & Library
+smartContextBooksDesc: Read reading logs & quotes
+smartContextGratitudeTitle: Gratitude & Positive Mindset
+smartContextGratitudeDesc: Review gratitude items
+smartContextLifeMapTitle: Life Map & Future Goals
+smartContextLifeMapDesc: Follow long-term goals
+smartContextProsConsTitle: Decision Balance (Pros & Cons)
+smartContextProsConsDesc: Review decision balances
+journal_type_diary: Journal
+journal_type_diary_desc: Daily events, life experiences & memories
+journal_type_thought: Thoughts
+journal_type_thought_desc: Personal reflections, feelings & inner dialogue
+journal_type_gratitude: Gratitude
+journal_type_gratitude_desc: Counting blessings, joyful moments & thankful notes
+journal_type_wisdom: Wisdom
+journal_type_wisdom_desc: Life lessons, deep insights & mindful principles
+journal_type_quote: Quotes
+journal_type_quote_desc: Inspiring quotes, excerpts & literary phrases
+journal_type_idea: Quick Ideas
+journal_type_idea_desc: Brainstorms, sudden inspirations & project concepts
+journal_type_free_writing: Free Writing
+journal_type_free_writing_desc: Unfiltered stream of consciousness & venting
+journal_type_memory: Visual Memories
+journal_type_memory_desc: Special moments captured in photos & sketches
+biometricsNotSupportedFallbackPin: Biometrics unavailable in this browser environment. PIN code lock is enabled as the primary security option.
+biometricsPermissionDenied: Biometric permission was denied or not permitted in this context
+biometricsAuthFailed: Biometrics authentication error
+environmentUnavailable: Environment unavailable
+webAuthnUnsupported: This browser does not support WebAuthn / Passkey technology
+biometricSensorUnavailable: No biometric sensor detected or enabled on this device
+biometricSensorConnectFailed: Unable to connect to biometric sensor in this browser
+generatedReportNotice: Generated from your recorded personal entries
+summary: Summary
+positiveProgressMessage: Your entries demonstrate mindful progress, healthy balance, and growing self-awareness.
+maintainConsistencyPrompt: Maintain daily journaling and consistent habit tracking.
+mindfulnessAdvicePrompt: Practice deep breathing and mindful relaxation before bedtime.
+matchingResultsTitle: Search & Analysis Results in Your Records
+smartAdvisorDefaultResponse: I am your personal mindfulness advisor, here to help you reflect on your thoughts, emotions, and habits toward balance.
+reminder_morning_athkar: Morning Athkar & Mindful Reflections ☀️
+reminder_water: Drink Water & Hydrate 💧
+reminder_evening_athkar: Evening Reflections & Peace 🌙
+reminder_daily_diary: Daily Journaling & Thought Dumping ✍️
+habitWaterName: Drink 2L Warm Water
+habitMeditationName: 10 min Meditation & Relaxation
+habitWalkingName: Brisk Walking / Home Workout
+habitReadingName: Read 10 Pages of a Book
+gratitudeDemoText1: Watching the warm morning sun rise and starting a brand new day with peace and hope
+gratitudeDemoText2: Drinking a hot, perfect cup of coffee with loved ones and having a warm chat
+gratitudeDemoText3: Finding solutions to a tough challenge and feeling the joy of personal progress
+diaryDemoTitle1: Weekly Academic Planning, Family Lunch & Hopeful Feelings
+diaryDemoContent1: Started the day with some anxiety regarding accumulated tasks, but sitting with family for lunch eased my mind completely with deep gratitude.
+diaryDemoTitle2: Midnight Insomnia & Overthinking the Future
+diaryDemoContent2: Could not sleep well due to overthinking. In the evening, a 45-minute brisk walk brought gradual relief and calm.
+diaryDemoTitle3: Project Achievement & Mindful Evening Reading
+diaryDemoContent3: Finished my project presentation with great feedback today. Read a book chapter before bed with calming chamomile tea.
+mood_joyful: Joyful
+mood_satisfied: Satisfied
+tag_gratitude: gratitude
+tag_morning: morning
+tag_warmth: warmth
+tag_growth: growth
+passkeyAndPinSecurity: Passkey & PIN Security Settings
+protectAppWithPinBiometrics: Protect your app privacy with PIN & biometric authentication
+pinCode4Digits: 4-Digit Secret PIN Code
+defaultPin1234: Default: 1234
+deviceBiometricsPasskey: Device Biometrics & Passkey
+linkedAndActive: Linked & Active ✅
+notLinked: Not Linked ⚠️
+androidCapacitorBiometrics: Android Native Biometrics (Capacitor):
+writeDiaryBackupLabel: 📖 WriteDiary Backup
+weekdaySunShort: Sun
+weekdayMonShort: Mon
+weekdayTueShort: Tue
+weekdayWedShort: Wed
+weekdayThuShort: Thu
+weekdayFriShort: Fri
+weekdaySatShort: Sat
+smartAdvisorChatClearedPrompt: Chat history cleared. How can I assist you today in reviewing and analyzing your journal? 🧠
+smartAdvisorDiaryProTab: Diary Pro Advisor
+smartAdvisorGeneralTab: General AI Advisor 🌐
+smartAdvisorDiaryProTitle: AI Smart Advisor Pro
+smartAdvisorDiaryProDesc: Analyze behavioral patterns, mood trends & timeline correlations
+smartAdvisorStartVoiceChat: Start Continuous Voice Chat
+smartAdvisorVoiceChatBtn: Voice Chat
+smartAdvisorAccessPermissions: Advisor Access Permissions
+smartAdvisorPermissionsBtn: Permissions
+smartAdvisorDiariesAccess: Diaries Access Permission
+smartAdvisorGeneralTitle: General AI Advisor
+smartAdvisorGeneralDesc: General answers, science & multimodal attachment analysis
+smartAdvisorIndependentContext: Independent Context
+smartAdvisorStopAudio: Stop Audio
+smartAdvisorListenAudio: Listen Audio
+smartAdvisorAnalyzingLifeLog: Advisor is analyzing your records...
+smartAdvisorWebLinkOption: 🌐 Web Link
+smartAdvisorVideoOption: 🎥 Video
+smartAdvisorEnterWebLink: Enter Reference Web Link:
+smartAdvisorAddLinkBtn: Add Link
+smartAdvisorEnterVideoUrl: Enter Video URL (YouTube or Direct):
+smartAdvisorAddVideoBtn: Add Video
+smartAdvisorEnterPdfInfo: Enter Attached PDF Info:
+smartAdvisorPdfNamePlaceholder: File name (e.g. report.pdf)
+smartAdvisorPdfUrlPlaceholder: URL or View Link...
+smartAdvisorAddPdfBtn: Add PDF
+smartAdvisorAddAttachmentHeader: Add Attachment to Chat:
+smartAdvisorMediaUploadOption: Image / Video / Document / Audio
+smartAdvisorWebLinkCategory: Web Link
+smartAdvisorVideoLinkCategory: Reference Video Link
+smartAdvisorPdfDocCategory: PDF Document Info
+smartAdvisorAttachFilesTooltip: Attach Image, PDF, Audio, Link, or Video
+smartAdvisorClearChatTooltip: Clear Chat History
+smartAdvisorPermissionsTitle: Smart Advisor Access Permissions 🛡️
+smartAdvisorPermissionsSubtitle: Select data areas the advisor is allowed to analyze and read
+smartAdvisorEnableAllAccess: Enable All Access
+smartAdvisorEnableAllAccessDesc: When enabled, advisor can provide comprehensive insights across all activities
+smartAdvisorPreferencesNote: 🔒 Preferences saved locally & applied instantly to AI responses.
+smartAdvisorSaveApplyBtn: Save & Apply 💾
+tag_imported: imported
+tag_diaries: diaries
+mood_reflective: Reflective
+fontDefaultSample: Every new day brings fresh opportunities for mindfulness, serenity and growth.
+aiPositivesHeader: AI-Generated Positives:
+aiNegativesHeader: AI-Generated Challenges & Negatives:
+userManualPositivesHeader: User Manual Positives:
+userManualNegativesHeader: User Manual Challenges & Negatives:
+generatedByHayatAiNotice: Generated by Hayat AI 🌿
+prosConsReportTitle: Pros & Cons Report
+dailyProsConsReportTitle: Daily Pros & Cons Report
+dateLabelColon: Date:
+comprehensiveProsConsHistoryTitle: Comprehensive Pros & Cons History
+comprehensiveProsConsLogAllDays: Comprehensive Pros & Cons Log for All Days
+dailyProsConsLogHeader: ⚖️ Daily Pros & Cons Log
+fullHistoryArchiveBadge: Full History Archive 🧠
+prosConsArchiveDescription: Chronological archive documenting strengths, opportunities, positives, and challenges logged automatically by AI or manually over time.
+exportFullLogBtn: Export Full Log (Word / PDF) 📄
+totalDaysTrackedLabel: Total Days Tracked
+daysUnit: days
+totalPositivesLoggedLabel: Total Positives Logged
+itemsUnit: items
+totalChallengesNegativesLabel: Total Challenges & Negatives
+positiveBalanceRatioLabel: Positive Balance Ratio
+searchProsConsPlaceholder: Search by day key, date, or keywords...
+filterMostlyPositive: Mostly Positive 🟢
+filterHigherChallenges: Higher Challenges 🔴
+noMatchingRecordsFound: No matching records found
+goToJournalForProsConsPrompt: Go to the Journal tab and click the ⚖️ Pros & Cons icon next to any date to generate its report.
+loggedDateLabel: Logged Date:
+editDetailsBtn: Edit Details
+deleteRecordTooltip: Delete Record
+positivesLabel: Positives
+totalPrefix: total 
+noPositivesLoggedToday: No positives logged for this day.
+challengesAndNegativesLabel: Challenges & Negatives
+noNegativesLoggedToday: No challenges logged for this day.
+habitWater2L: Drink 2L Warm Water
+habitMeditation10min: 10 min Meditation & Muscle Relaxation
+habitBriskWalk: Brisk Walking or Home Workout
+habitRead10Pages: Read 10 Pages of a Book
+gratitudeCardSample1: Watching the warm morning sun rise and starting a brand new day with peace and hope
+gratitudeCardSample2: Drinking a hot, perfect cup of coffee with my family and having a warm chat
+gratitudeCardSample3: Finding solutions to a tough challenge and feeling the joy of personal progress
+voice_journal: Voice Journal
+ai_assistant: AI Assistant
+cbtSuiteTitle: Advanced CBT & Psychological Suite
+cbtSuiteSubtitle: Cognitive Restructuring & Mind Response Tools 🧠✨
+cbtSuiteDescription: Scientifically proven psychological tools for restructuring thoughts, identifying core beliefs, postponing worry, and building resilience.
+cbtGroundingDescription: A guided sensory grounding exercise connecting your mind to the present moment to interrupt panic and restore calm.
+stepOf5: Step {step} of 5
+cbtGrounding5SeePrompt: Look around and name 5 things you can see:
+itemISeePrefix: Item I see
+cbtGrounding4TouchPrompt: Focus on touch and name 4 things you can feel right now:
+itemITouchPrefix: Item I touch
+cbtGrounding3HearPrompt: Listen quietly and name 3 sounds you hear around you:
+soundIHearPrefix: Sound I hear
+cbtGrounding2SmellPrompt: Notice scents and name 2 things you can smell:
+scentISmellPrefix: Scent I smell
+cbtGrounding1TastePrompt: Name 1 thing you can taste or remember the taste of:
+cbtGroundingTastePlaceholder: Coffee flavor, water taste, mint...
+previousStepArrow: ← Previous Step
+nextStepArrow: Next Step →
+completeGroundingBtn: ✓ Complete Grounding & Restore Calm
+totalCompletedCbtExercises: Total Completed CBT Exercises
+documentedCognitiveSessions: Documented cognitive sessions
+averageAnxietyRelief: Average Anxiety Relief
+pointsUnit: pts
+emotionalImprovementRate: Emotional response improvement rate
+favoriteCopingCards: Favorite Coping Cards
+supportiveCardsDistress: Supportive cards during distress
+cognitiveDistortionsDistribution: Most Frequent Cognitive Distortions Distribution
+timesUnit: times
+cbtRestructuringStepOf5: Cognitive Restructuring Wizard - Step {step} of 5
+cbtStep1TriggerLabel: Step 1: Triggering Event / Situation
+cbtStep1Placeholder: What situation occurred before you felt distressed? (e.g. Received a notice from manager...)
+cbtStep2ThoughtLabel: Step 2: Automatic Negative Thought
+cbtStep2Placeholder: What automatic thought instantly crossed your mind? (e.g. I will definitely be fired...)
+cbtStep3DistortionLabel: Step 3: Select Potential Cognitive Distortion
+cbtStep4AlternativeLabel: Step 4: Rational Balanced Alternative
+cbtStep4Placeholder: Write a balanced, rational alternative grounded in objective facts...
+cbtStep5RatingLabel: Step 5: Rate Anxiety Level After Exercise (0 - 10)
+cbtThoughtRecordsLogHeader: CBT Thought Records Log
+cbtThoughtRecordsDescription: Dissect automatic negative thoughts, identify cognitive distortions, and construct rational alternatives.
+newThoughtRecordBtn: New Thought Record
+noThoughtRecordsLogged: No thought records logged yet.
+clickNewThoughtRecordHint: Click "New Thought Record" to start analyzing distressing thoughts.
+anxietyReliefPrefix: Anxiety Relief:
+triggerEventPrefix: Trigger Event:
+automaticNegativeThoughtPrefix: Automatic Negative Thought:
+cognitiveDistortionPrefix: Cognitive Distortion:
+rationalAlternativePrefix: Rational Alternative:
+anxietyBeforeLabel: Anxiety Before:
+anxietyAfterLabel: Anxiety After:
+downwardArrowTechniqueHeader: Downward Arrow Technique
+downwardArrowDescription: An exploratory technique uncovering deep core beliefs driving chronic anxiety by asking: "If this thought were true, what would it mean to you?"
+startDownwardArrowBtn: Start Downward Arrow
+initialThoughtLabel: Initial Thought
+initialThoughtExample: e.g., "My client took long to reply."
+whatDoesThatMeanLabel: What does that mean?
+whatDoesThatMeanExample: "It means they are angry and will cancel."
+whatIfCancelledLabel: What if it's cancelled?
+whatIfCancelledExample: "It means I'm a failure and not good enough."
+healthyAlternativeBeliefHeader: Healthy Alternative Belief
+healthyAlternativeBeliefExample: "My self-worth isn't tied to daily responses."
+noDownwardArrowLogged: No downward arrow exercises logged yet.
+useDownwardArrowHint: Use this technique when your negative thoughts conceal deeper unspoken fears.
+downwardArrowExerciseTitle: Downward Arrow Exercise
+initialAutomaticThoughtPrefix: Initial Automatic Thought:
+healthyAlternativeBeliefPrefix: Healthy Alternative Belief:
+homeNav: Home

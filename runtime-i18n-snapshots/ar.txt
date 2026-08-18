@@ -1,0 +1,1377 @@
+========================================
+RUNTIME LOCALIZATION SNAPSHOT: AR
+Total Schema Keys: 1371
+Generated At: 2026-08-18T13:12:46.198Z
+========================================
+
+interactiveTourTitle: اكتشف حياة AI 🧭
+interactiveTourSub: جولة سريعة للتعرّف إلى أهم إمكانيات التطبيق
+safeEncryptedSpace: مساحتك النفسية الآمنة والمشفرة بالكامل
+streakActiveMsg: رائع! لقد دوّنت أفكارك اليوم وحافظت على توهج شعلتك. استمر في رعاية صحتك النفسية غداً!
+streakInactiveZero: اكتب تدوينة اليوم لتفعيل شعلة الالتزام والبدء في رصد أنماطك السلوكية!
+streakInactiveOneLeft: تبقى خطوة أخيرة! اكتب تدوينتك اليوم للحفاظ على سلسلة التزامك من الانقطاع.
+waterTargetReached: 🏆 ممتاز! لقد أتممت الارتواء الكامل لليوم!
+breathInhaleMsg: 💨 شـهـيـق... املأ رئتيك بالهدوء والسلام
+breathHold1Msg: 🛑 اكـتـم... احبس طاقة الرضا في جسدك
+breathExhaleMsg: 💨 زفـيـر... اطرد التوتر والقلق والتعب
+breathHold2Msg: 🛑 اكـتـم... استشعر السكينة والصمت النفسي
+secondsRemaining: ثوان متبقية
+completedCycles: عدد الدورات المكتملة:
+cyclesCount: عدد الدورات
+autoSaveLabel: تلقائي الحفظ
+hoursUnit: ساعة
+minutesUnit: دقيقة
+medicationTakenBtn: ✓ تم التناول
+medicationPendingBtn: متبقي
+habitsTrackerSub: اختر يوماً من التقويم ثم حدد العادات المنجزة لتسجيل التزامك ودعم تحليلك السلوكي اليومي.
+nav.home: الرئيسية
+nav.diaries: اليوميات
+nav.advisor: المستشار الذكي
+nav.progress: التقدم والبيانات
+nav.settings: الإعدادات
+nav.hayat_ai: حياة AI
+nav.active_now: نشط الآن
+nav.fullscreen: ملء الشاشة
+nav.account_title: حسابك الشخصي
+nav.lock_app: قفل التطبيق
+nav.switch_language: تغيير اللغة
+nav.dhikr: الأذكار
+nav.dhikr_title: عداد الأذكار والراحة النفسية
+nav.daily_tasks: المهام اليومية
+nav.gratitude: جدار الامتنان
+nav.my_thoughts: خواطري وتأملاتي
+nav.journal_records: سجل اليوميات
+nav.therapy_session: جلسة دعم نفسي
+nav.back_btn: رجوع
+nav.back_title: رجوع
+nav.back_mobile_title: رجوع
+nav.auto_saved: تم الحفظ تلقائياً
+nav.saving: جاري الحفظ...
+nav.current_page: الصفحة الحالية
+nav.subtitle: مساحتك النفسية الخاصة
+nav.tasks: المهام اليومية
+nav.edit_diary: تعديل التدوينة
+nav.sign_in: تسجيل الدخول
+nav.reveal_header_pill: إظهار الشريط العلوي
+appName: حياة AI
+homeTab: الرئيسية
+diariesTab: اليوميات
+advisorTab: المستشار
+analyticsTab: التحليلات
+settingsTab: الإعدادات
+yes: نعم
+no: لا
+closeBtn: إغلاق
+retryBtn: إعادة المحاولة
+cancelBtn: إلغاء
+save_btn: حفظ المذكرة
+saveAndCloseBtn: حفظ وإغلاق
+sendBtn: إرسال
+clearBtn: مسح
+back_btn: رجوع
+understoodBtn: فهمت ذلك
+confirmImportBtn: تأكيد الاستيراد
+deleteKeyBtn: حذف المفتاح
+saveKeyBtn: حفظ المفتاح
+photo: photo
+video: video
+audio: audio
+document: document
+task: مهمة 📋
+advisor: مستشار 🤖
+mood: مزاج 🌿
+voiceRecord: تسجيل صوتي 🎙️
+write: كتابة ✍️
+attachPhoto: إرفاق صورة
+attachPhotoSub: Attach Photo Sub
+phoneVideo: Phone Video
+phoneVideoSub: Phone Video Sub
+audioFile: Audio File
+audioFileSub: Audio File Sub
+bookDoc: Book Doc
+bookDocSub: Book Doc Sub
+freeWrite: Free Write
+freeWriteSub: Free Write Sub
+aiAdvisor: Ai Advisor
+aiAdvisorSub: Ai Advisor Sub
+aiPsychAdvisor: Ai Psych Advisor
+dhikrTitle: عداد الأذكار والراحة النفسية 📿
+dhikrSub: ألا بذكر الله تطمئن القلوب - استرخِ واذكر الله
+dhikrMainQuote: أَلا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ 🌿
+dhikrBlessing: اللهم اجعلنا من الذاكرين الله كثيراً والذاكرات ✨
+dhikrCounterBtn: اضغط للتسبيح 📿
+dhikrCountLabel: عدد التسبيحات
+dhikrFooter: سبحان الله وبحمده، سبحان الله العظيم
+notificationActiveNow: التنبيهات نشطة الآن 🔔
+notificationHowAreYou: كيف حالك الذهني اليوم؟ 🌿
+notificationTapShortcut: اضغط لفتح التطبيق والفضفضة بحرية
+notificationsTitle: الإشعارات والتنبيهات 🔔
+notificationsSub: تفعيل تنبيهات الاطمئنان وشرب الماء والرياضة
+remindersTitle: التذكيرات الذكية ⏰
+remindersSub: ضبط أوقات التذكير بالتدوين اليومي
+reminderTime: وقت التذكير
+faceIdBtn: بصمة الوجه
+fingerprintBtn: بصمة الإصبع
+biometricScanTitle: Biometric Scan Title
+biometricScanInstruction: Biometric Scan Instruction
+biometricSuccessTitle: Biometric Success Title
+biometricFailedTitle: Biometric Failed Title
+biometricNotLinkedTitle: Biometric Not Linked Title
+biometricNotLinkedDesc: سجل بصمتك أولاً من إعدادات الأمان
+biometricAlreadyRegistered: البصمة مسجلة بالفعل 🔐
+biometricNotSupported: جهازك لا يدعم البصمة أو الإذن غير ممنوح
+biometricUserCanceled: تم إلغاء العملية بواسطة المستخدم
+pinCodeBtn: رمز PIN
+usePinInsteadBtn: استخدام رمز PIN بدلاً من البصمة
+lockscreenBtn: إشعار شاشة القفل 📌
+lockscreenHint: اضغط على زر البصمة أو الرمز لفتح التطبيق
+lockscreenSecured: مشفر بالكامل وآمن
+appLockTitle: قفل التطبيق برمز PIN 🔐
+appLockSub: حماية مذكراتك بكلمة مرور خاصة
+welcomeSafeSpace: مساحتك النفسية الآمنة والخاصة بالكامل 🌿
+safeSpaceDesc: سجل أفكارك بحرية تامّة، محمي بتشفير تام ومساعد ذكي يرافق يومك.
+greetingDesc: Greeting Desc
+streakTitle: سلسلة الالتزام
+dayStreak: أيام متتالية
+longestStreak: أطول سلسلة
+streakEncouragement: واصل التدوين اليومي للحفاظ على اتزانك الذهني!
+aiInspirationBtn: Ai Inspiration Btn
+quickPromptSuggestionsTitle: مقترحات سريعة للبدء:
+askAiWriterHeader: اسأل مستشارك النفسي أو اطلب كتابة نص تحفيزي:
+expressMindPlaceholder: عَبّر عما يدور في ذهنك بحرية وسيقدم لك المساعد توجيهاً عقلانياً دافئاً...
+journal.subtab_journal: يومياتي والفضفضة
+journal.subtab_tasks: المهام اليومية
+journal.subtab_gratitude: جدار الامتنان
+journal.subtab_cbt: تمارين العلاج المعرفي CBT
+journal.subtab_proscons: سجل الإيجابيات والسلبيات
+journal.write_new: كتابة مذكرة جديدة
+journal.import_btn: استيراد يوميات
+journal.search_placeholder: ابحث في اليوميات والخواطر...
+journal.filter_all: جميع التدوينات
+journal.filter_diaries: اليوميات والفضفضة
+journal.filter_thoughts: الخواطر والتأملات
+journal.filter_archived: الأرشيف
+journal.filter_trash: سلة المهملات
+journal.editor_title_new: مذكرة جديدة
+journal.editor_title_edit: تعديل المذكرة
+journal.title_placeholder: عنوان المذكرة...
+journal.content_placeholder: اكتب أفكارك بحرية هنا...
+journal.mood_label: كيف تشعر الآن؟
+journal.save_btn: حفظ المذكرة
+journal.save_success: تم حفظ المذكرة بنجاح! 🎉
+dailyJournalSubtab: اليوميات والفضفضة
+dailyTasksSubtabLabel: قائمة المهام اليومية
+gratitudeSubtab: جدار الامتنان
+cbtSubtabLabel: تمارين العلاج المعرفي
+allFilterTab: جميع التدوينات
+diariesFilterTab: اليوميات
+thoughtsFilterTab: الخواطر
+writeNewNoteBtn: كتابة تدوينة جديدة ✍️
+searchDiariesPlaceholder: ابحث في المذكرات والأفكار...
+noMatchingDiariesNow: لا توجد مذكرات مطابقة للبحث أو الفلتر حالياً.
+deleteDiaryPermanently: حذف المذكرة نهائياً
+saveDiarySuccessBtn: حفظ المذكرة بنجاح ✓
+exportPdfBtn: تصدير PDF
+exportingPdfProgress: جاري التصدير...
+restoreAction: استرجاع
+archiveAction: أرشفة 📥
+archiveBtnLabel: أرشفة هذه المذكرة 📥
+importGratitudeMoments: استيراد لقطات الامتنان السعيدة
+clearSearchTitle: مسح البحث
+searchResultsFor: نتائج البحث عن:
+resultsCountSuffix: Results Count Suffix
+cancelSearchBtn: إلغاء البحث
+filterTagsLabel: Filter Tags Label
+noMatchFoundFor: لم يتم العثور على أي يومية أو خاطرة تطابق:
+checkSpellingOrFilter: Check Spelling Or Filter
+clearSearchWordBtn: مسح كلمة البحث
+clickWriteNewNotePrompt: انقر على زر "كتابة مذكرات جديدة" للبدء بالفضفضة وبناء ملفك النفسي!
+audioDrawingsOnly: Audio Drawings Only
+modifiedBadge: Modified Badge
+fontDrawerTitle: Font Drawer Title
+fontSizeLabel: Font Size Label
+chooseFontStyle: Choose Font Style
+chooseBgColor: اختر لون خلفية المذكرة:
+aiWriterTopicPlaceholder: Ai Writer Topic Placeholder
+generatingAiText: Generating Ai Text
+sendPromptBtn: Send Prompt Btn
+aiGeneratingTitle: Ai Generating Title
+aiModelDraftingDesc: Ai Model Drafting Desc
+readyToInsertBadge: Ready To Insert Badge
+insertInCurrentEntry: إدراج في اليومية الحالية
+createNewDiaryWithText: إنشاء يومية جديدة بهذا النص
+copiedTextSuccess: Copied Text Success
+copyTextBtn: 📋 نسخ النص إلى الحافظة
+suggestAnotherTopic: Suggest Another Topic
+promptHealthTitle: توليد نصائح صحية
+promptArticleTitle: كتابة مقال
+promptFutureTitle: اتجاهات المستقبل
+promptMarketingTitle: التسويق وخدمة العملاء
+promptProjectsTitle: إدارة المشاريع
+generateAction: Generate Action
+aiChatSessionTitle: Ai Chat Session Title
+liveInteractionBadge: Live Interaction Badge
+meLabel: أنا
+writingTherapeuticResponse: جاري كتابة الرد العلاجي والتحليل...
+sendBtnLabel: Send Btn Label
+quickOneClickActions: إجراءات سريعة لتحليل التدوينة الحالية بنقرة واحدة:
+summarizeEntryBtn: لخص تدوينتي بايجاز
+extractCognitiveErrorsBtn: استخرج الأخطاء المعرفية
+practicalPlanTomorrowBtn: خطة عملية ليوم الغد
+audioRecordBtn: تسجيل صوتي 🎙️
+photoUploadBtn: صورة تذكارية 📸
+videoRecordBtn: Video Record Btn
+quickVentBtn: Quick Vent Btn
+webLinkBtn: Web Link Btn
+mindMapBtn: خريطة ذهنية / رسم 🎨
+pdfDocBtn: وثيقة PDF 📄
+attachFileIcon: Attach File Icon
+addAudioIcon: Add Audio Icon
+sketchIcon: Sketch Icon
+photoIcon: Photo Icon
+bgColorIcon: Bg Color Icon
+addChecklistItem: Add Checklist Item
+depthRatingLabel: Depth Rating Label
+starsOutOfFive: Stars Out Of Five
+primaryCategoryLabel: تصنيف التدوينة الأساسي:
+aiMoodAnalysisTitle: تحليل المزاج التلقائي بالذكاء الاصطناعي (Gemini Smart Analysis):
+aiMoodAnalysisNotice: * يتم تحديث هذا التحليل تلقائياً بدقة فور نقرك على زر "حفظ المذكرة بنجاح ✓" بناءً على الكلمات والفضفضة المكتوبة.
+moodHappy: سعيد
+moodExcited: متحمس
+moodRelaxed: مرتاح
+moodNormal: Mood Normal
+moodSad: حزين
+moodDepressed: مكتئب
+moodAnxious: قلق
+moodAngry: غاضب
+moodExhausted: مرهق
+moodGrateful: ممتن
+subNoteDefaultTitle: ملاحظة فرعية
+subNoteSingular: ملاحظة فرعية
+subNotePlural: ملاحظات فرعية
+gratitude.title: جدار ممتناتي
+shareableGratitudeTitle: بطاقات الامتنان والافتخار القابلة للمشاركة 🎨
+shareableGratitudeSub: صمم بطاقتك الجميلة وشارك أفكارك الملهمة مع أصدقائك
+cbtExercisesTab: تمارين العلاج المعرفي السلوكي
+cbtWorksheets: Cbt Worksheets
+thoughtRecord: Thought Record
+rationalAlternative: البديل العقلاني المنطقي
+postSessionMood: Post Session Mood
+reviewProsConsTitle: Review Pros Cons Title
+prosConsBtnLabel: Pros Cons Btn Label
+behavioralCorrelationsTitle: محرك التحليلات السلوكية
+behavioralCorrelationsSub: اكتشاف العلاقات بين عاداتك والمزاج
+sleepWaterAnxietyTitle: تأثير النوم والماء على القلق
+sleepWaterAnxietyDesc: في الأيام التي تشرب فيها 8 أكواب ماء وتنام أكثر من 7 ساعات، ينخفض مستوى القلق لديك بنسبة {percent}%.
+exerciseMoodBoostTitle: Exercise Mood Boost Title
+exerciseMoodBoostDesc: ممارسة الرياضة لأكثر من 20 دقيقة ترتبط بتحسن المزاج الإيجابي بنسبة {percent}%.
+cbtEffectivenessTitle: Cbt Effectiveness Title
+cbtEffectivenessDesc: Cbt Effectiveness Desc
+balanceIndex: مؤشر الاتزان النفسي
+sleepQuality: جودة النوم
+exerciseActivity: النشاط البدني
+waterTrackerTitle: عداد كؤوس الماء التفاعلي اليومي 💧
+waterTrackerDesc: اضغط على الكؤوس أدناه لتسجيل كميات المياه المستهلكة؛ شرب المياه يحمي جهازك العصبي من التوتر.
+symptomsTitle: الأعراض الجسدية والنفسية اليومية
+symptomsDesc: Symptoms Desc
+voiceCompanionTitle: المساعد الصوتي العيادي المستمر 🎙️
+voiceStatusListening: جاري الاستماع بإنصات...
+voiceStatusAnalyzing: جاري التفكير وصياغة الدعم...
+voiceStatusSpeaking: يتحدث الآن...
+voiceStatusIdle: مستعد للبدء
+voiceLiveTranscript: النسخ التلقائي للمحادثة:
+voiceInterruptAndSpeak: Voice Interrupt And Speak
+voiceStartSpeaking: بدء الاستماع والتحدث 🎙️
+voiceEndSession: إنهاء المكالمة 📞
+settingsTitle: الإعدادات العامة
+settingsSubtitle: Settings Subtitle
+apiKeyTitle: مفتاح API الخاص بك 🔑
+apiKeySub: Api Key Sub
+languagesTitle: لغات التطبيق 🌐
+languagesSub: Languages Sub
+selectLanguageTitle: اختر لغة التطبيق 🌐
+selectLanguageSubtitle: Select Language Subtitle
+typographyTabTitle: Typography Tab Title
+typographyTabSub: Typography Tab Sub
+fontStyleIcon: Font Style Icon
+darkModeTitle: الوضع الداكن ☀️/🌙
+darkModeSub: Dark Mode Sub
+backupTitle: النسخ الاحتياطي والمزامنة ☁️
+backupSub: Backup Sub
+contactTitle: تواصل مع المطوّر 📬
+contactSub: Contact Sub
+rateTitle: تقييم التطبيق ⭐
+rateSub: Rate Sub
+favoritesTitle: المفضلة ❤️
+favoritesSub: المذكرات والخواطر المُميزة
+archiveTitle: الأرشيف 📦
+archiveSub: التدوينات المؤرشفة
+trashTitle: سلة المهملات 🗑️
+trashSub: المذكرات المحذوفة مؤقتاً
+personalAccountTitle: الحساب الشخصي 👤
+guestUser: مستخدم زائر 👤
+registeredUser: مستخدم موثق 👤
+accountSubGuest: Account Sub Guest
+accountSubUser: مفعل ومزامن سحابياً
+geminiKeyTitle: إعداد مفتاح Gemini API 🔑
+geminiKeyDesc: Gemini Key Desc
+geminiKeyNotice: ملاحظة أمان: يتم حفظ مفتاحك محلياً بشكل مشفر على جهازك فقط ولا يتم مشاركته مع أي طرف ثالث.
+geminiKeyPlaceholder: Gemini Key Placeholder
+welcomeModalTitle: مرحباً بك في حياة AI 👋
+rateModalTitle: ⭐ تقييم التطبيق
+rateModalThanks: شكراً لتقييمك! ❤️
+contactOwnerTitle: تواصل مع مطور التطبيق
+writeDiaryImporterTitle: استيراد اليوميات 📥
+writeDiaryImporterSub: استيراد مذكراتك من تطبيقات أخرى
+importFromOtherApps: استيراد من تطبيقات أخرى 📲
+importFromOtherAppsTitle: استيراد التدوينات واليوميات
+importFromOtherAppsDesc: دعم ملفات JSON و CSV و TXT
+importerSuccessMsg: تم استيراد البيانات بنجاح! 🎉
+generalTag: General Tag
+diaryBadge: يوميات 📔
+thoughtBadge: خواطر 💭
+editedBadge: مُعدل ✍️
+symptomHeadache: صداع أو ثقل بالرأس
+symptomFatigue: إرهاق وخمول عام
+symptomBackTension: Symptom Back Tension
+symptomPoorSleep: Symptom Poor Sleep
+symptomRapidHeart: خفقان أو تسارع القلب
+symptomShortnessBreath: ضيق تنفس خفيف
+symptomStomach: Symptom Stomach
+symptomTremors: Symptom Tremors
+waterConsumed: Water Consumed
+waterRemaining: Water Remaining
+psychologicalGrowthTreeTitle: شجرة النمو والتوازن النفسي 🌳
+treeStage1: البذرة الأولى (بداية الوعي)
+treeStage2: البرعم الصغير (تكوين العادات)
+treeStage3: الشتلة اليافعة (الاستقرار النفسي)
+treeStage4: الشجرة المزهرة (المرونة والازدهار)
+treeStage5: الشجرة المثمرة المكتملة (الحكمة والسكينة)
+treeDesc1: Tree Desc1
+treeDesc2: تواصل التدوين اليومي يبني مرونتك النفسية.
+treeDesc3: Tree Desc3
+treeDesc4: Tree Desc4
+treeDesc5: Tree Desc5
+rateAppModalTitle: Rate App Modal Title
+rateAppQuestion: Rate App Question
+rateAppPlaceholder: Rate App Placeholder
+rateAppFeedbackLabel: Rate App Feedback Label
+rateAppSubmit: Rate App Submit
+rateAppThankYou: Rate App Thank You
+rateAppThankYouDesc: Rate App Thank You Desc
+contactOwnerModalTitle: Contact Owner Modal Title
+contactOwnerModalDesc: Contact Owner Modal Desc
+contactOwnerMessage: Contact Owner Message
+copyEmail: Copy Email
+backupSyncTitle: Backup Sync Title
+backupSyncDesc: احفظ نسختك الاحتياطية أو استرجع بياناتك في أي وقت
+restoreDataBtn: Restore Data Btn
+howToExportTitle: How To Export Title
+howToStep1: How To Step1
+howToStep2: 2. احفظ الملف في مكان آمن على جهازك أو السحابة.
+howToStep3: How To Step3
+pinPadSub: أدخل رمز PIN المكون من 4 أرقام للمتابعة
+pinHint: رمز PIN يحمي مذكراتك بخصوصية تامة
+incorrectPin: رمز PIN غير صحيح، حاول مجدداً ❌
+accountTitle: Account Title
+guestUserLabel: Guest User Label
+userEmailSynced: User Email Synced
+guestUserDesc: Guest User Desc
+appLockDetailsTitle: App Lock Details Title
+appLockDetailsDesc: App Lock Details Desc
+pinCodeLabel: Pin Code Label
+defaultPinHint: الرمز الافتراضي: 1234 (يمكنك تغييره من الإعدادات)
+pinPlaceholder: Pin Placeholder
+linkBiometricsTitle: Link Biometrics Title
+biometricActiveBadge: ✅ مفعلة ومربوطة
+biometricNotActiveBadge: Biometric Not Active Badge
+biometricDesc: Biometric Desc
+biometricUpdateBtn: Biometric Update Btn
+biometricLinkBtn: Biometric Link Btn
+biometricAlertTitle: Biometric Alert Title
+biometricAlertDesc: Biometric Alert Desc
+noActiveAlarms: لا توجد أي منبهات نشطة حالياً.
+addNewAlarmTitle: إضافة منبه/تذكير سلوكي جديد:
+alarmTitlePlaceholder: مثل: جلسة كتابة حرة، استراحة شرب ماء...
+addAlarmBtn: + إضافة
+deleteAlarmTitle: حذف المنبه
+archiveSearchPlaceholder: ابحث في اليوميات والخواطر المؤرشفة...
+filterAll: الكل
+filterDiaries: اليوميات
+filterThoughts: الخواطر
+archiveEmptyTitle: أرشيف المذكرات والخواطر فارغ حالياً.
+archiveEmptySearch: Archive Empty Search
+archiveEmptyDesc: يمكنك أرشفة أي يومية أو خاطرة من قسم "اليوميات والفضفضة" بحرية لحفظها هنا برقي بعيداً عن القائمة الرئيسية.
+goToDiariesToArchive: الانتقال لليوميات لأرشفة عنصر ✍️
+thoughtBadgeShort: Thought Badge Short
+diaryBadgeShort: Diary Badge Short
+untitledNote: بدون عنوان
+previewAndRead: معاينة وقراءة
+restoreBtn: استرجاع
+moveToTrash: نقل لسلة المهملات
+trashEmpty: سلة المهملات فارغة حالياً 🗑️
+itemsInTrash: Items In Trash
+emptyTrashBtn: 🗑️ تفريغ السلة بالكامل
+deletePermanently: حذف نهائي
+smartRemindersCardTitle: نظام التذكيرات الذكية والتنبيهات
+smartRemindersBadge: تكرار وملاحظات
+smartRemindersCardDesc: إدارة التذكيرات (يومي، أسبوعي، أيام محددة) مع إضافة عبارات تحفيزية ملهمة
+smartRemindersModalSub: قم بضبط تكرار التذكير بأوقاتك المفضلة وأضف عبارات تحفيزية تلهمك عند كل تنبيه
+remindersCountBadge: Reminders Count Badge
+behavioralAiBadge: Behavioral Ai Badge
+testSoundTitle: Test Sound Title
+testSoundBtn: Test Sound Btn
+editSmartReminderTitle: تعديل التذكير الذكي
+addNewSmartReminderTitle: Add New Smart Reminder Title
+addNewSmartReminderBtn: Add New Smart Reminder Btn
+reminderTitleLabel: Reminder Title Label
+reminderTitlePlaceholder: مثلاً: تدوين الامتنان اليومي، شرب الماء، جلسة استرخاء...
+reminderIconLabel: Reminder Icon Label
+alertTimeLabel: Alert Time Label
+alertFrequencyLabel: Alert Frequency Label
+freqDaily: يومياً (كل يوم)
+freqWeekly: أسبوعياً (مرة كل أسبوع)
+freqCustomDays: Freq Custom Days
+selectDaysPrompt: Select Days Prompt
+motivationalNoteLabel: ملاحظة تحفيزية ملهمة (تظهر مع التنبيه)
+optionalLabel: Optional Label
+motivationalNotePlaceholder: Motivational Note Placeholder
+presetSamplesPrompt: Preset Samples Prompt
+saveChangesBtn: حفظ التعديلات
+addReminderBtn: Add Reminder Btn
+totalRemindersLabel: Total Reminders Label
+activeRemindersListTitle: قائمة التذكيرات المفعلة والمجدولة
+noRemindersYetTitle: No Reminders Yet Title
+noRemindersYetDesc: قم بإضافة تذكيرات يومية أو أسبوعية لتدوين الخواطر، صُنّاع العادات، أو استراحات التأمل مع ملاحظات تحفيزية.
+createFirstReminderBtn: Create First Reminder Btn
+disabledBadge: Disabled Badge
+activeBadge: مفعّل
+cbtTipTitle: Cbt Tip Title
+cbtTipDesc: التنبيهات المقترنة بعبارات تحفيزية إيجابية تزيد من معدل الاستجابة والالتزام بالروتين اليومي بنسبة 68% مقارنة بالتنبيهات العادية، حيث تعمل كمعزز معنوي فوري يقلل مقاومة العقل للمهام.
+alertsMonitoredFooter: Alerts Monitored Footer
+confirmDeleteReminder: هل أنت متأكد من حذف هذا التذكير؟
+catGeneral: Cat General
+catJournal: Cat Journal
+catMeditation: Cat Meditation
+catFitness: Cat Fitness
+catWater: شرب ماء
+catCare: دواء وعناية
+catReading: Cat Reading
+catMotivation: Cat Motivation
+lockScreenWidgetTitle: إشعار ويدجت شاشة القفل المثبت
+recommendedBadge: مستحسن
+lockScreenWidgetDesc: إظهار لوحة الاختصارات كإشعار مثبّت على شاشة القفل الخارجية عند ضغط زر الباور للهاتف.
+testLockScreenNotificationBtn: Test Lock Screen Notification Btn
+howLockScreenWorksBtn: How Lock Screen Works Btn
+fullscreenModeTitle: Fullscreen Mode Title
+pwaBadge: PWA 🖥️
+fullscreenModeDesc: Fullscreen Mode Desc
+toggleFullscreenBtn: Toggle Fullscreen Btn
+pwaMethodBtn: Pwa Method Btn
+appVersionCredits: ✨ حياة AI — الإصدار المستقر والخاص 1.0.0
+privacyCredits: تم التطوير بخصوصية مطلقة وأعلى درجات الحماية المعرفية السلوكية والذكاء الاصطناعي لراحتك النفسية.
+typographyTitle: تخصيص الخطوط وراحة القراءة
+appWideBadge: App Wide Badge
+typographyDesc: اختر نوع الخط المفضل وضبط التباعد بين الأسطر لراحة العين أثناء قراءة اليوميات الطويلة
+selectMainFontLabel: اختر خط التطبيق الرئيسي (Arabic & International Fonts):
+lineSpacingLabel: التباعد بين الأسطر (راحة العين في المذكرات والقراءة):
+livePreviewTitle: معاينة القراءة المباشرة لصفحة اليوميات:
+samplePreviewParagraph: هذا النص يمثّل تجربة واقعية لتدوين مذكراتك وطريقة ظهورها في التطبيق. عندما تدوّن أفكارك اليومية وتأملاتك، يمنحك التنسيق المختار راحة بصرية فائقة ويساعدك على التركيز والتعمق في ذكرياتك دون إجهاد للعين.
+fontAndSpacingTabLabel: نوع الخط والتباعد 🔤
+languageTabLabel: اللغة والإقليم 🌐
+searchLanguagePlaceholder: ابحث عن لغتك...
+fontCairoName: Cairo Modern
+fontCairoCategory: حديث ومتوازن
+fontCairoSample: التدوين اليومي يمنح عقلك السكينة ووضوح الرؤية.
+fontTajawalName: Tajawal Soft
+fontTajawalCategory: هندسي ناعم حديث
+fontTajawalSample: تأمل أفكارك ومشاعرك اليومية برقي وراحة.
+fontAlmaraiName: Almarai Clean
+fontAlmaraiCategory: سلس وشديد النقاء
+fontAlmaraiSample: الأفكار الواضحة تبدأ بكتابة واعية وهادئة.
+fontAmiriName: Amiri Classic Naskh
+fontAmiriCategory: نسخي أدبي كلاسيكي
+fontAmiriSample: كل قصة تُكتب تحمل في طياتها حكمة للغد.
+fontNotoName: Noto Naskh Traditional
+fontNotoCategory: نسخ واضح أصيل
+fontNotoSample: مذكرات راقية تحفظ ذكرياتك وأفكارك بأمان.
+fullCalendar: التقويم الكامل
+fullCalendarSub: استعراض كافة التدوينات السابقة بالتفصيل
+directUploadTitle: Direct Upload Title
+quoteTitle: حكمة اليوم لراحة البال والتحفيز النفسي 🌿
+recentWeek: الأسبوع الأخير
+selectDateTitle: اختر تاريخاً لعرض يومياتك
+moodScaleTitle: مقياس المزاج الرقمي السريع (1 - 10) 😐
+moodScaleDesc: اسحب المؤشر لتوثيق حالتك المزاجية الحالية في ثانية واحدة؛ يُسجل هذا التقييم كمدخل يومي سريع.
+apiKeySubAuto: يتم استخدام مفتاح تجريبي مجاني تلقائياً إذا لم تقم بإدخال مفتاح خاص
+floatingBallTitle: أداة التحكم السريع
+floatingBallSub: الوصول السريع للأجهزة والمساعد الذكي
+getFreeKeyLink: Get Free Key Link
+pwaHowToBtn: Pwa How To Btn
+fontNoto_naskhName: خط نوتو نسخ التقليدي
+fontNoto_naskhCategory: كلاسيكي وأنيق
+fontNoto_naskhSample: بسم الله الرحمن الرحيم - خط كلاسيكي رائع للقراءة
+fontJakartaName: Font Jakarta Name
+fontJakartaCategory: Font Jakarta Category
+fontJakartaSample: Font Jakarta Sample
+fontSystemName: Font System Name
+fontSystemCategory: Font System Category
+fontSystemSample: Font System Sample
+aiAnalyticsBadge: تحليلات الذكاء الاصطناعي
+allAccessBadge: All Access Badge
+tasksBadge: (المهام)
+cbtBadge: Cbt Badge
+prosConsBadge: Pros Cons Badge
+proBadge: احترافي
+pdfBadge: Pdf Badge
+predictiveTitle: نظام التحليلات المتنبئة للمزاج والنوم 🔮
+predictiveSub: استشعار مبكر لمؤشرات القلق واضطرابات النوم بالذكاء الاصطناعي
+predictiveAnxietyRisk: مستوى استشعار القلق المستقبلي
+predictiveSleepRisk: مستوى مؤشر اضطراب النوم
+predictiveGuidance: الإرشادات التنبؤية الذكية
+predictiveAnalyzeBtn: إجراء تحليل تنبؤي جديد 🧠
+predictiveStatusGood: مستقر ومتوازن ✨
+predictiveStatusWarning: تنبيه: محفزات قلق مرتقبة ⚠️
+e2eeTitle: E2ee Title
+e2eeSub: E2ee Sub
+e2eePassphrasePlaceholder: E2ee Passphrase Placeholder
+e2eePairingCodeTitle: E2ee Pairing Code Title
+e2eePairingCodeDesc: E2ee Pairing Code Desc
+e2eeStatusEncrypted: E2ee Status Encrypted
+newJournalHeader: تدوينة جديدة 📝
+editJournalHeader: تعديل التدوينة 📝
+cancelAndSaveDraft: إلغاء وحفظ كمسودة 💾
+journalTitleLabel: عنوان التدوينة أو المذكرة 📌
+journalTitlePlaceholder: اكتب عنواناً معبراً عن يومك...
+starRatingLabel: تقييم اليوم
+outOfFiveStars: من 5 نجوم
+entryClassificationLabel: تصنيف التدوينة
+myNormalDiariesChoice: مذكرة يومية عادية 📝
+myPrivateThoughtsChoice: خواطر وأفكار خاصة 🔐
+behavioralMoodLabel: المزاج والشعور الغالب
+autoAiMoodAnalysisTitle: تحليل المزاج التلقائي بالذكاء الاصطناعي
+aiMoodAnalysisUpdateNotice: Ai Mood Analysis Update Notice
+writeFeelingsLabel: اكتب مشاعرك وأفكارك بحرية
+importGratitudeTitle: Import Gratitude Title
+importGratitudeBtn: استيراد من جدار الامتنان 🌸
+undoTooltip: Undo Tooltip
+redoTooltip: Redo Tooltip
+boldTooltip: Bold Tooltip
+italicTooltip: Italic Tooltip
+underlineTooltip: Underline Tooltip
+strikethroughTooltip: Strikethrough Tooltip
+h1Tooltip: H1 Tooltip
+h2Tooltip: H2 Tooltip
+quoteTooltip: Quote Tooltip
+bulletListTooltip: Bullet List Tooltip
+bulletListLabel: قائمة نقطية
+fontColorsTooltip: Font Colors Tooltip
+fontColorsBtn: ألوان الخطوط 🎨
+moreFeaturesBtn: المزيد من الميزات ✨
+aiWriterBtn: المساعد الذكي 🤖
+editorTextareaPlaceholder: عبر عما يدور في ذهنك اليوم وقلبك...
+attachFileTitle: Attach File Title
+addAudioTitle: Add Audio Title
+recordingProgress: جاري التسجيل الصوتي...
+drawTitle: لوحة الرسم الذهني
+photoTitle: Photo Title
+backgroundColorTitle: Background Color Title
+colorTitle: Color Title
+fontEffectTitle: Font Effect Title
+fontTitle: Font Title
+addChecklistItemBtn: إضافة عنصر لقائمة المهام ➕
+checklistSectionTitle: قائمة المهام اليومية
+taskInputPlaceholder: اكتب مهمة جديدة هنا...
+subsequentAdditionsTitle: Subsequent Additions Title
+subsequentAdditionsPlaceholder: أضف خواطر جديدة لهذه التدوينة...
+subsequentAdditionsNotice: Subsequent Additions Notice
+historicalEditsTitle: Historical Edits Title
+deleteAdditionBtn: حذف الإضافة
+containsEditsPrefix: Contains Edits Prefix
+appendedEditsSuffix: Appended Edits Suffix
+biometricCanceled: Biometric Canceled
+biometricFailed: Biometric Failed
+biometricStep1: Biometric Step1
+biometricStep2: Biometric Step2
+biometricStep3: Biometric Step3
+biometricSuccess: Biometric Success
+faceScanInstruction: Face Scan Instruction
+faceScanTitle: Face Scan Title
+faceSuccessTitle: Face Success Title
+fingerprintScanInstruction: Fingerprint Scan Instruction
+fingerprintScanTitle: Fingerprint Scan Title
+lockScreenAlertSuccess: Lock Screen Alert Success
+enterPinNowBtn: Enter Pin Now Btn
+pinPadShortcutSub: أدخل رمز PIN لتنفيذ الإجراء السريع المحدد
+pinVerified: Pin Verified
+powerButtonTooltip: Power Button Tooltip
+screenOffTitle: Screen Off Title
+screenOffDesc: Screen Off Desc
+authModalTitle: حسابك الشخصي والتزامن
+authModalSub: احفظ بياناتك بشكل آمن وسهل بين أجهزتك
+loginErrorEmpty: يرجى إدخال البريد الإلكتروني وكلمة المرور
+loginSuccessMsg: تم تسجيل الدخول بنجاح! 🎉
+incorrectPassword: كلمة المرور غير صحيحة
+registerErrorEmpty: يرجى ملء جميع الحقول المطلوبة
+passwordTooShort: كلمة المرور يجب أن تكون 6 أحرف على الأقل
+passwordsDoNotMatch: كلمتا المرور غير متطابقتين
+registerSuccessMsg: تم إنشاء الحساب بنجاح! 🎉
+emailAlreadyRegistered: هذا البريد الإلكتروني مسجل بالفعل
+connectedSynced: متصل ومزامن بالكامل
+syncOptionsTitle: Sync Options Title
+syncNowBtn: مزامنة الآن 🔄
+logoutBtn: تسجيل الخروج 🚪
+loginTab: تسجيل الدخول
+registerTab: إنشاء حساب جديد
+emailLabel: البريد الإلكتروني
+passwordLabel: كلمة المرور
+hide: إخفاء
+show: إظهار
+loginSubmit: دخول للحساب 🔑
+nameLabel: الاسم الكامل
+confirmPasswordLabel: تأكيد كلمة المرور
+registerSubmit: تسجيل حساب جديد ✨
+linkGoogleAccount: Link Google Account
+syncInProgress: جاري مزامنة البيانات سحابياً...
+restoreCloudBackup: Restore Cloud Backup
+importManual: Import Manual
+importFromWriteDiary: Import From Write Diary
+autoBackupFrequency: Auto Backup Frequency
+backupHourly: كل ساعة ⏰
+backupDaily: يومياً 📅
+backupWeekly: أسبوعياً 🗓️
+backupOff: إيقاف 🛑
+secureEmailBackup: Secure Email Backup
+emailBackupDesc: احصل على نسخة شاملة من مذكراتك على بريدك الإلكتروني
+emailPlaceholder: Email Placeholder
+importNoteAiNotice: ملاحظة: الذكاء الاصطناعي يُحلل مذكراتك المستوردة تلقائياً
+importNotePreserveDates: Import Note Preserve Dates
+importerErrorMsg: Importer Error Msg
+analyzingFile: Analyzing File
+supportedFormats: Supported Formats
+uploadAnotherFile: Upload Another File
+uploadDropZoneText: Upload Drop Zone Text
+selectAllBtn: Select All Btn
+selectAllHint: حدد جميع المذكرات للاستيراد
+apiKeyVerified: Api Key Verified
+apiKeyVerifyFailed: Api Key Verify Failed
+verifyingKey: Verifying Key
+copied: copied
+sendMessageNow: Send Message Now
+text: text
+delete: حذف
+edit: تعديل
+key: مفتاح
+section: section
+noMatchingEntries: لا توجد مذكرات مطابقة للبحث
+offlineStatusOffline: Offline Status Offline
+offlineSyncSuccess: Offline Sync Success
+resetConfirm: Reset Confirm
+resetCounter: Reset Counter
+muteClickSound: Mute Click Sound
+enableClickSound: Enable Click Sound
+pwaInstructionTitle: Pwa Instruction Title
+pwaStep1: Pwa Step1
+pwaStep2: Pwa Step2
+pwaStep3: Pwa Step3
+entriesCountLabel: عدد المذكرات
+searchParsedPlaceholder: ابحث في المذكرات أو الأفكار...
+welcomeBackOpening: Welcome Back Opening
+presetNote1: Preset Note1
+presetNote2: Preset Note2
+presetNote3: Preset Note3
+presetNote4: Preset Note4
+presetNote5: Preset Note5
+presetNote6: Preset Note6
+howToStep4: How To Step4
+cameraDeniedError: Camera Denied Error
+multiFormatTitle: Multi Format Title
+multiFormatDesc: اختر الصيغة المناسبة لتصدير يومياتك أو استرجاعها
+exportJson: Export Json
+exportCsv: Export Csv
+exportEncrypted: Export Encrypted
+importEncrypted: Import Encrypted
+voiceJournalTitle: المساعد الصوتي التفاعلي للتدوين 🎙️
+voiceJournalSub: تكلم بحرية وسيقوم الذكاء الاصطناعي بتحويل صوتك لمذكرة مقسمة ومنظمة
+voiceRecordingStarted: Voice Recording Started
+voiceListening: Voice Listening
+voiceProcessingAI: جاري معالجة الصوت وتحليله بالذكاء الاصطناعي...
+voiceAutoSaved: تم حفظ المذكرة الصوتية بنجاح! 🎉
+onboardingWelcomeTitle: مرحباً بك في حياة AI 👋
+onboardingStep1Title: قسم اليوميات والخواطر 📝
+onboardingStep1Desc: سجّل تفاصيل يومك ومواقفك بحرية تامة مع تحليل فوري للمزاج وإرفاق التسجيلات والصور والتشفير.
+onboardingStep2Title: المستشار النفسي الذكي 🧠
+onboardingStep2Desc: تحدث مع المستشار الذكي الداعم القائم على العلاج المعرفي السلوكي (CBT) للحصول على نصائح وتفريغ نفسي.
+onboardingStep3Title: تتبع العادات وشجرة النمو 📊
+onboardingStep3Desc: تابع عاداتك اليومية وجودة نومك ورياضتك، واشهد نمو شجرتك النفسية كلما واظبت على التدوين.
+onboardingStep4Title: الخصوصية والأمان التام 🔒
+onboardingStep4Desc: بياناتك مشفرة ومحفوظة على جهازك بأمان مع دعم القفل بالبصمة والنسخ الاحتياطي.
+onboardingNext: التالي ➔
+onboardingPrev: السابق
+onboardingFinish: ابدأ رحلتك الآن 🚀
+onboardingSkip: تخطي الجولة
+onboardingStepIndicator: الخطوة {step} من {total}
+voiceRecordBtn: بدء التسجيل الصوتي 🎙️
+voiceStopBtn: إيقاف وتحليل ⏹️
+voiceSaveBtn: حفظ كتدوينة يومية 💾
+lineHeightCompactName: Line Height Compact Name
+lineHeightCompactDesc: Line Height Compact Desc
+lineHeightNormalName: Line Height Normal Name
+lineHeightNormalDesc: Line Height Normal Desc
+lineHeightRelaxedName: Line Height Relaxed Name
+lineHeightRelaxedDesc: راحة بصرية فائقة لقراءة المقالات واليوميات الطويلة
+lineHeightSpaciousName: Line Height Spacious Name
+lineHeightSpaciousDesc: Line Height Spacious Desc
+moodRating: Mood Rating
+advisorQuickQ1: ما أكثر مسببات التوتر لدي؟
+advisorQuickQ2: ماذا حدث لي في التدوينات الأخيرة؟
+advisorQuickQ3: متى كانت آخر مرة شعرت فيها بالسعادة؟
+advisorQuickQ4: قارن بين حالتي هذا الأسبوع والشهر الماضي.
+advisorQuickQ5: ما النصيحة الوقائية المناسبة لي اليوم؟
+promptSummarizeEntry: 📝 لخص تدوينتي الحالية بايجاز والخص مشاعري الحقيقية
+promptExtractCognitiveErrors: 💡 استخرج الأخطاء المعرفية والتشوهات الفكرية من تدوينتي وانصحني بموازنتها عقلانياً
+promptPracticalPlanTomorrow: 🎯 اقترح خطة عملية مبسطة ليوم الغد تساهم في بناء مرونتي النفسية وتحسين إنتاجيتي
+quoteDefaultText: تذكر دائماً أن القلق لا يمنع ألم الغد، ولكنه يسرق متعة وسلام اليوم فحسب.
+quoteDefaultAuthor: دكتورك النفسي الصديق
+boxBreathingTitle: مساعد التنفس الصندوقي الاسترخائي (تنشيط العصب الحائر)
+boxBreathingDesc: طريقة تنفس مرحلية لدى أطباء النفس والعمليات الخاصة لتهدئة ضربات القلب وتحفيز السلام العصبي فورياً (4 ثوان لكل مرحلة).
+startBreathingBtn: ▶️ بدء تمرين التنفس
+stopBreathingBtn: ⏹️ إيقاف الجلسة
+selfCareGoalsTitle: أهداف الرعاية الذاتية والصحة النفسية
+sleepHoursLabel: ساعات النوم:
+sportsDurationLabel: التمارين الرياضية:
+medicationDoseLabel: جرعة العلاج/الفيتامينات:
+habitsTrackerTitle: تتبع العادات السلوكية والروتين
+addHabitBtnLabel: + إضافة عادة
+habitWarmWater: شرب 2 لتر ماء دافئ
+habitRelaxation: تأمل واسترخاء العضلات (10 د)
+habitBriskWalking: المشي السريع أو تمارين منزلي
+habitReading10Pages: قراءة 10 صفحات في كتاب
+catPhysicalHealth: صحة بدنية 🥦
+catMindMeditation: تأمل وذهن 🧠
+catSportActivity: رياضة ونشاط 🏃
+catCultureReading: ثقافة وقراءة 📚
+aiBehavioralAssessmentTitle: التقييم السلوكي وتقارير العادات الذكية (AI)
+generateBehavioralReportBtn: توليد تقرير التقييم السلوكي بالذكاء الاصطناعي
+dailyLifeMapTitle: خريطة ومؤشرات الحياة اليومية
+dailyBalanceIndexLabel: مؤشر التوازن والصحة اليومي:
+integratedTimelineTitle: شريط الزمن المتكامل وخطوات اليوم:
+sleepPeriodTitle: فترة النوم والراحة اليومية 💤
+dailyPsychTipTitle: نصيحة اليوم للصحة النفسية
+calendarModalTitle: التقويم والمكتبة الشاملة • اقرأً 📖🗓️
+myActivitiesTab: يومياتي وأنشطتي (اقرأ) ☀️
+myLibraryTab: مكتبتي الشاملة 📖
+noEntriesForDate: لا توجد يوميات أو مذكرات مسجلة لهذا اليوم
+readingRecommendationsTitle: توصيات لتحسين جودة القراءة والصحة النفسية
+therapyReportTitle: 🎓 تحضير جلسة العلاج النفسي والتقرير السريري الشامل
+therapyReportSubtitle: تقرير الأسبوع الحالي - تحضيرات جلسة المتابعة النفسية
+actionsHeader: Actions Header
+noHabitsFiltered: No Habits Filtered
+habitBooleanLabel: ✓ نعم / لا
+moveUpTitle: Move Up Title
+moveDownTitle: Move Down Title
+editHabitTitle: Edit Habit Title
+measurableUnitDefault: Measurable Unit Default
+quoteCopiedAlert: Quote Copied Alert
+copyQuoteTooltip: Copy Quote Tooltip
+scrollHint: Scroll Hint
+waterCupLabel: Water Cup Label
+ofEightCups: Of Eight Cups
+litersUnit: Liters Unit
+moodSevereDistress: Mood Severe Distress
+moodStableNeutral: Mood Stable Neutral
+moodContentPeaceful: Mood Content Peaceful
+moodJoyfulHighEnergy: Mood Joyful High Energy
+habitsFilterAndSort: فلاتر وفرز العادات
+filterAndSortBtn: فلاتr وفرز
+filterAndSortHeader: تصفية وفرز العادات
+hideArchived: إخفاء المؤرشفة
+hideCompleted: إخفاء المكتملة
+sortMethod: طريقة الفرز:
+sortManual: يدوياً ⬆
+sortByName: حسب الاسم
+sortByColor: حسب اللون
+sortByScore: حسب النقاط
+sortByStatus: حسب الحالة
+habitsSettingsTitle: إعدادات العادات والبيانات
+periodicityFilter: نطاق العرض والتردد:
+daysDisplayed: {count} أيام معروضة
+dayRangeDay: 📅 يوم
+dayRangeWeek: 📆 أسبوع
+dayRangeMonth: 🗓️ شهر
+dayRangeQuarter: 📊 ربع سنوي
+dayRangeSemiAnnual: 📈 نصف سنوي
+dayRangeYear: 📅 سنوي
+dayRangeCustom: 🎯 مخصص (من/إلى)
+fromDate: من تاريخ:
+toDate: إلى تاريخ:
+habitsAndRoutinesTitle: العادة والروتين
+recordValue: تسجيل القيمة: {name}
+quantity: الكمية ({unit}) لـ {date}:
+saveValue: حفظ القيمة
+biometricSettingsTitle: Biometric Settings Title
+biometricSettingsSub: Biometric Settings Sub
+biometricToggleFaceId: Biometric Toggle Face Id
+biometricToggleFingerprint: Biometric Toggle Fingerprint
+biometricToggleFaceIdDesc: Biometric Toggle Face Id Desc
+biometricToggleFingerprintDesc: Biometric Toggle Fingerprint Desc
+biometricHardwareUnavailable: Biometric Hardware Unavailable
+biometricDeviceNotSupported: Biometric Device Not Supported
+biometricVerifyToDisable: Biometric Verify To Disable
+biometricAuthPrompt: Biometric Auth Prompt
+biometricDisableSuccess: Biometric Disable Success
+biometricSetupSuccess: Biometric Setup Success
+biometricAppLockActive: Biometric App Lock Active
+biometricUnlockWithFaceId: Biometric Unlock With Face Id
+biometricUnlockWithFingerprint: Biometric Unlock With Fingerprint
+biometricPINFallbackBtn: Biometric P I N Fallback Btn
+geminiKeyModalTitle: Gemini Key Modal Title
+geminiKeyModalSubtitle: Gemini Key Modal Subtitle
+geminiGetKeyLink: Gemini Get Key Link
+geminiKeySave: Gemini Key Save
+geminiKeyDelete: Gemini Key Delete
+geminiKeySavedSuccess: Gemini Key Saved Success
+geminiKeyDeletedSuccess: Gemini Key Deleted Success
+geminiKeyRequiredWarning: Gemini Key Required Warning
+geminiSecurityNotice: Gemini Security Notice
+geminiKeyActive: Gemini Key Active
+geminiKeyCustomBadge: Gemini Key Custom Badge
+geminiKeyDefaultBadge: Gemini Key Default Badge
+lifeMapTitle: Life Map Title
+lifeMapSub: Life Map Sub
+lifeBalanceScore: Life Balance Score
+lifeSpiritual: Life Spiritual
+lifeHealth: Life Health
+lifeCareer: Life Career
+lifeRelationships: Life Relationships
+lifeFinances: Life Finances
+lifePersonalGrowth: Life Personal Growth
+cbtExercisesTitle: Cbt Exercises Title
+cbtExercisesSub: Cbt Exercises Sub
+cbtNewExerciseBtn: Cbt New Exercise Btn
+cbtThoughtRecord: Cbt Thought Record
+cbtDistortionCat: Cbt Distortion Cat
+cbtEvidenceFor: Cbt Evidence For
+cbtEvidenceAgainst: Cbt Evidence Against
+cbtBalancedThought: Cbt Balanced Thought
+gratitudeJournalTitle: Gratitude Journal Title
+gratitudeJournalSub: Gratitude Journal Sub
+gratitudeNewCardBtn: Gratitude New Card Btn
+gratitudeCardPlaceholder: Gratitude Card Placeholder
+gratitudeCardSavedSuccess: Gratitude Card Saved Success
+gratitudeCardDeleteConfirm: Gratitude Card Delete Confirm
+gratitudeShareCardBtn: Gratitude Share Card Btn
+clinicalReportTitle: Clinical Report Title
+clinicalReportSub: Clinical Report Sub
+clinicalSeverityMinimal: Clinical Severity Minimal
+clinicalSeverityMild: Clinical Severity Mild
+clinicalSeverityModerate: Clinical Severity Moderate
+clinicalSeveritySevere: Clinical Severity Severe
+clinicalExportPdfBtn: Clinical Export Pdf Btn
+clinicalExportWordBtn: Clinical Export Word Btn
+clinicalPrintBtn: Clinical Print Btn
+clinicalConfidentialNotice: Clinical Confidential Notice
+backupSyncSub: Backup Sync Sub
+backupSyncGenerateKey: Backup Sync Generate Key
+backupSyncEnterKey: Backup Sync Enter Key
+backupSyncExportJson: Backup Sync Export Json
+backupSyncImportJson: Backup Sync Import Json
+backupSyncRestoreSuccess: Backup Sync Restore Success
+canvasTitle: Canvas Title
+canvasBrushSmall: Canvas Brush Small
+canvasBrushMedium: Canvas Brush Medium
+canvasBrushLarge: Canvas Brush Large
+canvasBrushEraser: Canvas Brush Eraser
+canvasUndo: Canvas Undo
+canvasRedo: Canvas Redo
+canvasClear: Canvas Clear
+canvasSaveToEntry: Canvas Save To Entry
+rateAppSubmitBtn: Rate App Submit Btn
+reportFromDate: من:
+reportToDate: إلى:
+reportRangeLabel: الفاصل:
+today: اليوم
+yesterday: الأمس
+daysAgo: قبل {count} أيام
+currentWeek: الأسبوع الحالي
+lastWeek: الأسبوع الماضي
+weeksAgo: قبل {count} أسابيع
+currentMonth: الشهر الحالي
+lastMonth: الشهر الماضي
+monthsAgo: قبل {count} أشهر
+currentQuarter: الربع الحالي
+previousQuarter: الربع السابق
+quartersAgo: قبل {count} أرباع
+currentHalf: النصف الحالي
+previousHalf: النصف السابق
+halvesAgo: قبل {count} أنصاف
+currentYearLabel: السنة الحالية ({year})
+lastYearLabel: السنة الماضية ({year})
+yearLabelN: سنة {year}
+reportsHistory: السجل ({count}) 📜
+aiSummaryBtn: ملخص الذكاء الاصطناعي 🧠
+analyzingStatus: جاري التحليل...
+copyTextTooltip: نسخ النص
+copiedSuccess: تم النسخ!
+copyBtn: نسخ
+printReportTooltip: طباعة
+loggedDiariesStat: اليوميات المدونة
+entriesUnit: مذكرة
+avgSleepStat: متوسط النوم
+moodScoreStat: معدل المزاج
+exerciseTimeStat: وقت الرياضة
+sleepMoodChartTitle: الرسم البياني للربط بين النوم والمزاج
+timelineLabel: توزيع الفترة
+clinicalAnalysisTitle: التقرير والتحليل النفسي السريري (المستشار الذكي)
+clickAiSummaryHint: انقر على زر "ملخص الذكاء الاصطناعي 🧠" أعلاه لإدراج تحليلات الملاحظات والسلوكيات لهذه الفترة.
+topLoggedFeelingsTitle: أبرز المشاعر المسجلة خلال الفترة:
+sampleFeelings: مرتاح، مطمئن، متفائل
+preparingPdf: جاري تجهيز PDF...
+exportPdfNow: تصدير PDF الآن
+reportsHistoryTitle: سجل تقارير الصحة النفسية المحفوظة 📜
+reportsHistorySubtitle: سجل التقارير السابقة مع التواريخ والفترات وملاحظات المستشار
+searchReportsPlaceholder: البحث في التقارير بالاسم أو التاريخ...
+totalReportsCount: إجمالي التقارير: {count}
+noReportsInHistory: لا توجد تقارير محفوظة في السجل
+clickSaveReportHint: انقر على "حفظ التقرير في السجل 💾" أعلاه لأرشفة تقريرك واستعادته لاحقاً.
+distortion_catastrophizing: 🌋 التهويل المفرط
+distortion_desc_catastrophizing: توقع السيناريو الكارثي الأسوأ وتضخيم الأخطار بشكل مبالغ فيه.
+distortion_mind_reading: 🔮 القراءة الذهنية
+distortion_desc_mind_reading: افتراض معرفة ما يفكر فيه الآخرون عنك سلباً دون وجود أدلة.
+distortion_all_or_nothing: 🌗 التفكير الاستقطابي
+distortion_desc_all_or_nothing: رؤية الأمور باللون الأبيض أو الأسود فقط؛ إما نجاح تام أو إخفاق كامل.
+cbtTabThoughtRecords: 🧠 أوراق الهيكلة المعرفية
+cbtTabDownwardArrow: ⬇️ سهم التفكير (المعتقدات العميقة)
+cbtTabWorryBox: 📦 صندوق القلق وتأجيل الوساوس
+cbtTabExposureLadder: 🪜 سلم التعريض التدريجي
+cbtTabCopingCards: 📇 بطاقات المواجهة والتأقلم
+cbtTabGrounding: 🧘 التأريض الحسي 5-4-3-2-1
+cbtTabAnalytics: 📊 تحليلات وتشوهات الأفكار
+tasksSubTabDaily: اليومية والمهام
+tasksSubTabHabitsGrid: جدول العادات
+tasksSubTabSettings: إعدادات العادات والبيانات
+waterReminderNotifTitle: 💧 حان وقت شرب الماء!
+waterReminderNotifBody: تذكير صحي لطيف: شرب كوب من الماء الانتعاش لصحتك وتنشيط عقلك وحمايتك من الجفاف.
+waterReminderEnabledToast: تم تفعيل التنبيهات الساعية لشرب الماء 💧⏰
+waterReminderDisabledToast: تم إيقاف تنبيهات شرب الماء 🔕
+workoutTimerStarted: بدأ مؤقت التمرين الرياضي! ⏱️🏃
+workoutTimerPaused: تم إيقاف مؤقت التمرين مؤقتاً ⏸️
+workoutTimerReset: تمت إعادة ضبط المؤقت 🔄
+workoutLoggedSuccess: تم تسجيل {mins} دقيقة ({type}) بنجاح! 🏃💪 (المجموع: {total} دقيقة)
+medTakenSuccess: تم تسجيل أخذ "{name}" بنجاح! 💊
+medUntaken: تم إلغاء تحديد "{name}"
+medAddedSuccess: تمت إضافة "{name}" لقائمة أدوية ومكملات اليوم! 💊
+medDeleted: تم حذف المكمل/الدواء من القائمة.
+newHabitDefaultName: عادة جديدة
+confirmDeleteHabit: هل أنت متأكد من حذف هذه العادة نهائياً؟
+updateBiometricBtn: تحديث أو إعادة ربط البصمة 👆👤
+linkBiometricBtn: ربط وتفعيل بصمة الجهاز الآن 👆👤
+confirmDeleteProsCons: هل أنت متأكد من رغبتك في حذف سجل هذا اليوم من الإيجابيات والسلبيات؟
+prosConsDeleted: تم حذف السجل اليومي بنجاح.
+noProsConsToExport: لا توجد سجلات مسجلة بعد للتصدير.
+exportedWordSuccess: تم تحميل السجل الكامل كـ Word 📝
+ancientTreeTag: • 365 يوماً
+maxTreeLevelBadge: أعلى مستوى نمو متاح 🌟
+toNextTreeStage: مكتمل للمستوى التالي
+disableTreePreview: إلغاء معاينة إنجاز 365 يوماً 🔄
+enableTreePreview: اختبار معاينة مستوى شجرة الحكمة المعمرة (365 يوماً) 🧪
+defaultGratitudeCardQuote: الحمد لله على نعمة الهدوء والسلام الداخلي والصحة والعافية
+defaultAuthorName: رحلتي مع الوعي
+defaultCardCategory: لحظة امتنان 💖
+gratitudeDownloaded: ✅ تم تحميل بطاقة الامتنان بنجاح
+gratitudeDownloadFailed: ⚠️ تعذر تحميل الصورة، يرجى المحاولة ثانية
+gratitudeCardCopied: 📋 تم نسخ نص البطاقة للمشاركة
+gratitudeShareUnsupported: ⚠️ تعذر فتح المشاركة على هذا الجهاز
+gratitudeShareFailed: ⚠️ تعذر تجهيز المشاركة
+gratitudeTextCopied: 📋 تم نسخ النص إلى الحافظة
+gratitudeCopyFailed: ⚠️ تعذر النسخ للحافظة
+preparingImage: ⏳ جاري تجهيز الصورة...
+downloadedBtn: تم التحميل! 💾
+downloadPngBtn: تحميل صورة PNG
+preparingShare: ⏳ جاري تجهيز المشاركة...
+directShareBtn: مشاركة مباشرة
+copiedSuccessBtn: تم النسخ بنجاح! ✨
+voiceListeningPrompt: جاري الاستماع... تفضل بالتحدث معي...
+confirmClearGeneralChat: هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار العام؟
+confirmClearAdvisorChat: هل أنت متأكد من رغبتك في مسح سجل محادثة المستشار الذكي؟
+stopDictationTitle: اضغط لإنهاء الإملاء
+smartDictationTitle: إملاء صوتي ذكي للرسالة
+listeningVoice: جاري الاستماع لصوتك...
+askGeneralAiPlaceholder: اسأل المستشار العام أو أرفق ملفاً...
+askAdvisorPlaceholder: اسأل المستشار عن يومياتك...
+generalVoiceCompanionTitle: المساعد الصوتي الذكي العام 🌐
+generalVoiceModalDesc: تحدث بطلاقة، وسيقوم المستشار الذكي العام بالإجابة عن كافة أسئلتك واستفساراتك بالصوت...
+advisorVoiceModalDesc: تكلم بطلاقة، وسيقوم المساعد بقراءة تدويناتك وتحليلها والرد عليك فوراً بالصوت...
+mood_happy: سعيد
+mood_very_happy: سعيد جدًا
+mood_grateful: ممتن
+mood_calm: مطمئن
+mood_hopeful: أمل
+mood_relaxed: مرتاح
+mood_enthusiastic: حماس
+mood_excited: متحمس
+mood_anxious: قلق
+mood_sad: حزين
+mood_afraid: خوف
+mood_insomnia: أرق
+mood_exhausted: مرهق
+mood_angry: غضب
+mood_normal: طبيعي
+tag_study: دراسة
+tag_family: عائلة
+tag_hope: أمل
+tag_insomnia: أرق
+tag_anxiety: قلق
+tag_challenge: تحدي
+tag_achievement: إنجاز
+tag_happiness: سعادة
+tag_reading: قراءة
+tag_mindfulness: تأمل
+tag_work: عمل
+tag_sports: رياضة
+diaryImportanceLabel: العمق والأهمية الذاتية:
+diaryMoodsRecordedLabel: الحالة المزاجية المسجلة:
+noMoodSelected: لم يتم تحديد مزاج
+untitledDiaryDefault: مذكرة يومية بدون عنوان
+prosConsModalTitle: ميزان الإيجابيات والسلبيات اليومي (Pros & Cons)
+prosConsTopicPlaceholder: اكتب الموضوع أو القرار الذي تود موازنته اليوم...
+prosInputPlaceholder: أضف إيجابية جديدة (مثال: فرصة للتعلم وتطوير المهارات)
+consInputPlaceholder: أضف سلبية أو تحدياً (مثال: يتطلب وقتاً وجهداً إضافياً)
+saveDailyRecordBtn: حفظ السجل اليومي
+exportWordBtn: تصدير مستند Word
+lockScreenAthkarTitle: أذكار شاشة القفل والسكينة
+integratedTherapyReportTitle: تقرير الاستشارة النفسية والعلاجية المتكامل
+generateClinicalReportBtn: توليد التقرير السريري بالذكاء الاصطناعي
+exportReportPdfBtn: تصدير التقرير كـ PDF
+monthlyMentalHealthReportTitle: تقرير الصحة النفسية الشهري المتكامل
+downloadReportPdfBtn: تحميل التقرير كـ PDF
+editHabitModalTitle: تعديل العادة
+addHabitModalTitle: إضافة عادة جديدة
+habitNamePlaceholder: مثال: قراءة 15 صفحة من كتاب
+habitBestTimePlaceholder: مثال: بعد صلاة الفجر أو في الصباح الباكر
+habitGoalPlaceholder: مثال: لتحسين التركيز وتوسيع المعرفة
+habitLocationPlaceholder: مثال: في غرفة المعيشة، على المكتب
+enableDailyHabitReminder: تفعيل التنبيه اليومي لهذه العادة
+enableHabitXpReward: تفعيل نظام النقاط والمكافأة (XP)
+addHabitNowBtn: إضافة العادة الآن
+habitSettingsScreenTitle: إعدادات العادات والنسخ الاحتياطي
+exportHabitsJsonBtn: تصدير نسخة احتياطية (JSON)
+importHabitsJsonBtn: استيراد نسخة احتياطية (JSON)
+resetHabitsDefaultBtn: إعادة ضبط العادات للوضع الافتراضي
+saveAllSettingsBtn: حفظ كافة الإعدادات
+geminiKeyPoolTitle: مجمع مفاتيح Gemini الذكي (API Key Pool)
+geminiKeyInputPlaceholder: ألصق مفتاح Google Gemini API هنا...
+addKeyToPoolBtn: إضافة المفتاح إلى المجمع
+testAllKeysBtn: فحص جميع المفاتيح الآن
+skipTourBtn: تخطي الجولة
+prevBtn: السابق
+nextBtn: التالي
+startJourneyBtn: ابدأ رحلتك الآن
+dhikrCounterTitle: المسبحة والعداد التفاعلي
+resetCounterBtn: إعادة الضبط
+changeTargetBtn: تغيير الهدف
+fullAthkarTitle: موسوعة الأذكار والأدعية الشاملة
+searchAthkarPlaceholder: ابحث في الأذكار والأدعية...
+dashboardTitle: لوحة التحكم والتوازن النفسي
+quickActionNewDiary: تدوين خاطرة سريعة
+welcomeGreeting: مرحباً بك مجدداً، نتمنى لك يوماً مليئاً بالسكينة
+dailyQuote: السكينة لا تعني غياب العواصف، بل الهدوء في أعماق قلبك وسطها.
+diariesTimelineTitle: سجل اليوميات والخواطر
+writeNewDiaryBtn: كتابة يومية جديدة
+saveDiaryBtn: حفظ المذكرة
+deleteDiaryBtn: حذف المذكرة
+smartAdvisorTitle: المستشار النفسي الذكي (Hayat AI)
+smartAdvisorSubtitle: مساحتك الآمنة للفضفضة والتحليل السلوكي المعرفي
+suggestAiAlternativeBtn: اقتراح بديل بالذكاء الاصطناعي
+gratitudeTabTitle: شجرة الامتنان
+gratitudeTreeTitle: شجرة الامتنان والوفرة النفسية
+addGratitudeBtn: أضف سبباً للامتنان
+saveGratitudeBtn: حفظ الامتنان
+shareGratitudeBtn: مشاركة بطاقة الامتنان
+cbtTherapyTitle: جناح العلاج المعرفي السلوكي (CBT)
+worryBoxTitle: صندوق المخاوف والقلق
+thoughtRecordTitle: سجل إعادة هيكلة الأفكار التلقائية
+groundingTitle: تمرين التأريض الحسي (5-4-3-2-1)
+exposureLadderTitle: سلم التعريض التدريجي للمخاوف
+actionPlanLabel: خطة العمل والحل:
+realProblemLabel: مشكلة حقيقية خاضعة للتحكم
+habitsTabTitle: العادات والروتين
+addHabitBtn: إضافة عادة جديدة
+analyticsTitle: لوحة التحليلات والمؤشرات النفسية
+habitsCompletionRate: نسبة الالتزام بالعادات
+moodTrendsTitle: اتجاهات ومسار الحالة المزاجية
+weeklySummaryTitle: ملخص الأسبوع الشامل
+calendarTabTitle: التقويم والمواعيد
+calendarViewTitle: التقويم الزمني للأحداث والمشاعر
+todayBtn: اليوم
+monthView: عرض شهري
+weekView: عرض أسبوعي
+libraryTabTitle: المكتبة والكتب
+favoriteBooksTitle: الكتب المفضلة وسجل القراءة
+addBookBtn: إضافة كتاب جديد
+readingProgressTitle: متابعة تقدم القراءة
+appearanceSection: المظهر والسمات
+backupAndSyncTitle: النسخ الاحتياطي والمزامنة السحابية
+lockScreenTitle: شاشة القفل والحماية
+lockScreenSubtitle: أدخل رمز PIN لفتح مذكراتك بأمان
+enterPinPrompt: أدخل رمز PIN المكون من 4 أرقام
+unlockAppBtn: إلغاء القفل
+pinModalTitle: تغيير رمز PIN السري
+enterCurrentPin: رمز PIN الحالي:
+enterNewPin: رمز PIN الجديد:
+confirmNewPin: تأكيد رمز PIN الجديد:
+savePinBtn: حفظ رمز PIN
+attachVideo: إرفاق مقطع فيديو
+attachAudio: إرفاق تسجيل صوتي
+attachFile: إرفاق ملف أو مستند
+recordAudioBtn: تسجيل صوتي مباشر
+enableNotificationsPrompt: تفعيل الإشعارات والتنبيهات الذكية
+testNotificationBtn: إرسال إشعار تجريبي الآن
+saveRemindersBtn: حفظ المواعيد والتنبيهات
+onboardingTitle: مرحباً بك في تطبيق حياتك المتكامل
+rateAppSubtitle: رأيك يهمنا لمواصلة التطوير والتحسين المستمر
+submitRatingBtn: إرسال التقييم
+laterBtn: لاحقاً
+contactOwnerSubtitle: نحن هنا للإجابة على اقتراحاتك واستفساراتك
+sendMessageBtn: إرسال الرسالة
+smartContextDiariesTitle: قسم اليوميات والخواطر
+smartContextDiariesDesc: قراءة المذكرات والملاحظات المكتوبة
+smartContextMoodLogsTitle: سجل المزاج والانفعالات اليومية
+smartContextMoodLogsDesc: قراءة وتقييم درجات المزاج اليومي
+smartContextHabitsTitle: قائمة العادات والالتزام اليومي
+smartContextHabitsDesc: متابعة نسبة إنجاز وتكرار عاداتك
+smartContextTasksTitle: المهام وقوائم الإنجاز (Tasks)
+smartContextTasksDesc: الاطلاع على قائمة مهامك اليومية والأسبوعية
+smartContextCbtTitle: تمارين العلاج المعرفي السلوكي (CBT)
+smartContextCbtDesc: قراءة بطاقات التكيف وأفكارك لإعطاء إرشادات
+smartContextReportsTitle: تقارير الصحة النفسية الشاملة
+smartContextReportsDesc: قراءة ملخصات التقييم النفسي والتحليلات
+smartContextVoiceTitle: المذكرات والتسجيلات الصوتية
+smartContextVoiceDesc: تحليل نصوص التسجيلات والملاحظات الصوتية
+smartContextBooksTitle: المكتبة والكتب المفضلة
+smartContextBooksDesc: قراءة قائمة قراءاتك واقتباساتك الملهمة
+smartContextGratitudeTitle: شجرة الامتنان والتفكير الإيجابي
+smartContextGratitudeDesc: مراجعة أسباب الامتنان والأفكار الإيجابية
+smartContextLifeMapTitle: خريطة الحياة والأهداف المستقبلية
+smartContextLifeMapDesc: متابعة رؤيتك المستقبلية وأهدافك طويلة المدى
+smartContextProsConsTitle: ميزان القرار والموازنات (Pros & Cons)
+smartContextProsConsDesc: مراجعة الموازنات والقرارات الشخصية
+journal_type_diary: يوميات
+journal_type_diary_desc: تدوين أحداث ومجريات اليوم والتفاصيل الحياتية
+journal_type_thought: خواطر وأفكار
+journal_type_thought_desc: تأملات شخصية وفضفضة حرة
+journal_type_gratitude: امتنانات
+journal_type_gratitude_desc: شكر النعم وأشخاص ولحظات تصنع البهجة
+journal_type_wisdom: حكم قصيرة
+journal_type_wisdom_desc: دروس مستفادة وعِبر وتجارب عميقة
+journal_type_quote: اقتباسات
+journal_type_quote_desc: كلمات ملهمة وجمل مقتبسة من كتب أو شخصيات
+journal_type_idea: أفكار سريعة
+journal_type_idea_desc: أفكار ومشاريع وليدة اللحظة ومقترحات
+journal_type_free_writing: كتابة حرة
+journal_type_free_writing_desc: تدفق الأفكار بدون قيود أو قياسات
+journal_type_memory: ذكريات مصورة
+journal_type_memory_desc: لحظات وصور خالدة في الذاكرة
+biometricsNotSupportedFallbackPin: البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي
+biometricsPermissionDenied: تم رفض إذن البصمة أو البيئة المضمنة غير مسموحة
+biometricsAuthFailed: خطأ في التحقق البيومتري
+environmentUnavailable: البيئة غير متاحة
+webAuthnUnsupported: المتصفح الحالي لا يدعم تقنية WebAuthn / Passkey
+biometricSensorUnavailable: الجهاز الحالي لا يحوي مستشعر بصمة مفعّل أو غير متاح
+biometricSensorConnectFailed: تعذر الاتصال بمستشعر البصمة في هذا المتصفح
+generatedReportNotice: تم التوليد بناءً على سجل بياناتك اليومية المحفوظة
+summary: الملخص
+positiveProgressMessage: تظهر البيانات مسيرة متوازنة مع السعي الدائم لتنظيم الأفكار ومواجهة الضغوط بوعي ذاتي ومرونة.
+maintainConsistencyPrompt: المواظبة على تدوين الخواطر وتتبع العادات اليومية.
+mindfulnessAdvicePrompt: ممارسة تمارين التنفس العميق والاسترخاء الذهني قبل النوم.
+matchingResultsTitle: نتائج البحث والتحليل المباشر في سجلاتك
+smartAdvisorDefaultResponse: أنا مستشارك النفسي الذكي، متواجد دائماً لمساعدتك في تحليل أفكارك ومشاعرك وعاداتك وتوجيهك نحو التوازن والسكينة.
+reminder_morning_athkar: أذكار الصباح ☀️
+reminder_water: شرب الماء وترطيب الجسم 💧
+reminder_evening_athkar: أذكار المساء 🌙
+reminder_daily_diary: تدوين اليوميات وتفريغ الأفكار ✍️
+habitWaterName: شرب 2 لتر ماء دافئ
+habitMeditationName: تأمل واسترخاء العضلات (10 د)
+habitWalkingName: المشي السريع أو تمرين منزلي
+habitReadingName: قراءة 10 صفحات في كتاب
+gratitudeDemoText1: رؤية شروق الشمس اليوم والبدء بيوم جديد مليء بالفرص والأمل
+gratitudeDemoText2: شرب فنجان قهوة ساخن وممتع بمشاركة صديق مقرب والحديث الدافئ معه
+gratitudeDemoText3: الوصول لحل مشكلة معقدة في العمل والشعور بالرضا والانجاز
+diaryDemoTitle1: تخطيط أسبوعي، غداء عائلي وشعور بالأمل
+diaryDemoContent1: بدأت اليوم ببعض القلق بشأن المهام المتراكمة، لكن بعد التحدث مع العائلة في وجبة الغداء شعرت براحة كبيرة وامتنان عميق.
+diaryDemoTitle2: أرق منتصف الليل وتفكير زائد في المستقبل
+diaryDemoContent2: لم أستطع النوم جيداً الليلة الماضية بسبب التفكير الزائد. في المساء قمت بالمشي السريع لمدة 45 دقيقة مما ساعدني على استعادة الهدوء.
+diaryDemoTitle3: إنجاز مشروع وقراءة مسائية ممتعة
+diaryDemoContent3: اليوم كان يوماً رائعاً، أنهيت عرض المشروع الجامعي ونال استحساناً كبيراً. قرأت فصلاً في كتاب قبل النوم مع شاي البابونج.
+mood_joyful: مبتهج
+mood_satisfied: راضٍ
+tag_gratitude: امتنان
+tag_morning: صباح
+tag_warmth: دفء
+tag_growth: تطور
+passkeyAndPinSecurity: إعدادات القفل والبصمة (Passkey & PIN)
+protectAppWithPinBiometrics: حماية الخصوصية عبر الـ PIN وبصمة الإصبع/الوجه
+pinCode4Digits: رمز الـ PIN المكون من 4 أرقام
+defaultPin1234: الافتراضي: 1234
+deviceBiometricsPasskey: بصمة الإصبع / الوجه (Biometrics & Passkey)
+linkedAndActive: مربوط ومفعّل ✅
+notLinked: غير مربوط ⚠️
+androidCapacitorBiometrics: تطبيقات الأندرويد المحولة (Capacitor APK):
+writeDiaryBackupLabel: 📖 يومياتي (WriteDiary Backup)
+weekdaySunShort: الأحد
+weekdayMonShort: الإثنين
+weekdayTueShort: الثلاثاء
+weekdayWedShort: الأربعاء
+weekdayThuShort: الخميس
+weekdayFriShort: الجمعة
+weekdaySatShort: السبت
+smartAdvisorChatClearedPrompt: تم مسح سجل المحادثة. كيف يمكنني مساعدتك اليوم في تصفح وتحليل يومياتك؟ 🧠
+smartAdvisorDiaryProTab: المستشار لليوميات Pro
+smartAdvisorGeneralTab: المستشار الذكي العام 🌐
+smartAdvisorDiaryProTitle: المستشار الذكي لليوميات Pro
+smartAdvisorDiaryProDesc: تحليل الأنماط السلوكية، التغير المزاجي والعلاقات الزمنية
+smartAdvisorStartVoiceChat: بدء محادثة صوتية مستمرة
+smartAdvisorVoiceChatBtn: محادثة صوتية
+smartAdvisorAccessPermissions: صلاحية وصول المستشار
+smartAdvisorPermissionsBtn: الصلاحيات
+smartAdvisorDiariesAccess: صلاحية الوصول لليوميات
+smartAdvisorGeneralTitle: المستشار الذكي العام (General AI)
+smartAdvisorGeneralDesc: إجابات عامة، علوم، تحليل الصور والمستندات والصوتيات
+smartAdvisorIndependentContext: مستقل عن اليوميات
+smartAdvisorStopAudio: إيقاف الصوت
+smartAdvisorListenAudio: استماع بالصوت
+smartAdvisorAnalyzingLifeLog: يقوم المستشار بتحليل سجل حياتك...
+smartAdvisorWebLinkOption: 🌐 رابط
+smartAdvisorVideoOption: 🎥 فيديو
+smartAdvisorEnterWebLink: أدخل الرابط الإلكتروني المرجعي:
+smartAdvisorAddLinkBtn: إضافة الرابط
+smartAdvisorEnterVideoUrl: أدخل رابط الفيديو (يوتيوب أو فيديو مباشر):
+smartAdvisorAddVideoBtn: إضافة الفيديو
+smartAdvisorEnterPdfInfo: أدخل معلومات مستند الـ PDF المرفق:
+smartAdvisorPdfNamePlaceholder: اسم الملف (مثال: تقرير_نفسي.pdf)
+smartAdvisorPdfUrlPlaceholder: رابط التحميل أو المشاهدة...
+smartAdvisorAddPdfBtn: إضافة PDF
+smartAdvisorAddAttachmentHeader: إضافة مرفق للمحادثة:
+smartAdvisorMediaUploadOption: صورة / فيديو / مستند / صوت
+smartAdvisorWebLinkCategory: رابط موقع إلكتروني
+smartAdvisorVideoLinkCategory: رابط فيديو مرجعي
+smartAdvisorPdfDocCategory: معلومات مستند PDF
+smartAdvisorAttachFilesTooltip: إضافة صورة، PDF، صوت، رابط أو فيديو
+smartAdvisorClearChatTooltip: مسح سجل المحادثة
+smartAdvisorPermissionsTitle: صلاحية وصول المستشار الذكي 🛡️
+smartAdvisorPermissionsSubtitle: تحديد الأماكن والبيانات المسموح للمستشار بتحليلها وقراءتها
+smartAdvisorEnableAllAccess: تفعيل الوصول للكل
+smartAdvisorEnableAllAccessDesc: عند التفعيل، يستطيع المستشار تقديم تحليلات وشاملة لكافة الأنشطة
+smartAdvisorPreferencesNote: 🔒 يتم حفظ تفضيلاتك محلياً وتُطبق فورياً على ردود المستشار الذكي.
+smartAdvisorSaveApplyBtn: حفظ وتطبيق 💾
+tag_imported: مستورد
+tag_diaries: يومياتي
+mood_reflective: تأملي
+fontDefaultSample: بسم الله الرحمن الرحيم - كل يوم هو فرصة جديدة للنمو والسكينة والأمل.
+aiPositivesHeader: الإيجابيات المولدة بالذكاء الاصطناعي:
+aiNegativesHeader: السلبيات والتحديات المولدة بالذكاء الاصطناعي:
+userManualPositivesHeader: الإيجابيات المدخلة يدوياً:
+userManualNegativesHeader: السلبيات المدخلة يدوياً:
+generatedByHayatAiNotice: تم التوليد بواسطة تطبيق حياة AI 🌿
+prosConsReportTitle: تقرير الإيجابيات والسلبيات
+dailyProsConsReportTitle: تقرير الإيجابيات والسلبيات اليومية
+dateLabelColon: التاريخ:
+comprehensiveProsConsHistoryTitle: سجل الإيجابيات والسلبيات الشامل
+comprehensiveProsConsLogAllDays: سجل الإيجابيات والسلبيات الشامل لجميع الأيام
+dailyProsConsLogHeader: ⚖️ سجل الإيجابيات والسلبيات اليومية
+fullHistoryArchiveBadge: سجل تاريخي كامل 🧠
+prosConsArchiveDescription: أرشيف وتوثيق زمني لجميع نقاط القوة والفرص والإيجابيات، إلى جانب التحديات والسلبيات المسجلة آلياً بالذكاء الاصطناعي أو يدوياً عبر الأيام.
+exportFullLogBtn: تصدير السجل الكامل (Word / PDF) 📄
+totalDaysTrackedLabel: إجمالي الأيام المسجلة
+daysUnit: أيام
+totalPositivesLoggedLabel: مجموع الإيجابيات المسجلة
+itemsUnit: نقطة
+totalChallengesNegativesLabel: مجموع التحديات والسلبيات
+positiveBalanceRatioLabel: نسبة التوازن الإيجابي
+searchProsConsPlaceholder: ابحث برمز اليوم، التاريخ، أو الكلمات المفتاحية...
+filterMostlyPositive: الأغلبية إيجابية 🟢
+filterHigherChallenges: تحديات أعلى 🔴
+noMatchingRecordsFound: لا توجد سجلات مطابقة حالياً
+goToJournalForProsConsPrompt: انتقل إلى صفحة اليوميات وانقر على أيقونة ⚖️ الإيجابيات والسلبيات بجانب تاريخ أي يوم لحفظ تقرير الإيجابيات والسلبيات الخاص به.
+loggedDateLabel: تاريخ التوثيق:
+editDetailsBtn: تعديل التفاصيل
+deleteRecordTooltip: حذف السجل
+positivesLabel: الإيجابيات
+totalPrefix: مجموع 
+noPositivesLoggedToday: لا توجد إيجابيات مدونة لليوم.
+challengesAndNegativesLabel: التحديات والسلبيات
+noNegativesLoggedToday: لا توجد سلبيات مدونة لليوم.
+habitWater2L: شرب 2 لتر ماء دافئ
+habitMeditation10min: تأمل واسترخاء العضلات (10 د)
+habitBriskWalk: المشي السريع أو تمرين منزلي
+habitRead10Pages: قراءة 10 صفحات في كتاب
+gratitudeCardSample1: رؤية شروق الشمس اليوم والبدء بيوم جديد مليء بالفرص والأمل
+gratitudeCardSample2: شرب فنجان قهوة ساخن وممتع بمشاركة صديق مقرب والحديث الدافئ معه
+gratitudeCardSample3: الوصول لحل مشكلة معقدة في العمل والشعور بالرضا والانجاز
+voice_journal: مذكرة صوتية
+ai_assistant: مساعد ذكي
+cbtSuiteTitle: مركز العلاج المعرفي السلوكي المتقدم (CBT & Psychological Suite)
+cbtSuiteSubtitle: تمارين إعادة الهيكلة المعرفية وضبط استجابات الذهن 🧠✨
+cbtSuiteDescription: مجموعة أدوات علاجية نفسية مثبتة علمياً لتشخيص الأفكار المقلقة، تفكيك المعتقدات الأساسية، تأجيل الوساوس، وبناء مرونة نفسية راسخة.
+cbtGroundingDescription: تمرين موجه يربط حواسك بالمكان واللحظة الحالية لقطع تسارع القلق والهلع واستعادة السكينة فوراً.
+stepOf5: الخطوة {step} من 5
+cbtGrounding5SeePrompt: انظر حولك الآن واذكر 5 أشياء تقع عينك عليها:
+itemISeePrefix: شيء أراه
+cbtGrounding4TouchPrompt: ركز على الملمس واذكر 4 أشياء تشعر بلمسها الآن:
+itemITouchPrefix: شيء ألمسه
+cbtGrounding3HearPrompt: أنصت بهدوء واذكر 3 أصوات تسمعها محيطة بك:
+soundIHearPrefix: صوت أسمعه
+cbtGrounding2SmellPrompt: استشعر رائحة المكان واذكر شيئين تشمهما:
+scentISmellPrefix: رائحة أشمها
+cbtGrounding1TastePrompt: اذكر شيئاً واحداً يمكنك تذوقه أو تذكر طعمه في فمك:
+cbtGroundingTastePlaceholder: نكهة القهوة، طعم الماء، النعناع...
+previousStepArrow: ← الخطوة السابقة
+nextStepArrow: الخطوة التالية →
+completeGroundingBtn: ✓ إنهاء تمرين التأريض واستعادة الهدوء
+totalCompletedCbtExercises: إجمالي تمارين CBT المكتملة
+documentedCognitiveSessions: جلسة تفكير متزنة وموثقة
+averageAnxietyRelief: متوسط انخفاض شدة التوتر
+pointsUnit: درجة
+emotionalImprovementRate: معدل تحسن الاستجابة العاطفية
+favoriteCopingCards: بطاقات المواجهة المفضلة
+supportiveCardsDistress: بطاقة داعمة في لحظات النوبات
+cognitiveDistortionsDistribution: توزيع التشوهات المعرفية الأكثر تكراراً (Cognitive Distortions Stats)
+timesUnit: مرّة
+cbtRestructuringStepOf5: معالج إعادة الهيكلة المعرفية - الخطوة {step} من 5
+cbtStep1TriggerLabel: الخطوة 1: الموقف أو الحدث المثير (Trigger Event)
+cbtStep1Placeholder: ما الموقف الذي حدث قبل أن تشعر بالضيق؟ (مثال: تلقيت رسالة تنبيه من المدير...)
+cbtStep2ThoughtLabel: الخطوة 2: الفكرة التلقائية السلبية (Automatic Thought)
+cbtStep2Placeholder: ما الفكرة التلقائية التي خطرت ببالك فوراً؟ (مثال: سيتم طردي من العمل بالتأكيد...)
+cbtStep3DistortionLabel: الخطوة 3: اختر التشوه المعرفي المحتمل (Cognitive Distortion)
+cbtStep4AlternativeLabel: الخطوة 4: البديل العقلاني المنطقي (Rational Alternative)
+cbtStep4Placeholder: اكتب البديل العقلاني الأكثر اتزاناً والمستند للحقائق الواقعية...
+cbtStep5RatingLabel: الخطوة 5: تقييم شدة التوتر بعد التمرين (0 - 10)
+cbtThoughtRecordsLogHeader: سجل أوراق العمل المعرفية (CBT Thought Records)
+cbtThoughtRecordsDescription: فكك الأفكار السلبية التلقائية، حدد التشوه المعرفي، ووازن الأدلة للوصول إلى بديل عقلاني مريح للذهن.
+newThoughtRecordBtn: تمرين إعادة هيكلة جديد
+noThoughtRecordsLogged: لم تقم بأي تمارين إعادة هيكلة معرفية حتى الآن.
+clickNewThoughtRecordHint: انقر على زر "تمرين إعادة هيكلة جديد" للبدء في تفكيك الأفكار المزعجة.
+anxietyReliefPrefix: تراجع التوتر:
+triggerEventPrefix: الموقف أو المحفز:
+automaticNegativeThoughtPrefix: الفكرة التلقائية السلبية:
+cognitiveDistortionPrefix: التشوه المعرفي:
+rationalAlternativePrefix: البديل العقلاني المستنتج:
+anxietyBeforeLabel: شدة التوتر قبل:
+anxietyAfterLabel: شدة التوتر بعد:
+downwardArrowTechniqueHeader: تقنية سهم التفكير للأسفل
+downwardArrowDescription: تمرين استكشافي ينقب عن المعتقد الجذري العميق (Core Belief / Schema) المسبب للتوتر المزمن، عبر طرح سؤال متكرر: "إذا افتُرض أن هذه الفكرة صحيحة، فما المعنى المترتب على ذلك بالنسبة لك؟"
+startDownwardArrowBtn: بدء تمرين السهم للأسفل
+initialThoughtLabel: الفكرة الظاهرة
+initialThoughtExample: مثال: "تأخر عميلي في الرد على الرسالة."
+whatDoesThatMeanLabel: ماذا يعني لك ذلك؟
+whatDoesThatMeanExample: "معناه أنه غاضب مني وسيُلغي العقد."
+whatIfCancelledLabel: وإذا أُلغي العقد؟
+whatIfCancelledExample: "معناه أنني فاشل ولا أصلح للعمل."
+healthyAlternativeBeliefHeader: المعتقد البديل الصحي
+healthyAlternativeBeliefExample: "قيمتي لا ترتبط بسلوك الآخرين اليومي."
+noDownwardArrowLogged: لم تقم بتسجيل أي تمارين سهم التفكير للأسفل حتى الآن.
+useDownwardArrowHint: استخدم هذه التقنية عندما تجد أن أفكارك السلبية تخفي خلفها خوفاً عميقاً غير معلن.
+downwardArrowExerciseTitle: تمرين سهم التفكير
+initialAutomaticThoughtPrefix: الفكرة التلقائية المبدئية:
+healthyAlternativeBeliefPrefix: المعتقد المرن البديل:
+homeNav: الرئيسية

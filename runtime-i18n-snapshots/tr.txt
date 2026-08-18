@@ -1,0 +1,1377 @@
+========================================
+RUNTIME LOCALIZATION SNAPSHOT: TR
+Total Schema Keys: 1371
+Generated At: 2026-08-18T13:12:46.268Z
+========================================
+
+interactiveTourTitle: Etkileşimli Tur 🧭
+interactiveTourSub: Adım adım kullanım kılavuzu
+safeEncryptedSpace: Güvenli ve Tamamen Şifrelenmiş Psikolojik Alanınız
+streakActiveMsg: Harika iş! Bugün düşüncelerinizi kaydettiniz ve serinizi sürdürdünüz!
+streakInactiveZero: Günlük serinizi etkinleştirmek için bugün bir günlük yazın!
+streakInactiveOneLeft: Son bir adım! Serinizi sürdürmek için bugün düşüncelerinizi kaydedin.
+waterTargetReached: 🏆 Mükemmel! Günlük sıvı alımı hedefine ulaşıldı!
+breathInhaleMsg: 💨 Nefes al... akciğerlerini sakinlik ve huzurla doldur
+breathHold1Msg: 🛑 Tut... vücudundaki huzurlu enerjiyi hisset
+breathExhaleMsg: 💨 Nefes ver... stresi, kaygıyı ve yorgunluğu serbest bırak
+breathHold2Msg: 🛑 Tut... içsel sessizliği ve dinginliği kucakla
+secondsRemaining: sn kaldı
+completedCycles: Tamamlanan Döngüler:
+cyclesCount: Döngü Sayısı
+autoSaveLabel: Otomatik kaydedildi
+hoursUnit: saat
+minutesUnit: dk
+medicationTakenBtn: ✓ Alındı
+medicationPendingBtn: Bekliyor
+habitsTrackerSub: Takvimden bir tarih seçin ve alışkanlıklarınızı işaretleyin.
+nav.home: Ana Sayfa
+nav.diaries: Günlükler
+nav.advisor: YZ Danışmanı
+nav.progress: İlerleme ve Veriler
+nav.settings: Ayarlar
+nav.hayat_ai: Hayat AI
+nav.active_now: Su an aktif
+nav.fullscreen: Tam ekran
+nav.account_title: Profiliniz
+nav.lock_app: Kilitle
+nav.switch_language: Dil
+nav.dhikr: Zikir ve Farkındalık
+nav.dhikr_title: Zikir ve Huzur Sayaci
+nav.daily_tasks: Gunluk Gorevler
+nav.gratitude: Sukran Duvari
+nav.my_thoughts: Dusuncelerim
+nav.journal_records: Gunluk
+nav.therapy_session: Destek Oturumu
+nav.back_btn: Geri
+nav.back_title: Geri
+nav.back_mobile_title: Geri
+nav.auto_saved: Otomatik kaydedildi
+nav.saving: Kaydediliyor...
+nav.current_page: Gecerli sayfa
+nav.subtitle: Kisisel guvenli alaniniz
+nav.tasks: Gorevler
+nav.edit_diary: Duzenle
+nav.sign_in: Giris Yap
+nav.reveal_header_pill: Basliği goster
+appName: Hayat AI
+homeTab: Ana Sayfa
+diariesTab: Günlükler
+advisorTab: Danışman
+analyticsTab: Analitik
+settingsTab: Ayarlar
+yes: Evet
+no: Hayir
+closeBtn: Kapat
+retryBtn: Tekrar Dene
+cancelBtn: İptal
+save_btn: Kaydet
+saveAndCloseBtn: Kaydet ve Kapat
+sendBtn: Gonder
+clearBtn: Temizle
+back_btn: Geri
+understoodBtn: Anladim
+confirmImportBtn: Onayla
+deleteKeyBtn: Sil
+saveKeyBtn: Kaydet
+photo: Photo 📸
+audio: Audio 🎙️
+document: Document 📄
+task: Gorev 📋
+advisor: Danışman 🤖
+mood: Ruh Hali 🌿
+voiceRecord: Ses Kaydi 🎙️
+write: Yaz ✍️
+attachPhoto: Fotoğraf Ekle
+attachPhotoSub: Anı fotoğrafla belgele
+phoneVideo: Telefon Videosu 🎥
+phoneVideoSub: Video klibindeki duyguları analiz et
+audioFile: Sesli Not 🎙️
+audioFileSub: Sesinizi yazıya dökün ve analiz edin
+bookDoc: Kitap veya Belge 📖
+bookDocSub: Önemli fikirleri ve bilgileri çıkarın
+freeWrite: Özgür Yazı ✍️
+freeWriteSub: Düşüncelerinizi sınırsızca dökün
+aiAdvisor: Yapay Zeka Danışmanı 🤖
+aiAdvisorSub: Anında psikolojik rehberlik
+aiPsychAdvisor: Psikolojik YZ Danışmanı 🧠
+dhikrTitle: Zikir ve Huzur Sayaci 📿
+dhikrSub: Allah zi zikretmekle kalpler huzur bulur
+dhikrMainQuote: Allah i zikretmekle kalpler huzur bulur 🌿
+dhikrBlessing: Allah bizi O nu cokca zikredenlerden eylesin ✨
+dhikrCounterBtn: Saymak icin dokun 📿
+dhikrCountLabel: Toplam
+dhikrFooter: Subhanallah ve bihamdihi
+notificationActiveNow: Bildirimler aktif 🔔
+notificationHowAreYou: Bugun zihniniz nasil? 🌿
+notificationTapShortcut: Uygulamayi acmak icin dokunun
+notificationsTitle: Bildirimler 🔔
+notificationsSub: Saglikli yasam hatirlatiicilarini etkinlestir
+remindersTitle: Akilli Hatirlaticilar ⏰
+remindersSub: Gunluk gunluk hatirlaticilar planlayin
+reminderTime: Hatirlatici Zamani
+faceIdBtn: Yüz Tanıma
+fingerprintBtn: Parmak İzi
+biometricScanTitle: Biyometrik Kimlik Doğrulama 🔐
+biometricScanInstruction: Lütfen yüzünüzü veya parmak izinizi tarayın
+biometricSuccessTitle: Kimlik doğrulama başarılı! 🎉
+biometricFailedTitle: Doğrulama başarısız oldu ❌
+biometricNotLinkedTitle: Biyometri tanımlanmamış
+biometricNotLinkedDesc: Once ayarlarda kayit olun
+biometricAlreadyRegistered: Biyometrik zaten kayitli 🔐
+biometricNotSupported: Cihaz desteklenmiyor
+biometricUserCanceled: Kullanici tarafindan iptal edildi
+pinCodeBtn: PIN Kodu
+usePinInsteadBtn: PIN Kullan
+lockscreenBtn: Kilit Ekrani Kisayolu 📌
+lockscreenHint: Uygulamayı açmak için biyometrik veya PIN'e dokunun
+lockscreenSecured: Tam Şifreli ve Güvenli
+appLockTitle: Uygulama PIN Kilidi 🔐
+appLockSub: Gunlukleri koru
+welcomeSafeSpace: Tamamen guvenli ve ozel alaniniz 🌿
+safeSpaceDesc: Ozgurce yazin, sifrelendi ve YZ destekli.
+greetingDesc: Bugün gelişim ve içsel uyum için yeni bir gün. Düşüncelerinizi kaydetmek, yapay zeka danışmanınızın size özel rehberlik sunmasına yardımcı olur.
+streakTitle: Seri
+dayStreak: ardisik gun
+longestStreak: En uzun seri
+streakEncouragement: Zihinsel denge icin gunluk yazmayi surdurun!
+aiInspirationBtn: Akıllı İlham (YZ) 🪄
+quickPromptSuggestionsTitle: Hizli oneriler:
+askAiWriterHeader: Danışmanınıza sorun:
+expressMindPlaceholder: Dusuncelerinizi ozgurce ifade edin...
+journal.subtab_journal: Gunluk ve Dusunceler
+journal.subtab_tasks: Gorevler
+journal.subtab_gratitude: Sukran
+journal.subtab_cbt: BDT Egzersizleri
+journal.subtab_proscons: Arti ve Eksi
+journal.write_new: Yeni Not
+journal.import_btn: Ice Aktar
+journal.search_placeholder: Ara...
+journal.filter_all: Tumcu
+journal.filter_diaries: Gunlukler
+journal.filter_thoughts: Dusunceler
+journal.filter_archived: Arsiv
+journal.filter_trash: Cop Kutusu
+journal.editor_title_new: Yeni Not
+journal.editor_title_edit: Duzenle
+journal.title_placeholder: Not başlığı...
+journal.content_placeholder: Ozgurce yazin...
+journal.mood_label: Nasil hissediyorsunuz?
+journal.save_btn: Kaydet
+journal.save_success: Not kaydedildi! 🎉
+dailyJournalSubtab: Gunluk
+dailyTasksSubtabLabel: Gorevler ve Kontrol Listesi
+gratitudeSubtab: Sukran Duvari
+cbtSubtabLabel: BDT Egzersizleri
+allFilterTab: Tumu
+diariesFilterTab: Gunlukler
+thoughtsFilterTab: Dusunceler
+writeNewNoteBtn: Yeni Not ✍️
+searchDiariesPlaceholder: Gunluklerde ara...
+noMatchingDiariesNow: Esleşen giris bulunamadi.
+deleteDiaryPermanently: Kalici olarak sil
+saveDiarySuccessBtn: Kaydedildi ✓
+exportPdfBtn: PDF Disa Aktar
+exportingPdfProgress: Disa aktariliyor...
+restoreAction: Geri Yukle
+archiveAction: Arsivle 📥
+meLabel: Me
+writingTherapeuticResponse: Danışman yanıtı yazılıyor...
+quickOneClickActions: Mevcut girdiyi tek tıkla analiz etmek için hızlı eylemler:
+summarizeEntryBtn: Girdiyi özetle
+extractCognitiveErrorsBtn: Bilişsel çarpıtmalar
+practicalPlanTomorrowBtn: Yarının eylem planı
+moodHappy: Mutlu
+moodExcited: Heyecanli
+moodRelaxed: Rahat
+moodSad: Uzgun
+moodDepressed: Depresif
+moodAnxious: Endiseli
+moodAngry: Kizgin
+moodExhausted: Bitkin
+moodGrateful: Minnettar
+gratitude.title: Sukran Duvari
+cbtExercisesTab: BDT Egzersizleri
+rationalAlternative: Rasyonel Alternatif
+behavioralCorrelationsTitle: Davranissal Analitik Motoru
+balanceIndex: Denge Endeksi
+sleepQuality: Uyku Kalitesi
+exerciseActivity: Fiziksel Aktivite
+waterTrackerTitle: Günlük İnteraktif Su Sayacı 💧
+waterTrackerDesc: Tüketilen suyu kaydetmek için aşağıdaki bardaklara dokunun. Su içmek sinir sistemini yatıştırır.
+symptomsTitle: Günlük Fiziksel ve Duygusal Belirtiler
+symptomsDesc: Bugün hissettiğiniz belirtileri işaretleyerek zihin-beden bağlantılarını keşfedin.
+voiceCompanionTitle: Surekli Sesli Refakat 🎙️
+voiceStatusListening: Dikkatle dinleniyor...
+voiceStatusAnalyzing: Dusunuluyor...
+voiceStatusSpeaking: Su an konusuyor...
+voiceStatusIdle: Baslamaya hazir
+voiceLiveTranscript: Canli Transkript:
+voiceStartSpeaking: Baslat 🎙️
+voiceEndSession: Bitir 📞
+settingsTitle: Genel Ayarlar
+apiKeyTitle: API Anahtariniz 🔑
+languagesTitle: Uygulama Dilleri 🌐
+selectLanguageTitle: Dil Sec 🌐
+darkModeTitle: Karanlik Mod ☀️/🌙
+backupTitle: Yedekleme ve Senkronizasyon ☁️
+contactTitle: Gelistiriciyle Iletisim 📬
+rateTitle: Uygulamayi Degerlendir ⭐
+favoritesTitle: Favoriler ❤️
+archiveTitle: Arsiv 📦
+trashTitle: Cop Kutusu 🗑️
+personalAccountTitle: Kisisel Hesap 👤
+guestUser: Misafir 👤
+registeredUser: Dogrulanmis Kullanici 👤
+geminiKeyTitle: Gemini API Anahtari Kurulumu 🔑
+welcomeModalTitle: Hayat AI ya Hos Geldiniz 👋
+rateModalTitle: Degerlendir ⭐
+rateModalThanks: Tesekkurler! ❤️
+contactOwnerTitle: Geliştirici ile İletişime Geçin
+generalTag: General 📌
+diaryBadge: Gunluk 📔
+thoughtBadge: Dusunce 💭
+editedBadge: Duzenlendi ✍️
+symptomHeadache: Baş Ağrısı / Basınç
+symptomFatigue: Genel Yorgunluk
+symptomBackTension: Kas Gerginliği / Sırt Ağrısı 🧘
+symptomPoorSleep: Uykusuzluk / Kalitesiz Uyku 😴
+symptomRapidHeart: Çarpıntı / Hızlı Kalp Atışı
+symptomShortnessBreath: Hafif Nefes Darlığı
+symptomStomach: Mide Rahatsızlığı / Stres 🤢
+symptomTremors: Aşırı Terleme / Titreme 🥶
+waterConsumed: Tüketilen Miktar:
+waterRemaining: 💡 İdeal hedefinize ulaşmak için sadece birkaç bardak kaldı.
+pinPadSub: Devam etmek için 4 haneli PIN kodunuzu girin
+pinHint: PIN notlarinizi korur
+incorrectPin: Yanlis PIN ❌
+noActiveAlarms: Aktif alarm yok.
+addNewAlarmTitle: Alarm Ekle:
+alarmTitlePlaceholder: or: Yazma oturumu, su molasi...
+addAlarmBtn: + Ekle
+archiveSearchPlaceholder: Arsivde ara...
+filterAll: Tumu
+filterDiaries: Gunlukler
+filterThoughts: Dusunceler
+archiveEmptyTitle: Arsiv bos.
+archiveEmptyDesc: Gunlukler sekmesinden notlari arsivleyin.
+goToDiariesToArchive: Gunluklere Git ✍️
+untitledNote: Basliksiz
+previewAndRead: Onizle ve Oku
+restoreBtn: Geri Yukle
+moveToTrash: Cop Kutusuna Tasi
+trashEmpty: Cop Kutusu Bos 🗑️
+emptyTrashBtn: Cop Kutusunu Bosalt 🗑️
+deletePermanently: Kalici Olarak Sil
+smartRemindersCardTitle: Akilli Hatirlatici Sistemi
+smartRemindersCardDesc: Motivasyon notlari ile hatirlaticilar yonetin
+lockScreenWidgetTitle: Kilit Ekrani Sabitlenmis Widget
+lockScreenWidgetDesc: Kilit ekraninda kisayollari goster.
+appVersionCredits: Hayat AI — Kararli Surum 1.0.0
+privacyCredits: Tam gizlilik ve YZ ile gelistirildi.
+typographyTitle: Tipografi ve Okuma Konforu
+typographyDesc: Optimal okuma konforu icin yazi tipi ve satir araligi secin
+selectMainFontLabel: Ana Yazi Tipi Secin:
+lineSpacingLabel: Satir Yuksekligi:
+livePreviewTitle: Canli Onizleme:
+fontAndSpacingTabLabel: Yazi Tipi ve Aralik 🔤
+languageTabLabel: Dil ve Bolge 🌐
+searchLanguagePlaceholder: Dil ara...
+fullCalendar: Tam Takvim
+directUploadTitle: Dosyalara ve Eklere Doğrudan Erişim 📁
+quoteTitle: Günün Bilgeliği ve Psikolojik Motivasyon 🌿
+recentWeek: Son Hafta
+moodScaleTitle: Hızlı Dijital Ruh Hali Ölçeği (1 - 10) 😐
+moodScaleDesc: Ruh halinizi bir saniyede kaydetmek için kaydırıcıyı sürükleyin.
+apiKeySubAuto: Anahtar saglanmazsa ucretsiz anahtar otomatik kullanilir
+floatingBallTitle: Hizli Kontrol Araci
+proBadge: Pro
+predictiveTitle: Tahmine Dayali Saglik Analizleri 🔮
+predictiveAnalyzeBtn: Yeni Analiz Yap 🧠
+predictiveStatusGood: Kararli ve Dengeli ✨
+newJournalHeader: Yeni Giris 📝
+editJournalHeader: Girisi Duzenle 📝
+cancelAndSaveDraft: Iptal et ve Taslak Kaydet 💾
+journalTitleLabel: Giris Basligi 📌
+journalTitlePlaceholder: Gununuz icin baslik...
+starRatingLabel: Gun Degerlendirmesi
+outOfFiveStars: 5 uzerinden
+entryClassificationLabel: Kategori
+myNormalDiariesChoice: Normal Gunluk 📝
+myPrivateThoughtsChoice: Ozel Dusunceler 🔐
+behavioralMoodLabel: Baskin Ruh Hali
+writeFeelingsLabel: Duygularinizi ve dusuncelerinizi ozgurce yazin
+importGratitudeBtn: Sukrandan Ice Aktar 🌸
+bulletListLabel: Madde Isareti Listesi
+fontColorsBtn: Yazi Renkleri 🎨
+moreFeaturesBtn: Daha Fazla Ozellik ✨
+aiWriterBtn: YZ Asistani 🤖
+editorTextareaPlaceholder: Aklinizdakileri ifade edin...
+addChecklistItemBtn: Kontrol Listesi Ogesi Ekle ➕
+authModalTitle: Kisisel Hesap ve Senkronizasyon
+authModalSub: Verilerinizi guvenle senkronize edin
+loginErrorEmpty: E-posta ve sifre girin
+loginSuccessMsg: Giris yapildi! 🎉
+incorrectPassword: Yanlis sifre
+registerErrorEmpty: Tum alanlari doldurun
+passwordTooShort: Sifre en az 6 karakter olmali
+passwordsDoNotMatch: Sifreler eslesmíyor
+registerSuccessMsg: Hesap olusturuldu! 🎉
+emailAlreadyRegistered: E-posta zaten kayitli
+connectedSynced: Baglandi ve Senkronize Edildi
+syncNowBtn: Simdi Senkronize Et 🔄
+logoutBtn: Cikis Yap 🚪
+loginTab: Giris Yap
+registerTab: Hesap Olustur
+emailLabel: E-posta
+passwordLabel: Sifre
+hide: Gizle
+show: Goster
+loginSubmit: Giris Yap 🔑
+nameLabel: Tam Ad
+confirmPasswordLabel: Sifreyi Onayla
+registerSubmit: Hesap Kaydet ✨
+syncInProgress: Senkronize ediliyor...
+backupHourly: Saatlik ⏰
+backupDaily: Gunluk 📅
+backupWeekly: Haftalik 🗓️
+backupOff: Devre Disi 🛑
+key: Key
+voiceJournalTitle: YZ Sesli Gunluk Asistani 🎙️
+onboardingWelcomeTitle: Hayat AI ya Hos Geldiniz 👋
+onboardingStep1Title: Gunlukler ve Dusunceler 📝
+onboardingStep1Desc: Gercek zamanli YZ duygu analizi ile ozgurce yazin.
+onboardingStep2Title: Akıllı YZ Danışmanı 🧠
+onboardingStep2Desc: YZ psikoloji danismaninizla sohbet edin.
+onboardingStep3Title: Aliskanliklar ve Buyume 📊
+onboardingStep3Desc: Aliskanlik taki edin ve buyume agacini izleyin.
+onboardingStep4Title: Gizlilik ve Guvenlik 🔒
+onboardingStep4Desc: Girisleriniz sifrelenmis ve guvenli.
+onboardingNext: Ileri ➔
+onboardingPrev: Geri
+onboardingFinish: Yolculugu Baslat 🚀
+onboardingSkip: Turu Atla
+onboardingStepIndicator: {total} adimdan {step}. adim
+voiceRecordBtn: Kayda Basla 🎙️
+voiceStopBtn: Durdur ve Analiz Et ⏹️
+moodRating: Ruh Hali Değerlendirmesi:
+advisorQuickQ1: En çok strese ne sebep oluyor?
+advisorQuickQ2: Son girdilerimi özetle
+advisorQuickQ3: En son ne zaman mutluydum?
+advisorQuickQ4: Bu haftayı geçen ayla karşılaştır.
+advisorQuickQ5: Bugün bana uygun tavsiye nedir?
+promptSummarizeEntry: 📝 Mevcut girdimi özetleyin ve duygularımı belirtin
+promptExtractCognitiveErrors: 💡 Bilişsel çarpıtmaları çıkarın ve tavsiyede bulunun
+promptPracticalPlanTomorrow: 🎯 Yarın için pratik bir plan önerin
+quoteDefaultText: Kaygının yarının acısını engellemediğini, sadece bugünün huzurunu çaldığını unutmayın.
+quoteDefaultAuthor: Dost Psikiyatristiniz
+boxBreathingTitle: Rahatlatıcı Kutu Nefes Egzersizi (Vagus Siniri Uyarımı)
+boxBreathingDesc: Kalp atış hızını sakinleştirmek ve anında iç huzur sağlamak için kullanılan nefes tekniği (faz başına 4 saniye).
+startBreathingBtn: ▶️ Nefes Egzersizini Başlat
+stopBreathingBtn: ⏹️ Seansı Durdur
+selfCareGoalsTitle: Öz Bakım ve Ruh Sağlığı Hedefleri
+sleepHoursLabel: Uyku Saatleri:
+sportsDurationLabel: Egzersiz ve Spor:
+medicationDoseLabel: İlaç ve Vitaminler:
+habitsTrackerTitle: Davranışsal Alışkanlıklar ve Rutin Takibi
+addHabitBtnLabel: + Alışkanlık Ekle
+habitWarmWater: 2 Litre Ilık Su İçmek
+habitRelaxation: Meditasyon ve Kas Gevşetme (10 dk)
+habitBriskWalking: Hızlı Yürüyüş / Ev Egzersizi
+habitReading10Pages: Bir Kitaptan 10 Sayfa Okumak
+catPhysicalHealth: Fiziksel Sağlık 🥦
+catMindMeditation: Zihin ve Meditasyon 🧠
+catSportActivity: Spor ve Aktivite 🏃
+catCultureReading: Kültür ve Okuma 📚
+aiBehavioralAssessmentTitle: Yapay Zeka Davranışsal Değerlendirme ve Raporlar
+generateBehavioralReportBtn: Yapay Zeka Davranış Değerlendirme Raporu Oluştur
+dailyLifeMapTitle: Günlük Yaşam Haritası ve Göstergeleri
+dailyBalanceIndexLabel: Günlük Denge ve Sağlık İndeksi:
+integratedTimelineTitle: Entegre Günlük Zaman Çizelgesi:
+sleepPeriodTitle: Günlük Uyku ve Dinlenme Dönemi 💤
+dailyPsychTipTitle: Günün Ruh Sağlığı Tavsiyesi
+calendarModalTitle: Kapsamlı Takvim ve Kütüphane 📖🗓️
+myActivitiesTab: Günlüklerim ve Aktivitelerim ☀️
+myLibraryTab: Kapsamlı Kütüphanem 📖
+noEntriesForDate: Bu gün için kaydedilmiş girdi yok
+readingRecommendationsTitle: Okuma ve Ruh Sağlığı İçin Tavsiyeler
+therapyReportTitle: 🎓 Terapi Seansı Hazırlığı ve Kapsamlı Klinik Rapor
+therapyReportSubtitle: Mevcut Hafta Raporu - Ruh Sağlığı Takip Hazırlığı
+habitsFilterAndSort: Alışkanlık Filtreleri ve Sıralama
+filterAndSortBtn: Filtre ve Sırala
+filterAndSortHeader: Alışkanlıkları Filtrele ve Sırala
+hideArchived: Arşivlenenleri Gizle
+hideCompleted: Tamamlananları Gizle
+sortMethod: Sıralama Yöntemi:
+sortManual: Manuel ⬆
+sortByName: İsme Göre
+sortByColor: Renge Göre
+sortByScore: Puana Göre
+sortByStatus: Duruma Göre
+habitsSettingsTitle: Alışkanlık ve Veri Ayarları
+periodicityFilter: Görüntüleme Aralığı ve Sıklık:
+daysDisplayed: {count} gün görüntülendi
+dayRangeDay: 📅 Gün
+dayRangeWeek: 📆 Hafta
+dayRangeMonth: 🗓️ Ay
+dayRangeQuarter: 📊 Çeyrek
+dayRangeSemiAnnual: 📈 Yarı Yıl
+dayRangeYear: 📅 Yıl
+dayRangeCustom: 🎯 Özel (Başlangıç/Bitiş)
+fromDate: Başlangıç Tarihi:
+toDate: Bitiş Tarihi:
+habitsAndRoutinesTitle: Alışkanlıklar ve Rutinler
+recordValue: Değeri Kaydet: {name}
+quantity: {date} için Miktar ({unit}):
+saveValue: Değeri Kaydet
+photoIcon: Photo
+moodNormal: Normal
+fontJakartaName: Plus Jakarta Sans
+fontJakartaCategory: Modern Sans-Serif
+fontJakartaSample: Modern & Clean Typography for All Screens
+fontSystemName: System Default Font
+fontSystemCategory: Native System Typography
+fontSystemSample: Your device native typography font automatically
+allAccessBadge: (All Access)
+cbtBadge: (CBT)
+prosConsBadge: (Pros & Cons)
+pdfBadge: PDF Document
+e2eePairingCodeTitle: Cross-Device Unified Pairing Code
+e2eePairingCodeDesc: Use this code to pair your phone, tablet, or desktop
+e2eeStatusEncrypted: Fully Encrypted 256-bit AES
+aiMoodAnalysisUpdateNotice: Analysis updates automatically as you write
+importGratitudeTitle: İçe Aktar Gratitude Cards
+undoTooltip: Undo (Ctrl+Z)
+redoTooltip: Redo (Ctrl+Y)
+boldTooltip: Bold (Ctrl+B)
+italicTooltip: Italic (Ctrl+I)
+underlineTooltip: Underline (Ctrl+U)
+strikethroughTooltip: Strikethrough
+h1Tooltip: Heading 1 (H1)
+h2Tooltip: Heading 2 (H2)
+quoteTooltip: Quote
+bulletListTooltip: Bullet List
+fontColorsTooltip: Font Color Formatting
+attachFileTitle: Attach File
+addAudioTitle: Ekle Audio Recording
+photoTitle: Ekle Photo
+backgroundColorTitle: Geriground Color
+colorTitle: Font Color
+fontEffectTitle: Font Effect
+fontTitle: Font Style
+subsequentAdditionsTitle: Subsequent Ekleitions & Updates
+subsequentAdditionsNotice: Ekleitions are saved with independent timestamp
+historicalEditsTitle: Historical Düzenles Log
+containsEditsPrefix: Contains
+appendedEditsSuffix: appended edits
+biometricCanceled: Biometric scan canceled
+biometricFailed: Biometric authentication failed
+biometricStep1: Preparing scanner...
+biometricStep2: Reading biometric data...
+biometricStep3: Verifying identity...
+biometricSuccess: Verified successfully!
+faceScanInstruction: Point face toward camera for verification
+faceScanTitle: Face ID Verification
+faceSuccessTitle: Face recognized successfully
+fingerprintScanInstruction: Place finger on scanner
+fingerprintScanTitle: Fingerprint Verification
+lockScreenAlertSuccess: Unlocked successfully
+enterPinNowBtn: Enter PIN Now
+syncOptionsTitle: Cloud Sync Options
+linkGoogleAccount: Link with Google Account 🌐
+restoreCloudBackup: Restore Cloud Geriup ☁️
+importManual: Manual JSON/CSV İçe Aktar
+importFromWriteDiary: İçe Aktar from WriteDiary
+autoBackupFrequency: Auto-Geriup Frequency
+secureEmailBackup: Send Geriup to Email 📧
+emailPlaceholder: name@example.com
+supportedFormats: Supported Formats: JSON, CSV, WriteDiary Geriup
+uploadAnotherFile: Upload Another File 📁
+selectAllBtn: Select All
+text: Text
+section: Section
+offlineStatusOffline: You are currently offline
+offlineSyncSuccess: Data synced and updated offline successfully
+resetConfirm: Are you sure you want to reset?
+resetCounter: Reset Counter
+muteClickSound: Mute Click Sound
+enableClickSound: Enable Click Sound
+pwaInstructionTitle: Install App on Your Device
+pwaStep1: Open browser menu (⋮ or Paylaş)
+pwaStep2: Select "Ekle to Home Screen"
+pwaStep3: Install the app and enjoy a fast experience
+welcomeBackOpening: Welcome back! ✨
+presetNote1: Gratitude for today
+presetNote2: Evening reflection on achievements
+presetNote3: Plans and goals for tomorrow
+presetNote4: Reflection and emotional release
+presetNote5: New creative ideas
+presetNote6: Relaxation and peace session
+howToStep4: Use AI to analyze emotions and get recommendations
+cameraDeniedError: Camera permission denied
+multiFormatTitle: Multi-Format Dışa Aktar & İçe Aktar 📦
+exportJson: Full JSON Geriup
+exportCsv: CSV Spreadsheet (Excel)
+exportEncrypted: Secure Encrypted File (ENC)
+importEncrypted: İçe Aktar Encrypted File
+voiceRecordingStarted: Listening to your voice & capturing emotions...
+voiceListening: Listening attentively...
+lineHeightCompactName: Compact (1.45x)
+lineHeightCompactDesc: Compact view for dense lists and quick stats
+lineHeightNormalName: Standard (1.65x)
+lineHeightNormalDesc: Standard spacing for general navigation
+lineHeightRelaxedName: Relaxed (1.85x) - Recommended
+lineHeightSpaciousName: Spacious (2.15x)
+lineHeightSpaciousDesc: Maximum line spacing for immersive reading sessions
+actionsHeader: Actions
+habitBooleanLabel: ✓ Yapıldı / Yapılmadı
+moveUpTitle: Move Up
+moveDownTitle: Move Down
+measurableUnitDefault: Unit
+quoteCopiedAlert: Quote copied to clipboard! 🌸
+copyQuoteTooltip: Copy quote
+scrollHint: Scroll ↔
+waterCupLabel: Cup {number}
+moodSevereDistress: Severe distress & sadness 😭
+moodContentPeaceful: Content & peaceful 😊
+video: Video 🎥
+videoRecordBtn: Video Clip 🎥
+quickVentBtn: Quick Venting ✍️
+webLinkBtn: Web Link 🌐
+attachFileIcon: Attach File
+addAudioIcon: Ekle Audio
+sketchIcon: Draw
+bgColorIcon: Geriground Color
+addChecklistItem: + Ekle Item (List)
+depthRatingLabel: İçe Aktarance & Self Depth Rating:
+starsOutOfFive: stars
+cbtWorksheets: Thought Reframing Sheets
+thoughtRecord: Automatic Thoughts Record
+postSessionMood: Greatly Improved
+reviewProsConsTitle: Pros & Cons Review
+prosConsBtnLabel: Pros & Cons ⚖️
+exerciseMoodBoostTitle: Effect of Exercise & Activity
+cbtEffectivenessTitle: Effectiveness of CBT Exercises
+cbtEffectivenessDesc: Reframing negative automatic thoughts reduces distress by {percent}%.
+accountSubGuest: Safe local account on this device
+psychologicalGrowthTreeTitle: Psikolojik Büyüme Ağacı 🌳
+treeStage1: İlk Tohum (Farkındalığın Başlangıcı)
+treeStage2: Filiz (Alışkanlık Oluşumu)
+treeStage3: Fidan (Duygusal Denge)
+treeStage4: Çiçek Açan Ağaç (Direnç ve Gelişim)
+treeStage5: Meyve Veren Olgun Ağaç (Bilgelik ve İç Huzur)
+treeDesc1: Beginning of self-care and emotional discovery.
+treeDesc3: Your thoughts find a safe outlet and grow deeply.
+treeDesc4: Emotional stability and inner peace fill your day.
+treeDesc5: Tamamlandı mental balance and wise self-reflection.
+rateAppFeedbackLabel: Feedback & Suggestions:
+rateAppSubmit: Submit Rating ⭐
+contactOwnerModalTitle: Contact Developer 📬
+contactOwnerModalDesc: We love receiving direct feedback to develop the app
+contactOwnerMessage: Your message or feedback:
+copyEmail: Copy Email 📋
+restoreDataBtn: Restore Data from JSON File 📥
+howToExportTitle: How to export & restore data:
+howToStep1: 1. Click export to get an encrypted JSON file containing your journals.
+howToStep3: 3. To restore on another device, select file and click restore.
+accountTitle: Personal Account & Login
+guestUserLabel: Guest (Unregistered)
+userEmailSynced: Logged in: {email} • Access journals from any device
+guestUserDesc: Sign in with your personal account to sync and access your data across devices
+appLockDetailsTitle: 🔐 Screen & Data Lock (PIN, Fingerprint & Face ID):
+appLockDetailsDesc: When app lock is enabled, security verification (Fingerprint/Face ID or PIN) is required upon leaving or locking the screen.
+pinCodeLabel: Secret PIN Code (4 digits)
+defaultPinHint: Varsayılan PIN: 1234 (Ayarlardan değiştirilebilir)
+pinPlaceholder: Current Code (1234)
+linkBiometricsTitle: Link Fingerprint & Face ID (Passkey):
+biometricNotActiveBadge: ⚠️ Not Linked
+biometricDesc: Link your official device biometrics (fingerprint or face ID) to unlock the app with a single touch.
+biometricUpdateBtn: Update or Re-link Device Biometric 👆👤
+biometricLinkBtn: Link & Enable Device / Face Biometric Now 👆👤
+biometricAlertTitle: İçe Aktarant Protection Notice:
+biometricAlertDesc: When tapping "Link Device Biometric", your OS will prompt for fingerprint or face scan. The app will then only unlock with the registered biometrics.
+archiveEmptySearch: No matching results found in archive.
+thoughtBadgeShort: ✍️ Reflection
+diaryBadgeShort: 📓 Günlük
+itemsInTrash: items in trash
+remindersCountBadge: reminder(s)
+behavioralAiBadge: Behavioral AI
+testSoundTitle: Test Alert Sound
+testSoundBtn: Test Sound
+addNewSmartReminderTitle: Ekle New Smart Reminder
+addNewSmartReminderBtn: Ekle New Smart Reminder
+reminderTitleLabel: Reminder Title or Goal
+reminderIconLabel: Icon
+alertTimeLabel: Alert Time
+alertFrequencyLabel: Frequency
+freqCustomDays: Specific Gün of Week
+selectDaysPrompt: Select days to be reminded on:
+optionalLabel: Optional
+motivationalNotePlaceholder: Enter a motivational quote to uplift you when alert fires...
+presetSamplesPrompt: Preset motivational samples (click to pick):
+addReminderBtn: Ekle Reminder
+noRemindersYetTitle: No reminders scheduled yet
+createFirstReminderBtn: Create First Reminder Now
+disabledBadge: Disabled
+cbtTipTitle: Cognitive Behavioral Therapy (CBT) Tip:
+alertsMonitoredFooter: Alerts monitored automatically in-app
+catGeneral: General Alert
+catJournal: Günlük & Writing
+catMeditation: Meditation & Rest
+catFitness: Fitness & Movement
+catReading: Reading & Learning
+catMotivation: Positive Motivation
+recommendedBadge: Önerilen
+testLockScreenNotificationBtn: Pin / Test Notification on Lock Screen Now 📌
+howLockScreenWorksBtn: How does lock screen widget work? ℹ️
+fullscreenModeTitle: Fullscreen Mode & Hide Browser Ekleress Bar
+fullscreenModeDesc: Hide browser address bar (URL) and navigation UI for a distraction-free full-screen app experience.
+toggleFullscreenBtn: Toggle Fullscreen Mode Now 🖥️
+pwaMethodBtn: Permanent PWA Hide Method ℹ️
+appWideBadge: App-wide
+e2eeTitle: Encrypted Cloud Sync (E2EE) 🔐
+e2eeSub: End-to-end encryption across all your devices
+e2eePassphrasePlaceholder: Enter your custom encryption passphrase...
+pinPadShortcutSub: Seçilen hızlı eylemi yürütmek için PIN kodunu girin
+pinVerified: Correct PIN Code
+powerButtonTooltip: Lock App Immediately
+screenOffTitle: Screen Secured
+screenOffDesc: Click to unlock app
+importNotePreserveDates: Original dates and tags are preserved
+analyzingFile: Analyzing file...
+uploadDropZoneText: Drag file here or click to select
+apiKeyVerified: API Key verified successfully! ✅
+apiKeyVerifyFailed: Failed to verify API Key
+verifyingKey: Verifying API Key...
+copied: Copied to clipboard! 📋
+sendMessageNow: Send Message Now 🚀
+chooseFontStyle: Choose Font Style:
+aiWriterTopicPlaceholder: Ask any topic from AI...
+generatingAiText: Generating...
+sendPromptBtn: Send ✨
+aiGeneratingTitle: Generating by AI...
+aiModelDraftingDesc: Smart model is drafting thoughts professionally now
+readyToInsertBadge: Ready to Insert
+copiedTextSuccess: ✓ Copied text
+copyTextBtn: 📋 Metni panoya kopyala
+suggestAnotherTopic: Suggest another topic
+generateAction: Generate →
+aiChatSessionTitle: Interactive AI Venting & Psychological Analysis Session
+liveInteractionBadge: Live Interaction
+sendBtnLabel: Send
+voiceInterruptAndSpeak: Interrupt & Speak ⏹️
+totalRemindersLabel: Total Reminders:
+getFreeKeyLink: Get a free API key from Google AI Studio 🔑
+pwaHowToBtn: How to Install as PWA 📱
+predictiveGuidance: Öngörülü Sağlık Rehberliği
+importerErrorMsg: Error reading file, please verify format
+resultsCountSuffix: results
+filterTagsLabel: Filtrele tags:
+checkSpellingOrFilter: Check spelling or try filtering by tags.
+audioDrawingsOnly: Media & Drawings Only
+modifiedBadge: Modified
+fontDrawerTitle: Font
+fontSizeLabel: Font Size
+settingsSubtitle: Customize AI assistant, security & language
+apiKeySub: Enter Gemini API key for continuous AI capabilities
+languagesSub: Change user interface language
+selectLanguageSubtitle: Hayat AI supports multiple global languages
+typographyTabTitle: Font & Spacing
+typographyTabSub: Select font style and line height for comfortable reading
+fontStyleIcon: Font Style
+darkModeSub: Switch between light and dark theme
+backupSub: Dışa Aktar and restore your data safely
+contactSub: Feedback and inquiries to improve the app
+rateSub: Your opinion helps improve Hayat AI
+biometricSettingsTitle: Güvenlik ve Biyometrik Kilit 🛡️
+biometricSettingsSub: Verilerinizi Yüz Tanıma, parmak izi veya PIN ile koruyun
+biometricToggleFaceId: Yüz Tanıma ile Kilit Açmayı Etkinleştir
+biometricToggleFingerprint: Parmak İzi ile Kilit Açmayı Etkinleştir
+biometricToggleFaceIdDesc: Uygulamayı hızlıca açmak için yüz tanımayı kullanın
+biometricToggleFingerprintDesc: Kilidi açmak için parmak izi sensörüne dokunun
+biometricHardwareUnavailable: Bu cihazda biyometrik sensör bulunamadı
+biometricDeviceNotSupported: Cihazınız biyometrik doğrulamayı desteklemiyor
+biometricVerifyToDisable: Devre dışı bırakmak için lütfen kimliğinizi doğrulayın
+biometricAuthPrompt: Devam etmek için kimliğinizi onaylayın
+biometricDisableSuccess: Biyometrik kilit başarıyla devre dışı bırakıldı
+biometricSetupSuccess: Biyometrik kilit başarıyla kuruldu! 🎉
+biometricAppLockActive: Güvenliğiniz için uygulama kilitlendi
+biometricUnlockWithFaceId: Yüz Tanıma ile Aç
+biometricUnlockWithFingerprint: Parmak İzi ile Aç
+biometricPINFallbackBtn: PIN Kodunu Kullan 🔢
+geminiKeyModalTitle: Gemini API Anahtarı Yöneticisi 🔑
+geminiKeyModalSubtitle: Sınırsız yapay zeka analizleri için kişisel Google Gemini anahtarınızı ekleyin
+geminiKeyDesc: Anahtarınız tarayıcınızın güvenli yerel depolama alanında saklanır.
+geminiGetKeyLink: Google AI Studio'dan ücretsiz API anahtarı alın ↗
+geminiKeyPlaceholder: Gemini API anahtarınızı buraya yapıştırın (AIza... ile başlar)
+geminiKeySave: Anahtarı Kaydet 💾
+geminiKeyDelete: Anahtarı Sil 🗑️
+geminiKeySavedSuccess: API anahtarı başarıyla kaydedildi ve etkinleştirildi! 🎉
+geminiKeyDeletedSuccess: API anahtarı silindi; varsayılana dönüldü
+geminiKeyRequiredWarning: Lütfen geçerli bir Gemini API anahtarı girin
+geminiSecurityNotice: Anahtarınız üçüncü taraf sunuculardan geçmez ve cihazınızda kalır.
+geminiKeyActive: Anahtar Aktif
+geminiKeyCustomBadge: Özel
+geminiKeyDefaultBadge: Varsayılan Paylaşımlı
+lifeMapTitle: Yaşam Haritası ve Kişisel Denge 🧭
+lifeMapSub: Uyum ve tatmin için yaşam alanlarınızı değerlendirin
+lifeBalanceScore: Genel Denge Puanı
+lifeSpiritual: Maneviyat ve İç Huzur
+lifeHealth: Fiziksel Sağlık ve Enerji
+lifeCareer: Kariyer ve Başarı
+lifeRelationships: İlişkiler ve Aile
+lifeFinances: Finans ve Maddi Güvenlik
+lifePersonalGrowth: Kişisel Gelişim ve Öğrenme
+cbtExercisesTitle: Bilişsel Davranışçı Terapi (BDT) Egzersizleri 🧠
+cbtExercisesSub: Zihni sakinleştirmek için bilişsel çarpıtmaları tanımlayın ve yeniden yapılandırın
+cbtNewExerciseBtn: Yeni BDT Egzersizi ✍️
+cbtThoughtRecord: Otomatik Düşünce Kaydı
+cbtDistortionCat: Bilişsel Çarpıtma Türü
+cbtEvidenceFor: Bu düşünceyi destekleyen kanıtlar
+cbtEvidenceAgainst: Bu düşünceye karşı çıkan kanıtlar
+cbtBalancedThought: Dengeli ve gerçekçi alternatif düşünce
+gratitudeJournalTitle: Şükran ve Minnettarlık Duvarı 🌸
+gratitudeJournalSub: Günlük güzellikleri fark edin ve içsel huzuru güçlendirin
+gratitudeNewCardBtn: Yeni Şükran Kartı ✨
+gratitudeCardPlaceholder: Bugün ne için minnettarsınız? İçinizden geldiği gibi yazın...
+gratitudeCardSavedSuccess: Şükran kartı başarıyla eklendi! 🌸
+gratitudeCardDeleteConfirm: Bu şükran kartını silmek istediğinizden emin misiniz?
+gratitudeShareCardBtn: Kartı Paylaş 📤
+clinicalReportTitle: Klinik Rapor ve Terapi Özeti 📑
+clinicalReportSub: Ruh haliniz, alışkanlıklarınız ve gelişiminizin kapsamlı analizi
+clinicalSeverityMinimal: Minimal / Dengeli
+clinicalSeverityMild: Hafif
+clinicalSeverityModerate: Orta
+clinicalSeveritySevere: Şiddetli / Destek Önerilir
+clinicalExportPdfBtn: PDF Olarak Dışa Aktar 📄
+clinicalExportWordBtn: Word (DOCX) Olarak Dışa Aktar 📝
+clinicalPrintBtn: Raporu Yazdır 🖨️
+clinicalConfidentialNotice: Bu rapor tamamen gizlidir ve şifreli kişisel verilerinizden oluşturulmuştur.
+backupSyncTitle: Yedekleme ve Uçtan Uca Şifreli Senkronizasyon (E2EE) ☁️
+backupSyncSub: Verilerinizi ara sunucular olmadan cihazlarınız arasında güvenle eşitleyin
+backupSyncGenerateKey: Yeni Eşleştirme Anahtarı Oluştur 🔑
+backupSyncEnterKey: Diğer cihazın eşleştirme anahtarını girin
+backupSyncExportJson: Yedek Dosyasını Dışa Aktar (JSON) 💾
+backupSyncImportJson: Yedekten Geri Yükle (JSON) 📂
+backupSyncRestoreSuccess: Yedek başarıyla geri yüklendi! 🎉
+canvasTitle: Çizim Tuvali ve Duygusal Eskiz 🎨
+canvasBrushSmall: İnce Fırça
+canvasBrushMedium: Orta Fırça
+canvasBrushLarge: Kalın Fırça
+canvasBrushEraser: Silgi 🧽
+canvasUndo: Geri Al ↩️
+canvasRedo: Yinele ↪️
+canvasClear: Tümünü Temizle 🗑️
+canvasSaveToEntry: Çizimi Nota Ekle 📎
+rateAppModalTitle: Hayat AI Deneyiminizi Değerlendirin ⭐
+rateAppThankYou: Değerli geri bildiriminiz için teşekkürler! ❤️
+rateAppThankYouDesc: Görüşleriniz, Hayat AI'ı esenliğiniz için geliştirmemize yardımcı oluyor.
+rateAppQuestion: Uygulamayı nasıl buldunuz ve kendimizi nasıl geliştirebiliriz?
+rateAppSubmitBtn: Değerlendirmeyi Gönder 🚀
+rateAppPlaceholder: Düşüncelerinizi, fikirlerinizi veya önerilerinizi paylaşın...
+reportFromDate: Başlangıç:
+reportToDate: Bitiş:
+reportRangeLabel: Aralık:
+today: Bugün
+yesterday: Dün
+daysAgo: {count} Gün Önce
+currentWeek: Bu Hafta
+lastWeek: Geçen Hafta
+weeksAgo: {count} Hafta Önce
+currentMonth: Bu Ay
+lastMonth: Geçen Ay
+monthsAgo: {count} Ay Önce
+currentQuarter: Bu Çeyrek
+previousQuarter: Önceki Çeyrek
+quartersAgo: {count} Çeyrek Önce
+currentHalf: Bu Yarı Yıl
+previousHalf: Önceki Yarı Yıl
+halvesAgo: {count} Yarı Yıl Önce
+currentYearLabel: Bu Yıl ({year})
+lastYearLabel: Geçen Yıl ({year})
+yearLabelN: {year} Yılı
+reportsHistory: Geçmiş ({count}) 📜
+aiSummaryBtn: YZ Özeti 🧠
+analyzingStatus: Analiz ediliyor...
+copyTextTooltip: Metni Kopyala
+copiedSuccess: Kopyalandı!
+copyBtn: Kopyala
+printReportTooltip: Yazdır
+loggedDiariesStat: Kaydedilen Günlükler
+entriesUnit: kayıt
+avgSleepStat: Ortalama Uyku
+moodScoreStat: Ruh Hali Puanı
+exerciseTimeStat: Egzersiz Süresi
+sleepMoodChartTitle: Uyku ve Ruh Hali Eğilimi Grafiği
+timelineLabel: Zaman Çizelgesi
+clinicalAnalysisTitle: Klinik Psikolojik Analiz (YZ Danışmanı)
+clickAiSummaryHint: Bu dönem için davranış ve ruh hali analizini eklemek üzere yukarıdaki 'YZ Özeti 🧠' düğmesine tıklayın.
+topLoggedFeelingsTitle: En Çok Kaydedilen Duygular:
+sampleFeelings: Sakin, Huzurlu, İyimser
+preparingPdf: PDF Hazırlanıyor...
+exportPdfNow: PDF'i Şimdi Dışa Aktar
+reportsHistoryTitle: Kayıtlı Ruh Sağlığı Raporları Geçmişi 📜
+reportsHistorySubtitle: Tarihler ve terapist notlarıyla önceki raporların geçmişi
+searchReportsPlaceholder: Raporları başlık veya tarihe göre ara...
+totalReportsCount: Toplam Rapor: {count}
+noReportsInHistory: Geçmişte kayıtlı rapor bulunamadı
+clickSaveReportHint: Raporunuzu arşivlemek için yukarıdaki 'Raporu Kaydet' düğmesine tıklayın.
+accountSubUser: Active & cloud synced
+activeBadge: Active
+activeRemindersListTitle: Active & Scheduled Reminders List
+aiAnalyticsBadge: AI Analytics
+aiMoodAnalysisNotice: * This analysis is automatically updated as soon as you click "Save Note Successfully ✓" based on written words.
+aiMoodAnalysisTitle: Gemini Smart Mood Analysis:
+archiveBtnLabel: Archive this note 📥
+archiveSub: Archived entries
+audioRecordBtn: Voice Note 🎙️
+autoAiMoodAnalysisTitle: Auto AI Mood Analysis
+backupSyncDesc: Save backup or restore data anytime
+behavioralCorrelationsSub: Discover connections between habits & mood
+biometricActiveBadge: ✅ Active & Linked
+cancelSearchBtn: Cancel search
+catCare: Health & Care
+catWater: Drink Water
+cbtTipDesc: Reminders paired with positive motivational quotes increase adherence and daily routine compliance by 68% compared to standard alerts.
+checklistSectionTitle: Daily Checklist
+chooseBgColor: Choose Note Background Color:
+clearSearchTitle: Clear search
+clearSearchWordBtn: Clear search word
+clickWriteNewNotePrompt: Click "Write New Note" to start expressing yourself!
+confirmDeleteReminder: Are you sure you want to delete this reminder?
+createNewDiaryWithText: Create new entry with this text
+delete: Sil
+deleteAdditionBtn: Delete Addition
+deleteAlarmTitle: Delete Alarm
+drawTitle: Mind Drawing Canvas
+edit: Düzenle
+editHabitTitle: Edit Habit Title
+editSmartReminderTitle: Edit Smart Reminder
+emailBackupDesc: Receive a full backup of your diaries in your inbox
+entriesCountLabel: Entries Count
+exerciseMoodBoostDesc: Exercising 20+ minutes correlates with a {percent}% boost in positive mood.
+favoritesSub: Highlighted notes & reflections
+floatingBallSub: Quick access to tools and AI advisor
+fontAlmaraiCategory: Ultra Clean Sans
+fontAlmaraiName: Almarai Clean
+fontAlmaraiSample: Clear thoughts begin with mindful writing.
+fontAmiriCategory: Classic Literary Naskh
+fontAmiriName: Amiri Classic Naskh
+fontAmiriSample: Every story written holds wisdom for tomorrow.
+fontCairoCategory: Modern & Balanced
+fontCairoName: Cairo Modern
+fontCairoSample: Journaling brings clarity and peace to your mind.
+fontNotoCategory: Traditional Clear Naskh
+fontNotoName: Noto Naskh Traditional
+fontNotoSample: An elegant diary preserving your memories.
+fontNoto_naskhCategory: Classic & Elegant
+fontNoto_naskhName: Noto Naskh Traditional
+fontNoto_naskhSample: Classic Naskh script for graceful reading
+fontTajawalCategory: Modern Soft Geometric
+fontTajawalName: Tajawal Soft
+fontTajawalSample: Reflect on your daily thoughts and feelings comfortably.
+freqDaily: Daily (Every day)
+freqWeekly: Weekly (Once a week)
+fullCalendarSub: Review all past diary entries in detail
+geminiKeyNotice: Security note: Key is saved locally encrypted on your device only.
+howToStep2: 2. Save the file in a safe place on your device or cloud.
+importFromOtherApps: Import from Other Apps 📲
+importFromOtherAppsDesc: Supports JSON, CSV, and TXT files
+importFromOtherAppsTitle: Import Entries & Diaries
+importGratitudeMoments: Import Gratitude Moments
+importNoteAiNotice: Note: AI will automatically analyze your imported diaries
+importerSuccessMsg: Data imported successfully! 🎉
+insertInCurrentEntry: Insert in current entry
+lineHeightRelaxedDesc: Optimal comfort for reading long diary entries
+litersUnit: Liters Unit
+mindMapBtn: Mind Map / Drawing 🎨
+moodJoyfulHighEnergy: Mood Joyful High Energy
+moodStableNeutral: Mood Stable Neutral
+motivationalNoteLabel: Inspiring Motivational Note (Shown with alert)
+multiFormatDesc: Choose your preferred format to export or restore your diaries
+noHabitsFiltered: No Habits Filtered
+noMatchFoundFor: No entry found matching:
+noMatchingEntries: No matching diary entries found
+noRemindersYetDesc: Add daily or weekly reminders for journals, habits, or meditation breaks with inspiring notes.
+ofEightCups: Of Eight Cups
+pdfDocBtn: PDF Document 📄
+photoUploadBtn: Photo Attachment 📸
+predictiveAnxietyRisk: Future Anxiety Risk Level
+predictiveSleepRisk: Sleep Disturbance Indicator
+predictiveStatusWarning: Warning: Impending Anxiety Triggers ⚠️
+predictiveSub: AI-powered early warning system for anxiety triggers & sleep disturbances
+primaryCategoryLabel: Primary Entry Category:
+promptArticleTitle: Write an Article
+promptFutureTitle: Future Trends
+promptHealthTitle: Generate Health Tips
+promptMarketingTitle: Marketing & Customer Service
+promptProjectsTitle: Project Management
+pwaBadge: PWA 🖥️
+recordingProgress: Audio Recording in Progress...
+reminderTitlePlaceholder: e.g., Daily Gratitude Journal, Drink Water, Meditation Session...
+samplePreviewParagraph: This live preview demonstrates how your diary entries and long notes will render across the app. Using your selected font paired with custom line spacing ensures maximum legibility and effortless reading.
+saveChangesBtn: Değişiklikleri Kaydet
+searchParsedPlaceholder: Search in diaries or thoughts...
+searchResultsFor: Search results for:
+selectAllHint: Select all entries for import
+selectDateTitle: Select a Date to View Entries
+shareableGratitudeSub: İlham verici anlarınızı paylaşmak için güzel görsel kartlar tasarlayın
+shareableGratitudeTitle: Paylaşılabilir Şükran Kartları 🎨
+sleepWaterAnxietyDesc: On days with 8 cups of water and 7+ hours of sleep, your anxiety drops by {percent}%.
+sleepWaterAnxietyTitle: Effect of Sleep & Water on Anxiety
+smartRemindersBadge: Frequency & Notes
+smartRemindersModalSub: Set reminder frequency and add motivational notes to inspire you on each alert
+subNoteDefaultTitle: Sub-note
+subNotePlural: Sub-notes
+subNoteSingular: Sub-note
+subsequentAdditionsPlaceholder: Add new reflections to this entry...
+taskInputPlaceholder: Write a new task here...
+tasksBadge: (Tasks)
+trashSub: Temporarily deleted notes
+treeDesc2: Daily journaling builds your mental resilience.
+voiceAutoSaved: Voice diary entry saved successfully! 🎉
+voiceJournalSub: Speak freely and AI will format your voice into structured diary entries
+voiceProcessingAI: Processing audio & analyzing emotions with AI...
+voiceSaveBtn: Save as Diary Entry 💾
+writeDiaryImporterSub: Import diaries from other apps
+writeDiaryImporterTitle: Import Journals 📥
+distortion_catastrophizing: 🌋 Felaketleştirme
+distortion_desc_catastrophizing: En kötü senaryoyu beklemek ve riskleri abartmak.
+distortion_mind_reading: 🔮 Zihin Okuma
+distortion_desc_mind_reading: Kanıt olmaksızın başkalarının hakkınızda olumsuz düşündüğünü varsaymak.
+distortion_all_or_nothing: 🌗 Ya Hep Ya Hiç Düşüncesi
+distortion_desc_all_or_nothing: Olayları siyah-beyaz görmek: ya tam mükemmellik ya da tam başarısızlık.
+cbtTabThoughtRecords: 🧠 BDT Düşünce Kayıtları
+cbtTabDownwardArrow: ⬇️ Aşağı Ok Tekniği
+cbtTabWorryBox: 📦 Endişe Kutusu ve Erteleme
+cbtTabExposureLadder: 🪜 Kademeli Maruz Kalma Merdiveni
+cbtTabCopingCards: 📇 Başa Çıkma Kartları
+cbtTabGrounding: 🧘 5-4-3-2-1 Duyusal Topraklama
+cbtTabAnalytics: 📊 Bilişsel Çarpıtma Analitiği
+tasksSubTabDaily: Günlük ve Görevler
+tasksSubTabHabitsGrid: Alışkanlıklar Tablosu
+tasksSubTabSettings: Alışkanlık Ayarları
+waterReminderNotifTitle: 💧 Su İçme Vakti!
+waterReminderNotifBody: Nazik hatırlatma: Sağlığınız ve zihniniz için bir bardak su için.
+waterReminderEnabledToast: Saatlik su hatırlatıcıları etkinleştirildi 💧⏰
+waterReminderDisabledToast: Su hatırlatıcıları kapatıldı 🔕
+workoutTimerStarted: Egzersiz zamanlayıcısı başladı! ⏱️🏃
+workoutTimerPaused: Zamanlayıcı duraklatıldı ⏸️
+workoutTimerReset: Zamanlayıcı sıfırlandı 🔄
+workoutLoggedSuccess: {mins} dk ({type}) kaydedildi! Toplam: {total} dk 🏃💪
+medTakenSuccess: '{name}' alındı olarak kaydedildi! 💊
+medUntaken: '{name}' işareti kaldırıldı
+medAddedSuccess: '{name}' ilaç listesine eklendi! 💊
+medDeleted: İlaç listesinden kaldırıldı.
+newHabitDefaultName: Yeni Alışkanlık
+confirmDeleteHabit: Bu alışkanlığı kalıcı olarak silmek istediğinizden emin misiniz?
+updateBiometricBtn: Cihaz Biyometrisini Güncelle 👆👤
+linkBiometricBtn: Cihaz Biyometrisini Şimdi Bağla 👆👤
+confirmDeleteProsCons: Bu günün Artılar ve Eksiler kaydını silmek istediğinizden emin misiniz?
+prosConsDeleted: Günlük kayıt başarıyla silindi.
+noProsConsToExport: Dışa aktarılacak kayıt bulunamadı.
+exportedWordSuccess: Tüm kayıt Word belgesi olarak dışa aktarıldı 📝
+ancientTreeTag: • 365 Gün
+maxTreeLevelBadge: Maksimum Seviyeye Ulaşıldı 🌟
+toNextTreeStage: sonraki seviyeye
+disableTreePreview: 365 Gün Önizlemesini Kapat 🔄
+enableTreePreview: 365 Gün Bilgelik Ağacı Önizlemesini Test Et 🧪
+defaultGratitudeCardQuote: Bugün içsel huzur, dingin anlar ve sağlık için minnettarım.
+defaultAuthorName: Farkındalık Yolculuğum
+defaultCardCategory: Şükran Anı 💖
+gratitudeDownloaded: ✅ Şükran kartı başarıyla indirildi
+gratitudeDownloadFailed: ⚠️ Görsel indirilemedi, lütfen tekrar deneyin
+gratitudeCardCopied: 📋 Kart metni paylaşım için kopyalandı
+gratitudeShareUnsupported: ⚠️ Bu cihazda doğrudan paylaşım desteklenmiyor
+gratitudeShareFailed: ⚠️ Paylaşım hazırlanamadı
+gratitudeTextCopied: 📋 Metin panoya kopyalandı
+gratitudeCopyFailed: ⚠️ Panoya kopyalanamadı
+preparingImage: ⏳ Görsel hazırlanıyor...
+downloadedBtn: İndirildi! 💾
+downloadPngBtn: PNG İndir
+preparingShare: ⏳ Paylaşım hazırlanıyor...
+directShareBtn: Kartı Paylaş
+copiedSuccessBtn: Başarıyla kopyalandı! ✨
+voiceListeningPrompt: Dinleniyor... Rahatça konuşun...
+confirmClearGeneralChat: Genel YZ sohbet geçmişini temizlemek istediğinizden emin misiniz?
+confirmClearAdvisorChat: YZ Danışmanı sohbet geçmişini temizlemek istediğinizden emin misiniz?
+stopDictationTitle: Sesli yazmayı durdurmak için tıkla
+smartDictationTitle: Akıllı Sesli Yazma
+listeningVoice: Sesiniz dinleniyor...
+askGeneralAiPlaceholder: Genel YZ'ye sorun veya dosya ekleyin...
+askAdvisorPlaceholder: Danışmana günlükleriniz hakkında sorun...
+generalVoiceCompanionTitle: Genel Akıllı Sesli Yol Arkadaşı 🌐
+generalVoiceModalDesc: Rahatça konuşun, genel YZ tüm sorularınızı sesli olarak yanıtlayacaktır...
+advisorVoiceModalDesc: Rahatça konuşun, asistan günlüklerinizi analiz edip size sesli yanıt verecektir...
+mood_happy: Mutlu
+mood_very_happy: Çok Mutlu
+mood_grateful: Minnettar
+mood_calm: Huzurlu
+mood_hopeful: Umutlu
+mood_relaxed: Rahatlamış
+mood_enthusiastic: Hevesli
+mood_excited: Heyecanlı
+mood_anxious: Kaygılı
+mood_sad: Üzgün
+mood_afraid: Korkmuş
+mood_insomnia: Uykusuz
+mood_exhausted: Tükenmiş
+mood_angry: Öfkeli
+mood_normal: Normal
+tag_study: ders
+tag_family: aile
+tag_hope: umut
+tag_insomnia: uykusuzluk
+tag_anxiety: kaygı
+tag_challenge: meydan_okuma
+tag_achievement: başarı
+tag_happiness: mutluluk
+tag_reading: okuma
+tag_mindfulness: Farkındalık
+tag_work: İş
+tag_sports: Spor
+diaryImportanceLabel: Kişisel Derinlik ve Önem:
+diaryMoodsRecordedLabel: Kaydedilen Ruh Hali:
+noMoodSelected: Ruh hali seçilmedi
+untitledDiaryDefault: Başlıksız Günlük Kaydı
+prosConsModalTitle: Günlük Artılar ve Eksiler Dengesi
+prosConsTopicPlaceholder: Dengelemek istediğiniz konuyu veya kararı yazın...
+prosInputPlaceholder: Bir artı ekleyin (örn: Öğrenme fırsatı)
+consInputPlaceholder: Bir eksi ekleyin (örn: Ekstra zaman gerektirir)
+saveDailyRecordBtn: Günlük Kaydı Kaydet
+exportWordBtn: Word Belgesi Olarak Aktar
+lockScreenAthkarTitle: Kilit Ekranı Zikirleri
+integratedTherapyReportTitle: Kapsamlı Psikolojik ve Terapi Raporu
+generateClinicalReportBtn: YZ Klinik Raporu Oluştur
+exportReportPdfBtn: Raporu PDF Olarak Aktar
+monthlyMentalHealthReportTitle: Aylık Ruh Sağlığı Raporu
+downloadReportPdfBtn: Raporu PDF Olarak İndir
+editHabitModalTitle: Alışkanlığı Düzenle
+addHabitModalTitle: Yeni Alışkanlık Ekle
+habitNamePlaceholder: örn: Bir kitaptan 15 sayfa oku
+habitBestTimePlaceholder: örn: Sabahın erken saatlerinde
+habitGoalPlaceholder: örn: Odaklanmayı ve bilgiyi artırmak için
+habitLocationPlaceholder: örn: Çalışma masasında
+enableDailyHabitReminder: Bu alışkanlık için günlük hatırlatıcıyı aç
+enableHabitXpReward: XP puan ödül sistemini aç
+addHabitNowBtn: Alışkanlığı Şimdi Ekle
+habitSettingsScreenTitle: Alışkanlık Ayarları ve Yedekleme
+exportHabitsJsonBtn: Yedeği Dışa Aktar (JSON)
+importHabitsJsonBtn: Yedeği İçe Aktar (JSON)
+resetHabitsDefaultBtn: Varsayılan Alışkanlıklara Sıfırla
+saveAllSettingsBtn: Tüm Ayarları Kaydet
+geminiKeyPoolTitle: Gemini API Anahtar Havuzu
+geminiKeyInputPlaceholder: Google Gemini API Anahtarını buraya yapıştırın...
+addKeyToPoolBtn: Anahtarı Havuza Ekle
+testAllKeysBtn: Tüm Anahtarları Şimdi Test Et
+skipTourBtn: Turu Geç
+prevBtn: Önceki
+nextBtn: İleri
+startJourneyBtn: Yolculuğunuza Şimdi Başlayın
+dhikrCounterTitle: İnteraktif Zikirmatik
+resetCounterBtn: Sıfırla
+changeTargetBtn: Hedefi Değiştir
+fullAthkarTitle: Kapsamlı Zikir ve Dualar
+searchAthkarPlaceholder: Zikir ve dualarda ara...
+dashboardTitle: Kontrol Paneli ve Zihinsel Sağlık
+quickActionNewDiary: Hızlı Günlük Kaydı
+welcomeGreeting: Tekrar hoş geldiniz, huzurlu bir gün dileriz
+dailyQuote: Huzur, fırtınaların yokluğu değil, kalbinizdeki derin sükunettir.
+diariesTimelineTitle: Zaman Çizelgesi ve Günlükler
+writeNewDiaryBtn: Yeni Kayıt Yaz
+saveDiaryBtn: Kaydı Kaydet
+deleteDiaryBtn: Kaydı Sil
+smartAdvisorTitle: Akıllı Psikolojik Danışman (Hayat AI)
+smartAdvisorSubtitle: İçinizi dökmek ve BDT davranışsal rehberlik için güvenli alanınız
+suggestAiAlternativeBtn: YZ ile Alternatif Öner
+gratitudeTabTitle: Şükran Günlüğü
+gratitudeTreeTitle: Şükran ve Zihinsel Bolluk Ağacı
+addGratitudeBtn: Şükran Notu Ekle
+saveGratitudeBtn: Şükranı Kaydet
+shareGratitudeBtn: Şükran Kartını Paylaş
+cbtTherapyTitle: BDT Terapi Paketi
+worryBoxTitle: Endişe ve Kaygı Kutusu
+thoughtRecordTitle: Otomatik Düşünce Kaydı
+groundingTitle: 5-4-3-2-1 Duyusal Topraklama Egzersizi
+exposureLadderTitle: Kademeli Yüzleşme Basamakları
+actionPlanLabel: Eylem Planı:
+realProblemLabel: Kontrol Edilebilir Gerçek Problem
+habitsTabTitle: Alışkanlıklar ve Rutinler
+addHabitBtn: Yeni Alışkanlık Ekle
+analyticsTitle: Analitik ve Psikolojik Göstergeler
+habitsCompletionRate: Alışkanlık Tamamlama Oranı
+moodTrendsTitle: Ruh Hali Eğilimleri
+weeklySummaryTitle: Kapsamlı Haftalık Özet
+calendarTabTitle: Takvim ve Program
+calendarViewTitle: Duygusal ve Zaman Çizelgesi Takvimi
+todayBtn: Bugün
+monthView: Aylık Görünüm
+weekView: Haftalık Görünüm
+libraryTabTitle: Kütüphane ve Kitaplar
+favoriteBooksTitle: Favori Kitaplar ve Okuma Günlüğü
+addBookBtn: Yeni Kitap Ekle
+readingProgressTitle: Okuma İlerlemesi
+appearanceSection: Görünüm ve Temalar
+backupAndSyncTitle: Bulut Senkronizasyonu ve Yedekleme
+lockScreenTitle: Uygulama Kilidi ve Güvenlik
+lockScreenSubtitle: Günlüğünüze güvenle erişmek için PIN kodunuzu girin
+enterPinPrompt: 4 haneli PIN kodunu girin
+unlockAppBtn: Kilidi Aç
+pinModalTitle: PIN Kodunu Değiştir
+enterCurrentPin: Mevcut PIN:
+enterNewPin: Yeni PIN:
+confirmNewPin: Yeni PIN'i Onaylayın:
+savePinBtn: PIN'i Kaydet
+attachVideo: Video Ekle
+attachAudio: Ses Kaydı Ekle
+attachFile: Dosya Ekle
+recordAudioBtn: Ses Kaydet
+enableNotificationsPrompt: Bildirimleri ve Hatırlatıcıları Aç
+testNotificationBtn: Test Bildirimi Gönder
+saveRemindersBtn: Hatırlatıcıları Kaydet
+onboardingTitle: Kapsamlı Yaşam Rehberinize Hoş Geldiniz
+rateAppSubtitle: Görüşleriniz sürekli gelişimimize katkı sağlar
+submitRatingBtn: Değerlendirmeyi Gönder
+laterBtn: Daha Sonra
+contactOwnerSubtitle: Sorularınızı ve önerilerinizi dinlemekten mutluluk duyarız
+sendMessageBtn: Mesajı Gönder
+smartContextDiariesTitle: Günlükler ve Düşünceler
+smartContextDiariesDesc: Kişisel günlük yazılarını oku
+smartContextMoodLogsTitle: Günlük Ruh Hali ve Duygu Kayıtları
+smartContextMoodLogsDesc: Günlük ruh hali puanlarını değerlendir
+smartContextHabitsTitle: Alışkanlıklar ve Rutinler Takibi
+smartContextHabitsDesc: Alışkanlık tamamlama oranlarını takip et
+smartContextTasksTitle: Görevler ve Yapılacaklar Listesi
+smartContextTasksDesc: Günlük ve haftalık görevlere erişin
+smartContextCbtTitle: BDT Terapi Egzersizleri
+smartContextCbtDesc: Rehberlik için başa çıkma kartlarını oku
+smartContextReportsTitle: Ruh Sağlığı Raporları
+smartContextReportsDesc: Psikolojik özetleri ve analizleri incele
+smartContextVoiceTitle: Sesli Notlar ve Kayıtlar
+smartContextVoiceDesc: Ses kayıtlarının metinlerini analiz et
+smartContextBooksTitle: Favori Kitaplar ve Kütüphane
+smartContextBooksDesc: Okuma kayıtlarını ve ilham veren alıntıları oku
+smartContextGratitudeTitle: Şükran ve Pozitif Zihniyet
+smartContextGratitudeDesc: Şükran nedenlerini ve pozitif düşünceleri gözden geçir
+smartContextLifeMapTitle: Yaşam Haritası ve Gelecek Hedefleri
+smartContextLifeMapDesc: Uzun vadeli hedeflerinizi ve vizyonunuzu takip edin
+smartContextProsConsTitle: Karar Dengesi (Artılar ve Eksiler)
+smartContextProsConsDesc: Kişisel kararları ve değerlendirmeleri incele
+journal_type_diary: Günlük
+journal_type_diary_desc: Günlük olaylar, yaşam deneyimleri ve anılar
+journal_type_thought: Düşünceler
+journal_type_thought_desc: Kişisel düşünceler, hisler ve içsel diyalog
+journal_type_gratitude: Şükran
+journal_type_gratitude_desc: Güzellikleri fark etme, mutlu anlar ve teşekkür notları
+journal_type_wisdom: Hikmet
+journal_type_wisdom_desc: Hayat dersleri, derin içgörüler ve ilkeler
+journal_type_quote: Alıntılar
+journal_type_quote_desc: İlham veren alıntılar ve edebi sözler
+journal_type_idea: Hızlı Fikirler
+journal_type_idea_desc: Anlık ilhamlar, beyin fırtınaları ve proje fikirleri
+journal_type_free_writing: Serbest Yazı
+journal_type_free_writing_desc: Filtresiz bilinç akışı ve serbest ifade
+journal_type_memory: Görsel Anılar
+journal_type_memory_desc: Fotoğraflar ve çizimlerle ölümsüzleşen özel anlar
+biometricsNotSupportedFallbackPin: Bu tarayıcıda biyometri desteklenmiyor. Güvenlik için PIN kodu kilidi devrede.
+biometricsPermissionDenied: Biyometri izni reddedildi veya bu ortamda izin verilmiyor
+biometricsAuthFailed: Biyometrik doğrulama hatası
+environmentUnavailable: Ortam kullanılamıyor
+webAuthnUnsupported: Bu tarayıcı WebAuthn / Passkey teknolojisini desteklemiyor
+biometricSensorUnavailable: Bu cihazda etkin bir biyometrik sensör bulunamadı
+biometricSensorConnectFailed: Bu tarayıcıda biyometrik sensöre bağlanılamadı
+generatedReportNotice: Kayıtlı kişisel günlüklerinizden oluşturuldu
+summary: Özet
+positiveProgressMessage: Kayıtlarınız bilinçli bir gelişimi ve dengeli bir duygusal farkındalığı gösteriyor.
+maintainConsistencyPrompt: Günlük tutmaya ve alışkanlıklarınızı düzenli takip etmeye devam edin.
+mindfulnessAdvicePrompt: Yatmadan önce derin nefes egzersizleri ve zihinsel rahatlama uygulayın.
+matchingResultsTitle: Kayıtlarınızda Arama ve Analiz Sonuçları
+smartAdvisorDefaultResponse: Ben sizin kişisel farkındalık danışmanınızım. Duygularınızı ve alışkanlıklarınızı analiz etmenize yardımcı olmak için buradayım.
+reminder_morning_athkar: Sabah Hatırlatıcısı ve Farkındalık ☀️
+reminder_water: Su İç ve Vücudunu Nemlendir 💧
+reminder_evening_athkar: Akşam Hatırlatıcısı ve Huzur 🌙
+reminder_daily_diary: Günlük Yazımı ve Zihin Boşaltma ✍️
+habitWaterName: 2 Litre Ilık Su İç
+habitMeditationName: 10 dk Meditasyon ve Rahatlama
+habitWalkingName: Tempolu Yürüyüş veya Ev Egzersizi
+habitReadingName: Kitaptan 10 Sayfa Oku
+gratitudeDemoText1: Güneşin doğuşunu izlemek ve yeni bir güne huzur ve umutla başlamak
+gratitudeDemoText2: Sevdiklerimle sıcak bir fincan kahve içmek ve samimi bir sohbet etmek
+gratitudeDemoText3: Zor bir soruna çözüm bulmak ve kişisel gelişimin sevincini hissetmek
+diaryDemoTitle1: Haftalık Planlama, Aile Yemeği ve Umut Dolu Duygular
+diaryDemoContent1: Güne biriken işlerin endişesiyle başladım, ancak ailemle birlikte yediğim yemek içimi derin bir huzur ve şükranla doldurdu.
+diaryDemoTitle2: Gece Uykusuzluğu ve Gelecek Kaygısı
+diaryDemoContent2: Aşırı düşünmekten iyi uyuyamadım. Akşam yaptığım 45 dakikalık tempolu yürüyüş sakinleşmeme çok yardımcı oldu.
+diaryDemoTitle3: Proje Başarısı ve Huzurlu Akşam Okuması
+diaryDemoContent3: Proje sunumumu başarıyla tamamladım ve harika geri bildirimler aldım. Uyumadan önce papatya çayı eşliğinde bir bölüm kitap okudum.
+mood_joyful: Neşeli
+mood_satisfied: Tatmin
+tag_gratitude: şükran
+tag_morning: sabah
+tag_warmth: sıcaklık
+tag_growth: gelişim
+passkeyAndPinSecurity: Geçiş Anahtarı (Passkey) ve PIN Güvenlik Ayarları
+protectAppWithPinBiometrics: Uygulama gizliliğinizi PIN ve biyometrik doğrulama ile koruyun
+pinCode4Digits: 4 Haneli Gizli PIN Kodu
+defaultPin1234: Varsayılan: 1234
+deviceBiometricsPasskey: Cihaz Biyometrisi ve Geçiş Anahtarı (Passkey)
+linkedAndActive: Bağlandı ve Aktif ✅
+notLinked: Bağlanmadı ⚠️
+androidCapacitorBiometrics: Android Yerel Biyometrisi (Capacitor):
+writeDiaryBackupLabel: 📖 WriteDiary Yedekleme
+weekdaySunShort: Paz
+weekdayMonShort: Pzt
+weekdayTueShort: Sal
+weekdayWedShort: Çar
+weekdayThuShort: Per
+weekdayFriShort: Cum
+weekdaySatShort: Cmt
+smartAdvisorChatClearedPrompt: Sohbet geçmişi temizlendi. Bugün günlüklerinizi incelemenizde ve analiz etmenizde size nasıl yardımcı olabilirim? 🧠
+smartAdvisorDiaryProTab: Günlük Pro Danışmanı
+smartAdvisorGeneralTab: Genel Yapay Zeka Danışmanı 🌐
+smartAdvisorDiaryProTitle: Yapay Zeka Günlük Danışmanı Pro
+smartAdvisorDiaryProDesc: Davranış kalıplarını, ruh hali eğilimlerini ve zaman korelasyonlarını analiz edin
+smartAdvisorStartVoiceChat: Kesintisiz Sesli Sohbeti Başlat
+smartAdvisorVoiceChatBtn: Sesli Sohbet
+smartAdvisorAccessPermissions: Danışman Erişim İzinleri
+smartAdvisorPermissionsBtn: İzinler
+smartAdvisorDiariesAccess: Günlüklere Erişim İzni
+smartAdvisorGeneralTitle: Genel Yapay Zeka Danışmanı
+smartAdvisorGeneralDesc: Genel yanıtlar, bilim ve çok modlu ek analizleri
+smartAdvisorIndependentContext: Günlüklerden Bağımsız
+smartAdvisorStopAudio: Sesi Durdur
+smartAdvisorListenAudio: Sesli Dinle
+smartAdvisorAnalyzingLifeLog: Danışman kayıtlarınızı analiz ediyor...
+smartAdvisorWebLinkOption: 🌐 Web Bağlantısı
+smartAdvisorVideoOption: 🎥 Video
+smartAdvisorEnterWebLink: Referans Web Bağlantısını Girin:
+smartAdvisorAddLinkBtn: Bağlantıyı Ekle
+smartAdvisorEnterVideoUrl: Video Bağlantısını Girin (YouTube veya Doğrudan):
+smartAdvisorAddVideoBtn: Videoyu Ekle
+smartAdvisorEnterPdfInfo: Eklenen PDF Belge Bilgilerini Girin:
+smartAdvisorPdfNamePlaceholder: Dosya adı (örn. rapor.pdf)
+smartAdvisorPdfUrlPlaceholder: Görüntüleme veya İndirme Bağlantısı...
+smartAdvisorAddPdfBtn: PDF Ekle
+smartAdvisorAddAttachmentHeader: Sohbete Ek Ekle:
+smartAdvisorMediaUploadOption: Görsel / Video / Belge / Ses
+smartAdvisorWebLinkCategory: Web Sitesi Bağlantısı
+smartAdvisorVideoLinkCategory: Referans Video Bağlantısı
+smartAdvisorPdfDocCategory: PDF Belge Bilgisi
+smartAdvisorAttachFilesTooltip: Görsel, PDF, Ses, Bağlantı veya Video Ekle
+smartAdvisorClearChatTooltip: Sohbet Geçmişini Temizle
+smartAdvisorPermissionsTitle: Akıllı Danışman Erişim İzinleri 🛡️
+smartAdvisorPermissionsSubtitle: Danışmanın okuyup analiz etmesine izin verilen veri alanlarını seçin
+smartAdvisorEnableAllAccess: Tüm Erişimi Etkinleştir
+smartAdvisorEnableAllAccessDesc: Etkinleştirildiğinde, danışman tüm aktiviteler genelinde kapsamlı içgörüler sunabilir
+smartAdvisorPreferencesNote: 🔒 Tercihleriniz yerel olarak kaydedilir ve yapay zeka yanıtlarına anında uygulanır.
+smartAdvisorSaveApplyBtn: Kaydet ve Uygula 💾
+tag_imported: içe_aktarıldı
+tag_diaries: günlükler
+mood_reflective: Düşünceli
+fontDefaultSample: Her yeni gün, farkındalık, huzur ve kişisel gelişim için taze bir fırsattır.
+aiPositivesHeader: Yapay Zeka Tarafından Oluşturulan Olumlu Noktalar:
+aiNegativesHeader: Yapay Zeka Tarafından Oluşturulan Zorluklar:
+userManualPositivesHeader: Manuel Girilen Olumlu Noktalar:
+userManualNegativesHeader: Manuel Girilen Zorluklar:
+generatedByHayatAiNotice: Hayat AI tarafından oluşturuldu 🌿
+prosConsReportTitle: Artılar ve Eksiler Raporu
+dailyProsConsReportTitle: Günlük Artılar ve Eksiler Raporu
+dateLabelColon: Tarih:
+comprehensiveProsConsHistoryTitle: Kapsamlı Artılar ve Eksiler Geçmişi
+comprehensiveProsConsLogAllDays: Tüm Günler İçin Kapsamlı Artılar ve Eksiler Kaydı
+dailyProsConsLogHeader: ⚖️ Günlük Artılar ve Eksiler Kaydı
+fullHistoryArchiveBadge: Tam Geçmiş Arşivi 🧠
+prosConsArchiveDescription: Yapay zeka veya manuel olarak zaman içinde kaydedilen güçlü yönleri, fırsatları ve zorlukları belgeleyen kronolojik arşiv.
+exportFullLogBtn: Tam Kaydı Dışa Aktar (Word / PDF) 📄
+totalDaysTrackedLabel: İzlenen Toplam Gün
+daysUnit: gün
+totalPositivesLoggedLabel: Kaydedilen Toplam Artılar
+itemsUnit: öğe
+totalChallengesNegativesLabel: Toplam Zorluklar ve Eksiler
+positiveBalanceRatioLabel: Pozitif Denge Oranı
+searchProsConsPlaceholder: Tarihe veya anahtar kelimelere göre ara...
+filterMostlyPositive: Çoğunlukla Olumlu 🟢
+filterHigherChallenges: Yüksek Zorluklar 🔴
+noMatchingRecordsFound: Eşleşen kayıt bulunamadı
+goToJournalForProsConsPrompt: Günlük sekmesine gidin ve rapor oluşturmak için herhangi bir tarihin yanındaki ⚖️ Artılar ve Eksiler simgesine tıklayın.
+loggedDateLabel: Kayıt Tarihi:
+editDetailsBtn: Ayrıntıları Düzenle
+deleteRecordTooltip: Kaydı Sil
+positivesLabel: Olumlu Noktalar
+totalPrefix: toplam 
+noPositivesLoggedToday: Bugün için kayıtlı olumlu bir nokta yok.
+challengesAndNegativesLabel: Zorluklar ve Eksiler
+noNegativesLoggedToday: Bugün için kayıtlı zorluk veya eksi yok.
+habitWater2L: 2 Litre Ilık Su İç
+habitMeditation10min: 10 dk Meditasyon ve Kas Gevşetme
+habitBriskWalk: Tempolu Yürüyüş veya Ev Egzersizi
+habitRead10Pages: Kitaptan 10 Sayfa Oku
+gratitudeCardSample1: Güneşin doğuşunu izlemek ve yeni bir güne huzur ve umutla başlamak
+gratitudeCardSample2: Ailemle sıcacık bir fincan kahve içmek ve samimi bir sohbet etmek
+gratitudeCardSample3: Zorlu bir soruna çözüm bulmak ve kişisel gelişimin sevincini hissetmek
+voice_journal: Sesli Günlük
+ai_assistant: Yapay Zeka Asistanı
+cbtSuiteTitle: Gelişmiş Bilişsel Davranışçı Terapi (BDT) Paketi
+cbtSuiteSubtitle: Bilişsel Yeniden Yapılandırma ve Zihinsel Yanıt Araçları 🧠✨
+cbtSuiteDescription: Düşünceleri yeniden yapılandırmak, temel inançları belirlemek ve psikolojik dayanıklılık oluşturmak için bilimsel olarak kanıtlanmış araçlar.
+cbtGroundingDescription: Kaygıyı ve paniği kesmek ve sakinleşmek için zihninizi şimdiki ana bağlayan duyusal topraklama egzersizi.
+stepOf5: 5 Adımdan {step}. Adım
+cbtGrounding5SeePrompt: Etrafınıza bakın ve görebildiğiniz 5 şeyi adlandırın:
+itemISeePrefix: Gördüğüm nesne
+cbtGrounding4TouchPrompt: Dokunmaya odaklanın ve şu anda hissedebildiğiniz 4 şeyi adlandırın:
+itemITouchPrefix: Dokunduğum nesne
+cbtGrounding3HearPrompt: Sessizce dinleyin ve etrafınızda duyduğunuz 3 sesi adlandırın:
+soundIHearPrefix: Duyduğum ses
+cbtGrounding2SmellPrompt: Kokuları fark edin ve kokusunu alabildiğiniz 2 şeyi adlandırın:
+scentISmellPrefix: Kokladığım koku
+cbtGrounding1TastePrompt: Tadabildiğiniz veya tadını hatırlayabildiğiniz 1 şeyi adlandırın:
+cbtGroundingTastePlaceholder: Kahve tadı, suyun tadı, nane...
+previousStepArrow: ← Önceki Adım
+nextStepArrow: Sonraki Adım →
+completeGroundingBtn: ✓ Topraklamayı Tamamla ve Huzura Kavuş
+totalCompletedCbtExercises: Tamamlanan Toplam BDT Egzersizleri
+documentedCognitiveSessions: Belgelenmiş bilişsel oturumlar
+averageAnxietyRelief: Ortalama Kaygı Azalması
+pointsUnit: puan
+emotionalImprovementRate: Duygusal yanıt iyileşme oranı
+favoriteCopingCards: Favori Başa Çıkma Kartları
+supportiveCardsDistress: Kriz anlarında destekleyici kartlar
+cognitiveDistortionsDistribution: En Sık Görülen Bilişsel Çarpıtmaların Dağılımı
+timesUnit: kez
+cbtRestructuringStepOf5: Bilişsel Yeniden Yapılandırma Sihirbazı - 5 Adımdan {step}. Adım
+cbtStep1TriggerLabel: 1. Adım: Tetikleyici Olay / Durum
+cbtStep1Placeholder: Rahatsız hissetmeden önce hangi durum meydana geldi? (örn. Yöneticiden gelen bildirim...)
+cbtStep2ThoughtLabel: 2. Adım: Otomatik Olumsuz Düşünce
+cbtStep2Placeholder: Aklınıza anında hangi otomatik düşünce geldi? (örn. Kesinlikle işten çıkarılacağım...)
+cbtStep3DistortionLabel: 3. Adım: Olası Bilişsel Çarpıtmayı Seçin
+cbtStep4AlternativeLabel: 4. Adım: Rasyonel ve Dengeli Alternatif
+cbtStep4Placeholder: Nesnel gerçeklere dayalı, dengeli ve mantıklı bir alternatif yazın...
+cbtStep5RatingLabel: 5. Adım: Egzersiz Sonrası Kaygı Seviyesini Değerlendirin (0 - 10)
+cbtThoughtRecordsLogHeader: BDT Düşünce Kayıtları Günlüğü
+cbtThoughtRecordsDescription: Otomatik olumsuz düşünceleri parçalara ayırın, bilişsel çarpıtmaları belirleyin ve mantıklı alternatifler oluşturun.
+newThoughtRecordBtn: Yeni Düşünce Kaydı
+noThoughtRecordsLogged: Henüz kaydedilmiş düşünce kaydı yok.
+clickNewThoughtRecordHint: Rahatsız edici düşünceleri analiz etmeye başlamak için "Yeni Düşünce Kaydı"na tıklayın.
+anxietyReliefPrefix: Kaygı Azalması:
+triggerEventPrefix: Tetikleyici Olay:
+automaticNegativeThoughtPrefix: Otomatik Olumsuz Düşünce:
+cognitiveDistortionPrefix: Bilişsel Çarpıtma:
+rationalAlternativePrefix: Rasyonel Alternatif:
+anxietyBeforeLabel: Önceki Kaygı:
+anxietyAfterLabel: Sonraki Kaygı:
+downwardArrowTechniqueHeader: Aşağı Ok Tekniği
+downwardArrowDescription: Kronik kaygıya neden olan derin temel inançları ortaya çıkaran keşif tekniği.
+startDownwardArrowBtn: Aşağı Ok Egzersizini Başlat
+initialThoughtLabel: İlk Yüzeysel Düşünce
+initialThoughtExample: örn. "Müşterim mesaja geç yanıt verdi."
+whatDoesThatMeanLabel: Bu sizin için ne anlama geliyor?
+whatDoesThatMeanExample: "Bana kızgın olduğu ve sözleşmeyi iptal edeceği anlamına gelir."
+whatIfCancelledLabel: Peki iptal edilirse?
+whatIfCancelledExample: "Başarısız olduğum ve bu işe yaramadığım anlamına gelir."
+healthyAlternativeBeliefHeader: Sağlıklı Alternatif İnanç
+healthyAlternativeBeliefExample: "Öz değerim başkalarının günlük yanıtlarına bağlı değildir."
+noDownwardArrowLogged: Henüz kaydedilmiş aşağı ok egzersizi yok.
+useDownwardArrowHint: Olumsuz düşüncelerinizin altında dile getirilmemiş derin korkular yattığında bu tekniği kullanın.
+downwardArrowExerciseTitle: Aşağı Ok Egzersizi
+initialAutomaticThoughtPrefix: İlk Otomatik Düşünce:
+healthyAlternativeBeliefPrefix: Sağlıklı Alternatif İnanç:
+homeNav: Ana Sayfa

@@ -1,0 +1,1377 @@
+========================================
+RUNTIME LOCALIZATION SNAPSHOT: JA
+Total Schema Keys: 1371
+Generated At: 2026-08-18T13:12:46.295Z
+========================================
+
+nav.home: ホーム
+nav.diaries: 日記
+nav.advisor: AIアドバイザー
+nav.progress: 進捗とデータ
+nav.settings: 設定
+nav.hayat_ai: Hayat AI
+nav.fullscreen: 全画面表示
+nav.account_title: マイアカウント
+nav.lock_app: アプリをロック
+nav.switch_language: 言語を変更
+nav.dhikr: 念誦と瞑想
+nav.daily_tasks: 毎日のタスク
+nav.my_thoughts: 私の思考と考察
+nav.therapy_session: カウンセリング
+nav.back_btn: 戻る
+nav.auto_saved: 自動保存されました
+nav.saving: 保存中...
+nav.subtitle: あなただけの安全なメンタル空間
+nav.sign_in: ログイン
+appName: Hayat AI
+homeTab: ホーム
+diariesTab: 日記
+advisorTab: アドバイザー
+analyticsTab: 分析
+settingsTab: 設定
+yes: はい
+no: いいえ
+closeBtn: 閉じる
+retryBtn: 再試行
+cancelBtn: キャンセル
+save_btn: 保存
+saveAndCloseBtn: 保存して閉じる
+sendBtn: 送信
+clearBtn: クリア
+back_btn: 戻る
+attachPhoto: 写真を添付
+attachPhotoSub: 写真で瞬間を記録
+phoneVideo: スマホ動画 🎥
+phoneVideoSub: 動画内の感情を分析
+audioFile: ボイスメモ 🎙️
+audioFileSub: 音声を文字起こし・分析
+bookDoc: 本・ドキュメント 📖
+bookDocSub: 主要な知識や教訓を抽出
+freeWrite: 自由記述 ✍️
+freeWriteSub: 制限なく思考を自由に書き出す
+aiAdvisor: AIアドバイザー 🤖
+aiAdvisorSub: 即座の心理的ガイダンス
+aiPsychAdvisor: 心理AIカウンセラー 🧠
+greetingDesc: 今日は成長と心の調和のための新しい一日です。考えを記録することで、AIアドバイザーがあなたに合わせたガイダンスを提供できます。
+streakTitle: 連続記録トラッカー
+dayStreak: 日連続
+longestStreak: 最長記録:
+aiInspirationBtn: スマートインスピレーション (AI) 🪄
+writeNewNoteBtn: 新しい日記を書く
+cancelSearchBtn: 検索をキャンセル
+filterTagsLabel: フィルター tags:
+meLabel: Me
+moodSad: Sad
+waterTrackerTitle: 毎日のインタラクティブ水分カウンター 💧
+waterTrackerDesc: 下のグラスをタップして飲んだ水分を記録してください。水分補給は神経系を落ち着かせます。
+symptomsTitle: 毎日の心身の症状
+symptomsDesc: 本日感じた症状をチェックして、心と体のつながりを分析しましょう。
+languagesTitle: 言語設定 🌐
+languagesSub: Change user interface language
+selectLanguageTitle: 言語を選択
+selectLanguageSubtitle: Hayat AI supports multiple global languages
+symptomHeadache: 頭痛・頭の重さ
+symptomFatigue: 全身の倦怠感・疲労
+symptomBackTension: 筋肉のこわばり・背中の痛み 🧘
+symptomPoorSleep: 不眠・浅い睡眠 😴
+symptomRapidHeart: 動悸・心拍数の上昇
+symptomShortnessBreath: 息苦しさ・息切れ
+symptomStomach: 胃の不快感・吐き気 🤢
+symptomTremors: 発汗・手足の震え 🥶
+waterConsumed: 摂取量:
+waterRemaining: 💡 目標達成まであと数杯です。頑張りましょう！
+filterAll: すべて
+fontAndSpacingTabLabel: フォントと行間 🔤
+languageTabLabel: 言語と地域
+fullCalendar: カレンダーと日別ビュー
+fullCalendarSub: タップして日記、本、AIインサイトを確認
+directUploadTitle: ファイルと添付ファイルへの直接アクセス 📁
+quoteTitle: 今日の知恵と心のモチベーション 🌿
+recentWeek: 先週の進捗:
+selectDateTitle: アクティビティを記録・表示する日付を選択:
+moodScaleTitle: クイックデジタル気分スケール (1 - 10) 😐
+moodScaleDesc: スライダーを動かして今の気分を1秒で記録します。
+proBadge: Pro
+predictiveTitle: 予測メンタルケア 🔮
+key: Key
+voiceJournalTitle: 音声日記 🎙️
+moodRating: 気分の評価:
+habitsFilterAndSort: 習慣のフィルターと並び替え
+filterAndSortBtn: フィルターと並び替え
+filterAndSortHeader: 習慣のフィルターと並び替え
+hideArchived: アーカイブを非表示
+hideCompleted: 完了済みを非表示
+sortMethod: 並び替え方法:
+sortManual: 手動 ⬆
+sortByName: 名前順
+sortByColor: 色順
+sortByScore: スコア順
+sortByStatus: 状態順
+habitsSettingsTitle: 習慣とデータの設定
+periodicityFilter: 表示範囲と頻度:
+daysDisplayed: {count}日間表示中
+dayRangeDay: 📅 日
+dayRangeWeek: 📆 週
+dayRangeMonth: 🗓️ 月
+dayRangeQuarter: 📊 四半期
+dayRangeSemiAnnual: 📈 半期
+dayRangeYear: 📅 年
+dayRangeCustom: 🎯 カスタム (期間指定)
+fromDate: 開始日:
+toDate: 終了日:
+habitsAndRoutinesTitle: 習慣とルーティン
+recordValue: 数値を記録: {name}
+quantity: {date} の数量 ({unit}):
+saveValue: 数値を保存
+cyclesCount: サイクル数
+photo: Photo 📸
+audio: Audio 🎙️
+document: Document 📄
+photoIcon: Photo
+moodNormal: Normal
+fontJakartaName: Plus Jakarta Sans
+fontJakartaCategory: Modern Sans-Serif
+fontJakartaSample: Modern & Clean Typography for All Screens
+fontSystemName: System Default Font
+fontSystemCategory: Native System Typography
+fontSystemSample: Your device native typography font automatically
+allAccessBadge: (All Access)
+cbtBadge: (CBT)
+prosConsBadge: (Pros & Cons)
+pdfBadge: PDF Document
+e2eePairingCodeTitle: Cross-Device Unified Pairing Code
+e2eePairingCodeDesc: Use this code to pair your phone, tablet, or desktop
+e2eeStatusEncrypted: Fully Encrypted 256-bit AES
+aiMoodAnalysisUpdateNotice: Analysis updates automatically as you write
+importGratitudeTitle: 取り込み Gratitude Cards
+undoTooltip: Undo (Ctrl+Z)
+redoTooltip: Redo (Ctrl+Y)
+boldTooltip: Bold (Ctrl+B)
+italicTooltip: Italic (Ctrl+I)
+underlineTooltip: Underline (Ctrl+U)
+strikethroughTooltip: Strikethrough
+h1Tooltip: Heading 1 (H1)
+h2Tooltip: Heading 2 (H2)
+quoteTooltip: Quote
+bulletListTooltip: Bullet List
+fontColorsTooltip: Font Color Formatting
+attachFileTitle: Attach File
+addAudioTitle: 追加 Audio Recording
+photoTitle: 追加 Photo
+backgroundColorTitle: 戻るground Color
+colorTitle: Font Color
+fontEffectTitle: Font Effect
+fontTitle: Font Style
+subsequentAdditionsTitle: Subsequent 追加itions & Updates
+subsequentAdditionsNotice: 追加itions are saved with independent timestamp
+historicalEditsTitle: Historical 編集s Log
+containsEditsPrefix: Contains
+appendedEditsSuffix: appended edits
+biometricCanceled: Biometric scan canceled
+biometricFailed: Biometric authentication failed
+biometricStep1: Preparing scanner...
+biometricStep2: Reading biometric data...
+biometricStep3: Verifying identity...
+biometricSuccess: Verified successfully!
+faceScanInstruction: Point face toward camera for verification
+faceScanTitle: Face ID Verification
+faceSuccessTitle: Face recognized successfully
+fingerprintScanInstruction: Place finger on scanner
+fingerprintScanTitle: Fingerprint Verification
+lockScreenAlertSuccess: Unlocked successfully
+enterPinNowBtn: Enter PIN Now
+syncOptionsTitle: Cloud Sync Options
+linkGoogleAccount: Link with Google Account 🌐
+restoreCloudBackup: Restore Cloud 戻るup ☁️
+importManual: Manual JSON/CSV 取り込み
+importFromWriteDiary: 取り込み from WriteDiary
+autoBackupFrequency: Auto-戻るup Frequency
+secureEmailBackup: Send 戻るup to Email 📧
+emailPlaceholder: name@example.com
+supportedFormats: Supported Formats: JSON, CSV, WriteDiary 戻るup
+uploadAnotherFile: Upload Another File 📁
+selectAllBtn: Select All
+text: Text
+section: Section
+offlineStatusOffline: You are currently offline
+offlineSyncSuccess: Data synced and updated offline successfully
+resetConfirm: Are you sure you want to reset?
+resetCounter: Reset Counter
+muteClickSound: Mute Click Sound
+enableClickSound: Enable Click Sound
+pwaInstructionTitle: Install App on Your Device
+pwaStep1: Open browser menu (⋮ or 共有)
+pwaStep2: Select "追加 to Home Screen"
+pwaStep3: Install the app and enjoy a fast experience
+welcomeBackOpening: Welcome back! ✨
+presetNote1: Gratitude for today
+presetNote2: Evening reflection on achievements
+presetNote3: Plans and goals for tomorrow
+presetNote4: Reflection and emotional release
+presetNote5: New creative ideas
+presetNote6: Relaxation and peace session
+howToStep4: Use AI to analyze emotions and get recommendations
+cameraDeniedError: Camera permission denied
+multiFormatTitle: Multi-Format 出力 & 取り込み 📦
+exportJson: Full JSON 戻るup
+exportCsv: CSV Spreadsheet (Excel)
+exportEncrypted: Secure Encrypted File (ENC)
+importEncrypted: 取り込み Encrypted File
+voiceRecordingStarted: Listening to your voice & capturing emotions...
+voiceListening: Listening attentively...
+lineHeightCompactName: Compact (1.45x)
+lineHeightCompactDesc: Compact view for dense lists and quick stats
+lineHeightNormalName: Standard (1.65x)
+lineHeightNormalDesc: Standard spacing for general navigation
+lineHeightRelaxedName: Relaxed (1.85x) - Recommended
+lineHeightSpaciousName: Spacious (2.15x)
+lineHeightSpaciousDesc: Maximum line spacing for immersive reading sessions
+actionsHeader: Actions
+habitBooleanLabel: ✓ 完了 / 未完了
+moveUpTitle: Move Up
+moveDownTitle: Move Down
+measurableUnitDefault: Unit
+quoteCopiedAlert: Quote copied to clipboard! 🌸
+copyQuoteTooltip: Copy quote
+scrollHint: Scroll ↔
+waterCupLabel: Cup {number}
+moodSevereDistress: Severe distress & sadness 😭
+moodContentPeaceful: Content & peaceful 😊
+video: Video 🎥
+videoRecordBtn: Video Clip 🎥
+quickVentBtn: Quick Venting ✍️
+webLinkBtn: Web Link 🌐
+attachFileIcon: Attach File
+addAudioIcon: 追加 Audio
+sketchIcon: Draw
+bgColorIcon: 戻るground Color
+addChecklistItem: + 追加 Item (List)
+depthRatingLabel: 取り込みance & Self Depth Rating:
+starsOutOfFive: stars
+cbtWorksheets: Thought Reframing Sheets
+thoughtRecord: Automatic Thoughts Record
+postSessionMood: Greatly Improved
+reviewProsConsTitle: Pros & Cons Review
+prosConsBtnLabel: Pros & Cons ⚖️
+exerciseMoodBoostTitle: Effect of Exercise & Activity
+cbtEffectivenessTitle: Effectiveness of CBT Exercises
+cbtEffectivenessDesc: Reframing negative automatic thoughts reduces distress by {percent}%.
+accountSubGuest: Safe local account on this device
+psychologicalGrowthTreeTitle: 心理的成長とバランスの樹 🌳
+treeStage1: 最初の種 (気づきの始まり)
+treeStage2: 双葉 (習慣の形成)
+treeStage3: 若木 (心の安定)
+treeStage4: 花咲く大樹 (回復力と開花)
+treeStage5: 実り豊かな成熟の樹 (英知と心の調和)
+treeDesc1: Beginning of self-care and emotional discovery.
+treeDesc3: Your thoughts find a safe outlet and grow deeply.
+treeDesc4: Emotional stability and inner peace fill your day.
+treeDesc5: 完了 mental balance and wise self-reflection.
+rateAppFeedbackLabel: Feedback & Suggestions:
+rateAppSubmit: Submit Rating ⭐
+contactOwnerModalTitle: Contact Developer 📬
+contactOwnerModalDesc: We love receiving direct feedback to develop the app
+contactOwnerMessage: Your message or feedback:
+copyEmail: Copy Email 📋
+restoreDataBtn: Restore Data from JSON File 📥
+howToExportTitle: How to export & restore data:
+howToStep1: 1. Click export to get an encrypted JSON file containing your journals.
+howToStep3: 3. To restore on another device, select file and click restore.
+accountTitle: Personal Account & Login
+guestUserLabel: Guest (Unregistered)
+userEmailSynced: Logged in: {email} • Access journals from any device
+guestUserDesc: Sign in with your personal account to sync and access your data across devices
+appLockDetailsTitle: 🔐 Screen & Data Lock (PIN, Fingerprint & Face ID):
+appLockDetailsDesc: When app lock is enabled, security verification (Fingerprint/Face ID or PIN) is required upon leaving or locking the screen.
+pinCodeLabel: Secret PIN Code (4 digits)
+defaultPinHint: 初期PIN: 1234 (設定で変更可能)
+pinPlaceholder: Current Code (1234)
+linkBiometricsTitle: Link Fingerprint & Face ID (Passkey):
+biometricNotActiveBadge: ⚠️ Not Linked
+biometricDesc: Link your official device biometrics (fingerprint or face ID) to unlock the app with a single touch.
+biometricUpdateBtn: Update or Re-link Device Biometric 👆👤
+biometricLinkBtn: Link & Enable Device / Face Biometric Now 👆👤
+biometricAlertTitle: 取り込みant Protection Notice:
+biometricAlertDesc: When tapping "Link Device Biometric", your OS will prompt for fingerprint or face scan. The app will then only unlock with the registered biometrics.
+archiveEmptySearch: No matching results found in archive.
+thoughtBadgeShort: ✍️ Reflection
+diaryBadgeShort: 📓 日記
+itemsInTrash: items in trash
+remindersCountBadge: reminder(s)
+behavioralAiBadge: Behavioral AI
+testSoundTitle: Test Alert Sound
+testSoundBtn: Test Sound
+addNewSmartReminderTitle: 追加 New Smart Reminder
+addNewSmartReminderBtn: 追加 New Smart Reminder
+reminderTitleLabel: Reminder Title or Goal
+reminderIconLabel: Icon
+alertTimeLabel: Alert Time
+alertFrequencyLabel: Frequency
+freqCustomDays: Specific 日 of Week
+selectDaysPrompt: Select days to be reminded on:
+optionalLabel: Optional
+motivationalNotePlaceholder: Enter a motivational quote to uplift you when alert fires...
+presetSamplesPrompt: Preset motivational samples (click to pick):
+addReminderBtn: 追加 Reminder
+noRemindersYetTitle: No reminders scheduled yet
+createFirstReminderBtn: Create First Reminder Now
+disabledBadge: Disabled
+cbtTipTitle: Cognitive Behavioral Therapy (CBT) Tip:
+alertsMonitoredFooter: Alerts monitored automatically in-app
+catGeneral: General Alert
+catJournal: 日記 & Writing
+catMeditation: Meditation & Rest
+catFitness: Fitness & Movement
+catReading: Reading & Learning
+catMotivation: Positive Motivation
+recommendedBadge: 推奨
+testLockScreenNotificationBtn: Pin / Test Notification on Lock Screen Now 📌
+howLockScreenWorksBtn: How does lock screen widget work? ℹ️
+fullscreenModeTitle: Fullscreen Mode & Hide Browser 追加ress Bar
+fullscreenModeDesc: Hide browser address bar (URL) and navigation UI for a distraction-free full-screen app experience.
+toggleFullscreenBtn: Toggle Fullscreen Mode Now 🖥️
+pwaMethodBtn: Permanent PWA Hide Method ℹ️
+appWideBadge: App-wide
+e2eeTitle: Encrypted Cloud Sync (E2EE) 🔐
+e2eeSub: End-to-end encryption across all your devices
+e2eePassphrasePlaceholder: Enter your custom encryption passphrase...
+pinPadShortcutSub: 選択したクイックアクションを実行するにはPINを入力してください
+pinVerified: Correct PIN Code
+powerButtonTooltip: Lock App Immediately
+screenOffTitle: Screen Secured
+screenOffDesc: Click to unlock app
+importNotePreserveDates: Original dates and tags are preserved
+analyzingFile: Analyzing file...
+uploadDropZoneText: Drag file here or click to select
+apiKeyVerified: API Key verified successfully! ✅
+apiKeyVerifyFailed: Failed to verify API Key
+verifyingKey: Verifying API Key...
+copied: Copied to clipboard! 📋
+sendMessageNow: Send Message Now 🚀
+minutesUnit: 分
+chooseFontStyle: Choose Font Style:
+aiWriterTopicPlaceholder: Ask any topic from AI...
+generatingAiText: Generating...
+sendPromptBtn: Send ✨
+aiGeneratingTitle: Generating by AI...
+aiModelDraftingDesc: Smart model is drafting thoughts professionally now
+readyToInsertBadge: Ready to Insert
+copiedTextSuccess: ✓ Copied text
+copyTextBtn: 📋 テキストをコピー
+suggestAnotherTopic: Suggest another topic
+generateAction: Generate →
+aiChatSessionTitle: Interactive AI Venting & Psychological Analysis Session
+liveInteractionBadge: Live Interaction
+sendBtnLabel: Send
+voiceInterruptAndSpeak: Interrupt & Speak ⏹️
+generalTag: General 📌
+totalRemindersLabel: Total Reminders:
+getFreeKeyLink: Get a free API key from Google AI Studio 🔑
+pwaHowToBtn: How to Install as PWA 📱
+predictiveGuidance: 予測的ヘルスガイダンス
+importerErrorMsg: Error reading file, please verify format
+resultsCountSuffix: results
+checkSpellingOrFilter: Check spelling or try filtering by tags.
+audioDrawingsOnly: Media & Drawings Only
+modifiedBadge: Modified
+fontDrawerTitle: Font
+fontSizeLabel: Font Size
+settingsSubtitle: Customize AI assistant, security & language
+apiKeySub: Enter Gemini API key for continuous AI capabilities
+typographyTabTitle: Font & Spacing
+typographyTabSub: Select font style and line height for comfortable reading
+fontStyleIcon: Font Style
+darkModeSub: Switch between light and dark theme
+backupSub: 出力 and restore your data safely
+contactSub: Feedback and inquiries to improve the app
+rateSub: Your opinion helps improve Hayat AI
+faceIdBtn: 顔認証
+fingerprintBtn: 指紋認証
+biometricScanTitle: 生体認証 🔐
+biometricScanInstruction: 顔または指紋をスキャンしてください
+biometricSuccessTitle: 認証に成功しました！🎉
+biometricFailedTitle: 認証に失敗しました ❌
+biometricNotLinkedTitle: 生体認証が未登録です
+biometricSettingsTitle: セキュリティと生体認証ロック 🛡️
+biometricSettingsSub: Face ID、指紋、PINコードでデータを保護
+biometricToggleFaceId: Face IDによるロック解除を有効化
+biometricToggleFingerprint: 指紋認証によるロック解除を有効化
+biometricToggleFaceIdDesc: 顔認証を使用してアプリを素早く開く
+biometricToggleFingerprintDesc: 指紋センサーにタッチしてロック解除
+biometricHardwareUnavailable: この端末では生体認証センサーを利用できません
+biometricDeviceNotSupported: お使いの端末は生体認証に対応していません
+biometricVerifyToDisable: 無効化するには本人確認を行ってください
+biometricAuthPrompt: 続行するには本人確認を行ってください
+biometricDisableSuccess: 生体認証ロックを解除しました
+biometricSetupSuccess: 生体認証ロックを設定しました！🎉
+biometricAppLockActive: セキュリティのためアプリはロックされています
+biometricUnlockWithFaceId: Face IDで解除
+biometricUnlockWithFingerprint: 指紋認証で解除
+biometricPINFallbackBtn: PINコードを使用 🔢
+geminiKeyModalTitle: Gemini APIキー管理 🔑
+geminiKeyModalSubtitle: 無制限のAI分析のためにGoogle Geminiキーを設定
+geminiKeyDesc: キーはブラウザの安全なローカルストレージにのみ保存されます。
+geminiGetKeyLink: Google AI Studioで無料のAPIキーを取得 ↗
+geminiKeyPlaceholder: Gemini APIキーをここに貼り付け (AIza...で始まります)
+geminiKeySave: キーを保存 💾
+geminiKeyDelete: キーを削除 🗑️
+geminiKeySavedSuccess: APIキーを保存して有効化しました！🎉
+geminiKeyDeletedSuccess: APIキーを削除しました。標準設定に戻ります
+geminiKeyRequiredWarning: 有効なGemini APIキーを入力してください
+geminiSecurityNotice: キーは第三者のサーバーを経由せず、端末内にのみ保持されます。
+geminiKeyActive: キー有効
+geminiKeyCustomBadge: カスタム
+geminiKeyDefaultBadge: 標準共有
+lifeMapTitle: ライフマップと人生のバランス 🧭
+lifeMapSub: 人生の主要分野を評価して調和と充実感を高めましょう
+lifeBalanceScore: 総合バランススコア
+lifeSpiritual: 精神性と心の平安
+lifeHealth: 身体の健康とエネルギー
+lifeCareer: 仕事とキャリアの達成
+lifeRelationships: 人間関係と家族
+lifeFinances: お金と経済的安心
+lifePersonalGrowth: 自己成長と学習
+cbtExercisesTitle: 認知行動療法（CBT）ワーク 🧠
+cbtExercisesSub: 認知のゆがみを特定し、思考を再構成して心を落ち着かせます
+cbtNewExerciseBtn: 新しいCBTワーク ✍️
+cbtThoughtRecord: 自動思考の記録
+cbtDistortionCat: 認知のゆがみの種類
+cbtEvidenceFor: この思考を支持する客観的事実
+cbtEvidenceAgainst: この思考と矛盾する客観的事実
+cbtBalancedThought: バランスの取れた現実的な代替思考
+gratitudeJournalTitle: 感謝と気付きのウォール 🌸
+gratitudeJournalSub: 日々の恵みに感謝し、穏やかな心を育みましょう
+gratitudeNewCardBtn: 新しい感謝カード ✨
+gratitudeCardPlaceholder: 今日感謝したいことは何ですか？心のおもむくままに書いてみましょう...
+gratitudeCardSavedSuccess: 感謝カードを保存しました！🌸
+gratitudeCardDeleteConfirm: この感謝カードを削除してもよろしいですか？
+gratitudeShareCardBtn: カードを共有 📤
+clinicalReportTitle: 臨床レポート・心理サマリー 📑
+clinicalReportSub: 気分、習慣、心理的成長の包括的な分析
+clinicalSeverityMinimal: 最小限 / 安定
+clinicalSeverityMild: 軽度
+clinicalSeverityModerate: 中等度
+clinicalSeveritySevere: 重度 / 専門家への相談推奨
+clinicalExportPdfBtn: PDFとして出力 📄
+clinicalExportWordBtn: Word (DOCX) として出力 📝
+clinicalPrintBtn: レポートを印刷 🖨️
+clinicalConfidentialNotice: このレポートは厳重に機密が保持され、暗号化された個人データから生成されます。
+backupSyncTitle: バックアップとエンドツーエンド暗号化同期 (E2EE) ☁️
+backupSyncSub: 中間サーバーを介さず、お使いの端末間でデータを安全に同期します
+backupSyncGenerateKey: 新しいペアリングキーを生成 🔑
+backupSyncEnterKey: もう一方の端末のペアリングキーを入力
+backupSyncExportJson: バックアップファイルを出力 (JSON) 💾
+backupSyncImportJson: ファイルから復元 (JSON) 📂
+backupSyncRestoreSuccess: バックアップを正常に復元しました！🎉
+canvasTitle: お絵かきキャンバス・感情スケッチ 🎨
+canvasBrushSmall: 細いブラシ
+canvasBrushMedium: 中くらいのブラシ
+canvasBrushLarge: 太いブラシ
+canvasBrushEraser: 消しゴム 🧽
+canvasUndo: 元に戻す ↩️
+canvasRedo: やり直す ↪️
+canvasClear: 全消去 🗑️
+canvasSaveToEntry: 図面をノートに添付 📎
+rateAppModalTitle: Hayat AIの使い心地を評価してください ⭐
+rateAppThankYou: 貴重なご意見をいただきありがとうございます！❤️
+rateAppThankYouDesc: 皆様のご意見をもとに、より良いセルフケア体験を提供できるよう努めてまいります。
+rateAppQuestion: アプリについてのご感想や改善点をお聞かせください
+rateAppSubmitBtn: フィードバックを送信 🚀
+rateAppPlaceholder: ご意見、アイデア、ご提案などをお気軽にお聞かせください...
+reportFromDate: 開始:
+reportToDate: 終了:
+reportRangeLabel: 期間:
+today: 今日
+yesterday: 昨日
+daysAgo: {count}日前
+currentWeek: 今週
+lastWeek: 先週
+weeksAgo: {count}週間前
+currentMonth: 今月
+lastMonth: 先月
+monthsAgo: {count}か月前
+currentQuarter: 今四半期
+previousQuarter: 前四半期
+quartersAgo: {count}四半期前
+currentHalf: 今半期
+previousHalf: 前半期
+halvesAgo: {count}半期前
+currentYearLabel: 今年 ({year})
+lastYearLabel: 昨年 ({year})
+yearLabelN: {year}年
+reportsHistory: 履歴 ({count}) 📜
+aiSummaryBtn: AIサマリー 🧠
+analyzingStatus: 分析中...
+copyTextTooltip: テキストをコピー
+copiedSuccess: コピー完了！
+copyBtn: コピー
+printReportTooltip: 印刷
+loggedDiariesStat: 記録された日記
+entriesUnit: 件
+avgSleepStat: 平均睡眠
+hoursUnit: 時間
+moodScoreStat: 気分スコア
+exerciseTimeStat: 運動時間
+sleepMoodChartTitle: 睡眠と気分の相関グラフ
+timelineLabel: タイムライン
+clinicalAnalysisTitle: 臨床心理分析 (AIアドバイザー)
+clickAiSummaryHint: 期間中の行動と気分の分析を含めるには、上の「AIサマリー 🧠」をクリックしてください。
+topLoggedFeelingsTitle: 記録された主な感情:
+sampleFeelings: 穏やか、平安、前向き
+preparingPdf: PDFを準備中...
+exportPdfNow: 今すぐPDFを出力
+reportsHistoryTitle: 保存されたメンタルヘルスレポート履歴 📜
+reportsHistorySubtitle: 日付とメモを含む過去のレポート履歴
+searchReportsPlaceholder: タイトルや日付でレポートを検索...
+totalReportsCount: 総レポート数: {count}
+noReportsInHistory: 履歴に保存されたレポートはありません
+clickSaveReportHint: レポートをアーカイブするには、上の「レポートを保存」をクリックしてください。
+accountSubUser: Active & cloud synced
+activeBadge: Active
+activeRemindersListTitle: Active & Scheduled Reminders List
+addAlarmBtn: + Add
+addChecklistItemBtn: Add Checklist Item ➕
+addHabitBtnLabel: + Add Habit
+addNewAlarmTitle: Add New Behavioral Reminder / Alarm:
+advisor: Advisor 🤖
+advisorQuickQ1: What causes my stress most?
+advisorQuickQ2: Summarize my recent entries
+advisorQuickQ3: When was I last happy?
+advisorQuickQ4: Compare this week vs last month.
+advisorQuickQ5: What preventive advice fits me today?
+aiAnalyticsBadge: AI Analytics
+aiBehavioralAssessmentTitle: AI Behavioral Assessment & Smart Reports
+aiMoodAnalysisNotice: * This analysis is automatically updated as soon as you click "Save Note Successfully ✓" based on written words.
+aiMoodAnalysisTitle: Gemini Smart Mood Analysis:
+aiWriterBtn: AI Assistant 🤖
+alarmTitlePlaceholder: e.g. Free writing session, drink water break...
+allFilterTab: All Entries
+apiKeySubAuto: A free default key is automatically used if no custom key is provided
+apiKeyTitle: Your API Key 🔑
+appLockSub: Protect your diaries with a private password
+appLockTitle: App PIN Lock 🔐
+appVersionCredits: ✨ Hayat AI — Stable Private Version 1.0.0
+archiveAction: Archive 📥
+archiveBtnLabel: Archive this note 📥
+archiveEmptyDesc: You can archive any journal entry or reflection from the Journals tab to save it here safely.
+archiveEmptyTitle: Archive is currently empty.
+archiveSearchPlaceholder: Search archived journals & thoughts...
+archiveSub: Archived entries
+archiveTitle: Archive 📦
+askAiWriterHeader: Ask your psych advisor or request motivational text:
+audioRecordBtn: Voice Note 🎙️
+authModalSub: Safely sync your data across devices
+authModalTitle: Personal Account & Sync
+autoAiMoodAnalysisTitle: Auto AI Mood Analysis
+autoSaveLabel: Auto-saved
+backupDaily: Daily 📅
+backupHourly: Hourly ⏰
+backupOff: Disabled 🛑
+backupSyncDesc: Save backup or restore data anytime
+backupTitle: Backup & Sync ☁️
+backupWeekly: Weekly 🗓️
+balanceIndex: Balance Index
+behavioralCorrelationsSub: Discover connections between habits & mood
+behavioralCorrelationsTitle: Behavioral Analytics Engine
+behavioralMoodLabel: Dominant Mood & Feeling
+biometricActiveBadge: ✅ Active & Linked
+biometricAlreadyRegistered: Biometric already registered 🔐
+biometricNotLinkedDesc: Register biometric first in security settings
+biometricNotSupported: Device unsupported or permission denied
+biometricUserCanceled: Canceled by user
+boxBreathingDesc: Phase breathing technique used by psychiatrists to calm heart rate and stimulate instant inner peace (4s per phase).
+boxBreathingTitle: Relaxing Box Breathing Assistant (Vagus Nerve Stimulation)
+breathExhaleMsg: 💨 Exhale... release stress, anxiety, and fatigue
+breathHold1Msg: 🛑 Hold... feel the peaceful energy in your body
+breathHold2Msg: 🛑 Hold... embrace the inner stillness and quiet
+breathInhaleMsg: 💨 Inhale... fill your lungs with calm and peace
+bulletListLabel: Bullet List
+calendarModalTitle: Comprehensive Calendar & Library • Read 📖🗓️
+cancelAndSaveDraft: Cancel & Save Draft 💾
+catCare: Health & Care
+catCultureReading: Culture & Reading 📚
+catMindMeditation: Mind & Meditation 🧠
+catPhysicalHealth: Physical Health 🥦
+catSportActivity: Sports & Activity 🏃
+catWater: Drink Water
+cbtExercisesTab: CBT Exercises
+cbtSubtabLabel: CBT Exercises
+cbtTipDesc: Reminders paired with positive motivational quotes increase adherence and daily routine compliance by 68% compared to standard alerts.
+checklistSectionTitle: Daily Checklist
+chooseBgColor: Choose Note Background Color:
+clearSearchTitle: Clear search
+clearSearchWordBtn: Clear search word
+clickWriteNewNotePrompt: Click "Write New Note" to start expressing yourself!
+completedCycles: Completed Cycles:
+confirmDeleteReminder: Are you sure you want to delete this reminder?
+confirmImportBtn: Confirm Import
+confirmPasswordLabel: Confirm Password
+connectedSynced: Connected & Fully Synced
+contactOwnerTitle: 開発者に問い合わせ
+contactTitle: Contact Developer 📬
+createNewDiaryWithText: Create new entry with this text
+dailyBalanceIndexLabel: Daily Balance & Health Score:
+dailyJournalSubtab: Daily Journal
+dailyLifeMapTitle: Daily Life Map & Indicators
+dailyPsychTipTitle: Daily Mental Health Tip
+dailyTasksSubtabLabel: Daily Tasks & Checklist
+darkModeTitle: Dark Mode ☀️/🌙
+delete: 削除
+deleteAdditionBtn: Delete Addition
+deleteAlarmTitle: Delete Alarm
+deleteDiaryPermanently: Delete Note Permanently
+deleteKeyBtn: Delete Key
+deletePermanently: Delete Permanently
+dhikrBlessing: May Allah make us among those who remember Him much ✨
+dhikrCountLabel: Total Count
+dhikrCounterBtn: Tap to Count 📿
+dhikrFooter: Glory be to Allah and Praise Him
+dhikrMainQuote: Unquestionably, in the remembrance of Allah do hearts find rest 🌿
+dhikrSub: In the remembrance of Allah do hearts find rest - Relax & Reflect
+dhikrTitle: Dhikr & Peace Counter 📿
+diariesFilterTab: Diaries
+diaryBadge: Diary 📔
+drawTitle: Mind Drawing Canvas
+edit: 編集
+editHabitTitle: Edit Habit Title
+editJournalHeader: Edit Journal Entry 📝
+editSmartReminderTitle: Edit Smart Reminder
+editedBadge: Edited ✍️
+editorTextareaPlaceholder: Express what is on your mind and heart today...
+emailAlreadyRegistered: Email is already registered
+emailBackupDesc: Receive a full backup of your diaries in your inbox
+emailLabel: Email Address
+emptyTrashBtn: 🗑️ Empty Trash Can
+entriesCountLabel: Entries Count
+entryClassificationLabel: Entry Classification
+exerciseActivity: Physical Activity
+exerciseMoodBoostDesc: Exercising 20+ minutes correlates with a {percent}% boost in positive mood.
+exportPdfBtn: Export PDF
+exportingPdfProgress: Exporting...
+expressMindPlaceholder: Express what is on your mind freely, and your assistant will provide warm rational guidance...
+extractCognitiveErrorsBtn: Cognitive distortions
+favoritesSub: Highlighted notes & reflections
+favoritesTitle: Favorites ❤️
+filterDiaries: Diaries
+filterThoughts: Reflections
+floatingBallSub: Quick access to tools and AI advisor
+floatingBallTitle: Quick Control Tool
+fontAlmaraiCategory: Ultra Clean Sans
+fontAlmaraiName: Almarai Clean
+fontAlmaraiSample: Clear thoughts begin with mindful writing.
+fontAmiriCategory: Classic Literary Naskh
+fontAmiriName: Amiri Classic Naskh
+fontAmiriSample: Every story written holds wisdom for tomorrow.
+fontCairoCategory: Modern & Balanced
+fontCairoName: Cairo Modern
+fontCairoSample: Journaling brings clarity and peace to your mind.
+fontColorsBtn: Font Colors 🎨
+fontNotoCategory: Traditional Clear Naskh
+fontNotoName: Noto Naskh Traditional
+fontNotoSample: An elegant diary preserving your memories.
+fontNoto_naskhCategory: Classic & Elegant
+fontNoto_naskhName: Noto Naskh Traditional
+fontNoto_naskhSample: Classic Naskh script for graceful reading
+fontTajawalCategory: Modern Soft Geometric
+fontTajawalName: Tajawal Soft
+fontTajawalSample: Reflect on your daily thoughts and feelings comfortably.
+freqDaily: Daily (Every day)
+freqWeekly: Weekly (Once a week)
+geminiKeyNotice: Security note: Key is saved locally encrypted on your device only.
+geminiKeyTitle: Gemini API Key Setup 🔑
+generateBehavioralReportBtn: Generate AI Behavioral Assessment Report
+goToDiariesToArchive: Go to Journals to Archive Entry ✍️
+gratitude.title: Gratitude Wall
+gratitudeSubtab: Gratitude Wall
+guestUser: Guest User 👤
+habitBriskWalking: Brisk Walking / Home Workout
+habitReading10Pages: Read 10 Pages of a Book
+habitRelaxation: Meditation & Muscle Relaxation (10m)
+habitWarmWater: Drink 2L Warm Water
+habitsTrackerSub: Select a date from calendar then check habits to track your daily behavior.
+habitsTrackerTitle: Behavioral Habits & Routine Tracker
+hide: Hide
+howToStep2: 2. Save the file in a safe place on your device or cloud.
+importFromOtherApps: Import from Other Apps 📲
+importFromOtherAppsDesc: Supports JSON, CSV, and TXT files
+importFromOtherAppsTitle: Import Entries & Diaries
+importGratitudeBtn: Import from Gratitude Wall 🌸
+importGratitudeMoments: Import Gratitude Moments
+importNoteAiNotice: Note: AI will automatically analyze your imported diaries
+importerSuccessMsg: Data imported successfully! 🎉
+incorrectPassword: Incorrect password
+incorrectPin: Incorrect PIN code, try again ❌
+insertInCurrentEntry: Insert in current entry
+integratedTimelineTitle: Integrated Daily Timeline & Memory Trace:
+interactiveTourSub: A quick tour to explore key capabilities
+interactiveTourTitle: Discover Hayat AI 🧭
+journal.content_placeholder: Write your thoughts freely here...
+journal.editor_title_edit: Edit Note
+journal.editor_title_new: New Note
+journal.filter_all: All Entries
+journal.filter_archived: アーカイブ
+journal.filter_diaries: Diaries
+journal.filter_thoughts: Reflections
+journal.filter_trash: ゴミ箱
+journal.import_btn: Import Journal
+journal.mood_label: How are you feeling right now?
+journal.save_btn: Save Note
+journal.save_success: Note saved successfully! 🎉
+journal.search_placeholder: Search journals and thoughts...
+journal.subtab_cbt: CBT Exercises
+journal.subtab_gratitude: Gratitude Wall
+journal.subtab_journal: Journal & Thoughts
+journal.subtab_proscons: Pros & Cons Log
+journal.subtab_tasks: Daily Tasks
+journal.title_placeholder: Note Title...
+journal.write_new: New Note
+journalTitleLabel: Journal Entry Title 📌
+journalTitlePlaceholder: Write an expressive title for your day...
+lineHeightRelaxedDesc: Optimal comfort for reading long diary entries
+lineSpacingLabel: Line Height / Line Spacing (Eye Comfort):
+litersUnit: Liters Unit
+livePreviewTitle: Live Reading Comfort Preview:
+lockScreenWidgetDesc: Show shortcut widget as a pinned notification on your device lock screen when pressing power button.
+lockScreenWidgetTitle: Pinned Lock Screen Notification Widget
+lockscreenBtn: Lockscreen Shortcut 📌
+lockscreenHint: 生体認証またはPINをタップしてロック解除
+lockscreenSecured: 完全暗号化＆安全
+loginErrorEmpty: Please enter email and password
+loginSubmit: Login to Account 🔑
+loginSuccessMsg: Logged in successfully! 🎉
+loginTab: Login
+logoutBtn: Logout 🚪
+medicationDoseLabel: Medication & Vitamins:
+medicationPendingBtn: Pending
+medicationTakenBtn: ✓ Taken
+mindMapBtn: Mind Map / Drawing 🎨
+mood: Mood 🌿
+moodAngry: Angry
+moodAnxious: Anxious
+moodDepressed: Depressed
+moodExcited: Excited
+moodExhausted: Exhausted
+moodGrateful: Grateful
+moodHappy: Happy
+moodJoyfulHighEnergy: Mood Joyful High Energy
+moodRelaxed: Relaxed
+moodStableNeutral: Mood Stable Neutral
+moreFeaturesBtn: More Features ✨
+motivationalNoteLabel: Inspiring Motivational Note (Shown with alert)
+moveToTrash: Move to Trash
+multiFormatDesc: Choose your preferred format to export or restore your diaries
+myActivitiesTab: My Diaries & Activities ☀️
+myLibraryTab: My Comprehensive Library 📖
+myNormalDiariesChoice: Normal Diary Entry 📝
+myPrivateThoughtsChoice: Private Thoughts & Reflections 🔐
+nameLabel: Full Name
+nav.active_now: Active Now
+nav.back_mobile_title: Back
+nav.back_title: Back
+nav.current_page: Current Page
+nav.dhikr_title: Dhikr & Peace Counter
+nav.edit_diary: Edit Note
+nav.gratitude: Gratitude Wall
+nav.journal_records: Journal Records
+nav.reveal_header_pill: Show Header
+nav.tasks: Daily Tasks
+newJournalHeader: New Journal Entry 📝
+noActiveAlarms: No active alarms currently.
+noEntriesForDate: No entries or diaries recorded for this day
+noHabitsFiltered: No Habits Filtered
+noMatchFoundFor: No entry found matching:
+noMatchingDiariesNow: No matching entries found currently.
+noMatchingEntries: No matching diary entries found
+noRemindersYetDesc: Add daily or weekly reminders for journals, habits, or meditation breaks with inspiring notes.
+notificationActiveNow: Notifications Active 🔔
+notificationHowAreYou: How is your mind feeling today? 🌿
+notificationTapShortcut: Tap to open app and express your thoughts freely
+notificationsSub: Enable check-in, water, and exercise reminders
+notificationsTitle: Notifications & Alerts 🔔
+ofEightCups: Of Eight Cups
+onboardingFinish: Start Journey 🚀
+onboardingNext: Next ➔
+onboardingPrev: Previous
+onboardingSkip: Skip Tour
+onboardingStep1Desc: Journal freely with real-time AI mood analysis, voice recordings, attachments, and passcode lock.
+onboardingStep1Title: Diaries & Reflections 📝
+onboardingStep2Desc: Chat with your AI psychological advisor based on CBT principles for personalized support and clarity.
+onboardingStep2Title: Smart AI Advisor 🧠
+onboardingStep3Desc: Track daily habits, sleep, and sports while watching your mental growth tree flourish as you journal.
+onboardingStep3Title: Habit & Growth Tracking 📊
+onboardingStep4Desc: Your entries are encrypted and stored safely on your device with biometric lock and cloud backup options.
+onboardingStep4Title: Privacy & Security 🔒
+onboardingStepIndicator: Step {step} of {total}
+onboardingWelcomeTitle: Hayat AI へようこそ 👋
+outOfFiveStars: out of 5 stars
+passwordLabel: Password
+passwordTooShort: Password must be at least 6 characters
+passwordsDoNotMatch: Passwords do not match
+pdfDocBtn: PDF Document 📄
+personalAccountTitle: Personal Account 👤
+photoUploadBtn: Photo Attachment 📸
+pinCodeBtn: PINコード
+pinHint: PIN code protects your notes with total privacy
+pinPadSub: 続行するには4桁のPINコードを入力してください
+practicalPlanTomorrowBtn: Tomorrow's action plan
+predictiveAnalyzeBtn: Run New Predictive Analysis 🧠
+predictiveAnxietyRisk: Future Anxiety Risk Level
+predictiveSleepRisk: Sleep Disturbance Indicator
+predictiveStatusGood: Stable & Balanced ✨
+predictiveStatusWarning: Warning: Impending Anxiety Triggers ⚠️
+predictiveSub: AI-powered early warning system for anxiety triggers & sleep disturbances
+previewAndRead: Preview & Read
+primaryCategoryLabel: Primary Entry Category:
+privacyCredits: Developed with 100% privacy protection & smart behavioral AI support for your mental peace.
+promptArticleTitle: Write an Article
+promptExtractCognitiveErrors: 💡 Extract cognitive distortions and thinking errors from my entry and advise how to balance them rationally
+promptFutureTitle: Future Trends
+promptHealthTitle: Generate Health Tips
+promptMarketingTitle: Marketing & Customer Service
+promptPracticalPlanTomorrow: 🎯 Suggest a simplified practical plan for tomorrow to build resilience and boost productivity
+promptProjectsTitle: Project Management
+promptSummarizeEntry: 📝 Summarize my current entry concisely and highlight my true emotions
+pwaBadge: PWA 🖥️
+quickOneClickActions: Quick actions to analyze entry in one click:
+quickPromptSuggestionsTitle: Quick prompts to start:
+quoteDefaultAuthor: Your Friendly Psychiatrist
+quoteDefaultText: Remember that anxiety does not prevent tomorrow's pain, it only steals today's peace.
+rateModalThanks: Thank you for rating! ❤️
+rateModalTitle: ⭐ Rate App
+rateTitle: Rate App ⭐
+rationalAlternative: Rational Alternative
+readingRecommendationsTitle: Recommendations for Reading & Mental Wellness
+recordingProgress: Audio Recording in Progress...
+registerErrorEmpty: Please fill in all required fields
+registerSubmit: Register New Account ✨
+registerSuccessMsg: Account created successfully! 🎉
+registerTab: Create Account
+registeredUser: Verified User 👤
+reminderTime: Reminder Time
+reminderTitlePlaceholder: e.g., Daily Gratitude Journal, Drink Water, Meditation Session...
+remindersSub: Schedule daily journaling reminders
+remindersTitle: Smart Reminders ⏰
+restoreAction: 復元
+restoreBtn: 復元
+safeEncryptedSpace: Your Safe & Fully Encrypted Psychological Space
+safeSpaceDesc: Write your thoughts freely, encrypted & accompanied by a smart assistant.
+samplePreviewParagraph: This live preview demonstrates how your diary entries and long notes will render across the app. Using your selected font paired with custom line spacing ensures maximum legibility and effortless reading.
+saveChangesBtn: 変更を保存
+saveDiarySuccessBtn: Save Note Successfully ✓
+saveKeyBtn: Save Key
+searchDiariesPlaceholder: Search in entries, thoughts, titles, or tags...
+searchLanguagePlaceholder: Search language...
+searchParsedPlaceholder: Search in diaries or thoughts...
+searchResultsFor: Search results for:
+secondsRemaining: sec remaining
+selectAllHint: Select all entries for import
+selectMainFontLabel: Select Main App Font Family (Arabic & International Fonts):
+selfCareGoalsTitle: Self-Care & Mental Health Goals
+settingsTitle: General Settings
+shareableGratitudeSub: 美しいカードを作成して、インスピレーションを友達と共有しましょう
+shareableGratitudeTitle: シェアできる感謝カード 🎨
+show: Show
+sleepHoursLabel: Sleep Hours:
+sleepPeriodTitle: Daily Sleep & Rest Period 💤
+sleepQuality: Sleep Quality
+sleepWaterAnxietyDesc: On days with 8 cups of water and 7+ hours of sleep, your anxiety drops by {percent}%.
+sleepWaterAnxietyTitle: Effect of Sleep & Water on Anxiety
+smartRemindersBadge: Frequency & Notes
+smartRemindersCardDesc: Manage reminders (daily, weekly, specific days) with inspiring motivational notes
+smartRemindersCardTitle: Smart Reminders & Alerts System
+smartRemindersModalSub: Set reminder frequency and add motivational notes to inspire you on each alert
+sportsDurationLabel: Sports & Workouts:
+starRatingLabel: Day Rating
+startBreathingBtn: ▶️ Start Breathing Exercise
+stopBreathingBtn: ⏹️ Stop Session
+streakActiveMsg: Great job! You logged your thoughts today and kept your streak alive!
+streakEncouragement: Keep daily journaling to maintain mental balance!
+streakInactiveOneLeft: One final step! Log your thoughts today to keep your streak going.
+streakInactiveZero: Write a log today to activate your daily streak!
+subNoteDefaultTitle: Sub-note
+subNotePlural: Sub-notes
+subNoteSingular: Sub-note
+subsequentAdditionsPlaceholder: Add new reflections to this entry...
+summarizeEntryBtn: Summarize entry
+syncInProgress: Syncing data to cloud...
+syncNowBtn: Sync Now 🔄
+task: Task 📋
+taskInputPlaceholder: Write a new task here...
+tasksBadge: (Tasks)
+therapyReportSubtitle: Current Week Report - Mental Health Follow-up Preparation
+therapyReportTitle: 🎓 Preparation for Therapy Session & Comprehensive Clinical Report
+thoughtBadge: Thought 💭
+thoughtsFilterTab: Thoughts
+trashEmpty: Trash can is completely empty 🗑️
+trashSub: Temporarily deleted notes
+trashTitle: Trash 🗑️
+treeDesc2: Daily journaling builds your mental resilience.
+typographyDesc: Choose your preferred font family and line spacing for optimal reading comfort during long journaling sessions
+typographyTitle: Custom Typography & Reading Comfort
+understoodBtn: Understood
+untitledNote: Untitled
+usePinInsteadBtn: Use PIN Code Instead
+voiceAutoSaved: Voice diary entry saved successfully! 🎉
+voiceCompanionTitle: Continuous Voice Companion 🎙️
+voiceEndSession: End Call 📞
+voiceJournalSub: Speak freely and AI will format your voice into structured diary entries
+voiceLiveTranscript: Live Transcript:
+voiceProcessingAI: Processing audio & analyzing emotions with AI...
+voiceRecord: Voice Recording 🎙️
+voiceRecordBtn: Start Voice Recording 🎙️
+voiceSaveBtn: Save as Diary Entry 💾
+voiceStartSpeaking: Start Listening & Speaking 🎙️
+voiceStatusAnalyzing: Thinking & formulating support...
+voiceStatusIdle: Ready to start
+voiceStatusListening: Listening attentively...
+voiceStatusSpeaking: Speaking now...
+voiceStopBtn: Stop & Analyze ⏹️
+waterTargetReached: 🏆 Excellent! Daily hydration target reached!
+welcomeModalTitle: Hayat AI へようこそ 👋
+welcomeSafeSpace: Your Completely Safe & Private Space 🌿
+write: Write ✍️
+writeDiaryImporterSub: Import diaries from other apps
+writeDiaryImporterTitle: Import Journals 📥
+writeFeelingsLabel: Write your feelings & thoughts freely
+writingTherapeuticResponse: Writing counselor response...
+distortion_catastrophizing: 🌋 破局的思考
+distortion_desc_catastrophizing: 最悪のシナリオを予想し、危険を過大評価すること。
+distortion_mind_reading: 🔮 読心術的思考
+distortion_desc_mind_reading: 根拠なく他人が自分を悪く思っていると思い込むこと。
+distortion_all_or_nothing: 🌗 白黒思考
+distortion_desc_all_or_nothing: 物事を白か黒かの両極端（完全な成功か完全な失敗か）で捉えること。
+cbtTabThoughtRecords: 🧠 認知再構成ワークシート
+cbtTabDownwardArrow: ⬇️ 下向き矢印技法 (根底信念)
+cbtTabWorryBox: 📦 不安の保管箱と先延ばし
+cbtTabExposureLadder: 🪜 段階的暴露ラダー
+cbtTabCopingCards: 📇 対処・コーピングカード
+cbtTabGrounding: 🧘 5-4-3-2-1 グラウンディング
+cbtTabAnalytics: 📊 認知の歪み分析
+tasksSubTabDaily: 日課とタスク
+tasksSubTabHabitsGrid: 習慣マトリックス
+tasksSubTabSettings: 習慣設定とデータ
+waterReminderNotifTitle: 💧 水分補給の時間です！
+waterReminderNotifBody: 健康と毎日の活力のために、コップ1杯の水分を摂りましょう。
+waterReminderEnabledToast: 毎時の水分補給リマインダーを有効にしました 💧⏰
+waterReminderDisabledToast: 水分補給リマインダーを停止しました 🔕
+workoutTimerStarted: ワークアウトタイマーを開始しました！ ⏱️🏃
+workoutTimerPaused: タイマーを一時停止しました ⏸️
+workoutTimerReset: タイマーをリセットしました 🔄
+workoutLoggedSuccess: {mins}分 ({type}) を記録しました！ 合計: {total}分 🏃💪
+medTakenSuccess: 「{name}」の服用を記録しました！ 💊
+medUntaken: 「{name}」のチェックを解除しました
+medAddedSuccess: 「{name}」をお薬リストに追加しました！ 💊
+medDeleted: お薬リストから削除しました。
+newHabitDefaultName: 新しい習慣
+confirmDeleteHabit: この習慣を完全に削除してもよろしいですか？
+updateBiometricBtn: 生体認証を更新する 👆👤
+linkBiometricBtn: 今すぐ生体認証を連携する 👆👤
+confirmDeleteProsCons: この日のメリット・デメリット記録を削除してもよろしいですか？
+prosConsDeleted: 日々の記録を正常に削除しました。
+noProsConsToExport: エクスポートする記録がまだありません。
+exportedWordSuccess: すべての記録をWordドキュメントとして保存しました 📝
+ancientTreeTag: • 365日
+maxTreeLevelBadge: 最高レベル達成 🌟
+toNextTreeStage: 次のステージまで
+disableTreePreview: 365日プレビューを無効化 🔄
+enableTreePreview: 365日古代英知の樹ステージをプレビュー 🧪
+defaultGratitudeCardQuote: 今日の心の静けさ、穏やかな時間、そして健康に感謝します。
+defaultAuthorName: 私の気づきの旅
+defaultCardCategory: 感謝のひととき 💖
+gratitudeDownloaded: ✅ 感謝カードを正常に保存しました
+gratitudeDownloadFailed: ⚠️ 画像の保存に失敗しました。再試行してください
+gratitudeCardCopied: 📋 カードのテキストを共有用にコピーしました
+gratitudeShareUnsupported: ⚠️ このデバイスでは直接共有に対応していません
+gratitudeShareFailed: ⚠️ 共有の準備に失敗しました
+gratitudeTextCopied: 📋 テキストをクリップボードにコピーしました
+gratitudeCopyFailed: ⚠️ クリップボードへのコピーに失敗しました
+preparingImage: ⏳ 画像を準備中...
+downloadedBtn: 保存完了！ 💾
+downloadPngBtn: PNG画像を保存
+preparingShare: ⏳ 共有を準備中...
+directShareBtn: カードを共有
+copiedSuccessBtn: コピーしました！ ✨
+voiceListeningPrompt: 聞き取り中... ご自由にお話しください...
+confirmClearGeneralChat: 総合AIのチャット履歴を消去してもよろしいですか？
+confirmClearAdvisorChat: AIアドバイザーのチャット履歴を消去してもよろしいですか？
+stopDictationTitle: 音声入力を停止するにはクリック
+smartDictationTitle: スマート音声入力
+listeningVoice: 音声を認識中...
+askGeneralAiPlaceholder: 総合AIに質問するかファイルを添付...
+askAdvisorPlaceholder: 日記や日課についてアドバイザーに相談...
+generalVoiceCompanionTitle: 総合スマート音声コンパニオン 🌐
+generalVoiceModalDesc: 自由にお話しください。総合AIアシスタントが音声で丁寧にお答えします...
+advisorVoiceModalDesc: 自由にお話しください。アシスタントが日記を読み取り音声で寄り添い回答します...
+mood_happy: 幸せ
+mood_very_happy: とても幸せ
+mood_grateful: 感謝
+mood_calm: 穏やか
+mood_hopeful: 希望
+mood_relaxed: リラックス
+mood_enthusiastic: 熱心
+mood_excited: ワクワク
+mood_anxious: 不安
+mood_sad: 悲しい
+mood_afraid: 恐れ
+mood_insomnia: 不眠
+mood_exhausted: 疲れ果てた
+mood_angry: 怒り
+mood_normal: 普通
+tag_study: 勉強
+tag_family: 家族
+tag_hope: 希望
+tag_insomnia: 不眠
+tag_anxiety: 不安
+tag_challenge: 挑戦
+tag_achievement: 達成
+tag_happiness: 幸福
+tag_reading: 読書
+tag_mindfulness: 瞑想
+tag_work: 仕事
+tag_sports: 運動
+diaryImportanceLabel: 個人的な深さと重要度:
+diaryMoodsRecordedLabel: 記録された気分:
+noMoodSelected: 気分が選択されていません
+untitledDiaryDefault: 無題の日記
+prosConsModalTitle: 日々のメリット・デメリット比較
+prosConsTopicPlaceholder: 検討したいテーマや決断を入力...
+prosInputPlaceholder: メリットを追加 (例: 学びと成長の機会)
+consInputPlaceholder: デメリットを追加 (例: 時間と労力が必要)
+saveDailyRecordBtn: 日々の記録を保存
+exportWordBtn: Wordドキュメントとして保存
+lockScreenAthkarTitle: ロック画面の祈りとマインドフルネス
+integratedTherapyReportTitle: 統合心理・セラピー診断レポート
+generateClinicalReportBtn: AI臨床レポートを生成
+exportReportPdfBtn: レポートをPDFとして保存
+monthlyMentalHealthReportTitle: 月間メンタルヘルス総合レポート
+downloadReportPdfBtn: レポートPDFをダウンロード
+editHabitModalTitle: 習慣を編集
+addHabitModalTitle: 新しい習慣を追加
+habitNamePlaceholder: 例: 本を15ページ読む
+habitBestTimePlaceholder: 例: 早朝または起床後すぐ
+habitGoalPlaceholder: 例: 集中力と自己成長を高めるため
+habitLocationPlaceholder: 例: 自宅のデスクにて
+enableDailyHabitReminder: この習慣の毎日のリマインダーを有効にする
+enableHabitXpReward: XPポイント報酬システムを有効にする
+addHabitNowBtn: 今すぐ習慣を追加
+habitSettingsScreenTitle: 習慣設定とバックアップ
+exportHabitsJsonBtn: バックアップを保存 (JSON)
+importHabitsJsonBtn: バックアップを読み込み (JSON)
+resetHabitsDefaultBtn: デフォルトの習慣に戻す
+saveAllSettingsBtn: すべての設定を保存
+geminiKeyPoolTitle: Gemini APIキープール
+geminiKeyInputPlaceholder: Google Gemini APIキーをここに貼り付け...
+addKeyToPoolBtn: キーをプールに追加
+testAllKeysBtn: すべてのキーを今すぐテスト
+skipTourBtn: ツアーをスキップ
+prevBtn: 前へ
+nextBtn: 次へ
+startJourneyBtn: 今すぐ旅を始める
+dhikrCounterTitle: インタラクティブ念誦カウンター
+resetCounterBtn: リセット
+changeTargetBtn: 目標を変更
+fullAthkarTitle: 念誦・祈りの包括的ライブラリ
+searchAthkarPlaceholder: 祈りやマインドフルネスを検索...
+dashboardTitle: ダッシュボードと心の健康
+quickActionNewDiary: クイック日記作成
+welcomeGreeting: おかえりなさい、心穏やかな一日をお過ごしください
+dailyQuote: 心の平穏とは嵐がないことではなく、その中で静寂を保つことです。
+diariesTimelineTitle: タイムラインと日記
+writeNewDiaryBtn: 新しい日記を書く
+saveDiaryBtn: 日記を保存
+deleteDiaryBtn: 日記を削除
+smartAdvisorTitle: スマート心理アドバイザー (Hayat AI)
+smartAdvisorSubtitle: 安心して思いを語り、認知行動療法的アドバイスを受けられる場所
+suggestAiAlternativeBtn: AIで代替思考を提案
+gratitudeTabTitle: 感謝の日記
+gratitudeTreeTitle: 感謝と心の豊かさを育む樹
+addGratitudeBtn: 感謝を追加
+saveGratitudeBtn: 感謝を保存
+shareGratitudeBtn: 感謝カードをシェア
+cbtTherapyTitle: 認知行動療法 (CBT) ワークスペース
+worryBoxTitle: 心配・不安の保管ボックス
+thoughtRecordTitle: 自動思考の再構成ログ
+groundingTitle: 5-4-3-2-1 感覚グラウンディング演習
+exposureLadderTitle: 段階的エクスポージャーの階層ラダー
+actionPlanLabel: アクションプラン:
+realProblemLabel: 対処可能な現実的課題
+habitsTabTitle: 習慣とルーティン
+addHabitBtn: 新しい習慣を追加
+analyticsTitle: アナリティクスと心理指標
+habitsCompletionRate: 習慣の達成率
+moodTrendsTitle: 気分の推移と傾向
+weeklySummaryTitle: 週間総合サマリー
+calendarTabTitle: カレンダーと予定
+calendarViewTitle: 感情とタイムラインのカレンダー
+todayBtn: 今日
+monthView: 月表示
+weekView: 週表示
+libraryTabTitle: ライブラリと書籍
+favoriteBooksTitle: お気に入りの本と読書記録
+addBookBtn: 新しい本を追加
+readingProgressTitle: 読書の進捗状況
+appearanceSection: 外観とテーマ設定
+backupAndSyncTitle: クラウド同期とバックアップ
+lockScreenTitle: アプリロックとセキュリティ
+lockScreenSubtitle: 日記に安全にアクセスするためにPINを入力してください
+enterPinPrompt: 4桁のPINを入力
+unlockAppBtn: ロック解除
+pinModalTitle: PINコードを変更
+enterCurrentPin: 現在のPIN:
+enterNewPin: 新しいPIN:
+confirmNewPin: 新しいPINを確認:
+savePinBtn: PINを保存
+attachVideo: 動画を添付
+attachAudio: 音声録音を添付
+attachFile: ファイルを添付
+recordAudioBtn: 音声を録音
+enableNotificationsPrompt: 通知とスマートリマインダーを有効にする
+testNotificationBtn: テスト通知を送信
+saveRemindersBtn: リマインダーを保存
+onboardingTitle: あなたの人生に寄り添う総合セルフケアアプリへようこそ
+rateAppSubtitle: 皆様のご意見が継続的な改善の励みになります
+submitRatingBtn: 評価を送信
+laterBtn: 後で
+contactOwnerSubtitle: ご質問やご提案をお気軽にお寄せください
+sendMessageBtn: メッセージを送信
+smartContextDiariesTitle: 日記と振り返り
+smartContextDiariesDesc: 個人の日記エントリーを読む
+smartContextMoodLogsTitle: 毎日の気分と感情のログ
+smartContextMoodLogsDesc: 毎日の気分スコアを評価する
+smartContextHabitsTitle: 習慣とルーティンのトラッカー
+smartContextHabitsDesc: 習慣の達成率を追跡する
+smartContextTasksTitle: タスクとToDoチェックリスト
+smartContextTasksDesc: 日々のタスクと週間タスクにアクセスする
+smartContextCbtTitle: 認知行動療法 (CBT) エクササイズ
+smartContextCbtDesc: アドバイスのためにコーピングカードを読む
+smartContextReportsTitle: メンタルヘルス総合診断レポート
+smartContextReportsDesc: 心理評価の要約と分析を精査する
+smartContextVoiceTitle: 音声メモと録音記録
+smartContextVoiceDesc: 音声文字起こしテキストを分析する
+smartContextBooksTitle: お気に入りの本とライブラリ
+smartContextBooksDesc: 読書ログとインスピレーション引用を読む
+smartContextGratitudeTitle: 感謝とポジティブマインドセット
+smartContextGratitudeDesc: 感謝の記録とポジティブな思考を振り返る
+smartContextLifeMapTitle: ライフマップと将来の目標
+smartContextLifeMapDesc: 長期的な目標と未来のビジョンを追跡する
+smartContextProsConsTitle: 意思決定バランス (メリット・デメリット)
+smartContextProsConsDesc: 個人の意思決定とバランスを検証する
+journal_type_diary: 日記
+journal_type_diary_desc: 日常の出来事、人生経験、思い出の記録
+journal_type_thought: 思考・想い
+journal_type_thought_desc: 個人的な内省、感情、心の対話
+journal_type_gratitude: 感謝
+journal_type_gratitude_desc: 恵みに感謝し、喜びの瞬間や感謝の気持ちを記す
+journal_type_wisdom: 知恵・金言
+journal_type_wisdom_desc: 人生の教訓、深い気づき、心に留めるべき原則
+journal_type_quote: 名言・引用
+journal_type_quote_desc: 本や偉人の心に響く言葉やインスピレーション引用
+journal_type_idea: クイックアイデア
+journal_type_idea_desc: ひらめき、突然のインスピレーション、企画メモ
+journal_type_free_writing: 自由記述
+journal_type_free_writing_desc: 思考の自由な流れと心の解放
+journal_type_memory: ビジュアルな思い出
+journal_type_memory_desc: 写真やスケッチで残す大切な瞬間
+biometricsNotSupportedFallbackPin: この環境では生体認証が利用できません。PINコードロックが有効です。
+biometricsPermissionDenied: 生体認証の許可が拒否されたか、許可されていません
+biometricsAuthFailed: 生体認証エラー
+environmentUnavailable: 環境が利用できません
+webAuthnUnsupported: このブラウザはWebAuthn / Passkeyに対応していません
+biometricSensorUnavailable: このデバイスでは生体認証センサーが検出されないか、無効です
+biometricSensorConnectFailed: このブラウザで生体認証センサーに接続できませんでした
+generatedReportNotice: 保存された個人の日記データから生成されました
+summary: 要約
+positiveProgressMessage: あなたの記録は着実な心の成長と健全なバランスを示しています。
+maintainConsistencyPrompt: 毎日の日記記入と習慣の追跡を継続しましょう。
+mindfulnessAdvicePrompt: 就寝前に深呼吸とマインドフルネス瞑想を行いましょう。
+matchingResultsTitle: 記録内の検索と分析結果
+smartAdvisorDefaultResponse: 私はあなたのパーソナルマインドフルネスアドバイザーです。思考や習慣の整理をお手伝いします。
+reminder_morning_athkar: 朝のマインドフルネスと感謝 ☀️
+reminder_water: 水分補給とリフレッシュ 💧
+reminder_evening_athkar: 夜の安らぎと振り返り 🌙
+reminder_daily_diary: 毎日の日記記入と思考の整理 ✍️
+habitWaterName: ぬるま湯を2リットル飲む
+habitMeditationName: 10分間の瞑想と筋肉リラクゼーション
+habitWalkingName: 早歩きまたはホームワークアウト
+habitReadingName: 本を10ページ読む
+gratitudeDemoText1: 温かい朝日の昇るのを眺め、平和と希望に満ちた新しい一日を始めること
+gratitudeDemoText2: 大切な人と温かいコーヒーを飲みながら心温まる会話をすること
+gratitudeDemoText3: 難しい課題の解決策を見つけ、自分自身の成長と達成感を味わうこと
+diaryDemoTitle1: 今週の計画、家族でのランチ、希望に満ちた気持ち
+diaryDemoContent1: 山積みの課題で少し不安な朝でしたが、家族と温かいランチを囲んだことで心が安らぎ、深い感謝を感じました。
+diaryDemoTitle2: 真夜中の不眠と将来についての過度の思考
+diaryDemoContent2: 考えすぎて夜中に眠れませんでしたが、夕方に45分間ウォーキングをしたことで次第に落ち着きを取り戻せました。
+diaryDemoTitle3: プロジェクトの達成と心安らぐ夜の読書
+diaryDemoContent3: プロジェクト発表が無事終わり、高い評価をいただきました。就寝前にカモミールティーを飲みながら読書を楽しみました。
+mood_joyful: 大喜び
+mood_satisfied: 満足
+tag_gratitude: 感謝
+tag_morning: 朝
+tag_warmth: 温もり
+tag_growth: 成長
+passkeyAndPinSecurity: パスキーおよびPINセキュリティ設定
+protectAppWithPinBiometrics: PINコードと生体認証でプライバシーを保護します
+pinCode4Digits: 4桁の秘密のPINコード
+defaultPin1234: 初期値: 1234
+deviceBiometricsPasskey: デバイス生体認証とパスキー
+linkedAndActive: 連携済み・有効 ✅
+notLinked: 未連携 ⚠️
+androidCapacitorBiometrics: Android ネイティブ生体認証 (Capacitor):
+writeDiaryBackupLabel: 📖 WriteDiary バックアップ
+weekdaySunShort: 日
+weekdayMonShort: 月
+weekdayTueShort: 火
+weekdayWedShort: 水
+weekdayThuShort: 木
+weekdayFriShort: 金
+weekdaySatShort: 土
+smartAdvisorChatClearedPrompt: チャット履歴をクリアしました。本日、日記の振り返りや分析についてどのようなサポートが必要ですか？ 🧠
+smartAdvisorDiaryProTab: 日記 Pro アドバイザー
+smartAdvisorGeneralTab: 総合 AI アドバイザー 🌐
+smartAdvisorDiaryProTitle: AI スマートアドバイザー Pro
+smartAdvisorDiaryProDesc: 行動パターン、気分の推移、タイムラインの相関関係を分析します
+smartAdvisorStartVoiceChat: 連続音声チャットを開始
+smartAdvisorVoiceChatBtn: 音声チャット
+smartAdvisorAccessPermissions: アドバイザーのアクセス権限
+smartAdvisorPermissionsBtn: 権限設定
+smartAdvisorDiariesAccess: 日記へのアクセス権限
+smartAdvisorGeneralTitle: 総合 AI アドバイザー
+smartAdvisorGeneralDesc: 一般的な回答、科学的知見、画像や音声のマルチモーダル分析
+smartAdvisorIndependentContext: 日記非依存コンテキスト
+smartAdvisorStopAudio: 音声を停止
+smartAdvisorListenAudio: 音声を聞く
+smartAdvisorAnalyzingLifeLog: アドバイザーが記録を分析しています...
+smartAdvisorWebLinkOption: 🌐 Webリンク
+smartAdvisorVideoOption: 🎥 動画
+smartAdvisorEnterWebLink: 参考Webリンクを入力:
+smartAdvisorAddLinkBtn: リンクを追加
+smartAdvisorEnterVideoUrl: 動画URLを入力 (YouTubeまたは直接リンク):
+smartAdvisorAddVideoBtn: 動画を追加
+smartAdvisorEnterPdfInfo: 添付PDFの情報を入力:
+smartAdvisorPdfNamePlaceholder: ファイル名 (例: report.pdf)
+smartAdvisorPdfUrlPlaceholder: URLまたは閲覧リンク...
+smartAdvisorAddPdfBtn: PDFを追加
+smartAdvisorAddAttachmentHeader: チャットに添付ファイルを追加:
+smartAdvisorMediaUploadOption: 画像 / 動画 / ドキュメント / 音声
+smartAdvisorWebLinkCategory: Webサイトリンク
+smartAdvisorVideoLinkCategory: 参考動画リンク
+smartAdvisorPdfDocCategory: PDFドキュメント情報
+smartAdvisorAttachFilesTooltip: 画像、PDF、音声、リンク、動画を添付
+smartAdvisorClearChatTooltip: チャット履歴をクリア
+smartAdvisorPermissionsTitle: スマートアドバイザーのアクセス権限 🛡️
+smartAdvisorPermissionsSubtitle: アドバイザーが閲覧・分析できるデータ領域を選択してください
+smartAdvisorEnableAllAccess: 全アクセスを有効化
+smartAdvisorEnableAllAccessDesc: 有効にすると、すべてのアクティビティを横断した包括的な分析を提供できます
+smartAdvisorPreferencesNote: 🔒 設定はローカルに保存され、AIの回答に即座に反映されます。
+smartAdvisorSaveApplyBtn: 保存して適用 💾
+tag_imported: インポート
+tag_diaries: 日記一覧
+mood_reflective: 内省的
+fontDefaultSample: 新しい毎日は、マインドフルネス、心の安らぎ、そして成長のための機会です。
+aiPositivesHeader: AI生成のポジティブ要素:
+aiNegativesHeader: AI生成の課題・ネガティブ要素:
+userManualPositivesHeader: 手動入力されたポジティブ要素:
+userManualNegativesHeader: 手動入力された課題・反省点:
+generatedByHayatAiNotice: Hayat AI によって生成されました 🌿
+prosConsReportTitle: メリット・デメリット分析レポート
+dailyProsConsReportTitle: 日々のメリット・デメリットレポート
+dateLabelColon: 日付:
+comprehensiveProsConsHistoryTitle: メリット・デメリットの総合履歴
+comprehensiveProsConsLogAllDays: 全日程のメリット・デメリット総合ログ
+dailyProsConsLogHeader: ⚖️ 毎日のメリット・デメリットログ
+fullHistoryArchiveBadge: 完全な履歴アーカイブ 🧠
+prosConsArchiveDescription: AIまたは手動で記録された強み、機会、ポジティブ要素、課題を時系列で保存するアーカイブ。
+exportFullLogBtn: 完全なログをエクスポート (Word / PDF) 📄
+totalDaysTrackedLabel: 記録された総日数
+daysUnit: 日
+totalPositivesLoggedLabel: 記録された総ポジティブ数
+itemsUnit: 項目
+totalChallengesNegativesLabel: 記録された総課題・反省点
+positiveBalanceRatioLabel: ポジティブバランス比率
+searchProsConsPlaceholder: 日付またはキーワードで検索...
+filterMostlyPositive: 大半がポジティブ 🟢
+filterHigherChallenges: 課題が多い 🔴
+noMatchingRecordsFound: 一致する記録が見つかりません
+goToJournalForProsConsPrompt: 日記タブに移動し、日付の横にある ⚖️ メリット・デメリットアイコンをクリックしてレポートを作成してください。
+loggedDateLabel: 記録日:
+editDetailsBtn: 詳細を編集
+deleteRecordTooltip: 記録を削除
+positivesLabel: ポジティブ要素
+totalPrefix: 合計 
+noPositivesLoggedToday: この日のポジティブ要素は記録されていません。
+challengesAndNegativesLabel: 課題・ネガティブ要素
+noNegativesLoggedToday: この日の課題は記録されていません。
+habitWater2L: 白湯・水を2リットル飲む
+habitMeditation10min: 10分間の瞑想と筋肉の弛緩
+habitBriskWalk: 早歩きの散歩または自宅トレーニング
+habitRead10Pages: 本を10ページ読む
+gratitudeCardSample1: 温かい朝の日の出を眺め、平和と希望に満ちた新しい一日を始めること
+gratitudeCardSample2: 家族と一緒に温かいコーヒーを飲みながら、心温まる会話を交わすこと
+gratitudeCardSample3: 困難な課題に対する解決策を見出し、自己成長の喜びを実感すること
+voice_journal: 音声日記
+ai_assistant: AIアシスタント
+cbtSuiteTitle: 高度な認知行動療法 (CBT) & 心理学スイート
+cbtSuiteSubtitle: 認知の再構成とマインドレスポンス調整ツール 🧠✨
+cbtSuiteDescription: 不安な思考の解明、深層信念の再構築、心配の先送り、レジリエンスの育成のための科学的心理ツール群。
+cbtGroundingDescription: パニックや不安の連鎖を断ち切り、今この瞬間に意識を戻して心の平穏を取り戻す五感グラウンディング演習。
+stepOf5: ステップ {step} / 5
+cbtGrounding5SeePrompt: 周囲を見渡し、目に入った5つのものを挙げてください:
+itemISeePrefix: 目に見えるもの
+cbtGrounding4TouchPrompt: 触覚に集中し、今触れて感じられる4つのものを挙げてください:
+itemITouchPrefix: 触れているもの
+cbtGrounding3HearPrompt: 静かに耳を澄ませ、周囲から聞こえる3つの音を挙げてください:
+soundIHearPrefix: 聞こえる音
+cbtGrounding2SmellPrompt: 匂いに意識を向け、感じられる2つの香りを挙げてください:
+scentISmellPrefix: 感じる匂い
+cbtGrounding1TastePrompt: 口の中で味わえるもの、または思い出すことができる1つの味を挙げてください:
+cbtGroundingTastePlaceholder: コーヒーの風味、水の後味、ミント...
+previousStepArrow: ← 前のステップ
+nextStepArrow: 次のステップ →
+completeGroundingBtn: ✓ グラウンディングを完了して落ち着きを取り戻す
+totalCompletedCbtExercises: 完了したCBT演習の総数
+documentedCognitiveSessions: 記録された認知セッション
+averageAnxietyRelief: 平均不安軽減度
+pointsUnit: pt
+emotionalImprovementRate: 感情反応の改善率
+favoriteCopingCards: お気に入りのコーピングカード
+supportiveCardsDistress: 苦痛な瞬間に役立つサポートカード
+cognitiveDistortionsDistribution: 最も頻度の高い認知の歪みの分布統計
+timesUnit: 回
+cbtRestructuringStepOf5: 認知再構成ウィザード - ステップ {step} / 5
+cbtStep1TriggerLabel: ステップ 1: きっかけとなった出来事・状況
+cbtStep1Placeholder: 不安を感じる直前にどのような状況が起こりましたか？ (例: 上司からの連絡通知...)
+cbtStep2ThoughtLabel: ステップ 2: 自動的に浮かんだネガティブな思考
+cbtStep2Placeholder: どのような思考が瞬間的に頭をよぎりましたか？ (例: 絶対に解雇されるに違いない...)
+cbtStep3DistortionLabel: ステップ 3: 当てはまる認知の歪みを選択
+cbtStep4AlternativeLabel: ステップ 4: 合理的でバランスの取れた代替の考え方
+cbtStep4Placeholder: 客観的な事実に基づいた、バランスの取れた合理的な考え方を記述してください...
+cbtStep5RatingLabel: ステップ 5: 演習後の不安レベルを評価 (0 - 10)
+cbtThoughtRecordsLogHeader: CBT 思考記録ログ
+cbtThoughtRecordsDescription: 自動思考を分解し、認知の歪みを特定して、心身を落ち着かせる合理的な代替思考を導き出します。
+newThoughtRecordBtn: 新しい思考記録
+noThoughtRecordsLogged: 思考記録がまだありません。
+clickNewThoughtRecordHint: 「新しい思考記録」をクリックして、悩ましい思考の分析を始めましょう。
+anxietyReliefPrefix: 不安の軽減:
+triggerEventPrefix: きっかけ:
+automaticNegativeThoughtPrefix: 自動思考:
+cognitiveDistortionPrefix: 認知の歪み:
+rationalAlternativePrefix: 合理的代替案:
+anxietyBeforeLabel: 演習前の不安:
+anxietyAfterLabel: 演習後の不安:
+downwardArrowTechniqueHeader: 下向き矢印法
+downwardArrowDescription: 「もしそれが真実だとしたら、それはあなたにとって何を意味しますか？」と問いかけ、不安の根底にあるスキーマを発掘する心理技法。
+startDownwardArrowBtn: 下向き矢印法を開始
+initialThoughtLabel: 表層の思考
+initialThoughtExample: 例: 「クライアントからの返信が遅れている。」
+whatDoesThatMeanLabel: それは何を意味しますか？
+whatDoesThatMeanExample: 「怒っていて契約をキャンセルされるという意味だ。」
+whatIfCancelledLabel: もしキャンセルされたら？
+whatIfCancelledExample: 「自分が無能で価値がない人間だという意味になる。」
+healthyAlternativeBeliefHeader: 健康で柔軟な代替信念
+healthyAlternativeBeliefExample: 「私の自己価値は他人の日々の反応や返信スピードによって左右されない。」
+noDownwardArrowLogged: 下向き矢印法の記録がまだありません。
+useDownwardArrowHint: ネガティブな思考の裏に言語化されていない深い恐れが隠れている時にこの技法を活用してください。
+downwardArrowExerciseTitle: 下向き矢印演習
+initialAutomaticThoughtPrefix: 最初の自動思考:
+healthyAlternativeBeliefPrefix: 健康な代替信念:
+homeNav: ホーム

@@ -1401,7 +1401,7 @@ export const AR_DICT: Record<string, any> = {
   rationalAlternativePrefix: "البديل العقلاني المستنتج:",
   anxietyBeforeLabel: "شدة التوتر قبل:",
   anxietyAfterLabel: "شدة التوتر بعد:",
-  downwardArrowTechniqueHeader: "تقنية سهم التفكير للأسفل (Downward Arrow Technique)",
+  downwardArrowTechniqueHeader: "تقنية سهم التفكير للأسفل",
   downwardArrowDescription: "تمرين استكشافي ينقب عن المعتقد الجذري العميق (Core Belief / Schema) المسبب للتوتر المزمن، عبر طرح سؤال متكرر: \"إذا افتُرض أن هذه الفكرة صحيحة، فما المعنى المترتب على ذلك بالنسبة لك؟\"",
   startDownwardArrowBtn: "بدء تمرين السهم للأسفل",
   initialThoughtLabel: "الفكرة الظاهرة",
@@ -1417,6 +1417,7 @@ export const AR_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "تمرين سهم التفكير",
   initialAutomaticThoughtPrefix: "الفكرة التلقائية المبدئية:",
   healthyAlternativeBeliefPrefix: "المعتقد المرن البديل:",
+  homeNav: "الرئيسية",
 };
 
 export const EN_DICT: Record<string, any> = {
@@ -2790,6 +2791,7 @@ export const EN_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Downward Arrow Exercise",
   initialAutomaticThoughtPrefix: "Initial Automatic Thought:",
   healthyAlternativeBeliefPrefix: "Healthy Alternative Belief:",
+  homeNav: "Home",
 };
 
 export const FR_DICT: Record<string, any> = {
@@ -4163,6 +4165,7 @@ export const FR_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Exercice de flèche descendante",
   initialAutomaticThoughtPrefix: "Pensée automatique initiale :",
   healthyAlternativeBeliefPrefix: "Croyance alternative saine :",
+  homeNav: "Accueil",
 };
 
 export const DE_DICT: Record<string, any> = {
@@ -5536,6 +5539,7 @@ export const DE_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Abwärtspfeil-Übung",
   initialAutomaticThoughtPrefix: "Erster automatischer Gedanke:",
   healthyAlternativeBeliefPrefix: "Gesunde alternative Überzeugung:",
+  homeNav: "Startseite",
 };
 
 export const ES_DICT: Record<string, any> = {
@@ -6909,6 +6913,7 @@ export const ES_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Ejercicio de flecha descendente",
   initialAutomaticThoughtPrefix: "Pensamiento automático inicial:",
   healthyAlternativeBeliefPrefix: "Creencia alternativa saludable:",
+  homeNav: "Inicio",
 };
 
 export const IT_DICT: Record<string, any> = {
@@ -8282,6 +8287,7 @@ export const IT_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Esercizio della freccia discendente",
   initialAutomaticThoughtPrefix: "Pensiero automatico iniziale:",
   healthyAlternativeBeliefPrefix: "Convinzione alternativa sana:",
+  homeNav: "Home",
 };
 
 export const TR_DICT: Record<string, any> = {
@@ -8358,7 +8364,7 @@ export const TR_DICT: Record<string, any> = {
   audio: "Audio 🎙️",
   document: "Document 📄",
   task: "Gorev 📋",
-  advisor: "Danisман 🤖",
+  advisor: "Danışman 🤖",
   mood: "Ruh Hali 🌿",
   voiceRecord: "Ses Kaydi 🎙️",
   write: "Yaz ✍️",
@@ -8417,7 +8423,7 @@ export const TR_DICT: Record<string, any> = {
   streakEncouragement: "Zihinsel denge icin gunluk yazmayi surdurun!",
   aiInspirationBtn: "Akıllı İlham (YZ) 🪄",
   quickPromptSuggestionsTitle: "Hizli oneriler:",
-  askAiWriterHeader: "Danismaniniza sorun:",
+  askAiWriterHeader: "Danışmanınıza sorun:",
   expressMindPlaceholder: "Dusuncelerinizi ozgurce ifade edin...",
   "journal.subtab_journal": "Gunluk ve Dusunceler",
   "journal.subtab_tasks": "Gorevler",
@@ -8434,7 +8440,7 @@ export const TR_DICT: Record<string, any> = {
   "journal.filter_trash": "Cop Kutusu",
   "journal.editor_title_new": "Yeni Not",
   "journal.editor_title_edit": "Duzenle",
-  "journal.title_placeholder": "Not basligи...",
+  "journal.title_placeholder": "Not başlığı...",
   "journal.content_placeholder": "Ozgurce yazin...",
   "journal.mood_label": "Nasil hissediyorsunuz?",
   "journal.save_btn": "Kaydet",
@@ -8621,7 +8627,7 @@ export const TR_DICT: Record<string, any> = {
   onboardingWelcomeTitle: "Hayat AI ya Hos Geldiniz 👋",
   onboardingStep1Title: "Gunlukler ve Dusunceler 📝",
   onboardingStep1Desc: "Gercek zamanli YZ duygu analizi ile ozgurce yazin.",
-  onboardingStep2Title: "Akilli YZ Danismani 🧠",
+  onboardingStep2Title: "Akıllı YZ Danışmanı 🧠",
   onboardingStep2Desc: "YZ psikoloji danismaninizla sohbet edin.",
   onboardingStep3Title: "Aliskanliklar ve Buyume 📊",
   onboardingStep3Desc: "Aliskanlik taki edin ve buyume agacini izleyin.",
@@ -9639,7 +9645,7 @@ export const TR_DICT: Record<string, any> = {
   rationalAlternativePrefix: "Rasyonel Alternatif:",
   anxietyBeforeLabel: "Önceki Kaygı:",
   anxietyAfterLabel: "Sonraki Kaygı:",
-  downwardArrowTechniqueHeader: "Aşağı Ok Tekniği (Downward Arrow)",
+  downwardArrowTechniqueHeader: "Aşağı Ok Tekniği",
   downwardArrowDescription: "Kronik kaygıya neden olan derin temel inançları ortaya çıkaran keşif tekniği.",
   startDownwardArrowBtn: "Aşağı Ok Egzersizini Başlat",
   initialThoughtLabel: "İlk Yüzeysel Düşünce",
@@ -9655,6 +9661,7 @@ export const TR_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Aşağı Ok Egzersizi",
   initialAutomaticThoughtPrefix: "İlk Otomatik Düşünce:",
   healthyAlternativeBeliefPrefix: "Sağlıklı Alternatif İnanç:",
+  homeNav: "Ana Sayfa",
 };
 
 export const PT_DICT: Record<string, any> = {
@@ -10456,7 +10463,7 @@ export const PT_DICT: Record<string, any> = {
   onboardingStep4Desc: "Your entries are encrypted and stored safely on your device with biometric lock and cloud backup options.",
   onboardingStep4Title: "Privacy & Security 🔒",
   onboardingStepIndicator: "Step {step} of {total}",
-  onboardingWelcomeTitle: "Welcome to Hayat AI 👋",
+  onboardingWelcomeTitle: "Bem-vindo ao Hayat AI 👋",
   outOfFiveStars: "out of 5 stars",
   passwordLabel: "Password",
   passwordTooShort: "Password must be at least 6 characters",
@@ -10581,7 +10588,7 @@ export const PT_DICT: Record<string, any> = {
   voiceStatusSpeaking: "Speaking now...",
   voiceStopBtn: "Stop & Analyze ⏹️",
   waterTargetReached: "🏆 Excellent! Daily hydration target reached!",
-  welcomeModalTitle: "Welcome to Hayat AI 👋",
+  welcomeModalTitle: "Bem-vindo ao Hayat AI 👋",
   welcomeSafeSpace: "Your Completely Safe & Private Space 🌿",
   write: "Write ✍️",
   writeDiaryImporterSub: "Import diaries from other apps",
@@ -11028,6 +11035,7 @@ export const PT_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Exercício da seta descendente",
   initialAutomaticThoughtPrefix: "Pensamento automático inicial:",
   healthyAlternativeBeliefPrefix: "Crença alternativa saudável:",
+  homeNav: "Início",
 };
 
 export const RU_DICT: Record<string, any> = {
@@ -12401,6 +12409,7 @@ export const RU_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "Упражнение «Падающая стрела»",
   initialAutomaticThoughtPrefix: "Начальная автоматическая мысль:",
   healthyAlternativeBeliefPrefix: "Здоровое альтернативное убеждение:",
+  homeNav: "Главная",
 };
 
 export const JA_DICT: Record<string, any> = {
@@ -13202,7 +13211,7 @@ export const JA_DICT: Record<string, any> = {
   onboardingStep4Desc: "Your entries are encrypted and stored safely on your device with biometric lock and cloud backup options.",
   onboardingStep4Title: "Privacy & Security 🔒",
   onboardingStepIndicator: "Step {step} of {total}",
-  onboardingWelcomeTitle: "Welcome to Hayat AI 👋",
+  onboardingWelcomeTitle: "Hayat AI へようこそ 👋",
   outOfFiveStars: "out of 5 stars",
   passwordLabel: "Password",
   passwordTooShort: "Password must be at least 6 characters",
@@ -13327,7 +13336,7 @@ export const JA_DICT: Record<string, any> = {
   voiceStatusSpeaking: "Speaking now...",
   voiceStopBtn: "Stop & Analyze ⏹️",
   waterTargetReached: "🏆 Excellent! Daily hydration target reached!",
-  welcomeModalTitle: "Welcome to Hayat AI 👋",
+  welcomeModalTitle: "Hayat AI へようこそ 👋",
   welcomeSafeSpace: "Your Completely Safe & Private Space 🌿",
   write: "Write ✍️",
   writeDiaryImporterSub: "Import diaries from other apps",
@@ -13758,7 +13767,7 @@ export const JA_DICT: Record<string, any> = {
   rationalAlternativePrefix: "合理的代替案:",
   anxietyBeforeLabel: "演習前の不安:",
   anxietyAfterLabel: "演習後の不安:",
-  downwardArrowTechniqueHeader: "下向き矢印法 (Downward Arrow Technique)",
+  downwardArrowTechniqueHeader: "下向き矢印法",
   downwardArrowDescription: "「もしそれが真実だとしたら、それはあなたにとって何を意味しますか？」と問いかけ、不安の根底にあるスキーマを発掘する心理技法。",
   startDownwardArrowBtn: "下向き矢印法を開始",
   initialThoughtLabel: "表層の思考",
@@ -13774,6 +13783,7 @@ export const JA_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "下向き矢印演習",
   initialAutomaticThoughtPrefix: "最初の自動思考:",
   healthyAlternativeBeliefPrefix: "健康な代替信念:",
+  homeNav: "ホーム",
 };
 
 export const ZH_DICT: Record<string, any> = {
@@ -15131,7 +15141,7 @@ export const ZH_DICT: Record<string, any> = {
   rationalAlternativePrefix: "理性替代结论：",
   anxietyBeforeLabel: "练习前紧张度：",
   anxietyAfterLabel: "练习后紧张度：",
-  downwardArrowTechniqueHeader: "向下箭头深度探究技术 (Downward Arrow Technique)",
+  downwardArrowTechniqueHeader: "向下箭头深度探究技术",
   downwardArrowDescription: "通过层层追问「假若这个念头成真，对您而言最深层的含义是什么？」，深入挖掘潜意识中引发长期内耗的核心图式与根基信念。",
   startDownwardArrowBtn: "开启向下箭头深度探索",
   initialThoughtLabel: "表层念头",
@@ -15147,6 +15157,7 @@ export const ZH_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "向下箭头深度剖析",
   initialAutomaticThoughtPrefix: "初始自动化思维：",
   healthyAlternativeBeliefPrefix: "弹性替代信念：",
+  homeNav: "首页",
 };
 
 export const HI_DICT: Record<string, any> = {
@@ -16520,6 +16531,7 @@ export const HI_DICT: Record<string, any> = {
   downwardArrowExerciseTitle: "डाउनवर्ड एरो अभ्यास",
   initialAutomaticThoughtPrefix: "प्रारंभिक स्वचालित विचार:",
   healthyAlternativeBeliefPrefix: "स्वस्थ वैकल्पिक विश्वास:",
+  homeNav: "होम",
 };
 
 export const BASELINE_DICTIONARIES: Record<string, Record<string, any>> = {
