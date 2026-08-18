@@ -863,120 +863,80 @@ export function getInitialGratitudeCards(lang: AppLanguage): GratitudeCard[] {
   ];
 }
 
-function localizeDiaryEntry(entry: DiaryEntry, isAr: boolean): DiaryEntry {
-  if (isAr) return entry;
+export function getReminderTitle(rem: any, t: any): string {
+  if (!rem) return '';
+  if (rem.key && t[rem.key]) return t[rem.key];
+  if (rem.title) {
+    if (rem.title.includes('أذكار الصباح') || rem.title.includes('Morning Athkar') || rem.title.includes('Morning Dhikr')) return t.reminder_morning_athkar || rem.title;
+    if (rem.title.includes('شرب الماء') || rem.title.includes('Drink Water')) return t.reminder_water || rem.title;
+    if (rem.title.includes('أذكار المساء') || rem.title.includes('Evening Athkar') || rem.title.includes('Evening Dhikr')) return t.reminder_evening_athkar || rem.title;
+    if (rem.title.includes('تدوين اليوميات') || rem.title.includes('Daily Journal') || rem.title.includes('Daily Diary')) return t.reminder_daily_diary || rem.title;
+  }
+  return rem.title || '';
+}
+
+function localizeHabit(habit: Habit, t: any): Habit {
+  if (!habit) return habit;
+  const name = habit.name || '';
+  if (name.includes('ماء') || name.includes('Water') || name.includes('Eau') || name.includes('Wasser') || name.includes('Su') || name.includes('Agua') || name.includes('Acqua') || name.includes('Вод') || name.includes('水') || name.includes('पानी')) {
+    return { ...habit, name: t.habitWaterName || 'Drink 2L Water' };
+  }
+  if (name.includes('تأمل') || name.includes('Meditation') || name.includes('Méditation') || name.includes('Meditación') || name.includes('Meditazione') || name.includes('Медитация') || name.includes('瞑想') || name.includes('冥想') || name.includes('ध्यान')) {
+    return { ...habit, name: t.habitMeditationName || '10 min Meditation & Relaxation' };
+  }
+  if (name.includes('مشي') || name.includes('Walk') || name.includes('Marche') || name.includes('Gehen') || name.includes('Caminar') || name.includes('Camminata') || name.includes('Yürüyüş') || name.includes('Caminhada') || name.includes('Ходьба') || name.includes('ウォーキング') || name.includes('散步') || name.includes('सैर')) {
+    return { ...habit, name: t.habitWalkingName || 'Brisk Walking / Workout' };
+  }
+  if (name.includes('قراءة') || name.includes('Read') || name.includes('Lecture') || name.includes('Lesen') || name.includes('Leer') || name.includes('Leggere') || name.includes('Okuma') || name.includes('Leitura') || name.includes('Чтение') || name.includes('読書') || name.includes('阅读') || name.includes('पढ़ना')) {
+    return { ...habit, name: t.habitReadingName || 'Read 10 Pages of a Book' };
+  }
+  return habit;
+}
+
+function localizeGratitudeCard(card: GratitudeCard, t: any): GratitudeCard {
+  if (!card) return card;
+  if (card.id === 'grat-1') {
+    return { ...card, text: t.gratitudeDemoText1 || card.text, tags: [t.tag_gratitude || 'gratitude', t.tag_morning || 'morning'] };
+  }
+  if (card.id === 'grat-2') {
+    return { ...card, text: t.gratitudeDemoText2 || card.text, tags: [t.tag_family || 'family', t.tag_warmth || 'warmth'] };
+  }
+  if (card.id === 'grat-3') {
+    return { ...card, text: t.gratitudeDemoText3 || card.text, tags: [t.tag_achievement || 'achievement', t.tag_growth || 'growth'] };
+  }
+  return card;
+}
+
+function localizeDiaryEntry(entry: DiaryEntry, t: any): DiaryEntry {
+  if (!entry) return entry;
   if (entry.id === 'diary-1') {
     return {
       ...entry,
-      title: 'Weekly Academic Planning, Family Lunch & Hopeful Feelings',
-      content: 'Started the day with some anxiety regarding accumulated coursework and upcoming university exams. Later sat with my family for a warm lunch and engaging conversations, which completely eased my anxiety and filled me with gratitude and hope. Talking with loved ones is truly a comforting remedy.',
-      moods: ['Anxious', 'Grateful', 'Happy'],
-      tags: ['study', 'family', 'hope'],
-      tasks: [
-        { id: 't1', text: 'Review first 2 chemistry chapters', completed: true },
-        { id: 't2', text: 'Purchase monthly medication', completed: true }
-      ],
-      medications: [
-        { id: 'm1', name: 'Vitamin D3 Weekly Supplement', time: '10:00 AM', taken: true }
-      ]
+      title: t.diaryDemoTitle1 || entry.title,
+      content: t.diaryDemoContent1 || entry.content,
+      moods: [t.mood_anxious || 'Anxious', t.mood_grateful || 'Grateful', t.mood_happy || 'Happy'],
+      tags: [t.tag_study || 'study', t.tag_family || 'family', t.tag_hope || 'hope']
     };
   }
   if (entry.id === 'diary-2') {
     return {
       ...entry,
-      title: 'Midnight Insomnia & Overthinking the Future',
-      content: 'Could not sleep well last night due to catastrophic scenarios about my academic and career future. Woke up feeling fatigued and exhausted. In the evening, I challenged myself to a 45-minute brisk walk, which brought gradual relief and calm.',
-      moods: ['Exhausted', 'Anxious', 'Sad'],
-      tags: ['insomnia', 'anxiety', 'challenge'],
-      audioRecordings: entry.audioRecordings?.map(r => ({
-        ...r,
-        name: 'Insomnia Venting & Thought Dump.mp3',
-        transcription: 'Recording this voice note because I feel anxious and cannot quiet my racing heart...'
-      })) || [],
-      tasks: [
-        { id: 't3', text: '2-minute deep breathing exercise before bed', completed: false }
-      ],
-      medications: [
-        { id: 'm1', name: 'Vitamin D3 Weekly Supplement', time: '10:00 AM', taken: false }
-      ]
+      title: t.diaryDemoTitle2 || entry.title,
+      content: t.diaryDemoContent2 || entry.content,
+      moods: [t.mood_exhausted || 'Exhausted', t.mood_anxious || 'Anxious', t.mood_sad || 'Sad'],
+      tags: [t.tag_insomnia || 'insomnia', t.tag_anxiety || 'anxiety', t.tag_challenge || 'challenge']
     };
   }
   if (entry.id === 'diary-3') {
     return {
       ...entry,
-      title: 'Project Achievement & Mindful Evening Reading',
-      content: 'Today was exceptional and joyful! Finished my university project presentation and received great praise from my peers and supervisor. Felt an overwhelming surge of excitement, joy, and self-satisfaction. Read a chapter on CBT before bed with a warm chamomile tea.',
-      moods: ['Joyful', 'Excited', 'Satisfied'],
-      tags: ['success', 'reading', 'happiness'],
-      tasks: [
-        { id: 't4', text: 'Read Chapter 4 of CBT book', completed: true }
-      ]
+      title: t.diaryDemoTitle3 || entry.title,
+      content: t.diaryDemoContent3 || entry.content,
+      moods: [t.mood_joyful || 'Joyful', t.mood_excited || 'Excited', t.mood_satisfied || 'Satisfied'],
+      tags: [t.tag_achievement || 'achievement', t.tag_reading || 'reading', t.tag_happiness || 'happiness']
     };
   }
-
-  const arabicToEnMap: Record<string, string> = {
-    'امتنان 🌸': 'Gratitude 🌸',
-    'سكينة ✨': 'Serenity ✨',
-    'امتنان': 'gratitude',
-    'تأمل_إيجابي': 'positive_reflection',
-    'صفاء 🧘‍♂️': 'Serenity 🧘‍♂️',
-    'إلهام 💡': 'Inspiration 💡',
-    'خواطر': 'thoughts',
-    'يوميات': 'journal',
-    'قلق': 'Anxious',
-    'ممتن': 'Grateful',
-    'سعيد': 'Happy',
-    'مرهق': 'Exhausted',
-    'حزين': 'Sad',
-    'دراسة': 'study',
-    'عائلة': 'family',
-    'أمل': 'hope',
-    'أرق': 'insomnia',
-    'تحدي': 'challenge'
-  };
-
-  const hasArabic = /[\u0600-\u06FF]/.test(entry.title || '') || /[\u0600-\u06FF]/.test(entry.content || '');
-  if (!hasArabic) return entry;
-
-  return {
-    ...entry,
-    moods: entry.moods?.map(m => arabicToEnMap[m] || m),
-    tags: entry.tags?.map(tag => arabicToEnMap[tag] || tag)
-  };
-}
-
-function localizeGratitudeCard(card: GratitudeCard, isAr: boolean): GratitudeCard {
-  if (isAr) return card;
-  if (card.id === 'grat-1') {
-    return { ...card, text: 'Watching the warm morning sun rise and starting a brand new day with peace and hope', tags: ['gratitude', 'morning'] };
-  }
-  if (card.id === 'grat-2') {
-    return { ...card, text: 'Drinking a hot, perfect cup of coffee with my family and having a warm chat', tags: ['family', 'warmth'] };
-  }
-  if (card.id === 'grat-3') {
-    return { ...card, text: 'Finding solutions to a tough coding challenge and feeling the joy of personal progress', tags: ['achievement', 'growth'] };
-  }
-  return card;
-}
-
-function localizeHabit(habit: Habit, isAr: boolean): Habit {
-  const habitMapEn: Record<string, string> = {
-    'شرب 2 لتر ماء دافئ': 'Drink 2L Warm Water',
-    'تأمل واسترخاء العضلات (10 د)': '10 min Meditation & Muscle Relaxation',
-    'المشي السريع أو تمرين منزلي': 'Brisk Walking or Home Workout',
-    'قراءة 10 صفحات في كتاب': 'Read 10 Pages of a Book',
-  };
-  const habitMapAr: Record<string, string> = {
-    'Drink 2L Warm Water': 'شرب 2 لتر ماء دافئ',
-    '10 min Meditation & Muscle Relaxation': 'تأمل واسترخاء العضلات (10 د)',
-    'Brisk Walking or Home Workout': 'المشي السريع أو تمرين منزلي',
-    'Read 10 Pages of a Book': 'قراءة 10 صفحات في كتاب',
-  };
-  if (isAr) {
-    return { ...habit, name: habitMapAr[habit.name] || habit.name };
-  } else {
-    return { ...habit, name: habitMapEn[habit.name] || habit.name };
-  }
+  return entry;
 }
 
 const AudioPlayerWithIndexedDBFallback: React.FC<{
@@ -1037,7 +997,7 @@ export default function App() {
       const saved = localStorage.getItem('yawmiyati_settings');
       const parsed: AppSettings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
       const directLang = localStorage.getItem('app_language') as AppLanguage;
-      if (directLang && ['ar', 'en', 'fr', 'de', 'es', 'ru', 'zh', 'tr', 'hi', 'it'].includes(directLang)) {
+      if (directLang && ['ar', 'en', 'fr', 'de', 'es', 'it', 'tr', 'pt', 'ru', 'ja', 'zh', 'hi'].includes(directLang)) {
         parsed.appLanguage = directLang;
       }
       const savedCredId = localStorage.getItem('yawmiyati_biometric_cred_id');
@@ -1102,18 +1062,18 @@ export default function App() {
 
   const displayedDiaries = useMemo(() => {
     if (!Array.isArray(diaries)) return [];
-    return diaries.map(d => localizeDiaryEntry(d, isAr));
-  }, [diaries, isAr]);
+    return diaries.map(d => localizeDiaryEntry(d, t));
+  }, [diaries, t]);
 
   const displayedHabits = useMemo(() => {
     if (!Array.isArray(habits)) return [];
-    return habits.map(h => localizeHabit(h, isAr));
-  }, [habits, isAr]);
+    return habits.map(h => localizeHabit(h, t));
+  }, [habits, t]);
 
   const displayedGratitudeCards = useMemo(() => {
     if (!Array.isArray(gratitudeCards)) return [];
-    return gratitudeCards.map(c => localizeGratitudeCard(c, isAr));
-  }, [gratitudeCards, isAr]);
+    return gratitudeCards.map(c => localizeGratitudeCard(c, t));
+  }, [gratitudeCards, t]);
 
   const [activeDiariesSubTab, setActiveDiariesSubTab] = useState<'journal' | 'gratitude' | 'cbt' | 'tasks'>('journal');
   const [analyticsSubTab, setAnalyticsSubTab] = useState<'report' | 'charts' | 'pros_cons'>('report');
