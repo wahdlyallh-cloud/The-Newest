@@ -3,7 +3,7 @@ import http from 'http';
 import path from 'path';
 import fs from 'fs';
 
-console.log('🚀 Running Full Real Browser Localization QA with Microsoft Edge...');
+console.log('🚀 Running High-Precision Local Real Browser Localization QA with Microsoft Edge...');
 
 const LOCALES = ['ar', 'en', 'fr', 'de', 'es', 'it', 'tr', 'pt', 'ru', 'ja', 'zh', 'hi'];
 const SCREENSHOT_DIR = './browser-screenshots';
@@ -12,8 +12,11 @@ if (!fs.existsSync(SCREENSHOT_DIR)) {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
-const port = 9224;
+const cdpPort = 9225;
+const previewPort = 4173;
+const targetUrl = `http://127.0.0.1:${previewPort}`;
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+const nodePath = 'C:\\Users\\JMN-UK\\.gemini\\antigravity\\brain\\28b513fd-3cde-42ff-afb5-6e2d3013bff4\\scratch\\node\\node.exe';
 const userDataDir = path.resolve('./scratch/real-qa-profile');
 if (!fs.existsSync(userDataDir)) fs.mkdirSync(userDataDir, { recursive: true });
 
@@ -22,8 +25,18 @@ function fetchJson(url) {
     http.get(url, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(JSON.parse(data)));
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
+      });
     }).on('error', reject);
+  });
+}
+
+function checkUrl(url) {
+  return new Promise((resolve) => {
+    http.get(url, (res) => {
+      resolve(res.statusCode === 200);
+    }).on('error', () => resolve(false));
   });
 }
 
@@ -68,10 +81,33 @@ class SimpleCdp {
 const ARABIC_CHAR_REGEX = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
 async function runTest() {
-  console.log(`Starting Microsoft Edge on port ${port}...`);
+  // 1. Start Vite Preview Server
+  console.log(`Starting Vite Preview Server on ${targetUrl}...`);
+  const previewProcess = spawn(nodePath, ['./node_modules/vite/bin/vite.js', 'preview', '--port', String(previewPort), '--host', '127.0.0.1'], {
+    stdio: 'ignore'
+  });
+
+  let serverUp = false;
+  for (let i = 0; i < 20; i++) {
+    if (await checkUrl(targetUrl)) {
+      serverUp = true;
+      break;
+    }
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  if (!serverUp) {
+    console.error('❌ Vite preview server failed to start');
+    previewProcess.kill();
+    process.exit(1);
+  }
+  console.log('✅ Local production preview server running.');
+
+  // 2. Start Microsoft Edge
+  console.log(`Starting Microsoft Edge on port ${cdpPort}...`);
   const edgeProcess = spawn(edgePath, [
     '--headless=new',
-    `--remote-debugging-port=${port}`,
+    `--remote-debugging-port=${cdpPort}`,
     '--disable-gpu',
     '--no-first-run',
     '--no-default-browser-check',
@@ -82,22 +118,23 @@ async function runTest() {
   let versionInfo = null;
   for (let i = 0; i < 20; i++) {
     try {
-      versionInfo = await fetchJson(`http://127.0.0.1:${port}/json/version`);
+      versionInfo = await fetchJson(`http://127.0.0.1:${cdpPort}/json/version`);
       if (versionInfo) break;
     } catch {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 400));
     }
   }
 
   if (!versionInfo) {
     console.error('❌ Could not connect to Edge');
+    previewProcess.kill();
     edgeProcess.kill();
     process.exit(1);
   }
 
   console.log('✅ Connected to Edge:', versionInfo.Browser);
 
-  const targets = await fetchJson(`http://127.0.0.1:${port}/json/list`);
+  const targets = await fetchJson(`http://127.0.0.1:${cdpPort}/json/list`);
   const pageTarget = targets.find(t => t.type === 'page') || targets[0];
   const cdp = new SimpleCdp(pageTarget.webSocketDebuggerUrl);
   await cdp.connect();
@@ -111,10 +148,10 @@ async function runTest() {
   for (const locale of LOCALES) {
     console.log(`\n🔍 [Testing Locale: ${locale.toUpperCase()}]`);
 
-    // 1. Clear storage & set target locale in about:blank first
-    await cdp.send('Page.navigate', { url: 'https://the-newest.vercel.app' });
-    await new Promise(r => setTimeout(r, 2000));
+    await cdp.send('Page.navigate', { url: targetUrl });
+    await new Promise(r => setTimeout(r, 1000));
 
+    // Clear storage & set target locale
     await cdp.send('Runtime.evaluate', {
       expression: `
         localStorage.clear();
@@ -122,17 +159,17 @@ async function runTest() {
         localStorage.setItem('app_language', '${locale}');
         const settings = { appLanguage: '${locale}' };
         localStorage.setItem('yawmiyati_settings', JSON.stringify(settings));
-        location.href = 'https://the-newest.vercel.app';
+        location.href = '${targetUrl}';
       `
     });
 
-    // 2. Wait for page load and React render
+    // Wait for page load and React render
     let visibleText = '';
     let docLang = '';
     let docDir = '';
 
     for (let attempt = 0; attempt < 12; attempt++) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 600));
       const res = await cdp.send('Runtime.evaluate', {
         expression: `
           (() => {
@@ -157,9 +194,9 @@ async function runTest() {
     }
 
     console.log(`  -> Rendered DOM: ${visibleText.length} chars (lang=${docLang}, dir=${docDir})`);
-    console.log(`  -> Sample DOM Preview: "${visibleText.slice(0, 120).replace(/\n/g, ' ')}..."`);
+    console.log(`  -> Sample DOM Preview: "${visibleText.slice(0, 120).replace(/\s+/g, ' ')}..."`);
 
-    // 3. Capture screenshot
+    // Capture screenshot
     try {
       const ss = await cdp.send('Page.captureScreenshot', { format: 'png' });
       if (ss && ss.data) {
@@ -167,16 +204,15 @@ async function runTest() {
         console.log(`  📸 Screenshot saved: browser-screenshots/${locale}.png`);
       }
     } catch (e) {
-      console.warn('  ⚠️ Could not take screenshot:', e.message);
+      console.warn('  ⚠️ Screenshot error:', e.message);
     }
 
-    // 4. Leak Detection
+    // Leak Detection
     let leakDetected = false;
     let leakInfo = '';
 
     if (locale !== 'ar') {
       const words = visibleText.split(/\s+/).filter(w => ARABIC_CHAR_REGEX.test(w) && w.length > 1);
-      // Exclude proper brand name if displayed in logo
       const foreignWords = words.filter(w => !w.includes('حياة') && !w.includes('يومياتي'));
       if (foreignWords.length > 0) {
         leakDetected = true;
@@ -199,7 +235,7 @@ async function runTest() {
     });
   }
 
-  // 5. Test Live Dynamic Language Switching Sequence without reload
+  // 3. Test Dynamic Switching Sequence
   console.log('\n🔄 Testing Real Browser Dynamic Language Switching Sequence (AR -> EN -> TR -> DE -> FR -> JA -> ZH -> HI -> PT -> RU -> ES -> IT -> AR)...');
   const sequence = ['ar', 'en', 'tr', 'de', 'fr', 'ja', 'zh', 'hi', 'pt', 'ru', 'es', 'it', 'ar'];
 
@@ -220,7 +256,7 @@ async function runTest() {
       `
     });
 
-    await new Promise(r => setTimeout(r, 2500));
+    await new Promise(r => setTimeout(r, 1200));
 
     const checkRes = await cdp.send('Runtime.evaluate', {
       expression: `
@@ -239,6 +275,7 @@ async function runTest() {
 
   cdp.close();
   edgeProcess.kill();
+  previewProcess.kill();
 
   console.log('\n========================================');
   console.log('REAL BROWSER QA TEST SUMMARY:');
@@ -252,7 +289,7 @@ async function runTest() {
     console.log('\n🎉 ALL 12 LOCALES PASSED REAL BROWSER QA INSPECTION WITH 0 LEAKS!');
     process.exit(0);
   } else {
-    console.error('\n❌ REAL BROWSER QA INSPECTION FAILED.');
+    console.error('\n❌ REAL BROWSER QA INSPECTION DETECTED ISSUES.');
     process.exit(1);
   }
 }
