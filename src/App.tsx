@@ -1134,7 +1134,7 @@ export default function App() {
   // Auto-save notification helper
   const triggerAutoSaveFeedback = () => {
     setAutoSaveStatus('saving');
-    const nowStr = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    const nowStr = new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' });
     setTimeout(() => {
       setAutoSaveStatus('saved');
       setLastAutoSaveTime(nowStr);
@@ -1575,7 +1575,7 @@ export default function App() {
       });
       const data = await response.json();
       if (data.success) {
-        setCloudSyncMessage(data.message || `مزامنة سحابية ناجحة: ${new Date().toLocaleTimeString('ar-EG')}`);
+        setCloudSyncMessage(data.message || `مزامنة سحابية ناجحة: ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'))}`);
       } else {
         setCloudSyncMessage('فشل التزامن السحابي التلقائي');
       }
@@ -1583,9 +1583,9 @@ export default function App() {
       console.error('Cloud Sync error:', e);
       try {
         localStorage.setItem('yawmiyati_cloud_sync_backup', JSON.stringify(payload));
-        setCloudSyncMessage(`تمت المزامنة وحفظ النسخة الاحتياطية سحابياً ومحلياً 🔒: ${new Date().toLocaleTimeString('ar-EG')}`);
+        setCloudSyncMessage(`تمت المزامنة وحفظ النسخة الاحتياطية سحابياً ومحلياً 🔒: ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'))}`);
       } catch (err) {
-        setCloudSyncMessage(`تمت المزامنة السحابية بنجاح 🔒: ${new Date().toLocaleTimeString('ar-EG')}`);
+        setCloudSyncMessage(`تمت المزامنة السحابية بنجاح 🔒: ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'))}`);
       }
     } finally {
       setIsCloudSyncing(false);
@@ -3718,7 +3718,7 @@ export default function App() {
 
     const newRec: AudioRecording = {
       id: newRecId,
-      name: fileName || `تسجيل صوتي ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}.webm`,
+      name: fileName || `${t.audioRecording || 'Audio'} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
       dataUrl: validDataUrl,
       blobUrl: blobUrl || (validDataUrl.startsWith('blob:') ? validDataUrl : undefined),
       duration: duration || 5,
@@ -4120,7 +4120,7 @@ export default function App() {
               dataUrl,
               blobUrl,
               mimeType: 'audio/webm',
-              fileName: `فضفضة صوتية ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}.webm`,
+              fileName: `${t.voiceJournalTab || 'Voice Journal'} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
               duration: finalSecs,
               liveSpeechText: combinedTranscript
             });
@@ -4598,7 +4598,10 @@ export default function App() {
           'Content-Type': 'application/json',
           'x-gemini-key': settings.userApiKey || ''
         },
-        body: JSON.stringify({ moods: activeDiaryForSelectedDate?.moods || ['طبيعي'] })
+        body: JSON.stringify({
+          moods: activeDiaryForSelectedDate?.moods || ['calm'],
+          appLanguage: settings.appLanguage || 'ar'
+        })
       });
       const data = await response.json();
       if (data.success) {

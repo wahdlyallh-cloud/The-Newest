@@ -1418,6 +1418,12 @@ export const AR_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "الفكرة التلقائية المبدئية:",
   healthyAlternativeBeliefPrefix: "المعتقد المرن البديل:",
   homeNav: "الرئيسية",
+  audioPlayerHeader: "مشغل الصوت التسجيلي:",
+  readyToPlay: "جاهز للتشغيل والاستماع",
+  audioPlaybackFailed: "يتعذر تشغيل الصوت (لم يتم حفظ الملف الصوتي بالكامل).",
+  reRecordVoice: "إعادة التسجيل 🎙️",
+  noDataLoggedInAppYet: "لا توجد بيانات مسجلة في التطبيق حالياً.",
+  noPersonalRecordsMatched: "لم يُعثر على سجلات شخصية تطابق الكلمات المبحوث عنها في بيانات التطبيق.",
 };
 
 export const EN_DICT: Record<string, any> = {
@@ -2792,6 +2798,12 @@ export const EN_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Initial Automatic Thought:",
   healthyAlternativeBeliefPrefix: "Healthy Alternative Belief:",
   homeNav: "Home",
+  audioPlayerHeader: "Recorded Audio Player:",
+  readyToPlay: "Ready to play",
+  audioPlaybackFailed: "Unable to play audio (file was not fully saved).",
+  reRecordVoice: "Re-record 🎙️",
+  noDataLoggedInAppYet: "No data currently logged in the application.",
+  noPersonalRecordsMatched: "No personal records matched the search query in app data.",
 };
 
 export const FR_DICT: Record<string, any> = {
@@ -4166,6 +4178,12 @@ export const FR_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Pensée automatique initiale :",
   healthyAlternativeBeliefPrefix: "Croyance alternative saine :",
   homeNav: "Accueil",
+  audioPlayerHeader: "Lecteur audio enregistré :",
+  readyToPlay: "Prêt pour la lecture",
+  audioPlaybackFailed: "Impossible de lire l'audio (fichier non sauvegardé).",
+  reRecordVoice: "Réenregistrer 🎙️",
+  noDataLoggedInAppYet: "Aucune donnée enregistrée pour le moment.",
+  noPersonalRecordsMatched: "Aucun enregistrement ne correspond à la recherche.",
 };
 
 export const DE_DICT: Record<string, any> = {
@@ -5540,6 +5558,12 @@ export const DE_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Erster automatischer Gedanke:",
   healthyAlternativeBeliefPrefix: "Gesunde alternative Überzeugung:",
   homeNav: "Startseite",
+  audioPlayerHeader: "Audio-Player für Aufnahmen:",
+  readyToPlay: "Bereit zum Abspielen",
+  audioPlaybackFailed: "Audiodatei kann nicht abgespielt werden.",
+  reRecordVoice: "Neu aufnehmen 🎙️",
+  noDataLoggedInAppYet: "Derzeit sind keine Daten in der Anwendung erfasst.",
+  noPersonalRecordsMatched: "Keine persönlichen Einträge entsprechen der Suchanfrage.",
 };
 
 export const ES_DICT: Record<string, any> = {
@@ -6914,6 +6938,12 @@ export const ES_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Pensamiento automático inicial:",
   healthyAlternativeBeliefPrefix: "Creencia alternativa saludable:",
   homeNav: "Inicio",
+  audioPlayerHeader: "Reproductor de audio grabado:",
+  readyToPlay: "Listo para reproducir",
+  audioPlaybackFailed: "No se puede reproducir el audio.",
+  reRecordVoice: "Volver a grabar 🎙️",
+  noDataLoggedInAppYet: "Actualmente no hay datos registrados.",
+  noPersonalRecordsMatched: "Ningún registro personal coincide con la búsqueda.",
 };
 
 export const IT_DICT: Record<string, any> = {
@@ -8288,6 +8318,12 @@ export const IT_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Pensiero automatico iniziale:",
   healthyAlternativeBeliefPrefix: "Convinzione alternativa sana:",
   homeNav: "Home",
+  audioPlayerHeader: "Lettore audio registrato:",
+  readyToPlay: "Pronto per la riproduzione",
+  audioPlaybackFailed: "Impossibile riprodurre l'audio.",
+  reRecordVoice: "Registra di nuovo 🎙️",
+  noDataLoggedInAppYet: "Nessun dato registrato al momento.",
+  noPersonalRecordsMatched: "Nessun record personale corrisponde alla ricerca.",
 };
 
 export const TR_DICT: Record<string, any> = {
@@ -9662,9 +9698,16 @@ export const TR_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "İlk Otomatik Düşünce:",
   healthyAlternativeBeliefPrefix: "Sağlıklı Alternatif İnanç:",
   homeNav: "Ana Sayfa",
+  audioPlayerHeader: "Kayıtlı Ses Çalar:",
+  readyToPlay: "Oynatmaya hazır",
+  audioPlaybackFailed: "Ses oynatılamıyor (dosya tam olarak kaydedilmedi).",
+  reRecordVoice: "Yeniden Kaydet 🎙️",
+  noDataLoggedInAppYet: "Uygulamada şu anda kayıtlı veri bulunmuyor.",
+  noPersonalRecordsMatched: "Uygulama verilerinde arama sorgusuyla eşleşen kişisel kayıt bulunamadı.",
 };
 
 export const PT_DICT: Record<string, any> = {
+  quoteDefaultAuthor: "Seu psiquiatra amigo",
   "nav.home": "Início",
   "nav.diaries": "Diários",
   "nav.advisor": "Conselheiro IA",
@@ -10495,8 +10538,7 @@ export const PT_DICT: Record<string, any> = {
   pwaBadge: "PWA 🖥️",
   quickOneClickActions: "Quick actions to analyze entry in one click:",
   quickPromptSuggestionsTitle: "Quick prompts to start:",
-  quoteDefaultAuthor: "Your Friendly Psychiatrist",
-  quoteDefaultText: "Remember that anxiety does not prevent tomorrow's pain, it only steals today's peace.",
+  quoteDefaultText: "Lembre-se de que a ansiedade não evita a dor do amanhã, ela apenas rouba a paz de hoje.",
   rateModalThanks: "Thank you for rating! ❤️",
   rateModalTitle: "⭐ Rate App",
   rateTitle: "Rate App ⭐",
@@ -11036,6 +11078,12 @@ export const PT_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Pensamento automático inicial:",
   healthyAlternativeBeliefPrefix: "Crença alternativa saudável:",
   homeNav: "Início",
+  audioPlayerHeader: "Reprodutor de áudio gravado:",
+  readyToPlay: "Pronto para reproduzir",
+  audioPlaybackFailed: "Não foi possível reproduzir o áudio.",
+  reRecordVoice: "Gravar novamente 🎙️",
+  noDataLoggedInAppYet: "Nenhum dado registrado no momento.",
+  noPersonalRecordsMatched: "Nenhum registro pessoal correspondeu à pesquisa.",
 };
 
 export const RU_DICT: Record<string, any> = {
@@ -12410,9 +12458,16 @@ export const RU_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "Начальная автоматическая мысль:",
   healthyAlternativeBeliefPrefix: "Здоровое альтернативное убеждение:",
   homeNav: "Главная",
+  audioPlayerHeader: "Аудиоплеер записей:",
+  readyToPlay: "Готово к воспроизведению",
+  audioPlaybackFailed: "Невозможно воспроизвести аудио (файл сохранен не полностью).",
+  reRecordVoice: "Перезаписать 🎙️",
+  noDataLoggedInAppYet: "В приложении пока нет сохраненных данных.",
+  noPersonalRecordsMatched: "Личных записей по вашему запросу не найдено.",
 };
 
 export const JA_DICT: Record<string, any> = {
+  quoteDefaultAuthor: "親愛なる心理カウンセラー",
   "nav.home": "ホーム",
   "nav.diaries": "日記",
   "nav.advisor": "AIアドバイザー",
@@ -13243,8 +13298,7 @@ export const JA_DICT: Record<string, any> = {
   pwaBadge: "PWA 🖥️",
   quickOneClickActions: "Quick actions to analyze entry in one click:",
   quickPromptSuggestionsTitle: "Quick prompts to start:",
-  quoteDefaultAuthor: "Your Friendly Psychiatrist",
-  quoteDefaultText: "Remember that anxiety does not prevent tomorrow's pain, it only steals today's peace.",
+  quoteDefaultText: "不安は明日の苦しみを防ぐのではなく、今日の平穏を奪うだけであることを心に留めておいてください。",
   rateModalThanks: "Thank you for rating! ❤️",
   rateModalTitle: "⭐ Rate App",
   rateTitle: "Rate App ⭐",
@@ -13784,6 +13838,12 @@ export const JA_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "最初の自動思考:",
   healthyAlternativeBeliefPrefix: "健康な代替信念:",
   homeNav: "ホーム",
+  audioPlayerHeader: "録音音声プレーヤー:",
+  readyToPlay: "再生準備完了",
+  audioPlaybackFailed: "音声を再生できません (ファイルが完全に保存されていません)。",
+  reRecordVoice: "再録音 🎙️",
+  noDataLoggedInAppYet: "アプリケーションに現在記録されているデータはありません。",
+  noPersonalRecordsMatched: "検索クエリに一致する個人記録は見つかりませんでした。",
 };
 
 export const ZH_DICT: Record<string, any> = {
@@ -15158,6 +15218,12 @@ export const ZH_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "初始自动化思维：",
   healthyAlternativeBeliefPrefix: "弹性替代信念：",
   homeNav: "首页",
+  audioPlayerHeader: "录音音频播放器：",
+  readyToPlay: "已就绪，可随时播放",
+  audioPlaybackFailed: "无法播放音频 (录音文件未完整保存)。",
+  reRecordVoice: "重新录音 🎙️",
+  noDataLoggedInAppYet: "应用程序中目前暂无任何记录数据。",
+  noPersonalRecordsMatched: "在您的应用历史数据中未检索到匹配的个人记录。",
 };
 
 export const HI_DICT: Record<string, any> = {
@@ -16532,6 +16598,12 @@ export const HI_DICT: Record<string, any> = {
   initialAutomaticThoughtPrefix: "प्रारंभिक स्वचालित विचार:",
   healthyAlternativeBeliefPrefix: "स्वस्थ वैकल्पिक विश्वास:",
   homeNav: "होम",
+  audioPlayerHeader: "रिकॉर्ड किया गया ऑडियो प्लेयर:",
+  readyToPlay: "चलाने के लिए तैयार",
+  audioPlaybackFailed: "ऑडियो चलाने में असमर्थ।",
+  reRecordVoice: "पुनः रिकॉर्ड करें 🎙️",
+  noDataLoggedInAppYet: "एप्लिकेशन में वर्तमान में कोई डेटा दर्ज नहीं है।",
+  noPersonalRecordsMatched: "ऐप डेटा में खोज क्वेरी से मेल खाने वाला कोई व्यक्तिगत रिकॉर्ड नहीं मिला।",
 };
 
 export const BASELINE_DICTIONARIES: Record<string, Record<string, any>> = {

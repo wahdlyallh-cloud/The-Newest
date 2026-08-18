@@ -5,6 +5,7 @@
 
 import { DiaryEntry, Habit, GratitudeCard, Book, MultimodalAttachment } from '../types';
 import { getAttachmentBlob } from '../lib/attachmentStore';
+import { getTranslation } from '../lib/languages';
 
 /**
  * Universal canonical entity types supported in the Knowledge Layer.
@@ -958,6 +959,7 @@ export interface RetrievalOptions {
   maxEntities?: number;
   minScoreThreshold?: number;
   requireMediaBlobs?: boolean;
+  appLanguage?: string;
 }
 
 export async function retrieveRelevantKnowledge(
@@ -968,12 +970,13 @@ export async function retrieveRelevantKnowledge(
   const maxEntities = options.maxEntities || 12;
   const intent = analyzeQueryIntent(query);
   const allEntities = index.getAllEntities();
+  const t = getTranslation(options.appLanguage || 'ar');
 
   if (allEntities.length === 0) {
     return {
       matchedEntities: [],
       crossSourceCorrelations: [],
-      formattedContextText: 'لا توجد بيانات مسجلة في التطبيق حالياً.',
+      formattedContextText: t.noDataLoggedInAppYet || 'No data currently logged in the application.',
       multimodalParts: [],
       sourceCitations: [],
       confidenceScore: 0
@@ -1171,23 +1174,26 @@ export async function retrieveRelevantKnowledge(
   let formattedText = '';
 
   if (topMatches.length > 0) {
-    formattedText += `### 📂 البيانات الموثقة المسترجعة من سجلات التطبيق ذات الصلة (${topMatches.length} مصدر):\n\n`;
+    const isAr = (options.appLanguage || 'ar') === 'ar';
+    formattedText += isAr 
+      ? `### 📂 البيانات الموثقة المسترجعة من سجلات التطبيق ذات الصلة (${topMatches.length} مصدر):\n\n`
+      : `### 📂 Verified Records Retrieved from App (${topMatches.length} sources):\n\n`;
 
     topMatches.forEach((ent, index) => {
-      formattedText += `#### [مصدر ${index + 1}] — ${ent.sourceLabelAr}\n`;
-      formattedText += `- **النوع والتصنيف:** ${ent.sourceType} | الفئة: ${ent.memoryCategory}\n`;
-      formattedText += `- **التاريخ:** ${ent.dateStr}\n`;
-      if (ent.moods.length > 0) formattedText += `- **المزاج/المشاعر المرصودة:** [${ent.moods.join(' ، ')}]\n`;
-      if (ent.tags.length > 0) formattedText += `- **الوسوم (Tags):** [${ent.tags.join(' ، ')}]\n`;
+      formattedText += `#### [${isAr ? 'مصدر' : 'Source'} ${index + 1}] — ${ent.sourceLabelAr}\n`;
+      formattedText += `- **${isAr ? 'النوع والتصنيف:' : 'Type & Category:'}** ${ent.sourceType} | ${isAr ? 'الفئة:' : 'Group:'} ${ent.memoryCategory}\n`;
+      formattedText += `- **${isAr ? 'التاريخ:' : 'Date:'}** ${ent.dateStr}\n`;
+      if (ent.moods.length > 0) formattedText += `- **${isAr ? 'المزاج/المشاعر المرصودة:' : 'Moods:'}** [${ent.moods.join(' , ')}]\n`;
+      if (ent.tags.length > 0) formattedText += `- **${isAr ? 'الوسوم (Tags):' : 'Tags:'}** [${ent.tags.join(' , ')}]\n`;
       if (ent.metrics && Object.keys(ent.metrics).length > 0) {
         const metricStr = Object.entries(ent.metrics).map(([k, v]) => `${k}: ${v}`).join(' | ');
-        formattedText += `- **المؤشرات والأرقام:** ${metricStr}\n`;
+        formattedText += `- **${isAr ? 'المؤشرات والأرقام:' : 'Metrics:'}** ${metricStr}\n`;
       }
-      formattedText += `- **المحتوى الفعلي:**\n> ${ent.content.replace(/\n/g, '\n> ')}\n\n`;
+      formattedText += `- **${isAr ? 'المحتوى الفعلي:' : 'Content:'}**\n> ${ent.content.replace(/\n/g, '\n> ')}\n\n`;
     });
 
     if (correlations.length > 0) {
-      formattedText += `### 🔗 شبكة التقاطعات والروابط المكتشفة بين المصادر:\n`;
+      formattedText += isAr ? `### 🔗 شبكة التقاطعات والروابط المكتشفة بين المصادر:\n` : `### 🔗 Discovered Cross-Source Correlations:\n`;
       correlations.forEach((corr, idx) => {
         formattedText += `**${idx + 1}. ${corr.title}**\n`;
         corr.evidence.forEach(ev => {
@@ -1197,7 +1203,7 @@ export async function retrieveRelevantKnowledge(
       });
     }
   } else {
-    formattedText = 'لم يُعثر على سجلات شخصية تطابق الكلمات المبحوث عنها في بيانات التطبيق.';
+    formattedText = t.noPersonalRecordsMatched || 'No personal records matched the search query in app data.';
   }
 
   const citations = topMatches.map(e => ({
