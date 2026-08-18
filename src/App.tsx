@@ -11523,7 +11523,7 @@ export default function App() {
                                     rel="noreferrer"
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>🔗</span> <span>رابط الموقع المرجعي للكتاب</span></span>
+                                    <span className="flex items-center gap-2"><span>🔗</span> <span>{t.bookReferenceLink || "Book Reference Website Link"}</span></span>
                                     <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                                   </a>
                                 )}
@@ -11534,7 +11534,7 @@ export default function App() {
                                     onClick={() => alert(`🎙️ جاري تفعيل مشغل الملخص الصوتي للكتاب...\nالملف: ${selectedBookDetail.audioAttachment}\nاستمع للمراجعة الصوتية القصيرة بنجاح.`)}
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>🎙️</span> <span>الاستماع للملخص الصوتي</span></span>
+                                    <span className="flex items-center gap-2"><span>🎙️</span> <span>{t.listenAudioSummary || "Listen to Audio Summary"}</span></span>
                                     <Music className="w-3.5 h-3.5 text-[#8B9D83]" />
                                   </button>
                                 )}
@@ -11545,14 +11545,14 @@ export default function App() {
                                     onClick={() => alert(`📹 تشغيل المراجعة المرئية السريعة:\nالملف: ${selectedBookDetail.videoAttachment}\nالعرض ناجح ومحمي وسريع الاستجابة.`)}
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>📹</span> <span>تشغيل الفيديو المرفق</span></span>
-                                    <span className="text-[10px] text-[#D4A373]">مقطع مرئي 📹</span>
+                                    <span className="flex items-center gap-2"><span>📹</span> <span>{t.playAttachedVideo || "Play Attached Video"}</span></span>
+                                    <span className="text-[10px] text-[#D4A373]">{t.videoClipBadge || "Video Clip 📹"}</span>
                                   </button>
                                 )}
 
                                 {selectedBookDetail.hasMindMap && (
                                   <div className="border border-dashed border-[#E2DCC8] rounded-xl p-3 bg-white space-y-2">
-                                    <span className="block text-[10px] font-black text-gray-400">مخطط ذهني لربط وتلخيص الرواية 🎨:</span>
+                                    <span className="block text-[10px] font-black text-gray-400">{t.mindmapTitle || "Mind Map 🎨:"}</span>
                                     <div className="flex flex-col items-center justify-center p-2 bg-[#F9F7F2] rounded-lg border border-[#E2DCC8]/40 space-y-1.5">
                                       <div className="text-[11px] font-black text-[#5A5A40] bg-white border border-[#E2DCC8] px-2.5 py-0.5 rounded-full shadow-3xs">
                                         {selectedBookDetail.title.slice(0, 18)}...
@@ -11612,7 +11612,7 @@ export default function App() {
                                   <div>
                                     <h3 className="text-base font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                                       <span className="p-1.5 bg-[#8B9D83]/10 text-[#8B9D83] rounded-xl">📚</span>
-                                      <span>مكتبتي الشاملة وأرشيفي الثقافي</span>
+                                      <span>{t.myComprehensiveLibrary || "My Comprehensive Library"}</span>
                                     </h3>
                                     <p className="text-[10px] text-gray-400 font-medium mt-0.5">تصفح وتصفية جميع المراجع والكتب والروايات المضافة بذكاء ميسر</p>
                                   </div>
@@ -11621,7 +11621,7 @@ export default function App() {
                                     onClick={() => setShowAddBookForm(true)}
                                     className="px-4 py-2 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] hover:opacity-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-sm active:scale-97 shrink-0"
                                   >
-                                    + إضافة مادة قرائية جديدة
+                                    {t.addNewBookMaterial || "+ Add New Reading Material"}
                                   </button>
                                 </div>
 
@@ -11633,7 +11633,7 @@ export default function App() {
                                       type="text"
                                       value={bookSearchQuery}
                                       onChange={(e) => setBookSearchQuery(e.target.value)}
-                                      placeholder="ابحث عن كتاب بالاسم، التصنيف، أو الكلمات الدلالية..."
+                                      placeholder={t.searchLibraryPlaceholder || "Search book by title, category, or tags..."}
                                       className="w-full bg-white border border-[#E2DCC8] rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#8B9D83] text-[#3A3A3A] font-bold"
                                     />
                                     <span className="absolute left-3.5 top-2.5 text-gray-400 text-xs">🔍</span>
@@ -11677,13 +11677,13 @@ export default function App() {
 
                                     {/* Rating Filter */}
                                     <div className="flex items-center space-x-1.5 space-x-reverse">
-                                      <span className="text-[10px] text-gray-400 font-black">التقييم الأدنى:</span>
+                                      <span className="text-[10px] text-gray-400 font-black">{t.minRatingFilter || "Minimum Rating:"}</span>
                                       <select
                                         value={bookRatingFilter}
                                         onChange={(e) => setBookRatingFilter(Number(e.target.value))}
                                         className="bg-white border border-[#E2DCC8] rounded-lg px-2 py-1 text-[10px] font-black text-[#5A5A40] focus:outline-none"
                                       >
-                                        <option value={0}>عرض الكل ⭐</option>
+                                        <option value={0}>{t.showAllOption || "Show All ⭐"}</option>
                                         <option value={5}>⭐⭐⭐⭐⭐ (5)</option>
                                         <option value={4}>⭐⭐⭐⭐+ (4)</option>
                                         <option value={3}>⭐⭐⭐+ (3)</option>
@@ -11696,7 +11696,7 @@ export default function App() {
                                     <div className="flex items-center justify-between">
                                       <span className="text-[10px] font-black text-[#5A5A40] flex items-center gap-1">
                                         <span>🏷️</span>
-                                        <span>تصفية سريعة بحسب التصنيفات:</span>
+                                        <span>{t.quickTagFilterBar || "Quick filter by category:"}</span>
                                       </span>
                                       {selectedBookTagFilter !== 'all' && (
                                         <button
@@ -11704,7 +11704,7 @@ export default function App() {
                                           onClick={() => setSelectedBookTagFilter('all')}
                                           className="text-[10px] text-teal-700 hover:underline font-extrabold cursor-pointer"
                                         >
-                                          إلغاء التصفية (عرض الكل) ✕
+                                          {t.clearCategoryFilter || "Clear Filter (Show All) ✕"}
                                         </button>
                                       )}
                                     </div>
@@ -11763,7 +11763,7 @@ export default function App() {
                                     <span className="text-3xl animate-bounce">📭</span>
                                     <div className="space-y-1 mt-2">
                                       <h4 className="text-xs font-black text-[#5A5A40]">لم يتم العثور على أي مراجع مطابقة للبحث أو التصنيف المحدد</h4>
-                                      <p className="text-[10px] text-gray-400">يرجى تعديل خيارات التصفية أو إدخال مادة قرائية جديدة للبدء.</p>
+                                      <p className="text-[10px] text-gray-400">{t.noBooksSubHint || "Please adjust your filter options or add a new book."}</p>
                                     </div>
                                   </div>
                                 ) : (
@@ -11877,7 +11877,7 @@ export default function App() {
                         <div className="flex items-center justify-between border-b border-[#E2DCC8]/50 pb-3">
                           <h3 className="text-base font-black text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                             <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">🧠</span>
-                            <span>التقارير التحليلية والحكمة النفسية 🧠</span>
+                            <span>{t.analyticalReportsWisdom || "Analytical Reports & Wisdom 🧠"}</span>
                           </h3>
                           <button
                             type="button"
@@ -11887,7 +11887,7 @@ export default function App() {
                             }}
                             className="px-3.5 py-1.5 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] text-white text-xs font-black rounded-xl cursor-pointer transition-all hover:opacity-90 shadow-3xs"
                           >
-                            توليد التقرير السلوكي والمزاجي الأسبوعي
+                            {t.generateWeeklyMoodReport || "Generate Weekly Behavioral & Mood Report"}
                           </button>
                         </div>
 
@@ -11895,8 +11895,8 @@ export default function App() {
                           {/* Compliance KPIs card */}
                           <div className="bg-[#F9F7F2]/40 border border-[#E2DCC8]/60 rounded-2xl p-4 space-y-3">
                             <h4 className="text-xs font-black text-[#5A5A40] border-b border-[#E2DCC8]/30 pb-1 flex items-center justify-between">
-                              <span>مستوى التزام العادات السلوكية 🏃‍♂️</span>
-                              <span className="text-[10px] font-extrabold text-[#8B9D83]">هذا الأسبوع</span>
+                              <span>{t.habitCommitmentRateLabel || "Behavioral Habits Commitment Level 🏃‍♂️"}</span>
+                              <span className="text-[10px] font-extrabold text-[#8B9D83]">{t.thisWeekBadge || "This Week"}</span>
                             </h4>
                             <div className="space-y-2.5">
                               {habits.slice(0, 3).map((habit) => {
@@ -11924,7 +11924,7 @@ export default function App() {
                           {/* Dynamic Custom AI Wisdom Card */}
                           <div className="bg-[#F9F7F2]/45 border border-[#E2DCC8]/60 p-4 rounded-2xl flex flex-col justify-between">
                             <div className="space-y-2">
-                              <span className="block text-[10px] font-black text-gray-400">توصية المستشار الطبي الذكي اليوم 🧘:</span>
+                              <span className="block text-[10px] font-black text-gray-400">{t.aiSmartAdvisorRecommendationTitle || "AI Smart Clinical Advisor Recommendation 🧘:"}</span>
                               <p className="text-xs text-gray-700 leading-relaxed font-bold">
                                 "إن توازن جودة القراءة مع ممارسة تمارين التنفس هو ركيزة أساسية لخفض مستويات الكورتيزول وتصفية العقل. ننصحك بقراءة ٢٠ دقيقة من كتاب العلاج السلوكي المفضل لديك قبل النوم وتجنب الشاشات."
                               </p>
@@ -12161,7 +12161,7 @@ export default function App() {
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-[#D4A373]" />
-                <span>إشعار شاشة القفل المثبت (Lock Screen Notification)</span>
+                <span>{t.lockScreenNotificationTitle || "Pinned Lock Screen Notification"}</span>
               </h3>
               <button
                 type="button"
@@ -12176,7 +12176,7 @@ export default function App() {
               <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl font-bold text-amber-950 flex items-start gap-2.5">
                 <span className="text-xl">📱</span>
                 <div>
-                  <span className="font-extrabold block text-sm">تثبيت الاختصارات السريعة عند ضغط زر الباور:</span>
+                  <span className="font-extrabold block text-sm">{t.pinShortcutsPowerDesc || "Quick shortcuts accessible right from lock screen:"}</span>
                   <span>عند تمكين الخيار، يُثبّت التطبيق إشعاراً دائماً يحوي كافة الاختصارات (كتابة، تسجيل، مستشار، مزاجي) على شاشة القفل الخارجية.</span>
                 </div>
               </div>
@@ -12201,7 +12201,7 @@ export default function App() {
                 className="w-full py-3 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-2xl font-extrabold text-xs transition-all shadow-md cursor-pointer text-center flex items-center justify-center gap-2 active:scale-95"
               >
                 <BellRing className="w-4 h-4 text-amber-300 animate-bounce" />
-                <span>تثبيت الإشعار الآن على شاشة القفل 📌</span>
+                <span>{t.pinLockScreenNowBtn || "Pin Notification to Lock Screen 📌"}</span>
               </button>
             </div>
           </div>
