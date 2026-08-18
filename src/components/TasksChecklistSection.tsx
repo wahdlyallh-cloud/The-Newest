@@ -599,13 +599,13 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-400 font-bold block">متابعة اليوم والنشاط:</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.dailyActivityTrackingLabel || "Daily Activity Tracking:"}</span>
                   <span className="text-sm font-black text-[#5A5A40]">{selectedDate}</span>
                 </div>
               </div>
 
               <div className="text-left font-sans">
-                <span className="text-[10px] text-gray-400 font-bold block">معدل الإنجاز العام</span>
+                <span className="text-[10px] text-gray-400 font-bold block">{t.overallCompletionRateLabel || "Overall Completion Rate"}</span>
                 <span className="text-lg font-black text-[#8B9D83]">{completionPercentage}%</span>
               </div>
             </div>
@@ -620,14 +620,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 <div className="space-y-0.5">
                   <h4 className="font-extrabold text-sm text-[#5A5A40] flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4 text-[#D4A373]" />
-                    <span>إنجاز الرعاية الذاتية لليوم</span>
+                    <span>{t.todaySelfCareAchievement || "Today's Self-Care Progress"}</span>
                   </h4>
                   <p className="text-[10px] text-gray-500 font-medium">
-                    تتبع المهام، العادات والروتين البدني المتوازن لتغذية عافيتك الذهنية.
+                    {t.selfCareTrackingDesc || "Track tasks, habits and balanced physical routines to nourish your mental well-being."}
                   </p>
                 </div>
                 <span className="text-xs font-black text-[#8B9D83] bg-[#8B9D83]/10 px-2.5 py-1 rounded-full">
-                  {completedItems} من أصل {totalItems} منجز
+                  {completedItems} {t.ofTotalLabel || "of"} {totalItems} {t.completedTasksCount || "completed"}
                 </span>
               </div>
 
@@ -641,15 +641,15 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
               <div className="grid grid-cols-3 gap-3 pt-1">
                 <div className="text-center p-2 rounded-xl bg-white/60 border border-[#E2DCC8]/30">
-                  <span className="text-[10px] text-gray-400 font-bold block">المهام الخاصة</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.customTasksStatLabel || "Custom Tasks"}</span>
                   <span className="text-xs font-bold text-gray-700">{completedCustomTasks}/{totalCustomTasks}</span>
                 </div>
                 <div className="text-center p-2 rounded-xl bg-white/60 border border-[#E2DCC8]/30">
-                  <span className="text-[10px] text-gray-400 font-bold block">الروتين السلوكي</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.behavioralRoutineStatLabel || "Behavioral Routine"}</span>
                   <span className="text-xs font-bold text-gray-700">{completedHabits}/{totalHabits}</span>
                 </div>
                 <div className="text-center p-2 rounded-xl bg-white/60 border border-[#E2DCC8]/30">
-                  <span className="text-[10px] text-gray-400 font-bold block">الأدوية العلاجية</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.therapeuticMedicationStatLabel || "Medications"}</span>
                   <span className="text-xs font-bold text-gray-700">{completedMedsCount}/1</span>
                 </div>
               </div>
@@ -669,10 +669,10 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                     <span>📋</span>
-                    <span>المهام والواجبات اليومية</span>
+                    <span>{t.dailyTasksAndDutiesHeader || "Daily Tasks & Duties"}</span>
                   </h4>
                   <p className="text-[10px] text-gray-500 font-medium">
-                    اكتب قائمة مهامك الخاصة ونظف ذهنك من المهام المتراكمة لليوم.
+                    {t.dailyTasksDutiesSub || "Write your personal to-do list and clear your mind of today's tasks."}
                   </p>
                 </div>
 
@@ -680,7 +680,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 <form onSubmit={handleAddTask} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="أضف مهمة جديدة مثلاً: جلسة تأمل، كتابة خاطرة..."
+                    placeholder={t.addTaskPlaceholder || "Add a new task, e.g. meditation session, writing a note..."}
                     value={newTaskText}
                     onChange={(e) => setNewTaskText(e.target.value)}
                     className={`flex-1 py-2 px-3.5 rounded-xl text-xs font-normal border outline-none focus:border-[#8B9D83] transition-all ${
@@ -694,7 +694,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                     className="py-2 px-3 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shrink-0 shadow-xs"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>إضافة</span>
+                    <span>{t.addTaskBtn || "Add"}</span>
                   </button>
                 </form>
 
@@ -918,7 +918,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                                 <span className={`text-xs font-bold block truncate transition-all ${
                                   isCompleted ? 'line-through text-gray-400' : 'text-gray-700'
                                 }`}>
-                                  {habit.name}
+                                  {getHabitDisplayName(habit, t)}
                                 </span>
                               </div>
                               <span className={`inline-block text-[8px] px-1.5 py-0.5 rounded-md border font-bold mt-0.5 ${categoryColor}`}>

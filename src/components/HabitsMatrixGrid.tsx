@@ -1,3 +1,4 @@
+import { getHabitDisplayName } from "../lib/languages";
 import React, { useState, useMemo } from 'react';
 import { 
   Plus, 
@@ -416,7 +417,7 @@ export const HabitsMatrixGrid: React.FC<HabitsMatrixGridProps> = ({
                         />
                         <div className="min-w-0 flex-1">
                           <span className="font-bold text-gray-800 block truncate">
-                            {habit.name}
+                            {getHabitDisplayName(habit, t)}
                           </span>
                           <span className="text-[9px] text-gray-400 block font-bold">
                             {habit.habitType === 'measurable'

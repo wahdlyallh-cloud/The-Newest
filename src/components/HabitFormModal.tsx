@@ -126,7 +126,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
               </button>
             )}
             <h3 className="font-bold text-base md:text-lg">
-              {step === 'type_selection' ? (t['habit.choose_type'] || 'اختر نوع العادة') : initialHabit ? (t['habit.edit'] || 'تعديل العادة') : (t['habit.create'] || 'إنشاء العادة')}
+              {step === 'type_selection' ? (t['habit.choose_type'] || 'اختر نوع العادة') : initialHabit ? (t['habit.edit'] || '{t.editHabitModalTitle || "Edit Habit"}') : (t['habit.create'] || 'إنشاء العادة')}
             </h3>
           </div>
 

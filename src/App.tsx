@@ -226,7 +226,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   appFont: 'cairo',
   appLineHeight: 'relaxed',
   floatingBallEnabled: true,
-  appPinCode: '1234',
+  appPinCode: '',
   isAppLocked: false, // Default to false so user can preview and test all features instantly
   backupSettings: {
     autoBackup: 'daily'
@@ -8931,7 +8931,7 @@ export default function App() {
                 }`}
               >
                 <span>🎓</span>
-                <span>جلسة العلاج والتقرير</span>
+                <span>{t.therapySessionAndReportTab || "Therapy Session & Report"}</span>
               </button>
               <button
                 onClick={() => setAnalyticsSubTab('charts')}
@@ -8942,7 +8942,7 @@ export default function App() {
                 }`}
               >
                 <span>📊</span>
-                <span>الرسوم البيانية ومتابعة التقدم</span>
+                <span>{t.chartsAndProgressTrackingTab || "Charts & Progress Tracking"}</span>
               </button>
               <button
                 onClick={() => setAnalyticsSubTab('pros_cons')}
@@ -8953,7 +8953,7 @@ export default function App() {
                 }`}
               >
                 <span>⚖️</span>
-                <span>سجل الإيجابيات والسلبيات</span>
+                <span>{t.prosAndConsSubTab || "Pros & Cons Log"}</span>
               </button>
             </div>
 
@@ -11897,7 +11897,7 @@ export default function App() {
                                 return (
                                   <div key={habit.id} className="space-y-1">
                                     <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                                      <span>{habit.name}</span>
+                                      <span>{getHabitDisplayName(habit, t)}</span>
                                       <span>{ratio}% ({completedDays}/{totalDays})</span>
                                     </div>
                                     <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">

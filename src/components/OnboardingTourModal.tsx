@@ -80,12 +80,8 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       accentColor: 'from-[#2B3E50] to-[#3A506B]',
       iconBg: 'bg-[#2B3E50]/10 text-[#2B3E50]',
       title: '🌿 Welcome to Hayat AI',
-      subtitle: isEn
-        ? 'Your safe psychological space to write, express, and grow with smart AI guidance.'
-        : 'مساحتك الخاصة للكتابة، والتعبير عن مشاعرك، وفهم ذاتك، وتنظيم يومك بمساعدة الذكاء الاصطناعي.',
-      description: isEn
-        ? 'You do not need to learn everything at once. We will accompany you step-by-step to discover what you can do.'
-        : 'لا تحتاج إلى معرفة كل شيء الآن. سنرافقك خطوة بخطوة لتكتشف أهم ما يمكنك القيام به بكل هدوء وبساطة.',
+      subtitle: t.onboardingWelcomeSubtitle || 'Your safe psychological space to write, express, and grow with smart AI guidance.',
+      description: t.onboardingWelcomeDesc || 'You do not need to learn everything at once. We will accompany you step-by-step to discover what you can do.',
       interactiveWidget: (
         <div className="grid grid-cols-3 gap-2 sm:gap-2.5 py-1">
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">

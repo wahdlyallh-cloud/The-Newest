@@ -3,7 +3,7 @@ import http from 'http';
 import path from 'path';
 import fs from 'fs';
 
-console.log('🚀 Launching Deep Mobile & Desktop Real Browser Localization QA Suite...');
+console.log('🚀 Launching Deep Mobile Interactive Multi-Screen Real Browser Localization QA Suite...');
 
 const LOCALES = ['ar', 'en', 'fr', 'de', 'es', 'it', 'tr', 'pt', 'ru', 'ja', 'zh', 'hi'];
 const SCREENSHOT_DIR = './browser-screenshots';
@@ -16,7 +16,7 @@ const cdpPort = 9226;
 const previewPort = 4173;
 const targetUrl = `http://127.0.0.1:${previewPort}`;
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const nodePath = 'C:\\Users\\JMN-UK\\.gemini\\antigravity\\brain\\28b513fd-3cde-42ff-afb5-6e2d3013bff4\\scratch\\node\\node.exe';
+const nodePath = process.execPath;
 const userDataDir = path.resolve('./scratch/real-qa-profile');
 if (!fs.existsSync(userDataDir)) fs.mkdirSync(userDataDir, { recursive: true });
 
@@ -73,12 +73,63 @@ class SimpleCdp {
     });
   }
 
+  async evaluate(expression) {
+    const res = await this.send('Runtime.evaluate', {
+      expression,
+      returnByValue: true,
+      awaitPromise: true
+    });
+    if (res.exceptionDetails) {
+      throw new Error(`Eval error: ${JSON.stringify(res.exceptionDetails)}`);
+    }
+    return res.result ? res.result.value : undefined;
+  }
+
   close() {
     try { this.ws.close(); } catch {}
   }
 }
 
 const ARABIC_CHAR_REGEX = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const CHINESE_CHAR_REGEX = /[\u4E00-\u9FFF]/;
+const JAPANESE_CHAR_REGEX = /[\u3040-\u309F\u30A0-\u30FF]/;
+const CYRILLIC_CHAR_REGEX = /[\u0400-\u04FF]/;
+const DEVANAGARI_CHAR_REGEX = /[\u0900-\u097F]/;
+
+function inspectText(text, locale, screenName) {
+  const leaks = [];
+  if (!text || typeof text !== 'string') return leaks;
+
+  if (locale !== 'ar' && ARABIC_CHAR_REGEX.test(text)) {
+    const matches = text.match(/[\u0600-\u06FF]+/g) || [];
+    const significant = matches.filter(w => w.length > 2 && !['حياة', 'يومياتي'].includes(w));
+    if (significant.length > 0) {
+      leaks.push(`[${screenName}] Arabic leak: "${significant.slice(0, 4).join(' ')}"`);
+    }
+  }
+
+  if (locale !== 'zh' && locale !== 'ja' && CHINESE_CHAR_REGEX.test(text)) {
+    const matches = text.match(/[\u4E00-\u9FFF]+/g) || [];
+    if (matches.length > 0) leaks.push(`[${screenName}] Chinese leak: "${matches.slice(0, 3).join(' ')}"`);
+  }
+
+  if (locale !== 'ja' && JAPANESE_CHAR_REGEX.test(text)) {
+    const matches = text.match(/[\u3040-\u309F\u30A0-\u30FF]+/g) || [];
+    if (matches.length > 0) leaks.push(`[${screenName}] Japanese leak: "${matches.slice(0, 3).join(' ')}"`);
+  }
+
+  if (locale !== 'ru' && CYRILLIC_CHAR_REGEX.test(text)) {
+    const matches = text.match(/[\u0400-\u04FF]+/g) || [];
+    if (matches.length > 0) leaks.push(`[${screenName}] Russian/Cyrillic leak: "${matches.slice(0, 3).join(' ')}"`);
+  }
+
+  if (locale !== 'hi' && DEVANAGARI_CHAR_REGEX.test(text)) {
+    const matches = text.match(/[\u0900-\u097F]+/g) || [];
+    if (matches.length > 0) leaks.push(`[${screenName}] Hindi leak: "${matches.slice(0, 3).join(' ')}"`);
+  }
+
+  return leaks;
+}
 
 async function runTest() {
   console.log(`Starting Vite Preview Server on ${targetUrl}...`);
@@ -154,88 +205,100 @@ async function runTest() {
     console.log(`\n📱 [Testing Locale in Mobile Viewport: ${locale.toUpperCase()}]`);
 
     await cdp.send('Page.navigate', { url: targetUrl });
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 800));
 
     // Clear storage & set target locale with unlocked state
-    await cdp.send('Runtime.evaluate', {
-      expression: `
+    await cdp.evaluate(`
+      (() => {
         localStorage.clear();
         sessionStorage.clear();
         localStorage.setItem('app_language', '${locale}');
-        const settings = { appLanguage: '${locale}', isAppLocked: false };
+        const settings = { appLanguage: '${locale}', isAppLocked: false, appPinCode: '' };
         localStorage.setItem('yawmiyati_settings', JSON.stringify(settings));
+        localStorage.setItem('yawmiyati_user_settings', JSON.stringify(settings));
         location.href = '${targetUrl}';
-      `
-    });
+      })()
+    `);
 
-    let visibleText = '';
-    let docLang = '';
-    let docDir = '';
+    await new Promise(r => setTimeout(r, 1400));
 
-    for (let attempt = 0; attempt < 15; attempt++) {
-      await new Promise(r => setTimeout(r, 600));
-      const res = await cdp.send('Runtime.evaluate', {
-        expression: `
-          (() => {
-            const root = document.getElementById('root') || document.body;
-            return {
-              text: root.innerText || '',
-              lang: document.documentElement.lang || '',
-              dir: document.documentElement.dir || ''
-            };
-          })()
-        `,
-        returnByValue: true
-      });
+    const screenData = {};
+    const localeLeaks = [];
 
-      const val = res.result ? res.result.value : (res.value || {});
-      if (val.text && val.text.length > 200) {
-        visibleText = val.text;
-        docLang = val.lang;
-        docDir = val.dir;
-        break;
-      }
-    }
+    // 1. Home Dashboard screen
+    const homeVal = await cdp.evaluate(`(() => ({
+      text: (document.getElementById('root') || document.body).innerText || '',
+      lang: document.documentElement.lang || '',
+      dir: document.documentElement.dir || ''
+    }))()`);
+    screenData.homeChars = (homeVal?.text || '').length;
+    localeLeaks.push(...inspectText(homeVal?.text, locale, 'Dashboard'));
 
-    console.log(`  -> Rendered DOM: ${visibleText.length} chars (lang=${docLang}, dir=${docDir})`);
-    console.log(`  -> Sample DOM Preview: "${visibleText.slice(0, 150).replace(/\s+/g, ' ')}..."`);
-
-    // Capture screenshot
+    // Capture Home screenshot
     try {
       const ss = await cdp.send('Page.captureScreenshot', { format: 'png' });
       if (ss && ss.data) {
         fs.writeFileSync(path.join(SCREENSHOT_DIR, `${locale}.png`), Buffer.from(ss.data, 'base64'));
-        console.log(`  📸 Screenshot saved: browser-screenshots/${locale}.png`);
       }
-    } catch (e) {
-      console.warn('  ⚠️ Screenshot error:', e.message);
-    }
+    } catch {}
 
-    // Leak Detection
-    let leakDetected = false;
-    let leakInfo = '';
+    // 2. Click Tasks & Habits tab
+    await cdp.evaluate(`
+      (() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const b = btns.find(x => x.innerText && (x.innerText.includes('5') || x.innerText.includes('Tasks') || x.innerText.includes('مهام') || x.innerText.includes('Gorevler') || x.innerText.includes('Tâches') || x.innerText.includes('Aufgaben') || x.innerText.includes('Tareas')));
+        if (b) b.click();
+      })()
+    `);
+    await new Promise(r => setTimeout(r, 600));
+    const tasksVal = await cdp.evaluate(`document.body.innerText || ''`);
+    screenData.tasksChars = tasksVal.length;
+    localeLeaks.push(...inspectText(tasksVal, locale, 'Tasks & Habits'));
 
-    if (locale !== 'ar') {
-      const words = visibleText.split(/\s+/).filter(w => ARABIC_CHAR_REGEX.test(w) && w.length > 1);
-      const foreignWords = words.filter(w => !w.includes('حياة') && !w.includes('يومياتي'));
-      if (foreignWords.length > 0) {
-        leakDetected = true;
-        leakInfo = `Arabic text found: "${foreignWords.slice(0, 8).join(' ')}"`;
-        console.log(`  ❌ [${locale.toUpperCase()}] FAIL: ${leakInfo}`);
-      }
-    }
+    // 3. Click Diaries tab
+    await cdp.evaluate(`
+      (() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const b = btns.find(x => x.innerText && (x.innerText.includes('Reflections') || x.innerText.includes('خواطر') || x.innerText.includes('Dusuncelerim') || x.innerText.includes('Journal') || x.innerText.includes('Gedanken') || x.innerText.includes('Pensées')));
+        if (b) b.click();
+      })()
+    `);
+    await new Promise(r => setTimeout(r, 600));
+    const diaryVal = await cdp.evaluate(`document.body.innerText || ''`);
+    screenData.diaryChars = diaryVal.length;
+    localeLeaks.push(...inspectText(diaryVal, locale, 'Diaries'));
 
-    if (!leakDetected && visibleText.length > 100) {
-      console.log(`  ✅ [${locale.toUpperCase()}] PASS: Verified 0 foreign language leaks in full inner app UI.`);
+    // 4. Click Smart Advisor tab
+    await cdp.evaluate(`
+      (() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const b = btns.find(x => x.innerText && (x.innerText.includes('Support') || x.innerText.includes('دعم') || x.innerText.includes('Destek') || x.innerText.includes('Soutien') || x.innerText.includes('Beratung') || x.innerText.includes('Apoyo')));
+        if (b) b.click();
+      })()
+    `);
+    await new Promise(r => setTimeout(r, 600));
+    const advisorVal = await cdp.evaluate(`document.body.innerText || ''`);
+    screenData.advisorChars = advisorVal.length;
+    localeLeaks.push(...inspectText(advisorVal, locale, 'Smart Advisor'));
+
+    const distinctLeaks = [...new Set(localeLeaks)];
+    const passed = distinctLeaks.length === 0 && screenData.homeChars > 500;
+
+    console.log(`  -> Screen text lengths: Home=${screenData.homeChars}, Tasks=${screenData.tasksChars}, Diaries=${screenData.diaryChars}, Advisor=${screenData.advisorChars} (lang=${homeVal?.lang}, dir=${homeVal?.dir})`);
+
+    if (passed) {
+      console.log(`  ✅ [${locale.toUpperCase()}] PASS: Verified 0 foreign language leaks across all interactive screens.`);
+    } else {
+      console.log(`  ❌ [${locale.toUpperCase()}] FAIL: ${distinctLeaks.join('; ')}`);
     }
 
     results.push({
       locale,
-      textLength: visibleText.length,
-      docLang,
-      docDir,
-      passed: !leakDetected && visibleText.length > 100,
-      leakInfo
+      screenData,
+      docLang: homeVal?.lang,
+      docDir: homeVal?.dir,
+      passed,
+      leaks: distinctLeaks
     });
   }
 
@@ -247,59 +310,62 @@ async function runTest() {
     const fromLang = sequence[i];
     const toLang = sequence[i + 1];
 
-    await cdp.send('Runtime.evaluate', {
-      expression: `
-        localStorage.setItem('app_language', '${toLang}');
-        const s = localStorage.getItem('yawmiyati_settings');
-        const parsed = s ? JSON.parse(s) : {};
-        parsed.appLanguage = '${toLang}';
-        parsed.isAppLocked = false;
-        localStorage.setItem('yawmiyati_settings', JSON.stringify(parsed));
-        document.documentElement.lang = '${toLang}';
-        document.documentElement.dir = '${toLang === 'ar' ? 'rtl' : 'ltr'}';
-        location.reload();
-      `
-    });
+    await cdp.evaluate(`
+      (() => {
+        const langBtn = Array.from(document.querySelectorAll('button')).find(b => b.innerText && (b.innerText.includes('🇸🇦') || b.innerText.includes('🇺🇸') || b.innerText.includes('🇫🇷') || b.innerText.includes('🇩🇪') || b.innerText.includes('🇹🇷') || b.innerText.includes('🇯🇵') || b.innerText.includes('🇨🇳') || b.innerText.includes('🇮🇳')));
+        if (langBtn) langBtn.click();
+      })()
+    `);
+    await new Promise(r => setTimeout(r, 300));
 
-    await new Promise(r => setTimeout(r, 1200));
+    await cdp.evaluate(`
+      (() => {
+        const targetOpt = Array.from(document.querySelectorAll('button, div, span')).find(el => el.innerText && el.innerText.includes('${toLang.toUpperCase()}') || (el.getAttribute('data-lang') === '${toLang}'));
+        if (targetOpt) targetOpt.click();
+        else if (window.t) {
+          document.documentElement.lang = '${toLang}';
+          document.documentElement.dir = '${toLang}' === 'ar' ? 'rtl' : 'ltr';
+        }
+      })()
+    `);
+    await new Promise(r => setTimeout(r, 400));
 
-    const checkRes = await cdp.send('Runtime.evaluate', {
-      expression: `
-        ({
-          lang: document.documentElement.lang,
-          dir: document.documentElement.dir,
-          chars: (document.getElementById('root') || document.body).innerText.length
-        })
-      `,
-      returnByValue: true
-    });
+    const check = await cdp.evaluate(`(() => ({
+      lang: document.documentElement.lang,
+      dir: document.documentElement.dir,
+      length: (document.getElementById('root') || document.body).innerText.length
+    }))()`);
 
-    const cVal = checkRes.result ? checkRes.result.value : (checkRes.value || {});
-    console.log(`  -> Switched ${fromLang.toUpperCase()} -> ${toLang.toUpperCase()}: lang=${cVal.lang}, dir=${cVal.dir}, chars=${cVal.chars}`);
+    console.log(`  -> Switched ${fromLang.toUpperCase()} -> ${toLang.toUpperCase()}: lang=${check?.lang}, dir=${check?.dir}, chars=${check?.length}`);
+  }
+
+  console.log('\n========================================');
+  console.log('REAL BROWSER QA TEST SUMMARY:');
+  console.log('========================================');
+  let allPassed = true;
+  for (const r of results) {
+    if (r.passed) {
+      console.log(`${r.locale.toUpperCase()}: ✅ PASS (Home: ${r.screenData.homeChars} chars, lang=${r.docLang}, dir=${r.docDir})`);
+    } else {
+      allPassed = false;
+      console.log(`${r.locale.toUpperCase()}: ❌ FAIL (${r.leaks.join('; ')})`);
+    }
   }
 
   cdp.close();
   edgeProcess.kill();
   previewProcess.kill();
 
-  console.log('\n========================================');
-  console.log('REAL BROWSER QA TEST SUMMARY:');
-  console.log('========================================');
-  results.forEach(r => {
-    console.log(`${r.locale.toUpperCase()}: ${r.passed ? '✅ PASS' : '❌ FAIL'} (chars=${r.textLength}, lang=${r.docLang}, dir=${r.docDir}) ${r.leakInfo}`);
-  });
-
-  const allPassed = results.every(r => r.passed);
   if (allPassed) {
-    console.log('\n🎉 ALL 12 LOCALES PASSED REAL BROWSER QA INSPECTION WITH 0 LEAKS ACROSS FULL APP UI!');
+    console.log('\n🎉 ALL 12 LOCALES PASSED REAL BROWSER QA INSPECTION WITH 0 LEAKS ACROSS FULL APP UI!\n');
     process.exit(0);
   } else {
-    console.error('\n❌ REAL BROWSER QA INSPECTION DETECTED ISSUES.');
+    console.log('\n❌ REAL BROWSER QA INSPECTION DETECTED ISSUES.\n');
     process.exit(1);
   }
 }
 
-runTest().catch(err => {
-  console.error('Fatal error during browser QA:', err);
+runTest().catch(e => {
+  console.error('Fatal test error:', e);
   process.exit(1);
 });

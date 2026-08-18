@@ -1,40 +1,73 @@
-# Runtime Multi-Language True Root-Cause Forensic Report
+# 🔍 RUNTIME LANGUAGE TRUE ROOT-CAUSE FORENSIC REPORT
 
-## Executive Summary
-
-A deep forensic analysis of the rendered application in a clean mobile Incognito environment revealed why real users encountered mixed languages (Arabic + English + Turkish / German / French) despite dictionary validation scripts passing.
-
-The root cause was twofold:
-1. **QA Harness Blind Spot**: The previous browser automation test captured only the top-level **Lock/Splash Screen** (341 characters) and did not unlock or navigate into the core application tabs, modals, and drawers.
-2. **Component-Level Unlocalized Strings & Binary `isRtl` Fallbacks**:
-   - [`src/components/TasksChecklistSection.tsx`](file:///c:/Users/JMN-UK/OneDrive/Desktop/The-Newest-App/The-Newest-main/src/components/TasksChecklistSection.tsx): **144 hardcoded Arabic strings** (medications, sport types, periodicity filters, checklist headers).
-   - [`src/components/SleepMoodCorrelationChart.tsx`](file:///c:/Users/JMN-UK/OneDrive/Desktop/The-Newest-App/The-Newest-main/src/components/SleepMoodCorrelationChart.tsx): **30 hardcoded Arabic strings** (sleep-mood correlation title, time filters, tooltips, axis labels).
-   - [`src/components/PsychologicalGrowthTree.tsx`](file:///c:/Users/JMN-UK/OneDrive/Desktop/The-Newest-App/The-Newest-main/src/components/PsychologicalGrowthTree.tsx): **18 binary `isRtl ? 'Arabic' : 'English'` ternaries**, rendering English whenever Turkish, German, French, or Japanese was active.
-   - [`src/components/ShareableGratitudeCardModal.tsx`](file:///c:/Users/JMN-UK/OneDrive/Desktop/The-Newest-App/The-Newest-main/src/components/ShareableGratitudeCardModal.tsx): **20 binary `isRtl ? 'Arabic' : 'English'` ternaries**, rendering English for card themes, signatures, and placeholders.
-   - [`src/App.tsx`](file:///c:/Users/JMN-UK/OneDrive/Desktop/The-Newest-App/The-Newest-main/src/App.tsx): **Floating Habit & Gratitude Reminder Banners** rendered hardcoded Arabic headers and action buttons.
+**Date & Time**: 2026-08-18  
+**Audit Scope**: Live Production Site (`https://the-newest.vercel.app`), Source Codebase, LocalStorage Persistence, React Component Hierarchy, Modals, Drawers, and Lifecycle Interactions across all 12 locales: `ar`, `en`, `fr`, `de`, `es`, `it`, `tr`, `pt`, `ru`, `ja`, `zh`, `hi`.
 
 ---
 
-## Forensic Trace of Detected Runtime Leaks
+## 1. Executive Summary & Why Previous QA Reported False Passes
 
-| Leaked Visible Text | Active Locale | Screen / Section | Source Component & Line | Root Cause |
-| :--- | :---: | :---: | :---: | :---: |
-| `"تنبيه العادات السلوكية اليومي"` | `tr` / `de` / `en` | Floating Habit Banner | `src/App.tsx:4809` | Hardcoded Arabic JSX literal |
-| `"افتح مفكرة الامتنان الآن 🌸"` | `tr` / `de` / `en` | Floating Gratitude Banner | `src/App.tsx:4858` | Hardcoded Arabic JSX literal |
-| `"الربط البياني: ساعات النوم وجودة المزاج"` | `tr` / `de` / `fr` | Analytics / Sleep Mood Chart | `SleepMoodCorrelationChart.tsx:196` | Hardcoded Arabic JSX literal |
-| `"30 يوماً (الشهر)"`, `"14 يوماً"` | `tr` / `de` / `ja` | Analytics / Time Filter | `SleepMoodCorrelationChart.tsx:207` | Hardcoded Arabic JSX literal |
-| `"Seedling (Lvl 1)"`, `"Sprout (Lvl 2)"` | `tr` / `de` / `fr` | Growth Tree Widget | `PsychologicalGrowthTree.tsx:477` | Binary ternary `isRtl ? 'Ar' : 'En'` evaluates to English in non-Arabic |
-| `"Card Text or Quote:"`, `"Author:"` | `tr` / `de` / `ja` | Gratitude Card Share Modal | `ShareableGratitudeCardModal.tsx:505` | Binary ternary `isRtl ? 'Ar' : 'En'` evaluates to English in non-Arabic |
-| `"مكمل فيتامين D اليومي"` | `tr` / `de` / `fr` | Tasks / Medications | `TasksChecklistSection.tsx:334` | Hardcoded Arabic default task item |
-| `"نطاق ظهور وتتبع العادات والتاسكات"` | `tr` / `de` / `ru` | Tasks / Periodicity Filter | `TasksChecklistSection.tsx:535` | Hardcoded Arabic JSX literal |
+Previous QA suites (and static linters) suffered from a fundamental blindspot:
+1. **Single Static Screen Inspection**: The automated browser tests only evaluated the initial rendered viewport of the Dashboard / Lock screen after unlocking.
+2. **Untriggered Interactive States**: Modals, sub-tabs, dropdown menus, drawers, and secondary views were never opened during the test run.
+3. **Huge Volume of Unlocalized Sub-components**:
+   - `src/App.tsx` contains **744 lines** of hardcoded Arabic literals in secondary tabs (Diary editor, Library/Books section, Settings sections, Athkar Drawer, Export, Analytics).
+   - Component files contain **over 900 lines** of hardcoded Arabic literals:
+     - `DailyProsConsModal.tsx` (163 Arabic lines)
+     - `TasksChecklistSection.tsx` (133 Arabic lines)
+     - `HabitSettingsScreen.tsx` (86 Arabic lines)
+     - `MonthlyMentalHealthPDFReportModal.tsx` (80 Arabic lines)
+     - `IntegratedTherapyReport.tsx` (62 Arabic lines)
+     - `HabitFormModal.tsx` (54 Arabic lines)
+     - `FullAthkarModal.tsx` (205 Arabic lines)
+     - `DhikrCounter.tsx` (46 Arabic lines)
+     - `SmartAdvisor.tsx` (39 Arabic lines)
+     - `CBTExercisesSection.tsx` (26 Arabic lines)
+     - `GeminiKeyModal.tsx` (27 Arabic lines)
+     - `GratitudeJournal.tsx` (17 Arabic lines)
+     - `BehavioralCorrelationCard.tsx` (15 Arabic lines)
+     - `OnboardingTourModal.tsx` (18 Arabic lines)
+     - `AIVoiceJournalModal.tsx` (7 Arabic lines)
+     - `DrawingCanvas.tsx` (6 Arabic lines)
+     - `ContactOwnerModal.tsx` (5 Arabic lines)
+     - `ProsConsHistoryLog.tsx` (5 Arabic lines)
+     - `PsychologicalGrowthTree.tsx` (4 Arabic lines)
+     - `PasskeyAuth.tsx` (9 Arabic lines)
+     - `PredictiveHealthInsightsModal.tsx` (6 Arabic lines)
+
+When a real user switched to Turkish, English, German, etc. and clicked on any tab or modal, the hardcoded Arabic strings from these components rendered directly onto the DOM, creating the mixed-language UI.
 
 ---
 
-## Architectural Remediation Plan
+## 2. Categorization of Root Causes
 
-1. **Unify all component strings under dynamic `t`**:
-   - Replace all binary `isRtl ? ... : ...` ternaries and hardcoded Arabic strings in `TasksChecklistSection.tsx`, `SleepMoodCorrelationChart.tsx`, `PsychologicalGrowthTree.tsx`, `ShareableGratitudeCardModal.tsx`, and `src/App.tsx` with dynamic properties on `t`.
-2. **Synchronize all 12 Locale Dictionaries**:
-   - Add all new keys to `src/lib/languages.ts` across `ar`, `en`, `fr`, `de`, `es`, `it`, `tr`, `pt`, `ru`, `ja`, `zh`, `hi`.
-3. **Upgrade Real Browser QA Harness**:
-   - Ensure `scripts/real-browser-localization-qa.mjs` unlocks the app, navigates through Home, Diaries, Tasks, CBT, Habits, Analytics, Settings, and Modals, and verifies that the rendered DOM contains 0 foreign characters for every locale.
+### A. Component-Level Hardcoded Arabic JSX
+Components created or expanded during recent feature iterations (e.g. `DailyProsConsModal`, `HabitSettingsScreen`, `IntegratedTherapyReport`, `HabitFormModal`, `TasksChecklistSection`) used raw Arabic string literals in JSX without pulling from `t[key]`.
+
+### B. App.tsx Secondary Views and Modals
+Sections inside `App.tsx` such as the Diary editor (formatting toolbar, sentiment tags, photo/audio attachments, drawing integration), the Comprehensive Library (book cards, category tags, reader modals), and Settings panels contained raw Arabic strings.
+
+### C. Seed / Initial State Content
+`INITIAL_HABITS`, `INITIAL_DIARIES`, `DEFAULT_SETTINGS`, and demo prompts held Arabic strings in state variables that persisted into `localStorage` upon initialization. When displaying these items, the UI must resolve display names dynamically via locale resolvers (`getHabitDisplayName`, `getCategoryLabel`, etc.) rather than printing the stored initial Arabic label.
+
+### D. Missing `appLanguage` Prop Propagation
+Certain components (such as `<DailyProsConsModal>` or `<LifeMap>` previously) were invoked without explicitly passing `appLanguage`, causing them to fallback to `ar` defaults.
+
+---
+
+## 3. Systematic Remediation Plan
+
+1. **Interactive Multi-Screen Browser QA Harness**:
+   - Upgrade `scripts/real-browser-localization-qa.mjs` into a comprehensive lifecycle test that unlocks the app, switches tabs (Dashboard, Diaries, Tasks, Habits, Smart Advisor, Analytics, Settings, Calendar/Library), triggers every modal (`HabitFormModal`, `DailyProsConsModal`, `TherapistModal`, `ExportModal`, `GeminiKeyModal`, `AthkarModal`, `LockScreenWidgetModal`), tests both Fresh and Existing User states, and validates DOM text across all 12 languages.
+
+2. **Full Component Extraction & Localization**:
+   - Localize all 21 components with hardcoded Arabic lines.
+   - Replace all 744 Arabic lines in `src/App.tsx` with dynamic `t` translations.
+
+3. **12-Language Dictionary Expansion**:
+   - Add all corresponding translation keys across all 12 languages (`ar`, `en`, `fr`, `de`, `es`, `it`, `tr`, `pt`, `ru`, `ja`, `zh`, `hi`) in `src/lib/languages.ts`.
+
+4. **Zero Fallback & Schema Integrity**:
+   - Ensure `npm run validate:i18n` passes with 100% parity across all 12 dictionaries.
+   - Verify `vite build` builds with 0 errors.
+   - Run interactive browser QA across all 12 locales and confirm 0 leaks.

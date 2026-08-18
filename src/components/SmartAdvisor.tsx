@@ -662,14 +662,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     if (activeAdvisorTab === 'general') {
       const isUploadingOrProcessing = generalMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
       if (isUploadingOrProcessing) {
-        setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل إرسال الرسالة.');
+        setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn || "Send"} الرسالة.');
         return;
       }
 
       const readyFiles = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
       if (!textToSend.trim() && readyFiles.length === 0) {
         if (generalMultimodalFiles.some(f => f.status === 'failed')) {
-          setFileErrorToast('تعذر إرسال الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
+          setFileErrorToast('تعذر {t.sendConsultationBtn || "Send"} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
         }
         return;
       }
@@ -769,14 +769,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     // Diary Pro Advisor Mode Logic
     const isUploadingOrProcessing = diaryMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
     if (isUploadingOrProcessing) {
-      setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل إرسال الرسالة.');
+      setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn || "Send"} الرسالة.');
       return;
     }
 
     const readyFiles = diaryMultimodalFiles.filter(f => !f.status || f.status === 'ready');
     if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && readyFiles.length === 0) {
       if (diaryMultimodalFiles.some(f => f.status === 'failed')) {
-        setFileErrorToast('تعذر إرسال الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
+        setFileErrorToast('تعذر {t.sendConsultationBtn || "Send"} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
       }
       return;
     }

@@ -96,7 +96,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   const handleDeleteReport = (id: string) => {
     const updated = savedReports.filter(r => r.id !== id);
     saveReportsToStorage(updated);
-    showToast('تم حذف التقرير من سجل التقارير 🗑️');
+    showToast('{t.reportDeletedSuccess || "Report deleted from history 🗑️"}');
   };
 
   const handleStartInlineEdit = (report: SavedPDFReport) => {
@@ -132,7 +132,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
 
     saveReportsToStorage(updated);
     setEditingReportId(null);
-    showToast('تم حفظ تعديلات التقرير وتسجيل تاريخ التعديل ✍️');
+    showToast('{t.reportSavedSuccess || "Report edits saved successfully ✍️"}');
   };
 
   // Filtered reports list
@@ -329,7 +329,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                 {t('therapyReportTitle')}
               </h3>
               <span className="bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full text-[10px] font-black border border-white/20">
-                مدعوم بالذكاء الاصطناعي 🧠
+                {t.poweredByAIBadge || "Powered by AI 🧠"}
               </span>
             </div>
             <p className="text-xs text-[#E2DCC8]/90 font-medium mt-1 leading-relaxed max-w-xl">
