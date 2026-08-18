@@ -120,7 +120,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   // Medication Modal & Toast State
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [newMedName, setNewMedName] = useState('');
-  const [newMedTime, setNewMedTime] = useState('10:00 ص');
+  const [newMedTime, setNewMedTime] = useState(langInfo.code === 'ar' ? '10:00 ص' : '10:00 AM');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // ⏱️ Integrated Workout Timer & Mode State
@@ -331,7 +331,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   const rawMeds = activeDiaryForSelectedDate?.medications;
   const medicationsList = Array.isArray(rawMeds) && rawMeds.length > 0
     ? rawMeds
-    : [{ id: 'm1', name: 'مكمل فيتامين D اليومي', time: '10:00 ص', taken: false }];
+    : [{ id: 'm1', name: t.vitaminDSupplementDefault || 'Vitamin D Supplement', time: langInfo.code === 'ar' ? '10:00 ص' : '10:00 AM', taken: false }];
 
   const isMedicationTaken = medicationsList.every(m => m.taken);
 
@@ -356,14 +356,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     const newMed = {
       id: `med-${Date.now()}`,
       name: newMedName.trim(),
-      time: newMedTime.trim() || '10:00 ص',
+      time: newMedTime.trim() || (langInfo.code === 'ar' ? '10:00 ص' : '10:00 AM'),
       taken: false
     };
 
     const updated = [...medicationsList, newMed];
     handleUpdateHabit('medication', updated);
     setNewMedName('');
-    setNewMedTime('10:00 ص');
+    setNewMedTime(langInfo.code === 'ar' ? '10:00 ص' : '10:00 AM');
     setShowMedicationModal(false);
     showToast(t('medAddedSuccess', { name: newMed.name }) || `Added ${newMed.name}! 💊`);
   };
@@ -532,23 +532,23 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2DCC8]/40 pb-2.5">
               <span className="text-xs font-bold text-[#5A5A40] flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#8B9D83]" />
-                <span>نطاق ظهور وتتبع العادات والتاسكات (Periodicity & Date Filter):</span>
+                <span>{t.periodicityFilterHeader || 'Periodicity & Date Filter:'}</span>
               </span>
               <span className="text-[10px] text-gray-400 font-mono font-bold bg-[#F9F7F2] px-2.5 py-1 rounded-lg border border-[#E2DCC8]/60">
-                📅 التاريخ المحدد: {selectedDate}
+                {t.selectedDatePrefix || '📅 Selected Date:'} {selectedDate}
               </span>
             </div>
 
             {/* Quick Period Buttons */}
             <div className="flex flex-wrap gap-1.5 text-xs font-bold">
               {[
-                { id: 'day', label: '📅 يوم' },
-                { id: 'week', label: '📆 أسبوع' },
-                { id: 'month', label: '🗓️ شهر' },
-                { id: 'quarter', label: '📊 ربع سنوي' },
-                { id: 'semi_annual', label: '📈 نصف سنوي' },
-                { id: 'year', label: '📅 سنوي' },
-                { id: 'custom', label: '🎯 مخصص (من/إلى)' }
+                { id: 'day', label: t.periodDay || '📅 Day' },
+                { id: 'week', label: t.periodWeek || '📆 Week' },
+                { id: 'month', label: t.periodMonth || '🗓️ Month' },
+                { id: 'quarter', label: t.periodQuarter || '📊 Quarter' },
+                { id: 'semi_annual', label: t.periodSemiAnnual || '📈 Semi-Annual' },
+                { id: 'year', label: t.periodYear || '📅 Year' },
+                { id: 'custom', label: t.periodCustom || '🎯 Custom' }
               ].map(p => (
                 <button
                   key={p.id}
@@ -568,7 +568,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
             {periodicity === 'custom' && (
               <div className="flex flex-col sm:flex-row items-center gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-2xl">
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <span className="text-xs font-bold text-amber-900 whitespace-nowrap">من تاريخ:</span>
+                  <span className="text-xs font-bold text-amber-900 whitespace-nowrap">{t.fromDateLabel || 'From:'}</span>
                   <input
                     type="date"
                     value={customRangeStart}
@@ -577,7 +577,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                   />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <span className="text-xs font-bold text-amber-900 whitespace-nowrap">إلى تاريخ:</span>
+                  <span className="text-xs font-bold text-amber-900 whitespace-nowrap">{t.toDateLabel || 'To:'}</span>
                   <input
                     type="date"
                     value={customRangeEnd}

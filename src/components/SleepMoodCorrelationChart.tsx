@@ -146,7 +146,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
             </span>
             {data.hasDiary && (
               <span className="bg-[#8B9D83] text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
-                مذكرة مسجلة 📓
+                {t.diaryLoggedEntryBadge || 'Diary Entry 📓'}
               </span>
             )}
           </div>
@@ -155,21 +155,21 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
             <div className="flex items-center justify-between">
               <span className="text-gray-300 flex items-center gap-1.5">
                 <Moon className="w-3.5 h-3.5 text-indigo-400" />
-                <span>ساعات النوم:</span>
+                <span>{t.sleepHoursLabel || 'Sleep Hours:'}</span>
               </span>
-              <span className="font-black text-indigo-300 text-sm">{data.sleepHours} ساعة</span>
+              <span className="font-black text-indigo-300 text-sm">{data.sleepHours} {t.hoursUnit || 'hrs'}</span>
             </div>
 
             <div className="flex items-center justify-between">
               <span className="text-gray-300 flex items-center gap-1.5">
                 <Smile className="w-3.5 h-3.5 text-amber-400" />
-                <span>درجة المزاج (Fast Mood):</span>
+                <span>{t.fastMoodScoreLabel || 'Mood Score:'}</span>
               </span>
               <span className="font-black text-amber-300 text-sm">{data.moodScore} / 10</span>
             </div>
 
             <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-700/60">
-              <span className="text-gray-400">الشعور الغالب:</span>
+              <span className="text-gray-400">{t.predominantFeelingLabel || 'Predominant Feeling:'}</span>
               <span className="font-bold text-emerald-400">{data.primaryMood}</span>
             </div>
 
@@ -193,20 +193,20 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
           <div className="flex items-center gap-2">
             <span className="p-2 bg-indigo-50 text-indigo-600 rounded-2xl text-lg shadow-3xs">🌙</span>
             <h3 className="font-extrabold text-[#3A3A3A] text-sm md:text-base">
-              الربط البياني: ساعات النوم وجودة المزاج (Fast Mood Score)
+              {t.sleepMoodCorrelationChartTitle || 'Sleep & Mood Correlation (Fast Mood Score)'}
             </h3>
           </div>
           <p className="text-xs text-gray-500 font-medium leading-relaxed pr-10">
-            تتبع أثر ساعات نومك اليومية على استقرار حالتك المزاجية والنفسية لرصد الأنماط المعرفية والبدنية
+            {t.sleepMoodCorrelationChartSubtitle || 'Track how daily sleep hours influence your mood stability.'}
           </p>
         </div>
 
         {/* Timeframe Selector */}
         <div className="flex items-center bg-[#F4F1EA] p-1 rounded-2xl border border-[#E2DCC8] shrink-0 self-start sm:self-auto">
           {[
-            { id: '30', label: '30 يوماً (الشهر)' },
-            { id: '14', label: '14 يوماً' },
-            { id: '7', label: '7 أيام' },
+            { id: '30', label: t.thirtyDaysLabel || '30 Days (Month)' },
+            { id: '14', label: t.fourteenDaysLabel || '14 Days' },
+            { id: '7', label: t.sevenDaysLabel || '7 Days' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -229,15 +229,15 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Moon className="w-3.5 h-3.5 text-indigo-500" />
-            <span>متوسط النوم اليومي</span>
+            <span>{t.avgDailySleepLabel || 'Avg Daily Sleep'}</span>
           </span>
-          <p className="text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">ساعة</span></p>
+          <p className="text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{t.hoursUnit || 'hrs'}</span></p>
         </div>
 
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Smile className="w-3.5 h-3.5 text-amber-500" />
-            <span>متوسط جودة المزاج</span>
+            <span>{t.avgMoodQualityLabel || 'Avg Mood Quality'}</span>
           </span>
           <p className="text-lg font-black text-[#2B3E50]">{stats.avgMood} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
         </div>

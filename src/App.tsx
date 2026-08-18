@@ -326,12 +326,32 @@ const INITIAL_HABITS: Habit[] = [
   }
 ];
 
+
+const getHabitCategoryLabel = (category?: string): string => {
+  switch (category) {
+    case 'health': return t.healthCategoryFilter || 'Physical Health 🥦';
+    case 'mind': return t.mindCategoryFilter || 'Mind & Meditation 🧠';
+    case 'sport': return t.sportCategoryFilter || 'Sports & Fitness 🏃';
+    case 'culture': return t.cultureCategoryFilter || 'Reading & Culture 📚';
+    case 'custom':
+    default: return t.customCategoryFilter || 'Other Goals 🎯';
+  }
+};
+
+const getHabitDisplayName = (habit: { id?: string; name: string }): string => {
+  if (habit.id === 'habit-1') return t.defaultHabit1Name || habit.name;
+  if (habit.id === 'habit-2') return t.defaultHabit2Name || habit.name;
+  if (habit.id === 'habit-3') return t.defaultHabit3Name || habit.name;
+  if (habit.id === 'habit-4') return t.defaultHabit4Name || habit.name;
+  return habit.name;
+};
+
 const HABIT_CATEGORIES: Record<string, { label: string; color: string; dot: string }> = {
-  health: { label: 'صحة بدنية 🥦', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-  mind: { label: 'تأمل وذهن 🧠', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' },
-  sport: { label: 'رياضة ونشاط 🏃', color: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
-  culture: { label: 'ثقافة وقراءة 📚', color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
-  custom: { label: 'مخصص 🎯', color: 'bg-gray-50 text-gray-700 border-gray-200', dot: 'bg-gray-500' },
+  health: { label: 'health', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  mind: { label: 'mind', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' },
+  sport: { label: 'sport', color: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+  culture: { label: 'culture', color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
+  custom: { label: 'custom', color: 'bg-gray-50 text-gray-700 border-gray-200', dot: 'bg-gray-500' },
 };
 
 // --- Streak Tracker calculation helper ---
@@ -1095,12 +1115,19 @@ export default function App() {
   };
 
   // Daily Psychological Inspiration quote state
-  const [dailyQuote, setDailyQuote] = useState<{ quote: string; author: string }>(() => {
-    const saved = localStorage.getItem('yawmiyati_daily_quote');
-    return saved ? JSON.parse(saved) : {
-      quote: "تذكر دائماً أن القلق لا يمنع ألم الغد، ولكنه يسرق متعة وسلام اليوم فحسب.",
-      author: "دكتورك النفسي الصديق"
-    };
+  const [dailyQuote, setDailyQuote] = useState<{ quote: string; author: string; isAiGenerated?: boolean } | null>(() => {
+    try {
+      const saved = localStorage.getItem('yawmiyati_daily_quote');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.isAiGenerated && parsed.quote) {
+          return parsed;
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
   });
   const [quoteLoading, setQuoteLoading] = useState(false);
 
@@ -4605,7 +4632,7 @@ export default function App() {
       });
       const data = await response.json();
       if (data.success) {
-        setDailyQuote({ quote: data.quote, author: data.author });
+        setDailyQuote({ quote: data.quote, author: data.author, isAiGenerated: true });
       }
     } catch (e) {
       console.error(e);
@@ -4806,10 +4833,10 @@ export default function App() {
           <div className="flex-grow space-y-1">
             <h4 className="text-xs font-bold text-[#D4A373] flex items-center space-x-1 space-x-reverse">
               <span>🔔</span>
-              <span>تنبيه العادات السلوكية اليومي</span>
+              <span>{t.habitReminderAlertHeader || 'Daily Habit Reminder'}</span>
             </h4>
             <p className="text-[11px] text-[#5A5A40] leading-relaxed">
-              حان وقت عادة: <strong className="text-[#3A3A3A]">"{activeHabitReminder.name}"</strong>. هل قمت بإنجازها اليوم لتنعم بالاستقرار النفسي والجسدي؟
+              {t.habitReminderAlertPrompt || 'Time for habit:'} <strong className="text-[#3A3A3A]">"{activeHabitReminder.name}"</strong>.
             </p>
             <div className="flex space-x-2 space-x-reverse pt-2">
               <button 
@@ -4819,13 +4846,13 @@ export default function App() {
                 }}
                 className="px-3 py-1 bg-[#8B9D83] text-white rounded-lg text-[10px] font-bold cursor-pointer hover:bg-[#5A5A40] transition-colors"
               >
-                نعم، تم الإنجاز! ✓
+                {t.habitCompletedButton || 'Completed! ✓'}
               </button>
               <button 
                 onClick={() => setActiveHabitReminder(null)}
                 className="px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[10px] cursor-pointer hover:bg-gray-200 transition-colors"
               >
-                تجاهل مؤقتاً
+                {t.dismissTemporarilyButton || 'Dismiss'}
               </button>
             </div>
           </div>
@@ -4841,10 +4868,10 @@ export default function App() {
           <div className="flex-grow space-y-1">
             <h4 className="text-xs font-extrabold text-amber-700 flex items-center space-x-1.5 space-x-reverse">
               <span>🔔</span>
-              <span>تذكير ممارسة الامتنان اليومي الذكي</span>
+              <span>{t.gratitudeSmartReminderHeader || 'Smart Daily Gratitude Reminder'}</span>
             </h4>
             <p className="text-[11px] text-[#5A5A40] leading-relaxed">
-              حان وقت تعبئة جدار الرضا وتوثيق اللحظات الإيجابية البسيطة لتخفيف توتر يومك وجذب السلام الداخلي!
+              {t.gratitudeSmartReminderPrompt || 'Time to reflect on positive moments and log your gratitude wall!'}
             </p>
             <div className="flex space-x-2 space-x-reverse pt-2.5">
               <button 
@@ -4855,13 +4882,13 @@ export default function App() {
                 }}
                 className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-[10px] font-extrabold cursor-pointer transition-colors"
               >
-                افتح مفكرة الامتنان الآن 🌸
+                {t.openGratitudeJournalNow || 'Open Gratitude Journal 🌸'}
               </button>
               <button 
                 onClick={() => setActiveGratitudeReminderNotification(false)}
                 className="px-3 py-1.5 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-xl text-[10px] cursor-pointer transition-colors"
               >
-                تذكير لاحقاً
+                {t.remindMeLaterButton || 'Remind Later'}
               </button>
             </div>
           </div>
@@ -4933,10 +4960,10 @@ export default function App() {
                 <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">تصنيف العادة للتحليل السلوكي</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { id: 'health', label: 'صحة بدنية 🥦' },
-                    { id: 'mind', label: 'تأمل وذهن 🧠' },
-                    { id: 'sport', label: 'رياضة ونشاط 🏃' },
-                    { id: 'culture', label: 'ثقافة وقراءة 📚' },
+                    { id: 'health', label: t.healthCategoryFilter || 'Physical Health 🥦' },
+                    { id: 'mind', label: t.mindCategoryFilter || 'Mind & Meditation 🧠' },
+                    { id: 'sport', label: t.sportCategoryFilter || 'Sports & Fitness 🏃' },
+                    { id: 'culture', label: t.cultureCategoryFilter || 'Reading & Culture 📚' },
                     { id: 'custom', label: 'أهداف مخصصة 🎯' },
                   ].map(cat => (
                     <button
@@ -5758,14 +5785,14 @@ export default function App() {
                     <span>{t.quoteTitle}</span>
                   </div>
                   <p className="text-sm md:text-base font-medium text-[#3A3A3A] leading-relaxed italic">
-                    "{dailyQuote.quote}"
+                    "{dailyQuote?.quote || t.quoteDefaultText}"
                   </p>
-                  <span className="text-xs text-gray-400 block font-bold">— {dailyQuote.author}</span>
+                  <span className="text-xs text-gray-400 block font-bold">— {dailyQuote?.author || t.quoteDefaultAuthor}</span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse shrink-0">
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`"${dailyQuote.quote}" - ${dailyQuote.author}`);
+                      const qT = dailyQuote?.quote || t.quoteDefaultText; const qA = dailyQuote?.author || t.quoteDefaultAuthor; navigator.clipboard.writeText(`"${qT}" - ${qA}`);
                       alert(t.quoteCopiedAlert);
                     }}
                     className="p-2.5 bg-white border border-[#E2DCC8] hover:border-[#D4A373] text-[#5A5A40] rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-center"
@@ -6044,10 +6071,10 @@ export default function App() {
                   {/* Status Indicator text */}
                   <div className="text-center space-y-1 z-10">
                     <span className="text-sm font-black text-[#3A3A3A] block">
-                      {breathingPhase === 'inhale' && '💨 شـهـيـق... املأ رئتيك بالهدوء والسلام'}
-                      {breathingPhase === 'hold1' && '🛑 اكـتـم... احبس طاقة الرضا في جسدك'}
-                      {breathingPhase === 'exhale' && '💨 زفـيـر... اطرد التوتر والقلق والتعب'}
-                      {breathingPhase === 'hold2' && '🛑 اكـتـم... استشعر السكينة والصمت النفسي'}
+                      {breathingPhase === 'inhale' && (t.breathingInhaleMessage || 'Inhale... Fill your lungs with peace')}
+                      {breathingPhase === 'hold1' && (t.breathingHold1Message || 'Hold... Feel gratitude throughout your body')}
+                      {breathingPhase === 'exhale' && (t.breathingExhaleMessage || 'Exhale... Release stress and tension')}
+                      {breathingPhase === 'hold2' && (t.breathingHold2Message || 'Hold... Embrace serenity and silence')}
                     </span>
                     <span className="text-[10px] text-gray-400 block font-bold">
                       {t('completedCycles')} <span className="font-mono text-xs font-black text-[#8B9D83]">{breathingCycle}</span> {t('cyclesCount')}
@@ -6145,7 +6172,7 @@ export default function App() {
                     <span>{t('habitsTrackerTitle')}</span>
                   </h3>
                   <p className="text-[10px] text-gray-500 font-medium">
-                    اختر يوماً من التقويم ثم حدد العادات المنجزة لتسجيل التزامك ودعم تحليلك السلوكي اليومي.
+                    {t.habitsTrackerSub || 'Select a date and check off completed habits to record consistency.'}
                   </p>
                 </div>
                 <button
@@ -6159,12 +6186,12 @@ export default function App() {
               {/* Category Filter Tabs */}
               <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto pb-1 scrollbar-none">
                 {[
-                  { id: 'all', label: 'الكل' },
-                  { id: 'health', label: 'صحة بدنية 🥦' },
-                  { id: 'mind', label: 'تأمل وذهن 🧠' },
-                  { id: 'sport', label: 'رياضة ونشاط 🏃' },
-                  { id: 'culture', label: 'ثقافة وقراءة 📚' },
-                  { id: 'custom', label: 'أهداف أخرى 🎯' },
+                  { id: 'all', label: t.allCategoriesFilter || 'All' },
+                  { id: 'health', label: t.healthCategoryFilter || 'Physical Health 🥦' },
+                  { id: 'mind', label: t.mindCategoryFilter || 'Mind & Meditation 🧠' },
+                  { id: 'sport', label: t.sportCategoryFilter || 'Sports & Fitness 🏃' },
+                  { id: 'culture', label: t.cultureCategoryFilter || 'Reading & Culture 📚' },
+                  { id: 'custom', label: t.customCategoryFilter || 'Other Goals 🎯' },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -6214,12 +6241,12 @@ export default function App() {
                             <div className="flex items-center space-x-1.5 space-x-reverse">
                               {habit.icon && <span className="text-sm shrink-0 font-bold">{habit.icon}</span>}
                               <span className={`text-xs font-bold block transition-all ${isCompleted ? 'line-through text-gray-400' : 'text-[#3A3A3A]'}`}>
-                                {habit.name}
+                                {getHabitDisplayName(habit)}
                               </span>
                             </div>
                             <div className="flex items-center space-x-2 space-x-reverse">
                               <span className={`text-[9px] px-1.5 py-0.5 rounded-md border font-medium ${catInfo.color}`}>
-                                {catInfo.label}
+                                {getHabitCategoryLabel(habit.category)}
                               </span>
                               {habit.reminderTime && (
                                 <span className="text-[9px] text-gray-400 flex items-center space-x-0.5 space-x-reverse">
@@ -6235,14 +6262,14 @@ export default function App() {
                           <button
                             onClick={() => triggerSimulatedHabitNotification(habit)}
                             className="p-1.5 text-[#5A5A40] hover:text-[#D4A373] hover:bg-[#FAEDCD]/50 rounded-lg transition-colors cursor-pointer"
-                            title="محاكاة إشعار التذكير اليومي"
+                            title={t.simulateReminderNotifTitle || 'Simulate Reminder Notification'}
                           >
                             <Bell className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => deleteHabit(habit.id)}
                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                            title="حذف العادة"
+                            title={t.deleteHabitBtnTitle || 'Delete Habit'}
                           >
                             <Trash className="w-3.5 h-3.5" />
                           </button>
@@ -6253,12 +6280,12 @@ export default function App() {
 
                 {habits.filter(h => selectedHabitCategory === 'all' || h.category === selectedHabitCategory).length === 0 && (
                   <div className="col-span-full py-8 text-center bg-[#F9F7F2]/50 border border-dashed border-[#E2DCC8]/60 rounded-2xl">
-                    <p className="text-xs text-gray-400 font-medium">لا توجد عادات مسجلة في هذا التصنيف حالياً.</p>
+                    <p className="text-xs text-gray-400 font-medium">{t.noHabitsInCategory || 'No habits recorded in this category yet.'}</p>
                     <button
                       onClick={() => setShowAddHabitModal(true)}
                       className="text-xs font-bold text-[#8B9D83] underline mt-1.5 block mx-auto cursor-pointer"
                     >
-                      أضف عادتك الأولى الآن 🚀
+                      {t.addFirstHabitNowBtn || 'Add Your First Habit 🚀'}
                     </button>
                   </div>
                 )}
@@ -6273,20 +6300,20 @@ export default function App() {
                   <span>{t('aiBehavioralAssessmentTitle')}</span>
                 </h3>
                 <p className="text-[10px] text-gray-500 font-medium">
-                  حدد الفترة الزمنية المطلوبة ليقوم الذكاء الاصطناعي برصد اتجاهاتك السلوكية وتقديم توصيات علمية لتعزيز صحتك النفسية.
+                  {t.habitEvaluationPeriodSub || 'Select timeframe for AI behavioral trends and psychological recommendations.'}
                 </p>
               </div>
 
               {/* Timeframe selector */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'daily', label: 'تقييم يومي 📅' },
-                  { id: 'weekly', label: 'تقييم أسبوعي 📅' },
-                  { id: 'monthly', label: 'تقييم شهري 📅' },
-                  { id: 'quarterly', label: 'ربع سنوي (90 يوماً) 📅' },
-                  { id: 'semi-annually', label: 'نصف سنوي (180 يوماً) 📅' },
-                  { id: 'annually', label: 'تقييم سنوي 📅' },
-                  { id: 'custom', label: 'فترة مخصصة 🎯' },
+                  { id: 'daily', label: t.evalDailyLabel || 'Daily Evaluation 📅' },
+                  { id: 'weekly', label: t.evalWeeklyLabel || 'Weekly Evaluation 📅' },
+                  { id: 'monthly', label: t.evalMonthlyLabel || 'Monthly Evaluation 📅' },
+                  { id: 'quarterly', label: t.evalQuarterlyLabel || 'Quarterly (90 Days) 📅' },
+                  { id: 'semi-annually', label: t.evalSemiAnnuallyLabel || 'Semi-Annual (180 Days) 📅' },
+                  { id: 'annually', label: t.evalAnnuallyLabel || 'Annual Evaluation 📅' },
+                  { id: 'custom', label: t.evalCustomLabel || 'Custom Period 🎯' },
                 ].map(p => (
                   <button
                     key={p.id}
@@ -6306,7 +6333,7 @@ export default function App() {
               {habitPeriod === 'custom' && (
                 <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]/60">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[#5A5A40]">تاريخ البدء:</label>
+                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.startDateLabel || 'Start Date:'}</label>
                     <input 
                       type="date"
                       value={habitCustomStart}
@@ -6315,7 +6342,7 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[#5A5A40]">تاريخ الانتهاء:</label>
+                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.endDateLabel || 'End Date:'}</label>
                     <input 
                       type="date"
                       value={habitCustomEnd}
@@ -6335,7 +6362,7 @@ export default function App() {
                 {habitEvaluationLoading ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>جاري تحليل البيانات وإعداد التقرير السلوكي...</span>
+                    <span>{t.analyzingBehavioralDataReport || 'Analyzing data & generating behavioral report...'}</span>
                   </>
                 ) : (
                   <>
@@ -6351,10 +6378,10 @@ export default function App() {
                   <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-2">
                     <span className="text-xs font-extrabold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>📊</span>
-                      <span>التقرير السلوكي والتحليل العصبي المعتمد</span>
+                      <span>{t.behavioralReportHeader || 'Behavioral Report & Psychological Analysis'}</span>
                     </span>
                     <span className="text-[9px] bg-[#8B9D83]/10 text-[#8B9D83] px-2 py-0.5 rounded-full font-bold">
-                      مستشار الصحة النفسية AI
+                      {t.mentalHealthAiAdvisorRole || 'Mental Health AI Advisor'}
                     </span>
                   </div>
 
@@ -6366,14 +6393,14 @@ export default function App() {
             </div>
 
             {/* Life Map timeline view for selected day */}
-            <LifeMap selectedDate={selectedDate} diaries={diaries} />
+            <LifeMap selectedDate={selectedDate} diaries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
 
             {/* Quick tips display for psychiatric support */}
             <div className="p-4 bg-[#FAEDCD]/40 border border-[#D4A373]/30 text-[#D4A373] rounded-2xl text-xs leading-relaxed flex items-start space-x-3 space-x-reverse">
               <span className="text-lg">💡</span>
               <div>
-                <strong className="block font-bold mb-0.5">نصيحة اليوم للصحة النفسية:</strong>
-                <span>عندما تشعر بضغط الامتحانات أو القلق، خذ دقيقة كاملة لممارسة تنفس الصندوق (شهيق 4 ثوانٍ، كتم 4 ثوانٍ، زفير 4 ثوانٍ، كتم 4 ثوانٍ)؛ فهذا ينشط العصب الحائر ويهدئ الجهاز العصبي فوراً.</span>
+                <strong className="block font-bold mb-0.5">{t.mentalHealthTipOfDayHeader || 'Mental Health Tip of the Day:'}</strong>
+                <span>{t.boxBreathingMentalHealthTip || 'When feeling stressed or anxious, take a full minute for box breathing (inhale 4s, hold 4s, exhale 4s, hold 4s) to reset your nervous system.'}</span>
               </div>
             </div>
 
@@ -11616,7 +11643,7 @@ export default function App() {
                                   <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-0.5">
                                     {/* Attachment Filter */}
                                     <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto py-0.5">
-                                      <span className="text-[10px] text-gray-400 font-black shrink-0">الملحقات:</span>
+                                      <span className="text-[10px] text-gray-400 font-black shrink-0">{t.attachmentsFilterPrefix || 'Attachments:'}</span>
                                       {[
                                         { id: 'all', label: 'الكل' },
                                         { id: 'pdf', label: 'PDF 📂' },
@@ -11972,10 +11999,10 @@ export default function App() {
       <div 
         onClick={() => setSettings(prev => ({ ...prev, isAppLocked: true }))}
         className="fixed right-0 top-[35%] w-3.5 h-16 bg-gradient-to-l from-[#222] to-[#444] rounded-l-lg hover:from-[#333] hover:to-[#555] border border-gray-600 border-r-0 shadow-xl cursor-pointer transition-all hover:w-4 z-[9999] flex items-center justify-center group"
-        title="زر الـ Power الجانبي لقفل التطبيق وشاشة القفل 🔌"
+        title={t.hardwarePowerBtnTooltip || 'Hardware Power Button to lock the app 🔌'}
       >
         <span className="opacity-0 group-hover:opacity-100 absolute right-6 bg-black/85 text-white text-[10px] font-extrabold py-1 px-2 rounded-lg whitespace-nowrap transition-opacity pointer-events-none shadow-md">
-          إغلاق/قفل الشاشة 🔌
+          {t.lockScreenTooltip || 'Lock Screen 🔌'}
         </span>
       </div>
 
@@ -12024,7 +12051,7 @@ export default function App() {
                     ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]' 
                     : 'bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8]'
                 }`}>
-                  {viewArchivedDiary.diaryType === 'thought' ? '✍️ خاطرة مؤرشفة' : '📓 يومية مؤرشفة'}
+                  {viewArchivedDiary.diaryType === 'thought' ? (t.archivedThoughtBadge || '✍️ Archived Thought') : (t.archivedDiaryBadge || '📓 Archived Diary')}
                 </span>
                 <span className="text-xs font-bold text-gray-400">
                   📅 {viewArchivedDiary.createdAt.split('T')[0]}
@@ -12041,12 +12068,12 @@ export default function App() {
 
             {/* Title */}
             <h3 className="text-lg font-extrabold text-[#3A3A3A]">
-              {viewArchivedDiary.title || 'مذكرة بدون عنوان'}
+              {viewArchivedDiary.title || (t.untitledEntry || 'Untitled Note')}
             </h3>
 
             {/* Content */}
             <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-4 rounded-2xl text-xs leading-relaxed text-[#3A3A3A] whitespace-pre-wrap font-medium">
-              {cleanDiaryText(viewArchivedDiary.content) || 'لا يوجد نص مكتوب (مرفقات فقط).'}
+              {cleanDiaryText(viewArchivedDiary.content) || (t.noTextWritten || 'No written text (attachments only).')}
             </div>
 
             {/* Moods & Tags */}
@@ -12068,7 +12095,7 @@ export default function App() {
             {/* Attachments if any */}
             {(viewArchivedDiary.images.length > 0 || ((viewArchivedDiary as any).recordings || []).length > 0) && (
               <div className="space-y-3 pt-2 border-t border-[#E2DCC8]/40">
-                <span className="text-xs font-bold text-[#5A5A40] block">المرفقات والصوتيات:</span>
+                <span className="text-xs font-bold text-[#5A5A40] block">{t.attachmentsAndAudioLabel || 'Attachments & Audio:'}</span>
                 {viewArchivedDiary.images.map((img, idx) => (
                   <img key={idx} src={img} alt="مرفق" className="max-h-48 rounded-xl border border-gray-200 object-cover" />
                 ))}
@@ -12089,14 +12116,14 @@ export default function App() {
                 className="px-4 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>استرجاع إلى اليوميات الرئيسية</span>
+                <span>{t.restoreToMainDiariesBtn || 'Restore to Main Diaries'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setViewArchivedDiary(null)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
               >
-                إغلاق المعاينة
+                {t.closePreviewBtn || 'Close Preview'}
               </button>
             </div>
           </div>

@@ -218,11 +218,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 {/* Habits checklist rate */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
-                    <span>🎯 إكمال العادات</span>
+                    <span>🎯 {t.habitsCompletionLabel || 'Habits Completion'}</span>
                     <CheckCircle className="w-4 h-4 text-[#8B9D83]" />
                   </div>
                   <div className="text-lg font-black text-[#3A3A3A] mt-2">
-                    {habitTotalCount > 0 ? `${habitCompletedCount} من ${habitTotalCount}` : 'لا عادات فرعية'}
+                    {habitTotalCount > 0 ? `${habitCompletedCount} ${t.ofTotalLabel || 'of'} ${habitTotalCount}` : (t.noSubHabits || 'No Habits')}
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
                     <div className="bg-[#8B9D83] h-1.5 rounded-full" style={{ width: habitTotalCount > 0 ? `${(habitCompletedCount / habitTotalCount) * 100}%` : '0%' }}></div>
@@ -234,7 +234,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
             </div>
           </>
         ) : (
-          <p className="text-xs text-center text-gray-400 py-2">ابدأ بكتابة مذكراتك اليومية ليقوم النظام بتكوين المؤشرات التحليلية تلقائياً 📊</p>
+          <p className="text-xs text-center text-gray-400 py-2">{t.startWritingDiariesPrompt || 'Start writing daily entries for automatic indicators 📊'}</p>
         )}
       </div>
 
@@ -245,9 +245,9 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
         {events.length === 0 ? (
           <div className="text-center py-12 text-gray-400 text-xs">
             <Calendar className="w-10 h-10 mx-auto mb-3 opacity-55 text-[#8B9D83]" />
-            <p className="font-bold text-[#5A5A40] text-sm">لا توجد أنشطة مرصودة في هذا اليوم.</p>
+            <p className="font-bold text-[#5A5A40] text-sm">{t.noActivitiesLoggedForDay || 'No activities recorded for this day.'}</p>
             <p className="text-[10px] mt-1 text-gray-400 max-w-sm mx-auto leading-relaxed">
-              تظهر خريطة الحياة المذكرات، الجرعات الدوائية، ساعات النوم والتمارين الرياضية مصفوفة زمنياً لتسهيل المراجعة السلوكية والتقدم.
+              {t.lifeMapTimelineDescription || 'LifeMap displays your journals, medications, sleep, and workouts chronologically to track progress.'}
             </p>
           </div>
         ) : (
@@ -289,7 +289,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                         <div className="space-y-1.5">
                           <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
                             <ImageIcon className="w-3 h-3 text-[#D4A373]" />
-                            <span>الصور الملتقطة لليوم:</span>
+                            <span>{t.capturedPhotosTodayLabel || 'Captured Photos Today:'}</span>
                           </span>
                           <div className="grid grid-cols-3 gap-2">
                             {diaryToday.images.map((img, index) => (
@@ -310,7 +310,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                         <div className="space-y-1.5">
                           <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
                             <span>🎨</span>
-                            <span>التخطيط والوسيط الذهني:</span>
+                            <span>{t.drawingCanvasAttachmentLabel || 'Drawing Canvas Sketch:'}</span>
                           </span>
                           <div className="max-w-xs bg-white p-1 rounded-xl border border-[#E2DCC8]/60 shadow-2xs">
                             <img 
@@ -328,7 +328,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                         <div className="space-y-1.5">
                           <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
                             <Mic className="w-3 h-3 text-red-500" />
-                            <span>الفضفضة والتسجيلات الصوتية:</span>
+                            <span>{t.voiceRecordingsAttachmentLabel || 'Voice Recordings & Notes:'}</span>
                           </span>
                           <div className="space-y-1">
                             {diaryToday.audioRecordings.map((audio) => (
@@ -336,7 +336,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                                 <span className="font-semibold flex items-center gap-1">
                                   <span>🎙️</span> {audio.name}
                                 </span>
-                                <span className="text-gray-400 font-mono">المدة: {audio.duration}ث</span>
+                                <span className="text-gray-400 font-mono">{t.durationPrefix || 'Duration:'} {audio.duration}{t.secondsShortUnit || 's'}</span>
                               </div>
                             ))}
                           </div>
@@ -348,7 +348,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                         <div className="space-y-1.5">
                           <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
                             <FileText className="w-3 h-3 text-[#8B9D83]" />
-                            <span>المستندات والملفات المرفقة:</span>
+                            <span>{t.attachedDocumentsLabel || 'Attached Files & Documents:'}</span>
                           </span>
                           <div className="flex flex-wrap gap-1.5">
                             {diaryToday.files.map((file) => (

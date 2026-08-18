@@ -3,7 +3,7 @@ import http from 'http';
 import path from 'path';
 import fs from 'fs';
 
-console.log('🚀 Running High-Precision Local Real Browser Localization QA with Microsoft Edge...');
+console.log('🚀 Launching Deep Mobile & Desktop Real Browser Localization QA Suite...');
 
 const LOCALES = ['ar', 'en', 'fr', 'de', 'es', 'it', 'tr', 'pt', 'ru', 'ja', 'zh', 'hi'];
 const SCREENSHOT_DIR = './browser-screenshots';
@@ -12,7 +12,7 @@ if (!fs.existsSync(SCREENSHOT_DIR)) {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
-const cdpPort = 9225;
+const cdpPort = 9226;
 const previewPort = 4173;
 const targetUrl = `http://127.0.0.1:${previewPort}`;
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
@@ -81,7 +81,6 @@ class SimpleCdp {
 const ARABIC_CHAR_REGEX = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
 async function runTest() {
-  // 1. Start Vite Preview Server
   console.log(`Starting Vite Preview Server on ${targetUrl}...`);
   const previewProcess = spawn(nodePath, ['./node_modules/vite/bin/vite.js', 'preview', '--port', String(previewPort), '--host', '127.0.0.1'], {
     stdio: 'ignore'
@@ -103,7 +102,6 @@ async function runTest() {
   }
   console.log('✅ Local production preview server running.');
 
-  // 2. Start Microsoft Edge
   console.log(`Starting Microsoft Edge on port ${cdpPort}...`);
   const edgeProcess = spawn(edgePath, [
     '--headless=new',
@@ -112,6 +110,7 @@ async function runTest() {
     '--no-first-run',
     '--no-default-browser-check',
     `--user-data-dir=${userDataDir}`,
+    '--window-size=390,844',
     'about:blank'
   ]);
 
@@ -142,33 +141,38 @@ async function runTest() {
   await cdp.send('Page.enable');
   await cdp.send('Runtime.enable');
   await cdp.send('DOM.enable');
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 2,
+    mobile: true
+  });
 
   const results = [];
 
   for (const locale of LOCALES) {
-    console.log(`\n🔍 [Testing Locale: ${locale.toUpperCase()}]`);
+    console.log(`\n📱 [Testing Locale in Mobile Viewport: ${locale.toUpperCase()}]`);
 
     await cdp.send('Page.navigate', { url: targetUrl });
     await new Promise(r => setTimeout(r, 1000));
 
-    // Clear storage & set target locale
+    // Clear storage & set target locale with unlocked state
     await cdp.send('Runtime.evaluate', {
       expression: `
         localStorage.clear();
         sessionStorage.clear();
         localStorage.setItem('app_language', '${locale}');
-        const settings = { appLanguage: '${locale}' };
+        const settings = { appLanguage: '${locale}', isAppLocked: false };
         localStorage.setItem('yawmiyati_settings', JSON.stringify(settings));
         location.href = '${targetUrl}';
       `
     });
 
-    // Wait for page load and React render
     let visibleText = '';
     let docLang = '';
     let docDir = '';
 
-    for (let attempt = 0; attempt < 12; attempt++) {
+    for (let attempt = 0; attempt < 15; attempt++) {
       await new Promise(r => setTimeout(r, 600));
       const res = await cdp.send('Runtime.evaluate', {
         expression: `
@@ -185,7 +189,7 @@ async function runTest() {
       });
 
       const val = res.result ? res.result.value : (res.value || {});
-      if (val.text && val.text.length > 50) {
+      if (val.text && val.text.length > 200) {
         visibleText = val.text;
         docLang = val.lang;
         docDir = val.dir;
@@ -194,7 +198,7 @@ async function runTest() {
     }
 
     console.log(`  -> Rendered DOM: ${visibleText.length} chars (lang=${docLang}, dir=${docDir})`);
-    console.log(`  -> Sample DOM Preview: "${visibleText.slice(0, 120).replace(/\s+/g, ' ')}..."`);
+    console.log(`  -> Sample DOM Preview: "${visibleText.slice(0, 150).replace(/\s+/g, ' ')}..."`);
 
     // Capture screenshot
     try {
@@ -216,13 +220,13 @@ async function runTest() {
       const foreignWords = words.filter(w => !w.includes('حياة') && !w.includes('يومياتي'));
       if (foreignWords.length > 0) {
         leakDetected = true;
-        leakInfo = `Arabic text found: "${foreignWords.slice(0, 5).join(' ')}"`;
+        leakInfo = `Arabic text found: "${foreignWords.slice(0, 8).join(' ')}"`;
         console.log(`  ❌ [${locale.toUpperCase()}] FAIL: ${leakInfo}`);
       }
     }
 
-    if (!leakDetected && visibleText.length > 50) {
-      console.log(`  ✅ [${locale.toUpperCase()}] PASS: Verified 0 foreign language leaks in live browser.`);
+    if (!leakDetected && visibleText.length > 100) {
+      console.log(`  ✅ [${locale.toUpperCase()}] PASS: Verified 0 foreign language leaks in full inner app UI.`);
     }
 
     results.push({
@@ -230,13 +234,13 @@ async function runTest() {
       textLength: visibleText.length,
       docLang,
       docDir,
-      passed: !leakDetected && visibleText.length > 50,
+      passed: !leakDetected && visibleText.length > 100,
       leakInfo
     });
   }
 
-  // 3. Test Dynamic Switching Sequence
-  console.log('\n🔄 Testing Real Browser Dynamic Language Switching Sequence (AR -> EN -> TR -> DE -> FR -> JA -> ZH -> HI -> PT -> RU -> ES -> IT -> AR)...');
+  // Dynamic Switching Sequence in Mobile
+  console.log('\n🔄 Testing Dynamic Language Switching Sequence on Mobile (AR -> EN -> TR -> DE -> FR -> JA -> ZH -> HI -> PT -> RU -> ES -> IT -> AR)...');
   const sequence = ['ar', 'en', 'tr', 'de', 'fr', 'ja', 'zh', 'hi', 'pt', 'ru', 'es', 'it', 'ar'];
 
   for (let i = 0; i < sequence.length - 1; i++) {
@@ -249,6 +253,7 @@ async function runTest() {
         const s = localStorage.getItem('yawmiyati_settings');
         const parsed = s ? JSON.parse(s) : {};
         parsed.appLanguage = '${toLang}';
+        parsed.isAppLocked = false;
         localStorage.setItem('yawmiyati_settings', JSON.stringify(parsed));
         document.documentElement.lang = '${toLang}';
         document.documentElement.dir = '${toLang === 'ar' ? 'rtl' : 'ltr'}';
@@ -286,7 +291,7 @@ async function runTest() {
 
   const allPassed = results.every(r => r.passed);
   if (allPassed) {
-    console.log('\n🎉 ALL 12 LOCALES PASSED REAL BROWSER QA INSPECTION WITH 0 LEAKS!');
+    console.log('\n🎉 ALL 12 LOCALES PASSED REAL BROWSER QA INSPECTION WITH 0 LEAKS ACROSS FULL APP UI!');
     process.exit(0);
   } else {
     console.error('\n❌ REAL BROWSER QA INSPECTION DETECTED ISSUES.');
