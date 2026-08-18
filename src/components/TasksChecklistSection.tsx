@@ -120,7 +120,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   // Medication Modal & Toast State
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [newMedName, setNewMedName] = useState('');
-  const [newMedTime, setNewMedTime] = useState(langInfo.code === 'ar' ? '10:00 ص' : '10:00 AM');
+  const [newMedTime, setNewMedTime] = useState('10:00');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // ⏱️ Integrated Workout Timer & Mode State
@@ -223,7 +223,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   const tasks = activeDiaryForSelectedDate?.tasks || [];
   const sleepHours = activeDiaryForSelectedDate?.sleepHours ?? 8;
   const sportsDuration = activeDiaryForSelectedDate?.sportsDuration ?? 0;
-  const sportsType = activeDiaryForSelectedDate?.sportsType || 'مشي';
+  const sportsType = activeDiaryForSelectedDate?.sportsType || '';
   const sportsIntensity = activeDiaryForSelectedDate?.sportsIntensity || 'medium';
   const sportsEnergyBefore = activeDiaryForSelectedDate?.sportsEnergyBefore ?? 3;
   const sportsEnergyAfter = activeDiaryForSelectedDate?.sportsEnergyAfter ?? 4;
@@ -236,13 +236,19 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     const today = new Date();
     let totalCupsDrunk = 0;
     const targetPerDay = 8;
-    const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const getDayName = (date: Date) => {
+      try {
+        return date.toLocaleDateString(langInfo.locale || 'en', { weekday: 'short' });
+      } catch {
+        return date.toLocaleDateString('en', { weekday: 'short' });
+      }
+    };
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const dayName = dayNames[d.getDay()];
+      const dayName = getDayName(d);
       const entry = (diaries || []).find(diary => diary.createdAt && diary.createdAt.split('T')[0] === dateStr);
       const cups = entry?.waterCups ?? (dateStr === selectedDate ? waterCups : 0);
       totalCupsDrunk += cups;

@@ -53,7 +53,7 @@ export default function GeminiKeyModal({
     } else if (apiKey && apiKey.trim() !== '') {
       const initialMain: ApiKeyPoolEntry = {
         id: 'key_main_init',
-        name: 'المفتاح الرئيسي',
+        name: t.mainApiKeyLabel || 'Primary Key',
         key: apiKey.trim(),
         status: 'ready',
         isEnabled: true,
@@ -78,13 +78,13 @@ export default function GeminiKeyModal({
     const cleanKey = newKeyInput.trim();
     if (!cleanKey) return;
     if (keysList.length >= 5) {
-      alert('الحد الأقصى لمفتايح API هو 5 مفاتيح فقط.');
+      alert(t.apiKeyMaxLimitAlert || 'Maximum 5 API keys allowed.');
       return;
     }
 
     const newEntry: ApiKeyPoolEntry = {
       id: `key_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      name: newKeyName.trim() || `المفتاح ${keysList.length + 1}`,
+      name: newKeyName.trim() || `${t.apiKeyLabel || 'Key'} ${keysList.length + 1}`,
       key: cleanKey,
       status: 'ready',
       isEnabled: true,

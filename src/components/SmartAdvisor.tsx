@@ -296,7 +296,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     if (!manager.isSupported()) {
       setVoiceStatus('idle');
       setVoiceTranscript(appLanguage === 'ar'
-        ? 'المتصفح لا يدعم ميزة التعرف التلقائي على الصوت.'
+        ? (t?.speechNotSupported || 'Speech recognition not supported in this browser.')
         : 'Browser does not support Speech Recognition.');
       return;
     }

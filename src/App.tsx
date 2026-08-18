@@ -990,7 +990,7 @@ const AudioPlayerWithIndexedDBFallback: React.FC<{
         <div className="flex items-center justify-between text-[11px] font-bold text-[#5A5A40]">
           <span className="flex items-center gap-1.5">
             <span>🎧</span>
-            <span>مشغل الصوت التسجيلي:</span>
+            <span>{t.audioRecordingPlayer || "Audio Recording Player:"}</span>
           </span>
           <span className="text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] border border-emerald-200">
             جاهز للتشغيل والاستماع
@@ -1003,7 +1003,7 @@ const AudioPlayerWithIndexedDBFallback: React.FC<{
 
   return (
     <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-center justify-between my-1">
-      <span>⚠️ يتعذر تشغيل الصوت (لم يتم حفظ الملف الصوتي بالكامل).</span>
+      <span>⚠️ {t.audioCannotPlay || "Cannot play audio (file not fully saved)."}</span>
       <button
         type="button"
         onClick={() => onToggleRecording()}
@@ -1578,7 +1578,7 @@ export default function App() {
 
   // --- ☁️ Real-time Cloud Synchronization Engine ---
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
-  const [cloudSyncMessage, setCloudSyncMessage] = useState<string | null>('النسخة الاحتياطية السحابية نشطة ومتصلة 🟢');
+  const [cloudSyncMessage, setCloudSyncMessage] = useState<string | null>(null);
 
   const performCloudSync = async (forceData?: { diaries?: DiaryEntry[], habits?: Habit[], settings?: AppSettings, gratitudeCards?: GratitudeCard[] }) => {
     setIsCloudSyncing(true);
@@ -1959,7 +1959,7 @@ export default function App() {
   };
 
   const deleteHabit = (habitId: string) => {
-    if (confirm('هل أنت متأكد من حذف هذه العادة نهائياً؟')) {
+    if (confirm(t.confirmDeleteHabitPermanent || 'Are you sure you want to permanently delete this habit?')) {
       setHabits(prev => prev.filter(h => h.id !== habitId));
     }
   };
@@ -2389,7 +2389,7 @@ export default function App() {
   const [bookFormCover, setBookFormCover] = useState('');
   const [bookFormVideo, setBookFormVideo] = useState('');
   const [bookFormHasMindMap, setBookFormHasMindMap] = useState(false);
-  const [bookFormTags, setBookFormTags] = useState<string[]>(['تنمية ذاتية']);
+  const [bookFormTags, setBookFormTags] = useState<string[]>([]);
   const [bookFormCustomTag, setBookFormCustomTag] = useState('');
   const [selectedBookDetail, setSelectedBookDetail] = useState<Book | null>(null);
   const [bookSearchQuery, setBookSearchQuery] = useState('');
@@ -3856,7 +3856,7 @@ export default function App() {
     }
 
     if (!rawAudio && !audioBlob) {
-      alert('لا يوجد تسجيل صوتي صالح للتفريغ النصي.');
+      alert(t.noValidAudioTranscription || 'No valid audio recording for transcription.');
       return;
     }
 
@@ -4431,12 +4431,12 @@ export default function App() {
           if (parsed.diaries) {
             setDiaries(parsed.diaries);
             if (parsed.settings) setSettings(parsed.settings);
-            alert('تم استعادة نسختك الاحتياطية بنجاح بنسبة 100%! 🎉');
+            alert(t.backupRestoredSuccess || 'Backup restored successfully! 🎉');
           } else {
-            alert('صيغة ملف النسخ الاحتياطي غير صالحة.');
+            alert(t.invalidBackupFormat || 'Invalid backup file format.');
           }
         } catch (error) {
-          alert('فشلت قراءة الملف. تأكد من رفعه بشكل صحيح.');
+          alert(t.fileReadFailed || 'Failed to read file. Make sure it is uploaded correctly.');
         }
       };
       fileReader.readAsText(file);
@@ -4675,7 +4675,7 @@ export default function App() {
       }
     } catch (e) {
       console.error(e);
-      alert('حدث خطأ أثناء الاتصال بالمستشار المعرفي بالذكاء الاصطناعي. تم استخدام بديل عقلاني ذكي مدمج.');
+      alert(t.aiAdvisorError || 'An error occurred connecting to the AI advisor. A built-in fallback was used.');
     } finally {
       setCbtLoading(false);
     }
@@ -4911,7 +4911,7 @@ export default function App() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                 <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">🎯</span>
-                <span>إضافة عادة سلوكية جديدة</span>
+                <span>{t.addNewHabit || "Add New Habit"}</span>
               </h3>
               <button 
                 onClick={() => setShowAddHabitModal(false)}
@@ -4923,7 +4923,7 @@ export default function App() {
             
             <form onSubmit={handleCreateHabit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">اسم العادة</label>
+                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitName || "Habit Name"}</label>
                 <div className="flex gap-2">
                   <div className="w-10 h-10 rounded-2xl bg-[#F9F7F2] border border-[#E2DCC8] flex items-center justify-center text-lg shrink-0 shadow-2xs font-bold text-[#3A3A3A]">
                     {newHabitIcon}
@@ -4932,7 +4932,7 @@ export default function App() {
                     type="text" 
                     value={newHabitName}
                     onChange={e => setNewHabitName(e.target.value)}
-                    placeholder="مثال: شرب لترين ماء، قراءة، تمدد..."
+                    placeholder={t.habitNamePlaceholder || "e.g., Drink water, Read, Stretch..."}
                     className="flex-1 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl px-4 py-2.5 text-xs text-[#3A3A3A] focus:outline-none focus:ring-1 focus:ring-[#8B9D83]"
                     required
                   />
@@ -4942,7 +4942,7 @@ export default function App() {
               {/* 🎨 أيقونة العادة المخصصة */}
               <div className="space-y-1.5 bg-[#F9F7F2]/80 p-3 rounded-2xl border border-[#E2DCC8]/80">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">اختيار أيقونة العادة المخصصة</label>
+                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.chooseHabitIcon || "Choose Custom Habit Icon"}</label>
                   <span className="text-[10px] font-bold text-[#8B9D83] bg-white px-2 py-0.5 rounded-md border border-[#E2DCC8]/60">
                     المحددة: {newHabitIcon}
                   </span>
@@ -4966,14 +4966,14 @@ export default function App() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">تصنيف العادة للتحليل السلوكي</label>
+                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitCategoryLabel || "Habit Category"}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: 'health', label: t.healthCategoryFilter || 'Physical Health 🥦' },
                     { id: 'mind', label: t.mindCategoryFilter || 'Mind & Meditation 🧠' },
                     { id: 'sport', label: t.sportCategoryFilter || 'Sports & Fitness 🏃' },
                     { id: 'culture', label: t.cultureCategoryFilter || 'Reading & Culture 📚' },
-                    { id: 'custom', label: 'أهداف مخصصة 🎯' },
+                    { id: 'custom', label: t.customGoalsCategoryFilter || 'Custom Goals 🎯' },
                   ].map(cat => (
                     <button
                       key={cat.id}
@@ -4993,7 +4993,7 @@ export default function App() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">وقت التنبيه</label>
+                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.reminderTime || "Reminder Time"}</label>
                   <input 
                     type="time" 
                     value={newHabitReminderTime}
@@ -5009,7 +5009,7 @@ export default function App() {
                       onChange={e => setNewHabitReminderEnabled(e.target.checked)}
                       className="rounded text-[#8B9D83] focus:ring-[#8B9D83]"
                     />
-                    <span className="text-xs font-semibold text-gray-600">تنبيه بالبوش اليومي</span>
+                    <span className="text-xs font-semibold text-gray-600">{t.dailyPushNotification || "Daily Push Notification"}</span>
                   </label>
                 </div>
               </div>
@@ -7050,7 +7050,7 @@ export default function App() {
 
                 {/* Tags input bar */}
                 <div>
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">الوسوم والتصنيفات (اضغط مفتاح المسافة أو فاصلة للإضافة):</label>
+                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.tagsLabel || "Tags (press Space or comma to add):"}</label>
                   <div className="flex flex-wrap gap-1.5 p-2 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl">
                     {editingDiary.tags.map((tag, idx) => (
                       <span key={idx} className="bg-[#F0EDE4] text-[#5A5A40] text-xs py-1 px-2.5 rounded-lg border border-[#E2DCC8] flex items-center space-x-1 space-x-reverse">
@@ -7066,7 +7066,7 @@ export default function App() {
                     ))}
                     <input
                       type="text"
-                      placeholder="إضافة وسم..."
+                      placeholder={t.addTagPlaceholder || "Add tag..."}
                       onKeyDown={(e) => {
                         if (e.key === ' ' || e.key === ',') {
                           e.preventDefault();
@@ -7085,7 +7085,7 @@ export default function App() {
                 {/* Drawing / Image thumbnail Display inside editor */}
                 {(editingDiary.images.length > 0 || editingDiary.drawing) && (
                   <div className="space-y-2">
-                    <span className="block text-xs font-bold text-[#5A5A40]">الصور والتخطيطات المرفقة:</span>
+                    <span className="block text-xs font-bold text-[#5A5A40]">{t.attachedImagesDrawings || "Attached images & drawings:"}</span>
                     <div className="flex flex-wrap gap-3">
                       {editingDiary.images.map((img, idx) => (
                         <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group">
@@ -7103,7 +7103,7 @@ export default function App() {
                       {editingDiary.drawing && (
                         <div className="relative w-24 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white">
                           <img src={editingDiary.drawing} className="w-full h-full object-contain" />
-                          <div className="absolute top-0 right-0 bg-[#8B9D83] text-white text-[8px] px-1.5 py-0.5 rounded-bl">رسمة</div>
+                          <div className="absolute top-0 right-0 bg-[#8B9D83] text-white text-[8px] px-1.5 py-0.5 rounded-bl">{t.drawing || "Drawing"}</div>
                           <button
                             type="button"
                             onClick={() => setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null)}
@@ -7122,7 +7122,7 @@ export default function App() {
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>🎥</span>
-                      <span>الفيديوهات المرفقة بالمذكرة:</span>
+                      <span>{t.attachedVideos || "Attached videos:"}</span>
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {editingDiary.videos.map((vid, idx) => (
@@ -7131,7 +7131,7 @@ export default function App() {
                             <video src={vid} controls className="w-full h-32 rounded-lg bg-black object-cover" />
                           ) : (
                             <div className="bg-white p-2.5 rounded-lg border border-[#E2DCC8]/60 text-xs text-[#5A5A40] truncate flex items-center space-x-2 space-x-reverse">
-                              <span className="font-semibold shrink-0">رابط فيديو:</span>
+                              <span className="font-semibold shrink-0">{t.videoLink || "Video link:"}</span>
                               <a href={vid} target="_blank" rel="noopener noreferrer" className="text-[#8B9D83] underline truncate flex-grow">
                                 {vid}
                               </a>
@@ -7155,7 +7155,7 @@ export default function App() {
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>📁</span>
-                      <span>الملفات والمرفقات بالمذكرة:</span>
+                      <span>{t.attachedFiles || "Attached files:"}</span>
                     </span>
                     <div className="space-y-2">
                       {editingDiary.files.map((file) => {
@@ -7189,7 +7189,7 @@ export default function App() {
                               </div>
                               <div className="min-w-0">
                                 <span className="font-semibold block text-[#3A3A3A] truncate max-w-[180px] sm:max-w-xs">{file.name}</span>
-                                <span className="text-[10px] text-gray-400">الحجم: {file.size}</span>
+                                <span className="text-[10px] text-gray-400">{t.fileSize || "Size"}: {file.size}</span>
                               </div>
                             </div>
                             
@@ -7233,7 +7233,7 @@ export default function App() {
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>🔗</span>
-                      <span>الروابط والمراجع المرفقة:</span>
+                      <span>{t.attachedLinksRefs || "Attached links & references:"}</span>
                     </span>
                     <div className="space-y-1.5">
                       {editingDiary.links.map((link, idx) => (
@@ -7266,13 +7266,13 @@ export default function App() {
 
                 {/* Media, Sketch and Voice attachment bar */}
                 <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <span className="text-xs font-bold text-[#5A5A40]">إضافة وسائط ومرفقات لتوسيع الذاكرة الزمنية:</span>
+                  <span className="text-xs font-bold text-[#5A5A40]">{t.addMediaAttachments || "Add media & attachments:"}</span>
                   <div className="flex flex-wrap gap-2">
                     
                     {/* Audio File Upload button */}
                     <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title="اختر من (الملفات / Files) لرفع الملاحظة الصوتية">
                       <span>🎵</span>
-                      <span>أضف ملف صوتي</span>
+                      <span>{t.addAudioFile || "Add audio file"}</span>
                       <input
                         type="file"
                         accept="*/*"
@@ -7284,7 +7284,7 @@ export default function App() {
                     {/* Image Snapper / File upload */}
                     <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                       <Image className="w-3.5 h-3.5 text-[#D4A373]" />
-                      <span>إضافة لقطة/صورة</span>
+                      <span>{t.addPhotoScreenshot || "Add photo/screenshot"}</span>
                       <input
                         id="image-upload-trigger"
                         type="file"
@@ -7301,7 +7301,7 @@ export default function App() {
                       className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs"
                     >
                       <span className="text-[#8B9D83] font-bold">🎨</span>
-                      <span>ارسم تخطيطاً ذهنيّاً</span>
+                      <span>{t.drawMindmap || "Draw mindmap"}</span>
                     </button>
 
                     {/* Voice record mic button */}
@@ -7315,7 +7315,7 @@ export default function App() {
                       }`}
                     >
                       <Mic className="w-3.5 h-3.5 text-red-500" />
-                      <span>{isRecording ? `جاري الاستماع (${recordingSeconds}ث)` : '🎤 فضفضة صوتية سريعة'}</span>
+                      <span>{isRecording ? `${t.listening || "Listening"} (${recordingSeconds}s)` : (t.quickVoiceJournal || "🎤 Quick Voice Journal")}</span>
                     </button>
 
                     {/* Audio Upload Loading Banner */}
@@ -7337,7 +7337,7 @@ export default function App() {
                             </span>
                             <span className="font-black text-red-800 text-xs flex items-center gap-1">
                               <Mic className="w-3.5 h-3.5 text-red-600 animate-bounce" />
-                              <span>جاري الاستماع والكتابة لحظياً...</span>
+                              <span>{t.listeningTranscribing || "Listening & transcribing..."}</span>
                             </span>
                           </div>
                           <span className="font-mono font-black text-red-700 bg-white/90 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] shadow-3xs">
@@ -7368,14 +7368,14 @@ export default function App() {
                             onClick={handleCancelRecording}
                             className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1"
                           >
-                            <span>❌ إلغاء</span>
+                            <span>{t.cancelAction || "❌ Cancel"}</span>
                           </button>
                           <button
                             type="button"
                             onClick={handleStopAndInsertRecording}
                             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                           >
-                            <span>✅ إنهاء وإدراج النص في التدوينة</span>
+                            <span>{t.finishInsertText || "✅ Finish & insert text"}</span>
                           </button>
                         </div>
                       </div>
@@ -7392,7 +7392,7 @@ export default function App() {
                       }`}
                     >
                       <span>🌐</span>
-                      <span>رابط ويب</span>
+                      <span>{t.webLink || "Web link"}</span>
                     </button>
 
                     {/* Video attachment button */}
@@ -7406,7 +7406,7 @@ export default function App() {
                       }`}
                     >
                       <span>🎥</span>
-                      <span>فيديو</span>
+                      <span>{t.videoLabel || "Video"}</span>
                     </button>
 
                     {/* PDF attachment button */}
@@ -7420,7 +7420,7 @@ export default function App() {
                       }`}
                     >
                       <span>📄</span>
-                      <span>ملف PDF</span>
+                      <span>{t.pdfFile || "PDF file"}</span>
                     </button>
 
                   </div>
@@ -7431,7 +7431,7 @@ export default function App() {
                   <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 space-y-3">
                     {activeInputSection === 'link' && (
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-[#5A5A40]">أدخل رابط الموقع الإلكتروني أو المراجع للفضفضة:</label>
+                        <label className="block text-xs font-bold text-[#5A5A40]">{t.enterWebLinkRef || "Enter website link or reference:"}</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
@@ -7453,13 +7453,13 @@ export default function App() {
 
                     {activeInputSection === 'video' && (
                       <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">إضافة فيديو للمذكرة:</span>
+                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addVideoToEntry || "Add video to entry:"}</span>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {/* Option 1: File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">الخيار 1: رفع ملف فيديو محلي</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalVideo || "Option 1: Upload local video"}</span>
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>📁 اختر فيديو من جهازك</span>
+                              <span>{t.chooseVideoFromDevice || "📁 Choose video from device"}</span>
                               <input
                                 type="file"
                                 accept="*/*"
@@ -7471,7 +7471,7 @@ export default function App() {
 
                           {/* Option 2: Enter URL */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">الخيار 2: أدخل رابط فيديو (YouTube أو رابط مباشر)</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option2VideoLink || "Option 2: Enter video link (YouTube or direct)"}</span>
                             <div className="flex gap-1.5">
                               <input
                                 type="text"
@@ -7495,13 +7495,13 @@ export default function App() {
 
                     {activeInputSection === 'pdf' && (
                       <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">إضافة ملف PDF أو مستند للمذكرة:</span>
+                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addPdfToEntry || "Add PDF or document to entry:"}</span>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {/* Option 1: PDF File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">الخيار 1: رفع ملف أو مستند من جهازك</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalFile || "Option 1: Upload file from device"}</span>
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>📄 اختر ملف من جهازك</span>
+                              <span>{t.chooseFileFromDevice || "📄 Choose file from device"}</span>
                               <input
                                 type="file"
                                 accept="*/*"
@@ -7513,18 +7513,18 @@ export default function App() {
 
                           {/* Option 2: Simulated PDF addition */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">الخيار 2: إضافة مستند مرجعي أو رابط PDF</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option2PdfLink || "Option 2: Add reference doc or PDF link"}</span>
                             <div className="flex gap-1.5">
                               <input
                                 id="manual-pdf-name"
                                 type="text"
-                                placeholder="اسم ملف الـ PDF..."
+                                placeholder={t.pdfFileNamePlaceholder || "PDF file name..."}
                                 className="w-1/2 bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2 py-1 text-xs"
                               />
                               <input
                                 id="manual-pdf-url"
                                 type="text"
-                                placeholder="رابط الملف..."
+                                placeholder={t.fileLinkPlaceholder || "File link..."}
                                 className="w-1/2 bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2 py-1 text-xs"
                               />
                               <button
@@ -7576,7 +7576,7 @@ export default function App() {
                                 </div>
                                 <div>
                                   <span className="font-bold block text-[#3A3A3A]">{rec.name}</span>
-                                  <span className="text-[10px] text-gray-500">المدة: {rec.duration} ثانية</span>
+                                  <span className="text-[10px] text-gray-500">{t.durationLabel || "Duration"}: {rec.duration}s</span>
                                 </div>
                               </div>
                               

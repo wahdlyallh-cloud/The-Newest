@@ -25,7 +25,7 @@ export function migrateSettingsApiKeys(settings: AppSettings): AppSettings {
   if (settings.userApiKey && settings.userApiKey.trim() !== '' && pool.length === 0) {
     const mainEntry: ApiKeyPoolEntry = {
       id: 'key_main_' + Date.now(),
-      name: 'المفتاح الرئيسي',
+      name: 'Primary Key',
       key: settings.userApiKey.trim(),
       status: 'ready',
       isEnabled: true,
@@ -200,7 +200,7 @@ export function recordKeySuccess(usedKeyStr: string): void {
  */
 export async function testGeminiApiKey(key: string): Promise<{ success: boolean; message: string }> {
   if (!key || key.trim() === '') {
-    return { success: false, message: 'مفتاح API فارغ.' };
+    return { success: false, message: 'API_KEY_EMPTY' };
   }
 
   const cleanKey = key.trim();
@@ -217,21 +217,21 @@ export async function testGeminiApiKey(key: string): Promise<{ success: boolean;
     });
 
     if (res.ok) {
-      return { success: true, message: 'المفتاح يعمل بنجاح والاتصال مستقر 🟢' };
+      return { success: true, message: 'API_KEY_VALID' };
     }
 
     const data = await res.json().catch(() => ({}));
     const rawMsg = data?.error?.message || `HTTP ${res.status}`;
 
     if (res.status === 400 || rawMsg.includes('API_KEY_INVALID')) {
-      return { success: false, message: 'مفتاح API غير صالح أو غير مكتوب بشكل صحيح 🔴' };
+      return { success: false, message: 'API_KEY_INVALID' };
     }
     if (res.status === 429 || res.status === 403 || rawMsg.includes('RESOURCE_EXHAUSTED')) {
-      return { success: false, message: 'تم تجاوز حد الحصة المتاحة للمفتاح (Quota Exhausted) 🟡' };
+      return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED' };
     }
 
-    return { success: false, message: `فشل الاتصال: ${rawMsg}` };
+    return { success: false, message: `CONNECTION_FAILED: ${rawMsg}` };
   } catch (e: any) {
-    return { success: false, message: `فشل الاتصال بالشبكة: ${e?.message || String(e)}` };
+    return { success: false, message: `NETWORK_ERROR: ${e?.message || String(e)}` };
   }
 }

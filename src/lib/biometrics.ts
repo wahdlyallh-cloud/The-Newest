@@ -49,7 +49,7 @@ export async function isBiometricsSupported(): Promise<{
   if (isIframeOrWebView()) {
     return {
       supported: false,
-      reason: 'البصمة غير متاحة حالياً على هذا المتصفح/البيئة (نافذة المعاينة)، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+      reason: 'BIOMETRIC_UNAVAILABLE'
     };
   }
 
@@ -139,7 +139,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
           success: false,
           fallbackToPin: true,
           infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
-          error: nativeErr?.message || 'فشلت قراءة البصمة من النظام المحمول'
+          error: nativeErr?.message || 'BIOMETRIC_READ_FAILED'
         };
       }
     }
@@ -149,7 +149,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
         success: false,
         fallbackToPin: true,
         infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
-        error: check.reason || 'البيئة الحالية لا تدعم البصمة'
+        error: check.reason || 'BIOMETRIC_NOT_SUPPORTED'
       };
     }
 
@@ -201,7 +201,7 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
       success: false,
       fallbackToPin: true,
       infoMessage: t.biometricsNotSupportedFallbackPin || 'Biometrics not available in this browser environment. PIN lock is enabled.',
-      error: err?.name === 'NotAllowedError' ? 'تم رفض إذن البصمة أو البيئة المضمنة غير مسموحة' : err?.message
+      error: err?.name === 'NotAllowedError' ? 'BIOMETRIC_PERMISSION_DENIED' : err?.message
     };
   }
 }

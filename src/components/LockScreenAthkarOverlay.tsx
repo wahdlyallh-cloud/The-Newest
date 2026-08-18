@@ -1,3 +1,4 @@
+import { getTranslation } from '../lib/languages';
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Sparkles, Volume2, VolumeX, Heart, Flame, Award, 
@@ -14,9 +15,9 @@ export interface LockScreenAthkarOverlayProps {
 }
 
 export const QUICK_ATHKAR_CATEGORIES = [
-  { key: 'morning', label: 'أذكار الصباح', icon: Sun },
-  { key: 'evening', label: 'أذكار المساء', icon: Moon },
-  { key: 'general', label: 'السبحة العامة', icon: Sparkles },
+  { key: 'morning', label: t.morningAthkarLabel || 'Morning Dhikr', icon: Sun },
+  { key: 'evening', label: t.eveningAthkarLabel || 'Evening Dhikr', icon: Moon },
+  { key: 'general', label: t.generalDhikrLabel || 'General Dhikr', icon: Sparkles },
   { key: 'salawat', label: 'الصلاة على النبي', icon: Heart },
   { key: 'istighfar', label: 'الاستغفار', icon: ShieldCheck },
   { key: 'hawqala', label: 'الحوقلة', icon: Zap },

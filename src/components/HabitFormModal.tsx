@@ -12,14 +12,14 @@ interface HabitFormModalProps {
 }
 
 const COLOR_PALETTE = [
-  { id: 'blue', hex: '#3B82F6', label: 'أزرق' },
-  { id: 'emerald', hex: '#10B981', label: 'زمردي' },
-  { id: 'indigo', hex: '#6366F1', label: 'نيلي' },
-  { id: 'amber', hex: '#F59E0B', label: 'كهرماني' },
-  { id: 'rose', hex: '#F43F5E', label: 'وردي' },
-  { id: 'teal', hex: '#14B8A6', label: 'تركوازي' },
-  { id: 'purple', hex: '#A855F7', label: 'بنفسجي' },
-  { id: 'slate', hex: '#64748B', label: 'رمادي' }
+  { id: 'blue', hex: '#3B82F6', label: 'Blue' },
+  { id: 'emerald', hex: '#10B981', label: 'Emerald' },
+  { id: 'indigo', hex: '#6366F1', label: 'Indigo' },
+  { id: 'amber', hex: '#F59E0B', label: 'Amber' },
+  { id: 'rose', hex: '#F43F5E', label: 'Rose' },
+  { id: 'teal', hex: '#14B8A6', label: 'Teal' },
+  { id: 'purple', hex: '#A855F7', label: 'Purple' },
+  { id: 'slate', hex: '#64748B', label: 'Slate' }
 ];
 
 const HABIT_ICONS = [

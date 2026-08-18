@@ -194,11 +194,11 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
         setReportText(data.answer);
         setReportSource(data.source);
       } else {
-        setReportText("عذراً، حدث خطأ أثناء الاتصال بالمستشار الذكي لتوليد التقرير.");
+        setReportText(t.aiReportGenerationError || "Sorry, an error occurred while connecting to the AI advisor to generate the report.");
       }
     } catch (e) {
       console.error(e);
-      setReportText("عذراً، لم نتمكن من الوصول للمستشار الذكي حالياً.");
+      setReportText(t.aiAdvisorUnavailable || "Sorry, we could not access the AI advisor at this time.");
     } finally {
       setLoading(false);
     }

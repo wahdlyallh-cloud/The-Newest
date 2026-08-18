@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { updateAthkarContextOnTap } from '../services/aiAthkarSync';
+import { getTranslation } from '../lib/languages';
+import type { AppLanguage } from '../types';
 
 export interface AthkarItem {
   id: string;
@@ -434,7 +436,8 @@ interface FullAthkarModalProps {
   initialTab?: string;
 }
 
-export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning' }: FullAthkarModalProps) {
+export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning', appLanguage = 'ar' }: FullAthkarModalProps) {
+  const t = getTranslation(appLanguage);
   const [activeTab, setActiveTab] = useState<string>(() => {
     return localStorage.getItem('yawmiyaty_dhikr_active_tab') || initialTab;
   });
@@ -732,10 +735,10 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             <button
               onClick={onClose}
               className="p-1.5 sm:p-2 rounded-xl bg-amber-500/25 hover:bg-amber-500/40 text-amber-300 border-2 border-amber-500/50 hover:border-amber-400 transition-all active:scale-95 cursor-pointer shrink-0 flex items-center gap-1.5 font-black text-xs shadow-lg group"
-              title="الرجوع للخلف"
+              title={t.back || "Back"}
             >
               <ArrowRight className="w-5 h-5 text-amber-300 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="font-sans">رجوع</span>
+              <span className="font-sans">{t.back || "Back"}</span>
             </button>
 
             <div className="p-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shrink-0">
@@ -989,12 +992,12 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                       {item.virtue && (
                         <p className="flex items-start gap-1.5">
                           <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                          <span><strong>الفضل:</strong> {item.virtue}</span>
+                          <span><strong>{t.virtue || "Virtue"}:</strong> {item.virtue}</span>
                         </p>
                       )}
                       {item.source && (
                         <p className="text-amber-300/70 text-[11px] font-mono pt-1 border-t border-amber-500/10">
-                          المصدر: {item.source}
+                          {t.source || "Source"}: {item.source}
                         </p>
                       )}
                     </div>
@@ -1007,7 +1010,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                         setCounts(prev => ({ ...prev, [item.id]: item.count }));
                       }}
                       className="text-xs font-sans text-zinc-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
-                      title="إعادة ضبط هذا الذكر"
+                      title={t.resetThisDhikr || "Reset this dhikr"}
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       إعادة
@@ -1022,7 +1025,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                           : 'bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 shadow-amber-500/30 border border-amber-200/50'
                       }`}
                     >
-                      <span>{isCompleted ? 'اكتمل الذكر ✨' : 'اضغط للعد'}</span>
+                      <span>{isCompleted ? (t.dhikrCompleted || "Completed ✨") : (t.tapToCount || "Tap to count")}</span>
                       <span className="w-8 h-8 rounded-lg bg-slate-950/80 text-amber-300 flex items-center justify-center font-mono text-lg font-black border border-amber-400/40 shadow-inner">
                         {remaining}
                       </span>
@@ -1038,7 +1041,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
         <div className="px-3 py-1.5 border-t border-amber-500/15 bg-slate-950/95 text-[11px] sm:text-xs font-sans text-amber-200/70 flex items-center justify-between shrink-0 h-9">
           <span className="flex items-center gap-1.5 truncate">
             <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span className="truncate">مزامنة حية للذكاء الاصطناعي وحفظ تلقائي</span>
+            <span className="truncate">{t.aiLiveSyncAutoSave || "Live AI sync & auto-save"}</span>
           </span>
           <button
             onClick={handleResetCurrentTab}
@@ -1056,7 +1059,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
                 <h4 className="text-base font-bold text-amber-300 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  {editingItem ? 'تعديل الذكر المخصص' : 'إضافة ذكر جديد (+)'}
+                  {editingItem ? (t.editCustomDhikr || "Edit Custom Dhikr") : (t.addNewDhikr || "Add New Dhikr (+)")}
                 </h4>
                 <button
                   onClick={() => setShowAddCustomModal(false)}
@@ -1076,7 +1079,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     rows={3}
                     value={newDhikrText}
                     onChange={(e) => setNewDhikrText(e.target.value)}
-                    placeholder="أدخل نص الذكر أو الدعاء هنا..."
+                    placeholder={t.enterDhikrText || "Enter dhikr or supplication text..."}
                     required
                     className="w-full bg-zinc-800/90 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-serif leading-relaxed"
                   />
@@ -1111,7 +1114,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                         type="number"
                         min={1}
                         max={999999}
-                        placeholder="أدخل أي عدد مخصص..."
+                        placeholder={t.enterCustomCount || "Enter any custom count..."}
                         value={newDhikrCount || ''}
                         onChange={(e) => {
                           const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
@@ -1131,7 +1134,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
                     {/* Quick count presets */}
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-bold text-zinc-400 font-sans">أعداد سريعة:</span>
+                      <span className="text-[11px] font-bold text-zinc-400 font-sans">{t.quickCounts || "Quick counts:"}</span>
                       {[3, 10, 33, 100, 500, 1000].map(cnt => (
                         <button
                           key={cnt}
@@ -1159,7 +1162,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     type="text"
                     value={newDhikrVirtue}
                     onChange={(e) => setNewDhikrVirtue(e.target.value)}
-                    placeholder="مثال: من قالها غفرت ذنوبه..."
+                    placeholder={t.dhikrVirtuePlaceholder || "e.g., Whoever says this..."}
                     className="w-full bg-zinc-800/90 border border-amber-500/30 rounded-xl p-2.5 text-xs text-amber-100 focus:outline-none focus:border-amber-400"
                   />
                 </div>

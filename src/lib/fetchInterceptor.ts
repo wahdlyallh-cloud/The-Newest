@@ -72,7 +72,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     keyToUse = getActiveApiKeyFromSettings();
   }
   if (!keyToUse || keyToUse.trim() === '') {
-    throw new Error('يرجى التحقق من مفتاح API في الإعدادات');
+    throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
   const modelsToTry = ['gemini-3.5-flash-lite'];
@@ -112,7 +112,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
       const responseText = await res.text();
 
       if (res.ok) {
-        if (!responseText || !responseText.trim()) throw new Error('استجابة فارغة من خادم الذكاء الاصطناعي');
+        if (!responseText || !responseText.trim()) throw new Error('AI_EMPTY_RESPONSE');
         const resJson = JSON.parse(responseText);
         const candidate = resJson.candidates?.[0];
         if (candidate) {
@@ -129,10 +129,10 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
       const errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
 
       if (res.status === 429 || errMessage.includes('Quota') || errMessage.includes('RESOURCE_EXHAUSTED')) {
-        return 'لقد تجاوزت حد الاستخدام اليومي المجاني';
+        return '__AI_QUOTA_EXCEEDED__';
       }
       if (res.status === 400 || res.status === 403 || errMessage.includes('API key not valid') || errMessage.includes('API_KEY_INVALID')) {
-        return 'يرجى التحقق من مفتاح API في الإعدادات';
+        return '__AI_CHECK_API_KEY__';
       }
       if (res.status === 404 || errMessage.includes('not found') || errMessage.includes('is not supported') || errMessage.includes('is not found')) {
         console.warn(`[fetchInterceptor] Model "${model}" not available, trying next…`);
@@ -145,7 +145,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     } catch (e: any) {
       lastErrorMsg = e.message || String(e);
       console.warn(`[fetchInterceptor] Model "${model}" exception: ${lastErrorMsg}`);
-      if (lastErrorMsg.includes('يرجى') || lastErrorMsg.includes('لقد تجاوزت')) throw new Error(lastErrorMsg);
+      if (lastErrorMsg.includes('يرجى') || lastErrorMsg.includes('لقد تجاوزت') || lastErrorMsg.includes('quota') || lastErrorMsg.includes('RESOURCE_EXHAUSTED')) throw new Error(lastErrorMsg);
     }
   }
 

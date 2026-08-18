@@ -79,7 +79,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
   const handleToggle = (key: keyof HabitSettings, label: string) => {
     const newValue = !mergedSettings[key];
     onUpdateSettings({ [key]: newValue });
-    showToast(newValue ? `تم تفعيل: ${label}` : `تم تعطيل: ${label}`);
+    showToast(`${newValue ? (t.settingEnabled || "Enabled") : (t.settingDisabled || "Disabled")}: ${label}`);
   };
 
   // 1. Export Full JSON Backup
@@ -99,7 +99,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast('تم تصدير النسخة الاحتياطية JSON بنجاح! 📥');
+    showToast(t.exportJsonSuccess || 'JSON backup exported! 📥');
   };
 
   // 2. Export CSV Data
@@ -137,7 +137,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast('تم تصدير بيانات CSV بنجاح! 📊');
+    showToast(t.exportCsvSuccess || 'CSV exported! 📊');
   };
 
   // 3. Import Data
@@ -154,9 +154,9 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           const importedHabits = parsed.habits || (Array.isArray(parsed) ? parsed : []);
           const importedDiaries = parsed.diaries || [];
           onImportData(importedHabits, importedDiaries);
-          showToast('تم استيراد النسخة الاحتياطية بنجاح! 🎉');
+          showToast(t.importBackupSuccess || 'Backup imported! 🎉');
         } else if (file.name.endsWith('.csv')) {
-          showToast('تم قراءة ملف CSV بنجاح! 📄');
+          showToast(t.importCsvSuccess || 'CSV read! 📄');
         }
       } catch (err) {
         showToast('حدث خطأ أثناء قراءة الملف. يرجى التأكد من أن الملف بصيغة JSON صحيحة.');

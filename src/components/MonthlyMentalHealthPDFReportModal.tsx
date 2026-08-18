@@ -47,12 +47,12 @@ export interface SavedPDFReport {
 
 export const INITIAL_SAVED_REPORTS: SavedPDFReport[] = [];
 
-const MOOD_PRESETS = [
-  { label: 'شديد الاضطراب', percentage: 20, emoji: '😫' },
-  { label: 'قلق وتوتر', percentage: 40, emoji: '😟' },
-  { label: 'طبيعي / متقلب', percentage: 60, emoji: '😐' },
-  { label: 'مطمئن ومرتاح', percentage: 80, emoji: '😊' },
-  { label: 'سعيد ومستقر جداً', percentage: 100, emoji: '🌟' },
+const getMoodPresets = (t: ReturnType<typeof getTranslation>) => [
+  { label: t.moodSeverelyDistressed || 'Severely Distressed', percentage: 20, emoji: '😫' },
+  { label: t.moodAnxiousStressed || 'Anxious / Stressed', percentage: 40, emoji: '😟' },
+  { label: t.moodNeutralVariable || 'Neutral / Variable', percentage: 60, emoji: '😐' },
+  { label: t.moodCalmRelaxed || 'Calm & Relaxed', percentage: 80, emoji: '😊' },
+  { label: t.moodHappyStable || 'Happy & Very Stable', percentage: 100, emoji: '🌟' },
 ];
 
 // Helper component to parse and render formatted report markdown into styled HTML elements
@@ -138,7 +138,7 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
     // ASCII Progress Bar Detection
     const progressBarMatch = line.match(/^[\[\]][█\s#]+[\[\]]\s*(.*?)\s*\((\d+)%\)/) || line.match(/^(.*?)\s*\((\d+)%\)\s*:\s*[\[\]][█\s#]+[\[\]]/);
     if (progressBarMatch) {
-      const label = progressBarMatch[1] || progressBarMatch[3] || 'مؤشر نفسي';
+      const label = progressBarMatch[1] || progressBarMatch[3] || '';
       const percentage = parseInt(progressBarMatch[2] || '50', 10);
       elements.push(
         <div key={`progress-${currentKey++}`} className="my-2.5 p-2.5 bg-white rounded-xl border border-[#E2DCC8] space-y-1.5 pdf-card-block max-w-full">
@@ -258,7 +258,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
   // Pre-Session & Post-Session Therapy Session State
   const [preSessionMood, setPreSessionMood] = useState<number>(40);
-  const [preSessionMoodLabel, setPreSessionMoodLabel] = useState<string>('قلق وتوتر');
+  const [preSessionMoodLabel, setPreSessionMoodLabel] = useState<string>('');
   const [patientNotes, setPatientNotes] = useState<string>('');
 
   const [sessionDateTime, setSessionDateTime] = useState<string>(() => {
@@ -266,18 +266,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
     return now.toISOString().slice(0, 16);
   });
   const [therapistFeedback, setTherapistFeedback] = useState<string>('');
-  const [therapistHomework, setTherapistHomework] = useState<string[]>([
-    'التدرب على تمارين التنفس البطني العميق (4-7-8) لمدة 5 دقائق يومياً',
-    'تدوين سجل الأفكار التلقائية والبدائل العقلانية عند الشعور بالضغط النفسي'
-  ]);
+  const [therapistHomework, setTherapistHomework] = useState<string[]>([]);
   const [homeworkInput, setHomeworkInput] = useState<string>('');
 
   const [postSessionMood, setPostSessionMood] = useState<number>(80);
-  const [postSessionMoodLabel, setPostSessionMoodLabel] = useState<string>('تحسن واستقرار نفسي');
-  const [sessionSummaryBullets, setSessionSummaryBullets] = useState<string[]>([
-    'مناقشة مسببات القلق والمواقف المثيرة وتفنيد المخاوف مع المعالج النفسي',
-    'التركيز على تدريبات اليقظة الذهنية وتحديد الحدود النفسية الإيجابية'
-  ]);
+  const [postSessionMoodLabel, setPostSessionMoodLabel] = useState<string>('');
+  const [sessionSummaryBullets, setSessionSummaryBullets] = useState<string[]>([]);
   const [summaryInput, setSummaryInput] = useState<string>('');
 
   // Generated Reports Log / History Persistence State
@@ -1327,7 +1321,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       onChange={(e) => {
                         const val = parseInt(e.target.value);
                         setPreSessionMood(val);
-                        const found = MOOD_PRESETS.find(p => Math.abs(p.percentage - val) <= 10);
+                        const found = getMoodPresets(t).find(p => Math.abs(p.percentage - val) <= 10);
                         if (found) setPreSessionMoodLabel(found.label);
                       }}
                       className="w-full accent-[#8B9D83] cursor-pointer"
@@ -1335,7 +1329,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
                     {/* Quick Emoji Buttons */}
                     <div className="grid grid-cols-5 gap-1 pt-1">
-                      {MOOD_PRESETS.map((m) => (
+                      {getMoodPresets(t).map((m) => (
                         <button
                           key={m.percentage}
                           type="button"
@@ -1480,13 +1474,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       onChange={(e) => {
                         const val = parseInt(e.target.value);
                         setPostSessionMood(val);
-                        const found = MOOD_PRESETS.find(p => Math.abs(p.percentage - val) <= 10);
+                        const found = getMoodPresets(t).find(p => Math.abs(p.percentage - val) <= 10);
                         if (found) setPostSessionMoodLabel(found.label);
                       }}
                       className="w-full accent-emerald-600 cursor-pointer"
                     />
                     <div className="grid grid-cols-5 gap-1 pt-1">
-                      {MOOD_PRESETS.map((m) => (
+                      {getMoodPresets(t).map((m) => (
                         <button
                           key={m.percentage}
                           type="button"
