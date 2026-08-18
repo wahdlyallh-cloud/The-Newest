@@ -48,7 +48,7 @@ export default function PasskeyAuth({
 
       // If running inside iframe / restricted environment, show default fallback notice directly
       if (isIframeOrWebView() && !biometricCredentialId) {
-        setFallbackNotice('البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي');
+        setFallbackNotice(t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default.");
       }
     }
     checkSupport();
@@ -66,7 +66,7 @@ export default function PasskeyAuth({
       if (!preCheck.supported) {
         setFallbackNotice(
           preCheck.reason ||
-            'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+            t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
         );
         // Fallback to PIN Lock automatically
         setIsLockEnabled(true);
@@ -82,7 +82,7 @@ export default function PasskeyAuth({
       const res = await registerBiometrics(appLanguage);
 
       if (res.success && res.credentialId) {
-        setSuccessNotice('تم ربط بصمة الجهاز بنجاح! يمكن استخدامها للوصول السريع.');
+        setSuccessNotice(t.biometricsSuccessNotice || "Device biometrics linked successfully!");
         onUpdateSecuritySettings({
           biometricCredentialId: res.credentialId,
           isBiometricEnabled: true,
@@ -93,7 +93,7 @@ export default function PasskeyAuth({
         // Smooth fallback without popup alert
         setFallbackNotice(
           res.infoMessage ||
-            'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+            t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
         );
         setIsLockEnabled(true);
         onUpdateSecuritySettings({
@@ -104,7 +104,7 @@ export default function PasskeyAuth({
     } catch (err: any) {
       console.warn('Biometric linking error handled gracefully:', err);
       setFallbackNotice(
-        'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+        t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
       );
       setIsLockEnabled(true);
       onUpdateSecuritySettings({

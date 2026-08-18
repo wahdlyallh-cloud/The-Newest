@@ -1,3 +1,4 @@
+import { getTranslation } from "../lib/languages";
 import React, { useRef, useState, useEffect } from 'react';
 import { Palette, Trash2, Check, X, Brush } from 'lucide-react';
 
@@ -7,7 +8,8 @@ interface DrawingCanvasProps {
   onCancel: () => void;
 }
 
-export default function DrawingCanvas({ initialDataUrl, onSave, onCancel }: DrawingCanvasProps) {
+export default function DrawingCanvas({
+  appLanguage = "ar", initialDataUrl, onSave, onCancel }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -199,7 +201,7 @@ export default function DrawingCanvas({ initialDataUrl, onSave, onCancel }: Draw
           className="flex items-center space-x-1 space-x-reverse px-3 py-1.5 text-xs font-medium text-[#D4A373] hover:bg-[#FAEDCD] rounded-lg transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
-          <span>مسح اللوحة</span>
+          <span>{t.clearCanvas || "Clear Canvas"}</span>
         </button>
 
         <div className="flex items-center space-x-2 space-x-reverse">
@@ -216,7 +218,7 @@ export default function DrawingCanvas({ initialDataUrl, onSave, onCancel }: Draw
             className="flex items-center space-x-1 space-x-reverse px-4 py-1.5 text-xs font-semibold text-white bg-[#8B9D83] hover:bg-[#5A5A40] shadow-xs rounded-lg transition-colors cursor-pointer"
           >
             <Check className="w-3.5 h-3.5" />
-            <span>حفظ الرسمة</span>
+            <span>{t.saveDrawing || "Save Drawing"}</span>
           </button>
         </div>
       </div>
@@ -225,14 +227,14 @@ export default function DrawingCanvas({ initialDataUrl, onSave, onCancel }: Draw
       {showExitConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 text-center shadow-xl border border-[#E2DCC8]">
-            <h3 className="text-sm font-bold text-[#3A3A3A]">هل ترغب في حفظ الرسم والخروج؟</h3>
+            <h3 className="text-sm font-bold text-[#3A3A3A]">{t.saveDrawingExitConfirm || "Do you want to save drawing before exit?"}</h3>
             <div className="flex items-center justify-center space-x-4 space-x-reverse pt-2">
               <button
                 type="button"
                 onClick={onCancel}
                 className="text-xs font-bold text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg bg-blue-50 cursor-pointer"
               >
-                تجاهل
+                {t.discardAction || "Discard"}
               </button>
               <button
                 type="button"

@@ -1,3 +1,4 @@
+import { getTranslation } from "../lib/languages";
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sparkles, Moon, BookOpen, Lock, ChevronDown, CheckCircle2, Award, Zap, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -8,7 +9,8 @@ interface AthkarHeaderIconProps {
   className?: string;
 }
 
-export default function AthkarHeaderIcon({ onOpenFullAthkar, onOpenLockScreen, className = '' }: AthkarHeaderIconProps) {
+export default function AthkarHeaderIcon({
+  appLanguage = "ar", onOpenFullAthkar, onOpenLockScreen, className = '' }: AthkarHeaderIconProps) {
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [streakDays, setStreakDays] = useState<number>(1);
@@ -52,7 +54,8 @@ export default function AthkarHeaderIcon({ onOpenFullAthkar, onOpenLockScreen, c
 
     calculateTodayProgress();
     const interval = setInterval(calculateTodayProgress, 3000);
-    return () => clearInterval(interval);
+    const t = getTranslation(appLanguage);
+  return () => clearInterval(interval);
   }, []);
 
   // SVG Circular progress math
@@ -117,7 +120,7 @@ export default function AthkarHeaderIcon({ onOpenFullAthkar, onOpenLockScreen, c
         <button
           onClick={() => setIsOpenMenu(!isOpenMenu)}
           className="p-1 rounded-lg text-amber-400/70 hover:text-amber-300 hover:bg-amber-500/10 transition-colors cursor-pointer"
-          title="خيارات الأذكار وقفل الشاشة"
+          title={t.athkarModalTitle || "Remembrance & Tranquility"}
         >
           <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpenMenu ? 'rotate-180' : ''}`} />
         </button>
@@ -147,8 +150,8 @@ export default function AthkarHeaderIcon({ onOpenFullAthkar, onOpenLockScreen, c
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-amber-200">حصن المسلم والسبحة</h4>
-                    <p className="text-[10px] text-zinc-400">إنجازك اليومي المباشر</p>
+                    <h4 className="text-xs font-bold text-amber-200">{t.athkarModalTitle || "Daily Remembrance"}</h4>
+                    <p className="text-[10px] text-zinc-400">{t.dailyDhikrProgress || "Daily Progress"}</p>
                   </div>
                 </div>
                 <span className="text-xs font-mono font-bold text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
@@ -159,7 +162,7 @@ export default function AthkarHeaderIcon({ onOpenFullAthkar, onOpenLockScreen, c
               {/* Progress Bar */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] text-zinc-300">
-                  <span>نسبة الإتمام اليومية</span>
+                  <span>{t.dailyCompletionRatio || "Daily Completion"}</span>
                   <span className="font-mono text-amber-300">{progressPercent}/100%</span>
                 </div>
                 <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-amber-500/20">

@@ -123,7 +123,7 @@ export default function LanguagesModal({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search language / ابحث عن لغتك..."
+                placeholder={t.searchLanguagePlaceholder || "Search language..."}
                 className="w-full px-9 py-2.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#4E685B] shadow-3xs"
               />
               <Search className="w-4 h-4 text-gray-400 absolute end-3 top-3" />

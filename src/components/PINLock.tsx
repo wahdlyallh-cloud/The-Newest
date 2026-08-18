@@ -176,7 +176,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
         setBiometricErrorMessage(
           res.infoMessage ||
           res.error ||
-          'البصمة غير متاحة حالياً على هذا المتصفح/البيئة، تم اعتماد القفل برمز الـ PIN كخيار أمان رئيسي'
+          t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
         );
       }
     } else {

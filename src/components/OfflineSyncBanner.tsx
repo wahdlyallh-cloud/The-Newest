@@ -93,7 +93,7 @@ export default function OfflineSyncBanner({
               ) : pendingCount > 0 ? (
                 <span>
                   {isRtl
-                    ? `توجد ${pendingCount} عمليات في انتظار المزامنة مع السحابة`
+                    ? `${pendingCount} ${t.pendingCloudSyncNotice || "operations pending cloud sync"}`
                     : `${pendingCount} offline actions pending cloud synchronization`}
                 </span>
               ) : (

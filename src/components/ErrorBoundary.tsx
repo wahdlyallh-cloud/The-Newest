@@ -58,10 +58,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
         const isAr = langCode === 'ar';
         if (isAr) {
-          title = "استعادة الواجهة والأمان 🛡️";
+          title = "Interface Recovery & Safety 🛡️";
           desc = "حدث تنبيه غير متوقع أثناء التشغيل. تم الحفاظ على بياناتك، يمكنك إعادة التحميل أو مسح التخزين المؤقت لاستعادة التطبيق فوراً.";
-          reloadBtn = "إعادة تحميل الصفحة 🔄";
-          clearCacheBtn = "تحديث عميق وتفريغ الكاش 🧹";
+          reloadBtn = "Reload Page 🔄";
+          clearCacheBtn = "Deep Refresh & Clear Cache 🧹";
         }
       } catch (err) {
         console.error("Error reading language in ErrorBoundary render:", err);
