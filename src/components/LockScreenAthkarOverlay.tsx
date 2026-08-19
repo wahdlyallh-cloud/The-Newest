@@ -7,31 +7,36 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { updateAthkarContextOnTap } from '../services/aiAthkarSync';
+import type { AppLanguage } from '../types';
 
 export interface LockScreenAthkarOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigateToAthkarTab?: (tabKey: string) => void;
+  appLanguage?: AppLanguage;
 }
-
-export const QUICK_ATHKAR_CATEGORIES = [
-  { key: 'morning', label: t.morningAthkarLabel || 'Morning Dhikr', icon: Sun },
-  { key: 'evening', label: t.eveningAthkarLabel || 'Evening Dhikr', icon: Moon },
-  { key: 'general', label: t.generalDhikrLabel || 'General Dhikr', icon: Sparkles },
-  { key: 'salawat', label: 'الصلاة على النبي', icon: Heart },
-  { key: 'istighfar', label: 'الاستغفار', icon: ShieldCheck },
-  { key: 'hawqala', label: 'الحوقلة', icon: Zap },
-  { key: 'baqiyat', label: 'الباقيات الصالحات', icon: Layers },
-  { key: 'younus', label: 'دعاء يونس', icon: BookOpen },
-  { key: 'tawheed', label: 'ذكر التوحيد', icon: Award },
-  { key: 'custom', label: 'أذكاري الخاصة', icon: Flame },
-];
 
 export default function LockScreenAthkarOverlay({ 
   isOpen, 
   onClose,
-  onNavigateToAthkarTab 
+  onNavigateToAthkarTab,
+  appLanguage = 'ar'
 }: LockScreenAthkarOverlayProps) {
+  const t = getTranslation(appLanguage);
+
+  const QUICK_ATHKAR_CATEGORIES = [
+    { key: 'morning', label: t.morningAthkarLabel || 'Morning Dhikr', icon: Sun },
+    { key: 'evening', label: t.eveningAthkarLabel || 'Evening Dhikr', icon: Moon },
+    { key: 'general', label: t.generalDhikrLabel || 'General Dhikr', icon: Sparkles },
+    { key: 'salawat', label: 'الصلاة على النبي', icon: Heart },
+    { key: 'istighfar', label: 'الاستغفار', icon: ShieldCheck },
+    { key: 'hawqala', label: 'الحوقلة', icon: Zap },
+    { key: 'baqiyat', label: 'الباقيات الصالحات', icon: Layers },
+    { key: 'younus', label: 'دعاء يونس', icon: BookOpen },
+    { key: 'tawheed', label: 'ذكر التوحيد', icon: Award },
+    { key: 'custom', label: t.customDhikrCategory || 'أذكاري الخاصة', icon: Flame },
+  ];
+
   // Live Clock States
   const [timeStr, setTimeStr] = useState<string>('');
   const [dateStr, setDateStr] = useState<string>('');
@@ -259,7 +264,7 @@ export default function LockScreenAthkarOverlay({
                   <Lock className="w-4 h-4 animate-pulse" />
                 </span>
                 <span className="text-xs font-bold text-amber-200/90 font-sans tracking-wide">
-                  شاشة القفل والأذكار
+                  {t.lockScreenAndAthkar || 'شاشة القفل والأذكار'}
                 </span>
               </div>
 
@@ -271,7 +276,7 @@ export default function LockScreenAthkarOverlay({
                     localStorage.setItem('yawmiyaty_dhikr_sound', JSON.stringify(next));
                   }}
                   className="p-2.5 rounded-2xl bg-slate-900/80 border border-amber-500/30 text-amber-300 hover:bg-slate-800 transition-colors cursor-pointer"
-                  title="تفعيل/كتم الصوت"
+                  title={t.muteUnmute}
                 >
                   {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
                 </button>
@@ -307,7 +312,7 @@ export default function LockScreenAthkarOverlay({
                 <span>أَلا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</span>
               </div>
               <p className="text-xs text-zinc-400 font-sans">
-                انقر على أي قسم للانتقال المباشر بعد فك القفل:
+                {t.clickSectionToNavigate || 'انقر على أي قسم للانتقال المباشر بعد فك القفل:'}
               </p>
             </div>
 
@@ -316,9 +321,9 @@ export default function LockScreenAthkarOverlay({
               <div className="flex items-center justify-between px-1 text-xs font-bold text-amber-300 font-sans">
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="w-4 h-4 text-emerald-400" />
-                  <span>أقسام الأذكار المتاحة:</span>
+                  <span>{t.athkarSection}</span>
                 </span>
-                <span className="text-[11px] text-zinc-400 font-normal">اسحب أفقيًا للمزيد ⟵</span>
+                <span className="text-[11px] text-zinc-400 font-normal">{t.swipeForMore}</span>
               </div>
 
               {/* Horizontal Scroll Chips List */}
@@ -330,7 +335,7 @@ export default function LockScreenAthkarOverlay({
                       key={cat.key}
                       onClick={() => handleCategoryClick(cat.key, cat.label)}
                       className="px-4 py-3 rounded-2xl text-xs font-extrabold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer bg-gradient-to-r from-amber-500/20 via-emerald-600/20 to-amber-500/20 hover:from-amber-500/40 hover:to-emerald-600/40 text-amber-100 border-2 border-amber-500/40 hover:border-amber-300 shadow-md active:scale-95 shrink-0 backdrop-blur-md group"
-                      title={`انتقال إلى ${cat.label}`}
+                      title={`${t.navigateTo || 'Navigate to'} ${cat.label}`}
                     >
                       <IconComp className="w-4 h-4 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
                       <span>{cat.label}</span>
@@ -349,16 +354,17 @@ export default function LockScreenAthkarOverlay({
                 className="px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/35 border-2 border-amber-400/50 text-amber-200 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-md"
               >
                 <Key className="w-4 h-4 text-amber-300" />
-                <span>إدخال رمز PIN</span>
+                <span>{t.enterPinCode}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleBiometricAuthTrigger('fingerprint')}
                 className="px-4 py-2.5 rounded-2xl bg-emerald-600/20 hover:bg-emerald-600/35 border-2 border-emerald-400/50 text-emerald-200 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-md"
+                aria-label={t.openWithBiometric}
               >
                 <Fingerprint className="w-4 h-4 text-emerald-400" />
-                <span>فتح بالبصمة</span>
+                <span>{t.openWithBiometric}</span>
               </button>
 
               <button
@@ -367,7 +373,7 @@ export default function LockScreenAthkarOverlay({
                 className="px-4 py-2.5 rounded-2xl bg-sky-600/20 hover:bg-sky-600/35 border-2 border-sky-400/50 text-sky-200 font-bold text-xs flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-md"
               >
                 <ScanFace className="w-4 h-4 text-sky-300" />
-                <span>بصمة الوجه</span>
+                <span>{t.biometricFaceId}</span>
               </button>
             </div>
 
@@ -381,7 +387,7 @@ export default function LockScreenAthkarOverlay({
               <div className="space-y-0.5 text-right flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 text-amber-400 text-[11px] font-bold">
                   <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 animate-pulse shrink-0" />
-                  <span>عداد الصلاة على النبي الدائم:</span>
+                  <span>{t.prayerCounterLabel}</span>
                 </div>
                 <h3 className="text-sm sm:text-base font-extrabold font-serif text-amber-100 tracking-wide truncate drop-shadow-sm">
                   "اللهم صلّ وسلم على سيدنا النبي"
@@ -395,11 +401,11 @@ export default function LockScreenAthkarOverlay({
                 animate={{ scale: isSalawatTapped ? 0.93 : 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-amber-500/20 active:scale-95 transition-all cursor-pointer shrink-0 border border-amber-300/80"
-                title="اضغط للصلاة على النبي مباشرة"
+                title={t.pressToTasbih || 'Tasbih'}
               >
                 <Sparkles className="w-4 h-4 text-slate-950 fill-slate-950 shrink-0" />
                 <div className="flex flex-col items-center leading-none">
-                  <span className="text-[10px] font-sans font-bold text-slate-900 opacity-90">تسبيح</span>
+                  <span className="text-[10px] font-sans font-bold text-slate-900 opacity-90">{t.pressToTasbih || 'Tasbih'}</span>
                   <span className="font-mono text-base font-extrabold text-slate-950">{salawatCount}</span>
                 </div>
               </motion.button>
@@ -417,7 +423,7 @@ export default function LockScreenAthkarOverlay({
                 <div className="flex items-center gap-2">
                   <Lock className="w-5 h-5 text-amber-400" />
                   <h4 className="text-sm font-bold text-amber-200">
-                    {selectedCategoryToUnlock ? `تأكيد القفل (${selectedCategoryToUnlock.label})` : 'فتح قفل التطبيق'}
+                    {selectedCategoryToUnlock ? `${t.confirmLock || 'تأكيد القفل'} (${selectedCategoryToUnlock.label})` : (t.unlockApp || 'فتح قفل التطبيق')}
                   </h4>
                 </div>
                 <button
@@ -432,18 +438,18 @@ export default function LockScreenAthkarOverlay({
               </div>
 
               <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-                أدخل رمز الـ PIN أو استخدم البصمة لفك القفل 
+                {t.enterPinOrBiometric || 'أدخل رمز الـ PIN أو استخدم البصمة لفك القفل'} 
                 {selectedCategoryToUnlock ? (
-                  <span> والانتقال المباشر إلى <strong className="text-amber-300">{selectedCategoryToUnlock.label}</strong>.</span>
+                  <span> {t.andDirectNavigateTo || 'والانتقال المباشر إلى'} <strong className="text-amber-300">{selectedCategoryToUnlock.label}</strong>.</span>
                 ) : (
-                  <span> والدخول إلى التطبيق.</span>
+                  <span> {t.andEnterApp || 'والدخول إلى التطبيق.'}</span>
                 )}
               </p>
 
               <form onSubmit={handleVerifyPinSubmit} className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-amber-200/90 mb-1">
-                    رمز PIN السرّي (4 أرقام):
+                    {t.secretPinCode || 'رمز PIN السرّي (4 أرقام):'}
                   </label>
                   <input
                     type="password"
@@ -460,7 +466,7 @@ export default function LockScreenAthkarOverlay({
                   {authError && (
                     <div className="flex items-center gap-1.5 text-xs text-rose-400 font-bold mt-1.5">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                      <span>رمز PIN غير صحيح. يرجى إدخال 1234 أو الرمز الخاص بك.</span>
+                      <span>{t.pinIncorrect}</span>
                     </div>
                   )}
                 </div>
@@ -471,7 +477,7 @@ export default function LockScreenAthkarOverlay({
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 text-slate-950 font-black text-xs hover:opacity-95 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Key className="w-4 h-4 text-slate-950" />
-                    <span>تأكيد ودخول</span>
+                    <span>{t.confirmAndEnter}</span>
                   </button>
 
                   <button
@@ -479,14 +485,14 @@ export default function LockScreenAthkarOverlay({
                     onClick={() => handleBiometricAuthTrigger('fingerprint')}
                     disabled={isAuthenticatingBiometrics !== null}
                     className="px-3.5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-200 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                    title="فتح بالبصمة"
+                    title={t.openWithBiometric}
                   >
                     {isAuthenticatingBiometrics ? (
                       <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
                     ) : (
                       <Fingerprint className="w-4 h-4 text-emerald-400" />
                     )}
-                    <span>{isAuthenticatingBiometrics ? 'جاري التحقق...' : 'بصمة'}</span>
+                    <span>{isAuthenticatingBiometrics ? (t.verifying || 'جاري التحقق...') : (t.biometric || 'بصمة')}</span>
                   </button>
                 </div>
               </form>

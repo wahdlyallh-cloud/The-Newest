@@ -771,7 +771,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               <button
                 onClick={() => setFontSize(prev => Math.max(14, prev - 2))}
                 className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors"
-                title="تصغير الخط"
+                title={t.decreaseFontSize || "تصغير الخط"}
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -779,7 +779,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               <button
                 onClick={() => setFontSize(prev => Math.min(36, prev + 2))}
                 className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors"
-                title="تكبير الخط"
+                title={t.increaseFontSize || "تكبير الخط"}
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -811,7 +811,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             <button
               onClick={handleResetCurrentTab}
               className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-              title="إعادة تصفير العدادات اليومية"
+              title={t.resetDailyCounters || "إعادة تصفير العدادات اليومية"}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -820,10 +820,10 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             <button
               onClick={onClose}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 transition-all font-sans font-bold text-xs shadow-sm cursor-pointer"
-              title="إغلاق الشاشة الكاملة"
+              title={t.closeFullScreen || "إغلاق الشاشة الكاملة"}
             >
               <X className="w-4 h-4 text-rose-300" />
-              <span className="hidden xs:inline">إغلاق</span>
+              <span className="hidden xs:inline">{t.closeBtn || "إغلاق"}</span>
             </button>
           </div>
         </div>
@@ -863,7 +863,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             }`}
           >
             <Layers className="w-3 h-3 text-amber-400" />
-            أذكاري الخاصة ({customAthkar.length})
+            {t.customDhikrCategory || "أذكاري الخاصة"} ({customAthkar.length})
           </button>
         </div>
 
@@ -877,7 +877,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
           <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 shadow-lg">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-sans font-bold text-amber-200">
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
-              <span>إضافة ذكر جديد مخصص للقسم الحالي أو أي قسم آخر</span>
+              <span>{t.addNewDhikrMessage || "إضافة ذكر جديد مخصص للقسم الحالي أو أي قسم آخر"}</span>
             </div>
             <button
               onClick={() => {
@@ -891,16 +891,16 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 text-slate-950 font-black" />
-              <span>إضافة ذكر جديد (+)</span>
+              <span>{t.addNewDhikrSection || "إضافة ذكر جديد (+)"}</span>
             </button>
           </div>
 
           {currentCategoryItems.length === 0 ? (
             <div className="text-center py-16 text-zinc-400">
               <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-40 text-amber-400" />
-              <p className="text-lg font-sans font-bold">لا توجد أذكار مضافة حالياً في هذا القسم.</p>
+              <p className="text-lg font-sans font-bold">{t.noCustomDhikrYet || "لا توجد أذكار مضافة حالياً في هذا القسم."}</p>
               <p className="text-xs font-sans text-amber-300/80 mt-1.5">
-                يمكنك إستخدام زر "إضافة ذكر جديد (+)" أعلى الصفحة لإضافة ذكر إلى هذا القسم بسهولة.
+                {t.addDhikrHint || "يمكنك إستخدام زر \"إضافة ذكر جديد (+)\" أعلى الصفحة لإضافة ذكر إلى هذا القسم بسهولة."}
               </p>
             </div>
           ) : (
@@ -928,11 +928,11 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                   <div className="flex items-center justify-between mb-3 border-b border-amber-500/15 pb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-sans font-black px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
-                        الذكر #{index + 1}
+                        {t.dhikrNumberLabel || "الذكر #"} {index + 1}
                       </span>
                       {isUserCustom && (
                         <span className="text-[10px] font-sans font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          ذكر مخصص
+                          {t.customDhikrLabel || "ذكر مخصص"}
                         </span>
                       )}
                     </div>
@@ -950,14 +950,14 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                               setShowAddCustomModal(true);
                             }}
                             className="p-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
-                            title="تعديل الذكر"
+                            title={t.editCustomDhikr || "تعديل الذكر"}
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteCustom(item.id)}
                             className="p-1 rounded-md bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition-colors"
-                            title="حذف الذكر"
+                            title={t.deleteDhikr || "حذف الذكر"}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -966,11 +966,11 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
                       {isCompleted ? (
                         <span className="flex items-center gap-1 text-xs font-sans font-black text-emerald-400 bg-emerald-500/15 px-3 py-0.5 rounded-full border border-emerald-500/40 shadow-sm">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> تم بحمد الله
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> {t.completedPraise || "تم بحمد الله"}
                         </span>
                       ) : (
                         <span className="text-xs font-sans text-zinc-400">
-                          العدد المطلوب: <strong className="text-amber-300 font-mono text-sm">{item.count}</strong>
+                          {t.requiredCount || "العدد المطلوب:"} <strong className="text-amber-300 font-mono text-sm">{item.count}</strong>
                         </span>
                       )}
                     </div>
@@ -1013,7 +1013,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                       title={t.resetThisDhikr || "Reset this dhikr"}
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      إعادة
+                      {t.resetThisDhikr || "إعادة"}
                     </button>
 
                     <button
@@ -1048,7 +1048,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             className="text-amber-400 hover:underline flex items-center gap-1 font-bold shrink-0 text-xs"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            تصفير القسم الحالي
+            {t.resetCurrentSection || "تصفير القسم الحالي"}
           </button>
         </div>
 
@@ -1174,13 +1174,13 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     onClick={() => setShowAddCustomModal(false)}
                     className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-bold hover:bg-zinc-700"
                   >
-                    إلغاء
+                    {t.cancel || "إلغاء"}
                   </button>
                   <button
                     type="submit"
                     className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-600 text-slate-950 text-xs font-black hover:opacity-95 shadow-md"
                   >
-                    حفظ الذكر
+                    {t.saveDhikr || "حفظ الذكر"}
                   </button>
                 </div>
               </form>

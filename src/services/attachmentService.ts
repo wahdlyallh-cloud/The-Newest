@@ -1,5 +1,6 @@
 import { getActiveApiKeyFromSettings } from '../lib/apiKeyManager';
 import { MultimodalAttachment } from '../types';
+import { getTranslation } from '../lib/languages';
 
 /**
  * Sniff correct MIME type using extension-first lookup for maximum Gemini API compatibility
@@ -82,9 +83,11 @@ export function getAttachmentTypeCategory(mimeType: string): MultimodalAttachmen
 export async function uploadToGeminiFilesAPI(
   file: File,
   apiKey?: string,
-  onStatusChange?: (status: 'uploading' | 'processing' | 'ready' | 'failed') => void
+  onStatusChange?: (status: 'uploading' | 'processing' | 'ready' | 'failed') => void,
+  appLanguage: string = 'ar'
 ): Promise<{ fileUri: string; mimeType: string }> {
   const mimeType = sniffMimeType(file);
+  const t = getTranslation(appLanguage as any);
   let keyToUse = apiKey || getActiveApiKeyFromSettings() || '';
 
   if (!keyToUse) {
@@ -121,7 +124,7 @@ export async function uploadToGeminiFilesAPI(
   } catch (netErr: any) {
     onStatusChange?.('failed');
     console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 6_UPLOAD_STARTED_NETWORK_ERROR -> ${netErr?.message || String(netErr)}`);
-    throw new Error(`تعذر الاتصال بـ Google Gemini Files API لرفع الملف: ${netErr?.message || String(netErr)}`);
+    throw new Error(`${(t as any).fileUploadNetworkError || 'Could not connect to Gemini server'}: ${netErr?.message || String(netErr)}`);
   }
 
   console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 7_UPLOAD_RESPONSE -> HTTP ${initRes.status}`);
@@ -129,13 +132,13 @@ export async function uploadToGeminiFilesAPI(
   if (!initRes.ok) {
     onStatusChange?.('failed');
     const errText = await initRes.text().catch(() => '');
-    throw new Error(`فشل بدء جلسة الرفع لـ Gemini Files API (HTTP ${initRes.status}): ${errText}`);
+    throw new Error(`${(t as any).fileUploadFailed || 'Failed to upload file to Gemini Files API'} (HTTP ${initRes.status}): ${errText}`);
   }
 
   const uploadUrl = initRes.headers.get('X-Goog-Upload-URL');
   if (!uploadUrl) {
     onStatusChange?.('failed');
-    throw new Error('لم ترجع خوادم Google رابط جلسة الرفع X-Goog-Upload-URL.');
+    throw new Error((t as any).fileUploadFailed || 'Failed to get upload URL from Google servers');
   }
 
   // Step 2: Stream raw file bytes directly from browser to Google's Upload Session URL
@@ -153,7 +156,7 @@ export async function uploadToGeminiFilesAPI(
   } catch (putErr: any) {
     onStatusChange?.('failed');
     console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: BINARY_PUT_FAILED -> ${putErr?.message || String(putErr)}`);
-    throw new Error(`فشل نقل بيانات البايتات المباشر لـ Gemini Files API: ${putErr?.message || String(putErr)}`);
+    throw new Error(`${(t as any).fileUploadFailed || 'File upload failed'}: ${putErr?.message || String(putErr)}`);
   }
 
   console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: BINARY_PUT_SUCCESS -> HTTP ${uploadRes.status}`);
@@ -161,7 +164,7 @@ export async function uploadToGeminiFilesAPI(
   if (!uploadRes.ok) {
     onStatusChange?.('failed');
     const errText = await uploadRes.text().catch(() => '');
-    throw new Error(`فشل نقل بيانات الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errText}`);
+    throw new Error(`${(t as any).fileUploadFailed || 'Failed to upload file'} (HTTP ${uploadRes.status}): ${errText}`);
   }
 
   const uploadData = await uploadRes.json();
@@ -170,7 +173,7 @@ export async function uploadToGeminiFilesAPI(
 
   if (!fileUri) {
     onStatusChange?.('failed');
-    throw new Error('لم يرجع خادم Gemini رابط الملف النهائي (fileUri).');
+    throw new Error((t as any).fileUploadFailed || 'Gemini server did not return file URI');
   }
 
   console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 8_FILE_URI_CREATED`);
@@ -180,7 +183,7 @@ export async function uploadToGeminiFilesAPI(
   if (initialState === 'PROCESSING' || mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
     onStatusChange?.('processing');
     console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | stage: 10_POLL_STARTED`);
-    await pollGeminiFileState(fileUri, keyToUse);
+    await pollGeminiFileState(fileUri, keyToUse, undefined, appLanguage);
   }
 
   onStatusChange?.('ready');
@@ -192,10 +195,11 @@ export async function uploadToGeminiFilesAPI(
  * Poll Google Gemini Files API until file state changes from PROCESSING to ACTIVE
  * Required for Video & Audio files uploaded via Files API before sending to generateContent!
  */
-export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string, maxAttempts = 150): Promise<boolean> {
+export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string, maxAttempts = 150, appLanguage: string = 'ar'): Promise<boolean> {
   const fileName = fileNameOrUri.includes('/files/')
     ? 'files/' + fileNameOrUri.split('/files/').pop()
     : fileNameOrUri;
+  const t = getTranslation(appLanguage as any);
 
   let keyToUse = apiKey || getActiveApiKeyFromSettings() || '';
   if (!keyToUse) {
@@ -225,11 +229,11 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
           return true;
         }
         if (state === 'FAILED') {
-          throw new Error(`فشلت خوادم Gemini في معالجة ترميز الفيديو على الخادم.`);
+          throw new Error((t as any).fileUploadFailed || 'Gemini servers failed to process the file');
         }
       }
     } catch (e: any) {
-      if (e?.message?.includes('فشلت خوادم')) throw e;
+      if (e?.message && !e.message.includes('poll attempt')) throw e;
       console.warn(`[ATTACHMENT TRACE] poll attempt ${attempt} warning:`, e);
     }
     // Wait 2 seconds between poll attempts
@@ -250,12 +254,14 @@ export async function pollGeminiFileState(fileNameOrUri: string, apiKey?: string
 export async function processAttachmentUnified(
   file: File,
   apiKey?: string,
-  onStatusChange?: (status: 'uploading' | 'processing' | 'ready' | 'failed') => void
+  onStatusChange?: (status: 'uploading' | 'processing' | 'ready' | 'failed') => void,
+  appLanguage: string = 'ar'
 ): Promise<MultimodalAttachment> {
   const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB (Gemini Files API official max limit)
+  const t = getTranslation(appLanguage as any);
   if (file.size > MAX_FILE_SIZE) {
     onStatusChange?.('failed');
-    throw new Error(`حجم الملف "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) يتجاوز الحد الأقصى المسموح به وهو 2 جيجابايت.`);
+    throw new Error(`${(t as any).fileSizeExceeded || 'File size exceeds the maximum allowed limit'}: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)`);
   }
 
   const mimeType = sniffMimeType(file);

@@ -185,7 +185,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
     const catName = ATHKAR_CATEGORIES[activeTab]?.title || activeTab;
     updateAthkarContextOnTap({
       category: catName,
-      lastDhikrRead: text || 'ذكر مخصص',
+      lastDhikrRead: text || t.customDhikrCategory || 'Custom Dhikr',
       remainingInCategory: next,
       incrementTaps: 1
     });
@@ -245,7 +245,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
     // Sync AI context
     try {
       updateAthkarContextOnTap({
-        category: newDhikrCategory || 'أذكاري الخاصة',
+        category: newDhikrCategory || t.customDhikrCategory || 'أذكاري الخاصة',
         lastDhikrRead: newDhikrText.trim(),
         remainingInCategory: countNum,
         incrementTaps: 0
@@ -311,10 +311,10 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
           <button
             onClick={() => setIsFullAthkarOpen(true)}
             className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/30 to-emerald-500/30 hover:from-amber-500/40 hover:to-emerald-500/40 border border-amber-400/50 text-amber-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
-            title="عرض الشاشة الكاملة لقراءة حصن المسلم والأذكار"
+            title={t.fullScreenView}
           >
             <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
-            <span className="whitespace-nowrap">عرض الشاشة الكاملة</span>
+            <span className="whitespace-nowrap">{t.fullScreenView}</span>
           </button>
 
           {/* Sound Toggle */}
@@ -331,13 +331,13 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
             <button
               onClick={(e) => { e.stopPropagation(); setShowResetConfirm(true); }}
               className="p-1.5 rounded-xl bg-white/10 hover:bg-rose-500/20 text-emerald-200 hover:text-rose-200 transition-colors"
-              title="إعادة ضبط הعداد"
+              title={t.resetThisDhikr || "إعادة ضبط العداد"}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
           ) : (
             <div className="flex items-center gap-1 bg-black/60 px-2 py-1 rounded-xl border border-rose-400/40 text-xs">
-              <span className="text-rose-200 font-bold">تصفير؟</span>
+              <span className="text-rose-200 font-bold">{t.resetConfirm}</span>
               <button
                 onClick={handleReset}
                 className="px-2 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold"
@@ -369,7 +369,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
           { id: 'tawheed', label: 'ذكر التوحيد' },
           { id: 'post_prayer', label: 'بعد الصلاة' },
           { id: 'sleep', label: 'أذكار النوم' },
-          { id: 'custom', label: 'أذكاري الخاصة' }
+          { id: 'custom', label: t.customDhikrCategory || 'أذكاري الخاصة' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -407,11 +407,11 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
             >
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-slate-950" />
-                <span className="text-sm font-black">اضغط للتسبيح</span>
+                <span className="text-sm font-black">{t.pressToTasbih}</span>
               </div>
 
               <div className="flex items-center gap-2 bg-slate-950 text-amber-300 py-1.5 px-4 rounded-xl border border-amber-400/40 font-mono text-lg font-black shadow-md">
-                <span className="text-xs text-amber-200 font-sans">العدد:</span>
+                <span className="text-xs text-amber-200 font-sans">{t.countLabel}</span>
                 <span>{(dhikrData.general || 0).toLocaleString('ar-EG')}</span>
               </div>
             </button>
@@ -432,12 +432,12 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
             className="w-full py-2 px-3 rounded-xl border border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 text-xs font-bold flex items-center justify-center gap-2 transition-colors mb-2 cursor-pointer"
           >
             <Plus className="w-4 h-4 text-amber-400" />
-            <span>إضافة ذكر جديد (+)</span>
+            <span>{t.addNewDhikrSection}</span>
           </button>
 
           {currentCategoryItems.length === 0 ? (
             <div className="text-center py-6 text-zinc-400 text-xs font-sans">
-              لا يوجد أذكار مضافة بعد في هذا التبويب.
+              {t.noCustomDhikrYet || 'لا يوجد أذكار مضافة بعد في هذا التبويب.'}
             </div>
           ) : (
             currentCategoryItems.map(item => {
@@ -473,14 +473,14 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
                             setShowAddCustomModal(true);
                           }}
                           className="p-1 text-zinc-400 hover:text-amber-300 transition-colors"
-                          title="تعديل الذكر"
+                          title={t.editDhikr || t.editCustomDhikr || 'تعديل الذكر'}
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteCustom(item.id)}
                           className="p-1 text-zinc-400 hover:text-red-400 transition-colors"
-                          title="حذف الذكر"
+                          title={t.deleteDhikr || 'حذف الذكر'}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -510,13 +510,13 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
       <div className="mt-3 pt-2.5 border-t border-amber-500/10 flex items-center justify-between text-[11px] text-amber-200/70 font-sans">
         <span className="flex items-center gap-1">
           <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-          مزامنة محلية لحفظ أذكارك
+          {t.aiLiveSyncAutoSave || 'مزامنة محلية لحفظ أذكارك'}
         </span>
         <button
           onClick={() => setIsFullAthkarOpen(true)}
           className="text-amber-400 hover:underline font-bold flex items-center gap-1"
         >
-          <span>عرض الشاشة الكاملة</span>
+          <span>{t.fullScreenView}</span>
           <span>←</span>
         </button>
       </div>
@@ -528,7 +528,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
             <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
               <h4 className="text-base font-bold text-amber-300 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                {editingItem ? 'تعديل الذكر المخصص' : 'إضافة ذكر جديد (+)'}
+                {editingItem ? (t.editCustomDhikr || 'تعديل الذكر المخصص') : (t.addNewDhikrSection || 'إضافة ذكر جديد (+)')}
               </h4>
               <button
                 onClick={() => setShowAddCustomModal(false)}
@@ -547,7 +547,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
                   rows={3}
                   value={newDhikrText}
                   onChange={(e) => setNewDhikrText(e.target.value)}
-                  placeholder="أدخل نص الذكر أو الدعاء..."
+                  placeholder={t.enterDhikrText || "أدخل نص الذكر أو الدعاء..."}
                   required
                   className="w-full bg-zinc-800 border border-amber-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400 font-serif"
                 />
@@ -580,7 +580,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
                       type="number"
                       min={1}
                       max={999999}
-                      placeholder="أدخل أي عدد مخصص..."
+                      placeholder={t.enterCustomCount || "أدخل أي عدد مخصص..."}
                       value={newDhikrCount || ''}
                       onChange={(e) => {
                         const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
@@ -600,7 +600,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
 
                   {/* Quick count presets */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-bold text-zinc-400 font-sans">أعداد سريعة:</span>
+                    <span className="text-[11px] font-bold text-zinc-400 font-sans">{t.quickCounts || 'أعداد سريعة:'}</span>
                     {[3, 10, 33, 100, 500, 1000].map(cnt => (
                       <button
                         key={cnt}
@@ -627,7 +627,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
                   type="text"
                   value={newDhikrVirtue}
                   onChange={(e) => setNewDhikrVirtue(e.target.value)}
-                  placeholder="مثال: من قالها غفرت ذنوبه..."
+                  placeholder={t.dhikrVirtuePlaceholder || "مثال: من قالها غفرت ذنوبه..."}
                   className="w-full bg-zinc-800 border border-amber-500/30 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -657,6 +657,7 @@ export default function DhikrCounter({ compact = false, className = '', appLangu
         isOpen={isFullAthkarOpen}
         onClose={() => setIsFullAthkarOpen(false)}
         initialTab={activeTab === 'general' ? 'morning' : activeTab}
+        appLanguage={appLanguage}
       />
     </div>
   );

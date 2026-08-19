@@ -138,10 +138,7 @@ function isKeyObviouslyInvalid(key: string): boolean {
 
 // ─── Hybrid System Instructions ───────────────────────────────
 
-export const HYBRID_SYSTEM_INSTRUCTION = `أنت 'حياة AI' — مساعد ذكي هجين يجمع ببراعة بين دورين:
-1) مساعد شخصي واستشاري نفسي واعٍ بسياق التطبيق ومذكرات المستخدم وعاداته وتحليلاته.
-2) ذكاء اصطناعي عام شامل وكفء يجيب عن أي سؤال خارجي في العلوم، البرمجة، الدراسة، التخطيط الشخصي، والمعرفة العامة بذكاء وعمق ومباشرة.
-لا ترفض إطلاقاً الإجابة عن أي سؤال بحجة أنك مساعد يوميات فقط. أجب بأسلوب دافئ، متفهم، فصيح، وداعم.`;
+export const HYBRID_SYSTEM_INSTRUCTION = `You are 'Hayat AI' — a Hybrid Dual-Capability AI combining Context-Aware Personal Counseling (diaries, habits, CBT, gratitude, wellness) AND Comprehensive General Knowledge (science, studies, programming, general Q&A, advice, drafting). Never refuse general external questions. Answer all questions with high intelligence, empathy, and depth.`;
 
 export function getLanguageSystemInstruction(activeLanguage?: string): string {
   const lang = (activeLanguage || 'ar').toLowerCase();
@@ -170,6 +167,19 @@ export function getLanguageSystemInstruction(activeLanguage?: string): string {
   );
 }
 
+// ─── Localized error message helper ──────────────────────────
+import { getTranslation } from './languages';
+
+function getLocalizedError(key: string, lang: string, rawMsg?: string): string {
+  const t = getTranslation(lang as any);
+  switch (key) {
+    case 'key-missing': return (t as any).apiKeyCheckSettings || 'Please check your API key in settings';
+    case 'rate-limit': return (t as any).dailyLimitReached || 'Daily usage limit reached';
+    case 'connection': return rawMsg ? `${(t as any).connectionError || 'Connection error'}: ${rawMsg}` : ((t as any).connectionError || 'Connection error');
+    default: return (t as any).apiKeyCheckSettings || 'Please check your API key in settings';
+  }
+}
+
 // ─── Bulletproof Request Wrapper ──────────────────────────────
 
 /**
@@ -177,9 +187,9 @@ export function getLanguageSystemInstruction(activeLanguage?: string): string {
  *
  * Guarantees:
  *  - API key is checked BEFORE the fetch call.
- *  - HTTP 429 → Arabic rate-limit message.
- *  - Any other error → "خطأ في الاتصال: <raw message>".
- *  - Missing/invalid key → "يرجى التحقق من مفتاح API في الإعدادات".
+ *  - HTTP 429 → localized rate-limit message.
+ *  - Any other error → localized connection error.
+ *  - Missing/invalid key → localized API key message.
  */
 export async function callGeminiApiSafely(
   endpoint: string,
@@ -194,7 +204,7 @@ export async function callGeminiApiSafely(
     return {
       success: false,
       requiresApiKey: true,
-      error: 'يرجى التحقق من مفتاح API في الإعدادات',
+      error: getLocalizedError('key-missing', lang),
       source: 'key-missing',
     };
   }
@@ -218,7 +228,7 @@ export async function callGeminiApiSafely(
     if (response.status === 429) {
       return {
         success: false,
-        error: 'لقد تجاوزت حد الاستخدام اليومي المجاني',
+        error: getLocalizedError('rate-limit', lang),
         source: 'rate-limit',
       };
     }
@@ -249,7 +259,7 @@ export async function callGeminiApiSafely(
 
     return {
       success: false,
-      error: 'يرجى التحقق من مفتاح API في الإعدادات',
+      error: getLocalizedError('key-missing', lang),
       source: 'invalid-json'
     };
   } catch (err: any) {
@@ -257,23 +267,26 @@ export async function callGeminiApiSafely(
     console.error(`[gemini] callGeminiApiSafely → ${endpoint} failed:`, rawMsg);
     return {
       success: false,
-      error: `خطأ في الاتصال: ${rawMsg}`,
+      error: getLocalizedError('connection', lang, rawMsg),
       source: 'network-fallback',
     };
   }
 }
 
+
 // ─── API Key Validation ────────────────────────────────────────
 
 export async function validateGeminiApiKey(
-  rawKey: string
+  rawKey: string,
+  lang: string = 'ar'
 ): Promise<{ success: boolean; message: string; errorDetail?: string }> {
   const cleanKey = (rawKey || '').trim();
+  const t = getTranslation(lang as any);
 
   if (!cleanKey) {
     return {
       success: false,
-      message: 'مفتاح API فارغ. يرجى إدخال المفتاح بشكل صحيح.',
+      message: (t as any).apiKeyEmpty || 'API key is empty. Please enter the key correctly.',
     };
   }
 
@@ -295,12 +308,12 @@ export async function validateGeminiApiKey(
     }
 
     if (res.status === 200 || res.ok) {
-      return { success: true, message: 'تم التحقق من المفتاح بنجاح 🎉' };
+      return { success: true, message: (t as any).apiKeyVerified || 'Key verified successfully 🎉' };
     }
 
     const rawMsg =
       errJson?.error?.message ||
-      `HTTP ${res.status}: ${res.statusText || 'خطأ في الطلب'}`;
+      `HTTP ${res.status}: ${res.statusText || 'Request error'}`;
     console.error('[gemini] validateGeminiApiKey error:', rawMsg);
 
     if (
@@ -310,7 +323,7 @@ export async function validateGeminiApiKey(
     ) {
       return {
         success: true,
-        message: 'تم حفظ المفتاح بنجاح! 🎉 (تنبيه: تم الوصول للحد اليومي المجاني مؤقتاً)',
+        message: `${(t as any).apiKeyVerified || 'Key saved'} 🎉 (${(t as any).dailyLimitReached || 'Daily limit temporarily reached'})`,
         errorDetail: rawMsg,
       };
     }
@@ -323,14 +336,14 @@ export async function validateGeminiApiKey(
     ) {
       return {
         success: false,
-        message: 'مفتاح API غير صالح، يرجى التأكد من نسخه بشكل صحيح من Google AI Studio',
+        message: (t as any).apiKeyInvalidError || 'Invalid API key. Please ensure it is copied correctly from Google AI Studio.',
         errorDetail: rawMsg,
       };
     }
 
     return {
       success: false,
-      message: 'يرجى التحقق من مفتاح API في الإعدادات',
+      message: (t as any).apiKeyCheckSettings || 'Please check your API key in settings',
       errorDetail: rawMsg,
     };
   } catch (networkErr: any) {
@@ -338,7 +351,7 @@ export async function validateGeminiApiKey(
     console.error('[gemini] validateGeminiApiKey network error:', detail);
     return {
       success: false,
-      message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت.',
+      message: (t as any).networkError || 'Server connection failed. Please check your internet connection.',
       errorDetail: detail,
     };
   }

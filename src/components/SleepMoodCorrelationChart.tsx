@@ -253,7 +253,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Zap className="w-3.5 h-3.5 text-amber-600" />
-            <span>تحسن المزاج بالنوم الكافي</span>
+            <span>{t.sleepMoodImprovement || 'تحسن المزاج بالنوم الكافي'}</span>
           </span>
           <p className="text-lg font-black text-amber-600">+{stats.moodBoostPercent}% <span className="text-xs font-normal text-gray-500">ارتفاع</span></p>
         </div>
@@ -268,7 +268,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
           </span>
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
-            <span>درجة جودة المزاج Fast Mood Score (المنحنى بالبرتقالي)</span>
+            <span>{t.moodQualityScore || 'نقاط جودة المزاج'} Fast Mood Score (المنحنى بالبرتقالي)</span>
           </span>
         </div>
 
@@ -325,7 +325,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
               <Bar 
                 yAxisId="sleep" 
                 dataKey="sleepHours" 
-                name={t.sleepHoursLabel || "Daily Sleep Hours"} 
+                name={t.dailySleepHours || "Daily Sleep Hours"} 
                 fill="url(#sleepBarGradient)" 
                 radius={[6, 6, 0, 0]} 
                 barSize={timeRange === '30' ? 12 : timeRange === '14' ? 18 : 28}
@@ -368,7 +368,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
             الاستنتاج النفسي المعرفي (تحليل الترابط):
           </h4>
           <p className="text-gray-700 leading-relaxed font-normal">
-            يظهر التحليل أن أيام النوم التي تجاوزت <strong>7.5 ساعات</strong> رافقها تحسن ملحوظ في جودة المزاج بنسبة متوسطة بلغت <strong>+{stats.moodBoostPercent}%</strong>. 
+            يظهر التحليل أن أيام النوم التي تجاوزت <strong>7.5 ساعات</strong> {t.significantMoodImprovement || 'رافقها تحسن ملحوظ في جودة المزاج'} بنسبة متوسطة بلغت <strong>+{stats.moodBoostPercent}%</strong>. 
             في المقابل، تؤدي ليالي الأرق (أقل من 6 ساعات) إلى تراجع درجة المزاج السريع في الصباح التالي. يُنصح بالالتزام بروتين نوم هادئ والابتعاد عن الشاشات قبل النوم بـ 30 دقيقة.
           </p>
         </div>

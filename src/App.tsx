@@ -2858,21 +2858,16 @@ export default function App() {
   // --- Dynamic Greeting Selector ---
   const getArabicGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'صباح الخير والرضا والنفس المطمئنة ☀️';
-    if (hour < 17) return 'أهلاً بك وطاب يومك يا صديقي النبيل ☕';
-    return 'مساء الهدوء وراحة البال والاسترخاء 🌙';
+    if (hour < 12) return t.greetingMorning || 'Good Morning ☀️';
+    if (hour < 17) return t.greetingAfternoon || 'Welcome ☕';
+    return t.greetingEvening || 'Good Evening 🌙';
   };
 
   const getArabicGreetingHeader = () => {
     const hour = new Date().getHours();
-    if ((settings?.appLanguage || 'ar') !== 'ar') {
-      if (hour < 12) return 'Good Morning & Peaceful Mind';
-      if (hour < 17) return 'Welcome & Have a Wonderful Day';
-      return 'Good Evening & Inner Tranquility';
-    }
-    if (hour < 12) return 'صباح التفاؤل والنشاط والتصالح';
-    if (hour < 17) return 'أهلاً بك وطاب يومك يا صديقي النبيل';
-    return 'مساء الهدوء وراحة البال والاسترخاء';
+    if (hour < 12) return t.greetingMorningHeader || 'Good Morning & Peaceful Mind';
+    if (hour < 17) return t.greetingAfternoonHeader || 'Welcome & Have a Wonderful Day';
+    return t.greetingEveningHeader || 'Good Evening & Inner Tranquility';
   };
 
   const getArabicGreetingIcon = () => {
@@ -12212,12 +12207,14 @@ export default function App() {
       <FullAthkarModal
         isOpen={isFullAthkarModalOpen}
         onClose={() => setIsFullAthkarModalOpen(false)}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* 🔒 Simulated Lock Screen Athkar Overlay */}
       <LockScreenAthkarOverlay
         isOpen={isLockScreenAthkarOpen}
         onClose={() => setIsLockScreenAthkarOpen(false)}
+        appLanguage={settings?.appLanguage || 'ar'}
         onNavigateToAthkarTab={(tabKey) => {
           setIsLockScreenAthkarOpen(false);
           setIsFullAthkarModalOpen(true);

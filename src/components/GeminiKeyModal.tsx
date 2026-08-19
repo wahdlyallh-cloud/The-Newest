@@ -171,19 +171,19 @@ export default function GeminiKeyModal({
 
   const getStatusBadge = (status: ApiKeyStatus, isEnabled: boolean) => {
     if (!isEnabled) {
-      return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">⚪ معطل Standby</span>;
+      return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{t.apiKeyStatusStandby}</span>;
     }
     switch (status) {
       case 'ready':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 جاهز Ready</span>;
+        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">{t.apiKeyStatusReady}</span>;
       case 'rate_limited':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">🟡 انتظار مؤقت Rate Limited</span>;
+        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">{t.apiKeyStatusRateLimited}</span>;
       case 'quota_exhausted':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">🔴 حد الحصة مكتمل Quota Exhausted</span>;
+        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">{t.apiKeyStatusQuotaExhausted}</span>;
       case 'invalid':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">❌ غير صالح Invalid</span>;
+        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">{t.apiKeyStatusInvalid}</span>;
       default:
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">⚪ احتياطي Standby</span>;
+        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{t.apiKeyStatusStandby}</span>;
     }
   };
 
@@ -195,7 +195,7 @@ export default function GeminiKeyModal({
         <div className="p-6 pb-2 flex items-center justify-between border-b border-[#E2DCC8]/40">
           <h4 className="font-black text-[#2B3E50] text-base md:text-lg flex items-center gap-2">
             <span>🔑</span>
-            <span>مجمع مفاتيح Gemini API Pool</span>
+            <span>{t.geminiPoolTitle}</span>
             <span className="text-xs bg-amber-100 text-amber-900 font-extrabold px-2 py-0.5 rounded-full">
               {keysList.length}/5
             </span>
@@ -245,7 +245,7 @@ export default function GeminiKeyModal({
                           setKeysList(prev => prev.map(k => k.id === entry.id ? { ...k, name: val } : k));
                         }}
                         className="font-black text-xs text-[#2B3E50] bg-transparent focus:outline-none focus:border-b border-[#8B9D83]"
-                        placeholder="اسم المفتاح"
+                        placeholder={t.keyNamePlaceholder}
                       />
                     </div>
                     {getStatusBadge(entry.status, entry.isEnabled)}
@@ -300,7 +300,7 @@ export default function GeminiKeyModal({
                         type="button"
                         onClick={() => handleDeleteKey(entry.id)}
                         className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
-                        title="حذف المفتاح"
+                        title={t.deleteDhikr || t.deleteKey || 'Delete key'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -321,16 +321,16 @@ export default function GeminiKeyModal({
                   className="w-full py-3 bg-[#F5EFE6] border-2 border-dashed border-[#8B9D83]/60 hover:border-[#8B9D83] text-[#2B3E50] font-black text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4 text-[#3F5449]" />
-                  <span>إضافة مفتاح Gemini API جديد (حتى 5 مفاتيح)</span>
+                  <span>{t.addKeyToPool}</span>
                 </button>
               ) : (
                 <div className="bg-white border-2 border-[#8B9D83] rounded-2xl p-4 space-y-3">
-                  <h5 className="font-black text-xs text-[#2B3E50]">إضافة مفتاح جديد للـ Pool</h5>
+                  <h5 className="font-black text-xs text-[#2B3E50]">{t.addKeyToPool}</h5>
                   <input
                     type="text"
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
-                    placeholder="اسم اختياري (مثال: المفتاح الاحتياطي 1)"
+                    placeholder={t.keyNamePlaceholder}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-[#2B3E50] focus:outline-none focus:border-[#8B9D83]"
                   />
                   <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
@@ -338,7 +338,7 @@ export default function GeminiKeyModal({
                       type={showNewKeyText ? "text" : "password"}
                       value={newKeyInput}
                       onChange={(e) => setNewKeyInput(e.target.value)}
-                      placeholder="أدخل مفتاح Gemini API الجديد"
+                      placeholder={t.enterNewApiKey}
                       className="w-full bg-transparent text-xs font-mono text-[#2B3E50] focus:outline-none font-bold"
                     />
                     <button
@@ -391,7 +391,7 @@ export default function GeminiKeyModal({
               className="flex-1 py-3 bg-white hover:bg-red-50 border-2 border-red-100 hover:border-red-200 text-red-600 font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-3xs"
             >
               <span>🗑️</span>
-              <span>مسح جميع المفاتيح</span>
+              <span>{t.clearAllKeys}</span>
             </button>
 
             <button
@@ -400,7 +400,7 @@ export default function GeminiKeyModal({
               className="flex-1 py-3 bg-[#3F5449] hover:bg-[#2C3E50] text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs hover:shadow-md"
             >
               <span>💾</span>
-              <span>حفظ مجمع المفاتيح</span>
+              <span>{t.saveKeyPool}</span>
             </button>
           </div>
         </div>
