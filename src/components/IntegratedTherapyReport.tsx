@@ -96,7 +96,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   const handleDeleteReport = (id: string) => {
     const updated = savedReports.filter(r => r.id !== id);
     saveReportsToStorage(updated);
-    showToast('{t.reportDeletedSuccess || "Report deleted from history 🗑️"}');
+    showToast(t.reportDeletedSuccess || "Report deleted from history 🗑️");
   };
 
   const handleStartInlineEdit = (report: SavedPDFReport) => {
@@ -132,7 +132,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
 
     saveReportsToStorage(updated);
     setEditingReportId(null);
-    showToast('{t.reportSavedSuccess || "Report edits saved successfully ✍️"}');
+    showToast(t.reportSavedSuccess || "Report edits saved successfully ✍️");
   };
 
   // Filtered reports list
@@ -345,7 +345,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           className="relative z-10 px-5 py-3.5 bg-gradient-to-r from-[#FEFAE0] to-[#E2DCC8] hover:from-white hover:to-[#FEFAE0] text-[#2B3E50] rounded-2xl font-black text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer shrink-0 hover:scale-102 active:scale-98 border border-white/40 group"
         >
           <Sparkles className="w-4 h-4 text-[#8B9D83] group-hover:rotate-12 transition-transform" />
-          <span>توليد واستعراض التقرير السريري الشامل بالذكاء الاصطناعي (PDF) 📄</span>
+          <span>{t.generateAndPreviewClinicalReport || "توليد واستعراض التقرير السريري الشامل بالذكاء الاصطناعي (PDF) 📄"}</span>
         </button>
       </div>
 
@@ -355,7 +355,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           <div>
             <label className="block text-xs font-bold text-[#5A5A40] mb-1.5 flex items-center space-x-1 space-x-reverse">
               <Calendar className="w-3.5 h-3.5 text-[#8B9D83]" />
-              <span>تاريخ البدء:</span>
+              <span>{t.startDateLabel || "تاريخ البدء:"}</span>
             </label>
             <input
               type="date"
@@ -367,7 +367,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           <div>
             <label className="block text-xs font-bold text-[#5A5A40] mb-1.5 flex items-center space-x-1 space-x-reverse">
               <Calendar className="w-3.5 h-3.5 text-[#8B9D83]" />
-              <span>تاريخ الانتهاء:</span>
+              <span>{t.endDateLabel || "تاريخ الانتهاء:"}</span>
             </label>
             <input
               type="date"
@@ -381,15 +381,15 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
         {/* Clinical Statistics Cards */}
         <div className="grid grid-cols-3 gap-3">
           <div className="p-3 bg-[#F0EDE4]/60 rounded-2xl border border-[#E2DCC8] text-center">
-            <span className="block text-[10px] font-bold text-gray-500">عدد اليوميات المدونة</span>
+            <span className="block text-[10px] font-bold text-gray-500">{t.totalEntriesLogged || "عدد اليوميات المدونة"}</span>
             <span className="text-base font-black text-[#5A5A40]">{totalEntries}</span>
           </div>
           <div className="p-3 bg-[#CCD5AE]/20 rounded-2xl border border-[#CCD5AE]/60 text-center">
-            <span className="block text-[10px] font-bold text-gray-500">متوسط ساعات النوم</span>
+            <span className="block text-[10px] font-bold text-gray-500">{t.avgSleepHours || "متوسط ساعات النوم"}</span>
             <span className="text-base font-black text-[#8B9D83]">{averageSleep} ساعة</span>
           </div>
           <div className="p-3 bg-[#FAEDCD]/30 rounded-2xl border border-[#E2DCC8]/60 text-center">
-            <span className="block text-[10px] font-bold text-gray-500">ممارسة الأنشطة</span>
+            <span className="block text-[10px] font-bold text-gray-500">{t.activitiesPractice || "ممارسة الأنشطة"}</span>
             <span className="text-base font-black text-[#D4A373]">{totalSports} دقيقة</span>
           </div>
         </div>
@@ -398,7 +398,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
         {filteredDiaries.length === 0 && (
           <div className="bg-[#FAEDCD]/40 border border-[#D4A373]/30 rounded-2xl p-4 text-center text-[#D4A373] text-xs flex items-center justify-center space-x-2 space-x-reverse font-bold">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>لا توجد مذكرات مدونة في الفترة المحددة. يرجى تدوين مذكرات أو تعديل نطاق التاريخ أولاً!</span>
+            <span>{t.noDiariesInPeriodAlert || "لا توجد مذكرات مدونة في الفترة المحددة. يرجى تدوين مذكرات أو تعديل نطاق التاريخ أولاً!"}</span>
           </div>
         )}
 
@@ -410,8 +410,8 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
               <div className="absolute inset-0 rounded-full border-4 border-[#8B9D83] border-t-transparent animate-spin"></div>
             </div>
             <div className="space-y-1">
-              <h4 className="font-extrabold text-[#5A5A40] text-sm">جاري قراءة وتحليل المذكرات...</h4>
-              <p className="text-[11px] text-gray-500 leading-relaxed max-w-md">يقوم المساعد الذكي الآن بفرز الحالة المزاجية والترابط السلوكي وصياغة مستند طبي جاهز للطباعة أو التقديم.</p>
+              <h4 className="font-extrabold text-[#5A5A40] text-sm">{t.readingAndAnalyzingDiaries || "جاري قراءة وتحليل المذكرات..."}</h4>
+              <p className="text-[11px] text-gray-500 leading-relaxed max-w-md">{t.readingAnalyzingDesc || "يقوم المساعد الذكي الآن بفرز الحالة المزاجية والترابط السلوكي وصياغة مستند طبي جاهز للطباعة أو التقديم."}</p>
             </div>
           </div>
         )}
@@ -422,7 +422,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
             <div className="bg-[#F0EDE4] p-3 px-4 border-b border-[#E2DCC8] flex items-center justify-between">
               <div className="flex items-center space-x-2 space-x-reverse text-xs font-bold text-[#5A5A40]">
                 <Sparkles className="w-4 h-4 text-[#D4A373] animate-pulse" />
-                <span>التقرير السريري المولد بواسطة {reportSource === 'gemini' ? 'Gemini 3.5-Flash 🚀' : 'المستشار المحلي 🖥️'}</span>
+                <span>{t.clinicalReportGeneratedBy || 'التقرير السريري المولد بواسطة'} {reportSource === 'gemini' ? 'Gemini 3.5-Flash 🚀' : (t.localAdvisor || 'المستشار المحلي 🖥️')}</span>
               </div>
               <button
                 onClick={generateReport}
@@ -443,7 +443,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                 className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-3xs"
               >
                 {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
-                <span>{copySuccess ? 'تم النسخ!' : 'نسخ النص'}</span>
+                <span>{copySuccess ? (t.copiedSuccess || 'تم النسخ!') : (t.copyReportText || 'نسخ النص')}</span>
               </button>
 
               <button
@@ -452,7 +452,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                 className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-[#2B3E50] rounded-xl text-xs font-bold transition-all cursor-pointer shadow-3xs"
               >
                 <FileCode className="w-3.5 h-3.5 text-blue-600" />
-                <span>تحميل كملف Word 📝</span>
+                <span>{t.downloadWordDoc || "تحميل كملف Word 📝"}</span>
               </button>
 
               <button
@@ -461,7 +461,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                 className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-[#F9F7F2] text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-3xs"
               >
                 <Download className="w-3.5 h-3.5 text-[#5A5A40]" />
-                <span>تحميل نصي (UTF-8) 📄</span>
+                <span>{t.downloadTxtUtf8 || "تحميل نصي (UTF-8) 📄"}</span>
               </button>
 
               <button
@@ -470,7 +470,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                 className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs"
               >
                 <FileCheck2 className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                <span>تصدير كملف PDF منظم 📄</span>
+                <span>{t.exportStructuredPdf || "تصدير كملف PDF منظم 📄"}</span>
               </button>
 
               <button
@@ -479,7 +479,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                 className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#5A5A40] hover:bg-[#5A5A40]/90 text-white rounded-xl text-xs font-extrabold shadow-sm transition-all cursor-pointer active:scale-95"
               >
                 <Printer className="w-3.5 h-3.5 text-white" />
-                <span>طباعة التقرير</span>
+                <span>{t.printReportBtn || "طباعة التقرير"}</span>
               </button>
             </div>
           </div>
@@ -497,13 +497,13 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
             </div>
             <div>
               <h3 className="text-base font-black text-white flex items-center gap-2">
-                <span>📜 سجل تقارير الصحة النفسية وجلسات العلاج المولدة</span>
+                <span>{t.therapyHistoryLogTitle || "📜 سجل تقارير الصحة النفسية وجلسات العلاج المولدة"}</span>
                 <span className="text-xs bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full font-extrabold shadow-3xs">
-                  {savedReports.length} تقارير محفوظة
+                  {savedReports.length} {t.savedReportsCountBadge || "تقارير محفوظة"}
                 </span>
               </h3>
               <p className="text-xs text-[#E2DCC8] mt-1 font-medium">
-                سجل متكامل ومؤرشف لكافة التقارير الطبية السابقة من حيث اليوم والتاريخ والوقت وحالة التعديل وتوصيات المعالج.
+                {t.therapyHistoryLogDesc || "سجل متكامل ومؤرشف لكافة التقارير الطبية السابقة من حيث اليوم والتاريخ والوقت وحالة التعديل وتوصيات المعالج."}
               </p>
             </div>
           </div>
@@ -514,18 +514,18 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           
           {/* Search Box */}
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-gray-400 absolute right-3 top-2.5" />
+            <Search className="w-4 h-4 text-gray-400 absolute start-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث بالاسم، التاريخ، رد المعالج، أو الملاحظات..."
-              className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl pr-9 pl-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
+              placeholder={t.searchTherapyReportsPlaceholder || "ابحث بالاسم، التاريخ، رد المعالج، أو الملاحظات..."}
+              className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl ps-9 pe-9 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute left-3 top-2.5 text-gray-400 hover:text-gray-600"
+                className="absolute end-3 top-2.5 text-gray-400 hover:text-gray-600"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -535,10 +535,10 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 shrink-0">
             {[
-              { id: 'all', label: `الكل (${savedReports.length})` },
-              { id: 'weekly', label: 'أسبوعية 🗓️' },
-              { id: 'monthly', label: 'شهرية 📅' },
-              { id: 'edited', label: `المُعدّلة ✍️ (${savedReports.filter(r => r.isEdited).length})` },
+              { id: 'all', label: `${t.allReportsFilter || 'الكل'} (${savedReports.length})` },
+              { id: 'weekly', label: t.weeklyReportsFilter || 'أسبوعية 🗓️' },
+              { id: 'monthly', label: t.monthlyReportsFilter || 'شهرية 📅' },
+              { id: 'edited', label: `${t.editedReportsFilter || 'المُعدّلة ✍️'} (${savedReports.filter(r => r.isEdited).length})` },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -560,15 +560,15 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
         {filteredReports.length === 0 ? (
           <div className="bg-white border-2 border-dashed border-[#E2DCC8] rounded-3xl p-8 text-center space-y-3">
             <FileText className="w-12 h-12 text-gray-300 mx-auto" />
-            <p className="text-sm font-extrabold text-[#5A5A40]">لا توجد تقارير مطابقة لمعايير البحث في السجل حالياً</p>
+            <p className="text-sm font-extrabold text-[#5A5A40]">{t.noMatchingTherapyReports || "لا توجد تقارير مطابقة لمعايير البحث في السجل حالياً"}</p>
             <p className="text-xs text-gray-500 max-w-md mx-auto">
-              يمكنك تغيير فلتر البحث أو الضغط على "توليد تقرير جديد" لأرشفة تقريرك السريري وتتبع جلسات العلاج النفسي.
+              {t.noMatchingTherapyReportsDesc || "يمكنك تغيير فلتر البحث أو الضغط على 'توليد تقرير جديد' لأرشفة تقريرك السريري وتتبع جلسات العلاج النفسي."}
             </p>
             <button
               onClick={() => { setSearchQuery(''); setFilterType('all'); }}
               className="px-4 py-2 bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] rounded-xl text-xs font-bold transition-all cursor-pointer"
             >
-              إعادة ضبط الفلاتر 🔄
+              {t.resetFiltersBtn || "إعادة ضبط الفلاتر 🔄"}
             </button>
           </div>
         ) : (
@@ -596,12 +596,12 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         {report.isEdited ? (
                           <span className="bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1">
                             <Edit3 className="w-3 h-3 text-amber-600" />
-                            <span>مُعدّل مؤخراً</span>
+                            <span>{t.recentlyEditedBadge || "مُعدّل مؤخراً"}</span>
                           </span>
                         ) : (
                           <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-lg text-[10px] font-black flex items-center gap-1">
                             <ShieldCheck className="w-3 h-3 text-blue-600" />
-                            <span>نسخة أصيلة (غير مُعدّلة)</span>
+                            <span>{t.originalVersionBadge || "نسخة أصيلة (غير مُعدّلة)"}</span>
                           </span>
                         )}
                       </div>
@@ -611,7 +611,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         <span className="bg-[#FAF8F5] px-2 py-0.5 rounded-md border border-[#E2DCC8] text-[11px] font-bold text-[#5A5A40]">
                           {report.periodLabel}
                         </span>
-                        <span>النطاق: من {report.startDateStr} ⬅️ {report.endDateStr}</span>
+                        <span>{t.rangeFromTo || "النطاق: من"} {report.startDateStr} ⬅️ {report.endDateStr}</span>
                       </p>
                     </div>
 
@@ -623,7 +623,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                       </div>
                       {report.isEdited && report.updatedDisplayDate && (
                         <span className="text-[10px] text-amber-700 font-bold mt-1">
-                          تاريخ آخر تعديل: {report.updatedDisplayDate}
+                          {t.lastEditDate || "تاريخ آخر تعديل:"} {report.updatedDisplayDate}
                         </span>
                       )}
                     </div>
@@ -633,7 +633,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                   <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div className="flex items-center gap-3 w-full sm:w-auto justify-around sm:justify-start">
                       <div className="text-center sm:text-right">
-                        <span className="text-[10px] text-gray-500 block font-bold">قبل الجلسة</span>
+                        <span className="text-[10px] text-gray-500 block font-bold">{t.beforeSessionLabel || "قبل الجلسة"}</span>
                         <span className="text-xs font-black text-[#5A5A40] bg-white px-2.5 py-1 rounded-lg border border-[#E2DCC8] inline-block mt-0.5">
                           {report.preSessionMood}% {report.preSessionMoodLabel}
                         </span>
@@ -642,7 +642,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                       <ArrowRightLeft className="w-4 h-4 text-[#8B9D83] shrink-0" />
 
                       <div className="text-center sm:text-right">
-                        <span className="text-[10px] text-gray-500 block font-bold">بعد الجلسة</span>
+                        <span className="text-[10px] text-gray-500 block font-bold">{t.afterSessionLabel || "بعد الجلسة"}</span>
                         <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 inline-block mt-0.5">
                           {report.postSessionMood}% {report.postSessionMoodLabel}
                         </span>
@@ -650,7 +650,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                     </div>
 
                     <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-[#E2DCC8] shadow-3xs text-xs font-bold shrink-0">
-                      <span className="text-gray-500">معدل التعافي المزاجي:</span>
+                      <span className="text-gray-500">{t.moodRecoveryRate || "معدل التعافي المزاجي:"}</span>
                       <span className={`font-black ${moodDiff >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
                         {moodDiff >= 0 ? `+${moodDiff}% 📈` : `${moodDiff}% 📉`}
                       </span>
@@ -661,19 +661,19 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                   {report.statsSnapshot && (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
                       <div className="bg-white border border-[#E2DCC8] p-2 rounded-xl">
-                        <span className="text-[10px] text-gray-400 block">عدد المذكرات</span>
+                        <span className="text-[10px] text-gray-400 block">{t.diariesCountLabel || "عدد المذكرات"}</span>
                         <span className="font-extrabold text-[#5A5A40]">{report.statsSnapshot.totalDiaries} مذكرات</span>
                       </div>
                       <div className="bg-white border border-[#E2DCC8] p-2 rounded-xl">
-                        <span className="text-[10px] text-gray-400 block">متوسط النوم</span>
+                        <span className="text-[10px] text-gray-400 block">{t.avgSleepLabel || "متوسط النوم"}</span>
                         <span className="font-extrabold text-[#8B9D83]">{report.statsSnapshot.avgSleep} ساعة</span>
                       </div>
                       <div className="bg-white border border-[#E2DCC8] p-2 rounded-xl">
-                        <span className="text-[10px] text-gray-400 block">وقت الرياضة</span>
+                        <span className="text-[10px] text-gray-400 block">{t.sportsTimeLabel || "وقت الرياضة"}</span>
                         <span className="font-extrabold text-[#D4A373]">{report.statsSnapshot.totalSportsMinutes} دقيقة</span>
                       </div>
                       <div className="bg-white border border-[#E2DCC8] p-2 rounded-xl">
-                        <span className="text-[10px] text-gray-400 block">الالتزام بالعادات</span>
+                        <span className="text-[10px] text-gray-400 block">{t.habitsCommitmentLabel || "الالتزام بالعادات"}</span>
                         <span className="font-extrabold text-emerald-600">{report.statsSnapshot.habitRate}%</span>
                       </div>
                     </div>
@@ -684,11 +684,11 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                     <div className="bg-[#F7F5EE] border-2 border-[#8B9D83] p-4 rounded-2xl space-y-3">
                       <h5 className="text-xs font-extrabold text-[#5A5A40] flex items-center gap-1.5">
                         <Edit3 className="w-4 h-4 text-[#8B9D83]" />
-                        <span>تعديل ملاحظات المريض وتوصيات المعالج النفسي لهذا التقرير:</span>
+                        <span>{t.editPatientAndTherapistNotes || "تعديل ملاحظات المريض وتوصيات المعالج النفسي لهذا التقرير:"}</span>
                       </h5>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-600">أسئلة وملاحظات المريض قبل الجلسة:</label>
+                        <label className="text-[11px] font-bold text-gray-600">{t.patientPreSessionQuestions || "أسئلة وملاحظات المريض قبل الجلسة:"}</label>
                         <textarea
                           value={editNotesText}
                           onChange={(e) => setEditNotesText(e.target.value)}
@@ -698,7 +698,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-600">رد وتوجيهات المعالج النفسي:</label>
+                        <label className="text-[11px] font-bold text-gray-600">{t.therapistFeedbackAndGuidance || "رد وتوجيهات المعالج النفسي:"}</label>
                         <textarea
                           value={editFeedbackText}
                           onChange={(e) => setEditFeedbackText(e.target.value)}
@@ -720,7 +720,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                           onClick={() => handleSaveInlineEdit(report.id)}
                           className="px-4 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-black rounded-xl cursor-pointer shadow-3xs"
                         >
-                          حفظ التغييرات 💾
+                          {t.saveChangesBtn || "حفظ التغييرات 💾"}
                         </button>
                       </div>
                     </div>
@@ -731,7 +731,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 rounded-2xl space-y-1">
                           <span className="font-extrabold text-[#5A5A40] block flex items-center gap-1 text-[11px]">
                             <MessageSquare className="w-3.5 h-3.5 text-[#8B9D83]" />
-                            <span>ملاحظات وأسئلة قبل الجلسة:</span>
+                            <span>{t.patientNotesTitle || "ملاحظات وأسئلة قبل الجلسة:"}</span>
                           </span>
                           <p className="text-gray-700 text-xs leading-relaxed line-clamp-3 font-normal">
                             {report.patientNotes}
@@ -744,7 +744,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         <div className="bg-[#F4F8F3] border border-[#C2DCBE] p-3 rounded-2xl space-y-1">
                           <span className="font-extrabold text-[#2D5A27] block flex items-center gap-1 text-[11px]">
                             <Stethoscope className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>رد المعالج النفسي والتوصيات:</span>
+                            <span>{t.therapistRecommendationsTitle || "رد المعالج النفسي والتوصيات:"}</span>
                           </span>
                           <p className="text-gray-800 text-xs leading-relaxed line-clamp-3 font-normal">
                             {report.therapistFeedback}
@@ -759,7 +759,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                     <div className="space-y-1.5 bg-[#F9FBF8] border border-[#C2DCBE] p-3 rounded-2xl">
                       <span className="text-[11px] font-extrabold text-[#2D5A27] flex items-center gap-1">
                         <ListTodo className="w-3.5 h-3.5 text-[#5A5A40]" />
-                        <span>المهام والتوصيات المطلوبة من المعالج النفسي:</span>
+                        <span>{t.therapistHomeworkTitle || "المهام والتوصيات المطلوبة من المعالج النفسي:"}</span>
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {report.therapistHomework.map((hw, idx) => (
@@ -775,7 +775,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                   {/* Action Buttons Footer */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#F0EDE4] pt-3">
                     <span className="text-[11px] text-gray-400 font-medium">
-                      رمز التقرير: #{report.id.slice(-6)}
+                      {t.reportIdCode || "رمز التقرير:"} #{report.id.slice(-6)}
                     </span>
 
                     <div className="flex items-center gap-2">
@@ -785,7 +785,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         className="px-3 py-1.5 bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition-all"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
-                        <span>تعديل الملاحظات ✏️</span>
+                        <span>{t.editNotesBtn || "تعديل الملاحظات ✏️"}</span>
                       </button>
 
                       <button
@@ -794,7 +794,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer border border-red-200 transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>حذف</span>
+                        <span>{t.delete || "حذف"}</span>
                       </button>
 
                       <button
@@ -803,7 +803,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
                         className="px-4 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-black rounded-xl flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all"
                       >
                         <BookOpen className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                        <span>استعراض وتصدير التقرير (PDF) 📄</span>
+                        <span>{t.viewExportPdfBtn || "استعراض وتصدير التقرير (PDF) 📄"}</span>
                       </button>
                     </div>
                   </div>

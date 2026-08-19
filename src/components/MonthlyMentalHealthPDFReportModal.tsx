@@ -184,7 +184,7 @@ const FormattedReportView: React.FC<{ content: string }> = ({ content }) => {
       );
     } else if (line.startsWith('> ') || line.startsWith('< ')) {
       elements.push(
-        <blockquote key={`quote-${currentKey++}`} className="bg-[#FAF8F5] border-r-4 border-[#8B9D83] p-2.5 sm:p-3 rounded-l-xl my-2 text-xs text-gray-700 font-medium leading-relaxed break-words max-w-full">
+        <blockquote key={`quote-${currentKey++}`} className="bg-[#FAF8F5] border-s-4 border-[#8B9D83] p-2.5 sm:p-3 rounded-s-xl my-2 text-xs text-gray-700 font-medium leading-relaxed break-words max-w-full">
           {parseInlineFormatting(line.replace(/^[><]\s*/, ''))}
         </blockquote>
       );
@@ -337,12 +337,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
       const target = new Date(now);
       target.setDate(now.getDate() - selectedOffset);
       const dayStr = target.toISOString().split('T')[0];
-      const dayName = selectedOffset === 0 ? 'اليوم' : selectedOffset === 1 ? 'الأمس' : `قبل ${selectedOffset} أيام`;
+      const dayName = selectedOffset === 0 ? (t.today || 'اليوم') : selectedOffset === 1 ? (t.yesterday || 'الأمس') : `${t.daysAgo || 'قبل'} ${selectedOffset} ${t.days || 'أيام'}`;
 
       return {
         startDateStr: dayStr,
         endDateStr: dayStr,
-        periodTitle: `تقرير الصحة النفسية اليومي (${dayName} - ${dayStr})`,
+        periodTitle: `${t.dailyMentalHealthReport || 'تقرير الصحة النفسية اليومي'} (${dayName} - ${dayStr})`,
         periodLabel: `${dayName} (${dayStr})`
       };
     }
@@ -1133,15 +1133,15 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   </h1>
                 </div>
                 <p className="text-[11px] text-gray-500 font-bold">
-                  منصة حياة AI | المستند السريري الشامل المجهز للمختص والأطباء النفسيين
+                  {t.clinicalDocumentSubtitle || "منصة حياة AI | المستند السريري الشامل المجهز للمختص والأطباء النفسيين"}
                 </p>
               </div>
 
               <div className="bg-[#F9F7F2] border border-[#E2DCC8] p-2.5 rounded-xl text-xs space-y-1 text-right shrink-0 w-full sm:w-auto">
-                <p className="font-bold text-[#5A5A40]">النطاق: <span className="font-black text-[#2B3E50]">{periodLabel}</span></p>
-                <p className="text-[10px] text-gray-500">تاريخ الإصدار: {new Date().toLocaleDateString('ar-EG')}</p>
+                <p className="font-bold text-[#5A5A40]">{t.reportScopeLabel || "النطاق:"} <span className="font-black text-[#2B3E50]">{periodLabel}</span></p>
+                <p className="text-[10px] text-gray-500">{t.issueDateLabel || "تاريخ الإصدار:"} {new Date().toLocaleDateString('ar-EG')}</p>
                 <span className="inline-block bg-[#8B9D83] text-white text-[9px] font-black px-2 py-0.5 rounded-md">
-                  سري ومحمي 🔒
+                  {t.confidentialProtectedBadge || "سري ومحمي 🔒"}
                 </span>
               </div>
             </div>
@@ -1626,13 +1626,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             {/* Search Bar & Count */}
             <div className="p-3 bg-[#F9F7F2] border-b border-[#E2DCC8] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
               <div className="relative flex-1 w-full">
-                <Search className="w-4 h-4 text-gray-400 absolute right-3 top-2.5" />
+                <Search className="w-4 h-4 text-gray-400 absolute start-3 top-2.5" />
                 <input
                   type="text"
                   value={historySearchQuery}
                   onChange={(e) => setHistorySearchQuery(e.target.value)}
                   placeholder={t.searchReportsPlaceholder}
-                  className="w-full bg-white border border-[#E2DCC8] rounded-xl pr-9 pl-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
+                  className="w-full bg-white border border-[#E2DCC8] rounded-xl ps-9 pe-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
                 />
               </div>
               <span className="text-xs font-bold text-[#5A5A40] bg-[#EAE7DC] px-3 py-1.5 rounded-xl border border-[#E2DCC8] shrink-0">

@@ -60,21 +60,23 @@ export default function PredictiveHealthInsightsModal({
     try {
       // Simulate/Run predictive AI analysis
       await new Promise(resolve => setTimeout(resolve, 1200));
-      if (isEn) {
-        setCustomAnalysis(
-          `🔮 **Predictive Analysis Summary:**\n\n` +
-          `• **Anxiety Spike Probability:** Low-to-Moderate (${anxietyRiskPercent}%). Identified stress triggers around workload and sleep duration.\n` +
-          `• **Sleep Pattern Forecast:** Average sleep is ${avgSleep} hrs/night. Recommended caffeine cutoff at 4:00 PM and 10 mins diaphragmatic breathing.\n` +
-          `• **Preventive Guidance:** Continue physical exercise (${avgSports} mins/day) and schedule a 5-minute gratitude reflection before bed.`
-        );
-      } else {
-        setCustomAnalysis(
-          `🔮 **ملخص الاستشعار والتنبؤ الذكي:**\n\n` +
-          `• **احتمالية نوبات القلق:** منخفضة إلى متوسطة (${anxietyRiskPercent}%). تم رصد ربط وثيق بين تراكم المهام ونقص ساعات النوم.\n` +
-          `• **توقعات جودة النوم:** متوسط نومك حالياً ${avgSleep} ساعة/ليلة. يُوصى ببدء الاسترخاء والتنفس البطني عند الساعة 10 مساءً وتجنب الشاشات.\n` +
-          `• **الخطة الوقائية:** الاستمرار في النشاط الرياضي (${avgSports} دقيقة/يوم) وممارسة جلسة الامتنان اليومية لرفع الاستقرار المزاجي.`
-        );
-      }
+      const summaryTitle = t.predictiveSummaryTitle || '🔮 Predictive Analysis Summary:';
+      const anxietyLabel = t.predictiveAnxietyLabel || '• **Anxiety Risk:**';
+      const sleepForecastLabel = t.predictiveSleepLabel || '• **Sleep Forecast:**';
+      const preventiveLabel = t.predictivePreventiveLabel || '• **Preventive Guidance:**';
+      const anxietyDetail = t.predictiveAnxietyDetail
+        ? t.predictiveAnxietyDetail.replace('{percent}', String(anxietyRiskPercent))
+        : `Low-to-Moderate (${anxietyRiskPercent}%). Stress triggers identified.`;
+      const sleepDetail = t.predictiveSleepDetail
+        ? t.predictiveSleepDetail.replace('{hours}', String(avgSleep))
+        : `Average sleep: ${avgSleep} hrs/night. Recommended cutoff at 4 PM.`;
+      const preventiveDetail = t.predictivePreventiveDetail
+        ? t.predictivePreventiveDetail.replace('{mins}', String(avgSports))
+        : `Continue exercise (${avgSports} mins/day) and gratitude sessions.`;
+
+      setCustomAnalysis(
+        `${summaryTitle}\n\n${anxietyLabel} ${anxietyDetail}\n${sleepForecastLabel} ${sleepDetail}\n${preventiveLabel} ${preventiveDetail}`
+      );
     } catch {
       // Fallback
     } finally {

@@ -168,7 +168,7 @@ export default function PasskeyAuth({
         <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-amber-900 text-xs font-bold space-y-1.5 animate-in fade-in duration-300">
           <div className="flex items-center space-x-2 space-x-reverse text-amber-800 font-black">
             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>تنبيه نظام الأمان (Fallback Security Notice)</span>
+            <span>{t.securitySystemAlert || 'Security Alert'}</span>
           </div>
           <p className="text-[11.5px] leading-relaxed text-amber-900/90 font-bold">
             {fallbackNotice}

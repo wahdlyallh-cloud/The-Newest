@@ -142,16 +142,16 @@ export default function ProsConsHistoryLog({
           <div style="margin-bottom: 30px; border: 1px solid #E2DCC8; padding: 15px; border-radius: 10px;">
             <h2 style="color: #3B5066;">📅 ${r.displayDate} (${r.dayKey})</h2>
             
-            <h3 style="color: #2D5A27;">🧠 الإيجابيات المولدة بالذكاء الاصطناعي:</h3>
+            <h3 style="color: #2D5A27;">${t.aiGeneratedPros || '🧠 Positives (AI):'}</h3>
             <ul>${(r.aiPositives || []).map(p => `<li>${p}</li>`).join('')}</ul>
 
-            <h3 style="color: #902923;">🧠 السلبيات المولدة بالذكاء الاصطناعي:</h3>
+            <h3 style="color: #902923;">${t.aiGeneratedCons || '🧠 Negatives (AI):'}</h3>
             <ul>${(r.aiNegatives || []).map(n => `<li>${n}</li>`).join('')}</ul>
 
-            <h3 style="color: #2D5A27;">✍️ الإيجابيات المدخلة يدوياً:</h3>
+            <h3 style="color: #2D5A27;">${t.manualPros || '✍️ Manual Positives:'}</h3>
             <ul>${(r.userPositives || []).map(p => `<li>${p}</li>`).join('')}</ul>
 
-            <h3 style="color: #902923;">✍️ السلبيات المدخلة يدوياً:</h3>
+            <h3 style="color: #902923;">${t.manualCons || '✍️ Manual Negatives:'}</h3>
             <ul>${(r.userNegatives || []).map(n => `<li>${n}</li>`).join('')}</ul>
           </div>
         `).join('')}

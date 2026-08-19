@@ -72,7 +72,7 @@ export default function AthkarHeaderIcon({
           whileTap={{ scale: 0.95 }}
           onClick={onOpenFullAthkar}
           className="relative group flex items-center justify-center p-2 rounded-2xl bg-gradient-to-b from-zinc-900/90 via-emerald-950/80 to-zinc-950 border border-amber-500/40 hover:border-amber-400 shadow-lg shadow-amber-500/10 cursor-pointer transition-all duration-300"
-          title="أذكار المسلم - فتح الشاشة الكاملة المباشرة"
+          title={t.muslimAthkarFullScreenTitle || "أذكار المسلم - فتح الشاشة الكاملة المباشرة"}
         >
           {/* Pulsing Golden Beam */}
           <div className="absolute inset-0 rounded-2xl bg-amber-400/10 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-300 pointer-events-none" />
@@ -184,7 +184,7 @@ export default function AthkarHeaderIcon({
                 >
                   <span className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                    <span>عرض الشاشة الكاملة (Full Screen)</span>
+                    <span>{t.fullScreenView || 'Full Screen View'}</span>
                   </span>
                   <span className="text-amber-400 font-mono text-[10px]">←</span>
                 </button>
@@ -198,9 +198,9 @@ export default function AthkarHeaderIcon({
                 >
                   <span className="flex items-center gap-2">
                     <Lock className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-                    <span>وضع شاشة القفل المدمجة</span>
+                    <span>{t.integratedLockScreenMode || 'Integrated Lock Screen Mode'}</span>
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">تفاعلي</span>
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">{t.interactiveMode || 'Interactive'}</span>
                 </button>
               </div>
 

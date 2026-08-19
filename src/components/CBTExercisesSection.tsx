@@ -76,14 +76,14 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
   const localizedDistortions = COGNITIVE_DISTORTIONS.map(d => ({
     ...d,
-    name: t['distortion_' + d.id] || d.id,
-    desc: t['distortion_desc_' + d.id] || ''
+    name: t['distortion_' + d.id] || (isAr ? d.nameAr : d.nameEn) || d.id,
+    desc: t['distortion_desc_' + d.id] || (isAr ? d.descAr : d.descEn) || ''
   }));
 
   const localizedCopingCards = PREBUILT_COPING_CARDS.map(c => ({
     ...c,
-    title: t['coping_title_' + c.id] || c.id,
-    text: t['coping_text_' + c.id] || ''
+    title: t['coping_title_' + c.id] || (isAr ? c.titleAr : c.titleEn) || c.id,
+    text: t['coping_text_' + c.id] || (isAr ? c.textAr : c.textEn) || ''
   }));
   // Main Sub-Tab view
   const [activeTab, setActiveTab] = useState<
@@ -179,7 +179,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
   // Helper to delete CBT Worksheet
   const handleDeleteCbtItem = (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا التمرين العلاجي؟')) {
+    if (confirm(t.confirmDeleteExercise || 'هل أنت متأكد من حذف هذا التمرين العلاجي؟')) {
       const updated = todaysCbtWorksheets.filter(w => w.id !== id);
       handleUpdateHabit('cbt', updated);
     }
@@ -213,7 +213,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
     } catch (e) {
       // Fallback Arabic rational alternative
       setTrRationalAlt(
-        `الفكرة "${trNegativeThought}" هي مجرد فرضية ذهنية مؤقتة. دعنا ننظر للواقع بإنصاف: هناك تفسيرات متزنة أكثر، وحقيقة الموقف لا تعني النهاية السيئة المتوقعة.`
+        t('cbtThoughtReframe', { thought: trNegativeThought }) || `الفكرة "${trNegativeThought}" هي مجرد فرضية ذهنية مؤقتة. دعنا ننظر للواقع بإنصاف: هناك تفسيرات متزنة أكثر، وحقيقة الموقف لا تعني النهاية السيئة المتوقعة.`
       );
     } finally {
       setTrAiLoading(false);
@@ -229,7 +229,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       }, 1000);
     } else if (worryTimerSeconds === 0) {
       setWorryTimerRunning(false);
-      alert('انتهت 15 دقيقة المخصصة لساعة القلق اليومية! حان الوقت لإغلاق الصندوق والتفرغ لحياتك الحالية. 🧘✨');
+      alert(t.worryHourEnded || 'انتهت 15 دقيقة المخصصة لساعة القلق اليومية! حان الوقت لإغلاق الصندوق والتفرغ لحياتك الحالية. 🧘✨');
     }
     return () => clearInterval(timer);
   }, [worryTimerRunning, worryTimerSeconds]);

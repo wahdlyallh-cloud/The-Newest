@@ -119,14 +119,14 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
               <button
                 type="button"
                 onClick={() => setStep('type_selection')}
-                className="p-1 hover:bg-white/10 rounded-full transition-all cursor-pointer ml-1"
+                className="p-1 hover:bg-white/10 rounded-full transition-all cursor-pointer ms-1"
                 title={t.back_btn}
               >
                 <ArrowRight className="w-5 h-5 text-white" />
               </button>
             )}
             <h3 className="font-bold text-base md:text-lg">
-              {step === 'type_selection' ? (t['habit.choose_type'] || 'اختر نوع العادة') : initialHabit ? (t['habit.edit'] || '{t.editHabitModalTitle || "Edit Habit"}') : (t['habit.create'] || 'إنشاء العادة')}
+              {step === 'type_selection' ? (t['habit.choose_type'] || 'اختر نوع العادة') : initialHabit ? (t.editHabitModalTitle || t['habit.edit'] || 'Edit Habit') : (t['habit.create'] || 'إنشاء العادة')}
             </h3>
           </div>
 
@@ -293,7 +293,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
                       <input
                         type="number"
                         min="1"
-                        placeholder="مثال: 15"
+                        placeholder={t.habitTargetExample || "مثال: 15"}
                         value={targetValue}
                         onChange={(e) => setTargetValue(e.target.value)}
                         className="w-full py-2 px-3 bg-white border border-gray-300 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-blue-500"
@@ -305,7 +305,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
                       <label className="text-[11px] font-bold text-gray-600 block">{t['habit.unit'] || 'الوحدة'}</label>
                       <input
                         type="text"
-                        placeholder="مثلا: كيلومترات"
+                        placeholder={t.habitUnitExample || "مثلا: كيلومترات"}
                         value={unit}
                         onChange={(e) => setUnit(e.target.value)}
                         className="w-full py-2 px-3 bg-white border border-gray-300 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-blue-500"

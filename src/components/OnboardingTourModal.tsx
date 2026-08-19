@@ -459,13 +459,13 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         <div className="p-4 sm:px-6 sm:py-4 border-t border-gray-100 bg-[#FAF8F5]/90 space-y-3">
 
           {/* Dots Indicator */}
-          <div className="flex items-center justify-center gap-1.5" aria-label="Tour progress">
+          <div className="flex items-center justify-center gap-1.5" aria-label={t.tourProgress || 'Tour progress'}>
             {steps.map((s, idx) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => setCurrentStep(idx)}
-                aria-label={`الانتقال إلى ${s.title}`}
+                aria-label={`${t.goToSection || 'Go to'} ${s.title}`}
                 className={`h-2 rounded-full transition-all cursor-pointer ${
                   idx === currentStep
                     ? 'w-6 bg-[#2B3E50]'

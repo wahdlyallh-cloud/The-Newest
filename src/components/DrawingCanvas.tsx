@@ -210,7 +210,7 @@ export default function DrawingCanvas({
             className="flex items-center space-x-1 space-x-reverse px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-[#E2DCC8] rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
-            <span>إلغاء</span>
+            <span>{t.cancel || 'Cancel'}</span>
           </button>
           
           <button
@@ -241,7 +241,7 @@ export default function DrawingCanvas({
                 onClick={handleSave}
                 className="text-xs font-bold text-emerald-700 hover:text-emerald-900 px-4 py-2 rounded-lg bg-emerald-50 cursor-pointer"
               >
-                حفظ
+                {t.saveDrawing || "Save Drawing"}
               </button>
             </div>
           </div>

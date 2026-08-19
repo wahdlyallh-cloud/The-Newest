@@ -256,10 +256,10 @@ export default function GeminiKeyModal({
                     <span>{maskApiKey(entry.key)}</span>
                     <button
                       type="button"
-                      onClick={() => alert(`مفتاح API الكامل:\n${entry.key}`)}
+                      onClick={() => alert(`${t.fullApiKey || 'Full API Key'}:\n${entry.key}`)}
                       className="text-gray-400 hover:text-gray-600 p-1 text-[11px] font-sans font-bold"
                     >
-                      إظهار
+                      {t.showBtn || 'إظهار'}
                     </button>
                   </div>
 

@@ -3,6 +3,8 @@
  * Manages `yawmiyaty_ai_athkar_context` in localStorage and provides
  * global context injection for AI Advisors, Therapy Reports, and Chat endpoints.
  */
+import { AppLanguage } from '../types';
+import { getTranslation } from '../lib/languages';
 
 export interface AthkarAIContext {
   timestamp: string;
@@ -31,15 +33,16 @@ const STORAGE_KEY_DHIKR_DATA = 'yawmiyaty_dhikr_data_v2';
 /**
  * Derives a human-readable psychological and spiritual status based on athkar completion.
  */
-function derivePsychologicalSpiritualStatus(rate: number, streak: number, lastCategory: string): string {
+function derivePsychologicalSpiritualStatus(rate: number, streak: number, lastCategory: string, langCode: string = 'ar'): string {
+  const t = getTranslation(langCode);
   if (rate >= 90) {
-    return `التزام ممتاز جداً (${rate}%)، ارتفاع ملحوظ في السكينة النفسية والانشراح مع انتظام ${lastCategory || 'الأذكار'}.`;
+    return `${t.statusExcellent || 'التزام ممتاز جداً'} (${rate}%)، ${t.statusExcellentDesc || 'ارتفاع ملحوظ في السكينة النفسية والانشراح مع انتظام'} ${lastCategory || 'الأذكار'}.`;
   } else if (rate >= 60) {
-    return `التزام جيد جداً (${rate}%)، تحسن في الاستقرار النفسي والهدوء الذاتي متواصل منذ ${streak} أيام.`;
+    return `${t.statusGood || 'التزام جيد جداً'} (${rate}%)، ${t.statusGoodDesc || 'تحسن في الاستقرار النفسي والهدوء الذاتي متواصل منذ'} ${streak} ${t.days || 'أيام'}.`;
   } else if (rate >= 30) {
-    return `التزام متوسط (${rate}%)، يوصى بقضاء 5 دقائق في أذكار المساء أو التسبيح لتخفيف توتر اليوم.`;
+    return `${t.statusMedium || 'التزام متوسط'} (${rate}%)، ${t.statusMediumDesc || 'يوصى بقضاء 5 دقائق في أذكار المساء أو التسبيح لتخفيف توتر اليوم.'}`;
   } else {
-    return `نسبة الإنجاز منخفضة (${rate}%)، تذكر أن الأذكار طمأنينة للقلب وتخفيف للضغوط النفسية.`;
+    return `${t.statusLow || 'نسبة الإنجاز منخفضة'} (${rate}%)، ${t.statusLowDesc || 'تذكر أن الأذكار طمأنينة للقلب وتخفيف للضغوط النفسية.'}`;
   }
 }
 
@@ -52,7 +55,7 @@ export function updateAthkarContextOnTap(params?: {
   lastDhikrRead?: string;
   remainingInCategory?: number;
   incrementTaps?: number;
-}): AthkarAIContext {
+}, langCode: string = 'ar'): AthkarAIContext {
   const todayDateStr = new Date().toISOString().split('T')[0];
 
   // 1. Load total taps today
@@ -146,7 +149,8 @@ export function updateAthkarContextOnTap(params?: {
   const psychologicalSpiritualStatus = derivePsychologicalSpiritualStatus(
     completionRatePercentage,
     streakDays,
-    category
+    category,
+    langCode
   );
 
   const context: AthkarAIContext = {
@@ -180,7 +184,7 @@ export function updateAthkarContextOnTap(params?: {
  * Retrieves the current Athkar AI Context object from localStorage.
  * Returns a fallback context if not initialized yet.
  */
-export function getAthkarContextForAI(): AthkarAIContext {
+export function getAthkarContextForAI(langCode: string = 'ar'): AthkarAIContext {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_AI_CONTEXT);
     if (raw) {
@@ -192,15 +196,15 @@ export function getAthkarContextForAI(): AthkarAIContext {
   }
 
   // Fallback / Initial default
-  return updateAthkarContextOnTap();
+  return updateAthkarContextOnTap(undefined, langCode);
 }
 
 /**
  * Returns a clean, structured Arabic string representation of the Athkar Context
  * suitable for embedding directly into Gemini system instructions or prompt contexts.
  */
-export function getFormattedAthkarPromptContext(): string {
-  const ctx = getAthkarContextForAI();
+export function getFormattedAthkarPromptContext(langCode: string = 'ar'): string {
+  const ctx = getAthkarContextForAI(langCode);
   const completedStr = ctx.dailyStats.completedCategories.length > 0
     ? ctx.dailyStats.completedCategories.join('، ')
     : 'لم تكتمل أذَكار كاملة بعد اليوم';

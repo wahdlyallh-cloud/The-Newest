@@ -1371,7 +1371,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 triggerFilePicker();
                 setShowAttachmentMenu(false);
               }}
-              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
+              className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
               <span className="text-base">📁</span>
               <span className="font-bold">{t.smartAdvisorMediaUploadOption || 'Image / Video / Document / Audio'}</span>
@@ -1385,7 +1385,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 setActiveAttachmentType('link');
                 setShowAttachmentMenu(false);
               }}
-              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-blue-700 transition-colors cursor-pointer"
+              className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-blue-700 transition-colors cursor-pointer"
             >
               <span className="text-base">🌐</span>
               <span className="font-bold">{t.smartAdvisorWebLinkCategory || 'Web Link'}</span>
@@ -1399,7 +1399,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 setActiveAttachmentType('video');
                 setShowAttachmentMenu(false);
               }}
-              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer"
+              className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer"
             >
               <span className="text-base">🎥</span>
               <span className="font-bold">{t.smartAdvisorVideoLinkCategory || 'Video Link'}</span>
@@ -1413,7 +1413,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 setActiveAttachmentType('pdf');
                 setShowAttachmentMenu(false);
               }}
-              className="w-full text-right flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-50 text-red-700 transition-colors cursor-pointer"
+              className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-50 text-red-700 transition-colors cursor-pointer"
             >
               <span className="text-base">📄</span>
               <span className="font-bold">{t.smartAdvisorPdfDocCategory || 'PDF Document Info'}</span>

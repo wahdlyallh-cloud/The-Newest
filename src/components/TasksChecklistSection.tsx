@@ -318,18 +318,17 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
   // Dynamic Calorie Estimator
   const getEstimatedCalories = (durationMins: number, typeStr: string, intensityStr?: string) => {
     if (!durationMins || durationMins <= 0) return 0;
-    let baseRate = 5.0; // kcal/min
-    if (typeStr.includes('مشي')) baseRate = 4.5;
-    else if (typeStr.includes('قوة') || typeStr.includes('حديد')) baseRate = 7.5;
-    else if (typeStr.includes('يوجا') || typeStr.includes('استطالة')) baseRate = 3.5;
-    else if (typeStr.includes('جري') || typeStr.includes('كارديو')) baseRate = 11.0;
-    else if (typeStr.includes('دراجة')) baseRate = 8.0;
-    else if (typeStr.includes('سباحة')) baseRate = 9.5;
-
+    let baseRate = 5.0;
+    const ts = typeStr.toLowerCase();
+    if (ts.includes('مشي') || ts.includes('walk')) baseRate = 4.5;
+    else if (ts.includes('قوة') || ts.includes('حديد') || ts.includes('weight') || ts.includes('strength')) baseRate = 7.5;
+    else if (ts.includes('يوجا') || ts.includes('استطالة') || ts.includes('yoga') || ts.includes('stretch')) baseRate = 3.5;
+    else if (ts.includes('جري') || ts.includes('كارديو') || ts.includes('run') || ts.includes('cardio')) baseRate = 11.0;
+    else if (ts.includes('دراجة') || ts.includes('bike') || ts.includes('cycl')) baseRate = 8.0;
+    else if (ts.includes('سباحة') || ts.includes('swim')) baseRate = 9.5;
     let intensityMult = 1.0;
     if (intensityStr === 'light') intensityMult = 0.8;
     else if (intensityStr === 'high') intensityMult = 1.35;
-
     return Math.round(durationMins * baseRate * intensityMult);
   };
   
@@ -611,7 +610,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
               </div>
 
               <div className="text-left font-sans">
-                <span className="text-[10px] text-gray-400 font-bold block">{t.overallCompletionRateLabel || "Overall Completion Rate"}</span>
+                <span className="text-[10px] text-gray-400 font-bold block">{t.overallCompletionRateLabel || 'Overall Completion Rate'}</span>
                 <span className="text-lg font-black text-[#8B9D83]">{completionPercentage}%</span>
               </div>
             </div>
@@ -647,15 +646,15 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
               <div className="grid grid-cols-3 gap-3 pt-1">
                 <div className="text-center p-2 rounded-xl bg-white/60 border border-[#E2DCC8]/30">
-                  <span className="text-[10px] text-gray-400 font-bold block">{t.customTasksStatLabel || "Custom Tasks"}</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.customTasksStatLabel || 'Custom Tasks'}</span>
                   <span className="text-xs font-bold text-gray-700">{completedCustomTasks}/{totalCustomTasks}</span>
                 </div>
                 <div className="text-center p-2 rounded-xl bg-white/60 border border-[#E2DCC8]/30">
-                  <span className="text-[10px] text-gray-400 font-bold block">{t.behavioralRoutineStatLabel || "Behavioral Routine"}</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.behavioralRoutineStatLabel || 'Behavioral Routine'}</span>
                   <span className="text-xs font-bold text-gray-700">{completedHabits}/{totalHabits}</span>
                 </div>
                 <div className="text-center p-2 rounded-xl bg-white/60 border border-[#E2DCC8]/30">
-                  <span className="text-[10px] text-gray-400 font-bold block">{t.therapeuticMedicationStatLabel || "Medications"}</span>
+                  <span className="text-[10px] text-gray-400 font-bold block">{t.therapeuticMedicationStatLabel || 'Medications'}</span>
                   <span className="text-xs font-bold text-gray-700">{completedMedsCount}/1</span>
                 </div>
               </div>
@@ -675,7 +674,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                     <span>📋</span>
-                    <span>{t.dailyTasksAndDutiesHeader || "Daily Tasks & Duties"}</span>
+                    <span>{t.dailyTasksAndDutiesHeader || 'Daily Tasks & Duties'}</span>
                   </h4>
                   <p className="text-[10px] text-gray-500 font-medium">
                     {t.dailyTasksDutiesSub || "Write your personal to-do list and clear your mind of today's tasks."}
@@ -708,8 +707,8 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 {tasks.length === 0 ? (
                   <div className="bg-[#F9F7F2]/40 border border-dashed border-[#E2DCC8]/60 rounded-2xl p-6 text-center text-xs text-gray-400">
                     <Smile className="w-8 h-8 mx-auto mb-1.5 opacity-40 text-[#8B9D83]" />
-                    <p className="font-bold text-[#5A5A40]">لا توجد مهام مخصصة لليوم حتى الآن.</p>
-                    <p className="text-[10px] mt-0.5 text-gray-400">دون مهامك لتتبعها وإنجازها بسهولة.</p>
+                    <p className="font-bold text-[#5A5A40]">{t.noTasksForToday || "لا توجد مهام مخصصة لليوم حتى الآن."}</p>
+                    <p className="text-[10px] mt-0.5 text-gray-400">{t.noTasksForTodaySub || "دون مهامك لتتبعها وإنجازها بسهولة."}</p>
                   </div>
                 ) : (
                   <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
@@ -763,7 +762,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                   <div className="space-y-1">
                     <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                       <span>💊</span>
-                      <span>تتبع الأدوية والفيتامينات اليومية</span>
+                      <span>{t.trackMedsAndVitamins || "تتبع الأدوية والفيتامينات اليومية"}</span>
                     </h4>
                     <p className="text-[10px] text-gray-500 font-medium">
                       سجل جرعات دوائك ومكملاتك العلاجية للحفاظ على مستوياتك الحيوية مستقرة.
@@ -774,17 +773,17 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                     type="button"
                     onClick={() => setShowMedicationModal(true)}
                     className="p-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
-                    title="إضافة دواء أو مكمل جديد"
+                    title={t.addMedOrSupplement || "إضافة دواء أو مكمل جديد"}
                   >
                     <Plus className="w-4 h-4" />
-                    <span>إضافة دواء</span>
+                    <span>{t.addMedicationBtn || 'إضافة دواء'}</span>
                   </button>
                 </div>
 
                 {medicationsList.length === 0 ? (
                   <div className="bg-[#F9F7F2]/40 border border-dashed border-[#E2DCC8]/60 rounded-2xl p-4 text-center text-xs text-gray-400 space-y-1">
-                    <p className="font-bold text-gray-600">لا توجد أدوية أو مكملات مضافة لليوم</p>
-                    <p className="text-[10px]">اضغط على "إضافة دواء" لإضافة جرعتك اليومية ومتابعة التزامك.</p>
+                    <p className="font-bold text-gray-600">{t.noMedicationsToday || 'لا توجد أدوية أو مكملات مضافة لليوم'}</p>
+                    <p className="text-[10px]">{t.addMedicationHint || 'اضغط على "إضافة دواء" لإضافة جرعتك اليومية ومتابعة التزامك.'}</p>
                   </div>
                 ) : (
                   <div className="space-y-2.5">
@@ -814,7 +813,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                               {med.name}
                             </span>
                             <span className="text-[9px] text-gray-400 block font-bold">
-                              الموعد المحدد: {med.time}
+                              {t.timeDetermined || 'الموعد المحدد:'} {med.time}
                             </span>
                           </div>
                         </div>
@@ -829,14 +828,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                                 : 'bg-[#F0EDE4] text-[#5A5A40] hover:bg-[#E2DCC8]'
                             }`}
                           >
-                            {med.taken ? '✓ تم التناول' : 'تحديد كمنجز'}
+                            {med.taken ? (t.medicationTakenBtn || '✓ تم التناول') : (t.markAsDoneBtn || 'تحديد كمنجز')}
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleDeleteMedication(med.id)}
                             className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                            title="حذف هذا الدواء"
+                            title={t.deleteMedicationTitle || 'حذف هذا الدواء'}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -859,7 +858,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                   <div className="space-y-1">
                     <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                       <span>🎯</span>
-                      <span>الروتين والعادات السلوكية</span>
+                      <span>{t.behavioralRoutinesHealth || 'الروتين والعادات السلوكية'}</span>
                     </h4>
                     <p className="text-[10px] text-gray-500 font-medium">
                       سجل تكرار التزامك بالعادات السلوكية اليومية الإيجابية.
@@ -874,15 +873,15 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                     className="p-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>إنشاء عادة</span>
+                    <span>{t.createHabitBtn || 'إنشاء عادة'}</span>
                   </button>
                 </div>
 
                 {habits.length === 0 ? (
                   <div className="bg-[#F9F7F2]/40 border border-dashed border-[#E2DCC8]/60 rounded-2xl p-6 text-center text-xs text-gray-400">
                     <AlertCircle className="w-8 h-8 mx-auto mb-1.5 opacity-40 text-[#8B9D83]" />
-                    <p className="font-bold text-[#5A5A40]">لا توجد عادات سلوكية مسجلة حالياً.</p>
-                    <p className="text-[10px] mt-0.5 text-gray-400">يمكنك إضافة عادات جديدة بالضغط على زر "إنشاء عادة".</p>
+                    <p className="font-bold text-[#5A5A40]">{t.noHabitsToday || 'لا توجد عادات سلوكية مسجلة حالياً.'}</p>
+                    <p className="text-[10px] mt-0.5 text-gray-400">{t.createHabitHint || 'يمكنك إضافة عادات جديدة بالضغط على زر "إنشاء عادة".'}</p>
                   </div>
                 ) : (
                   <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
@@ -893,7 +892,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       else if (typeof val === 'number') isCompleted = val >= (habit.targetValue || 1);
                       else if (typeof val === 'object' && val) isCompleted = val.completed;
 
-                      const categoryName = CATEGORY_NAMES[habit.category] || 'أخرى 🎯';
+                      const categoryName = CATEGORY_NAMES[habit.category] || t.otherCategory || t.otherCategory || 'أخرى 🎯';
                       const categoryColor = CATEGORY_COLORS[habit.category] || CATEGORY_COLORS.custom;
 
                       return (
@@ -952,7 +951,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                     <span>🥦</span>
-                    <span>المقاييس الصحية والبدنية</span>
+                    <span>{t.physicalHealthTargets || 'المقاييس الصحية والبدنية'}</span>
                   </h4>
                   <p className="text-[10px] text-gray-500 font-medium">
                     سجل قياسات الجسد والنشاط لأنها تؤثر مباشرة على هرمونات مزاجك العصبي.
@@ -966,7 +965,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                     <div className="flex justify-between items-center text-xs font-bold text-gray-700">
                       <span className="flex items-center gap-1">
                         <Moon className="w-4 h-4 text-indigo-500" />
-                        <span>ساعات النوم:</span>
+                        <span>{t.sleepHoursLabel || "ساعات النوم:"}</span>
                       </span>
                       <span className="font-mono text-[#8B9D83]">{sleepHours} ساعات</span>
                     </div>
@@ -991,7 +990,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                         </div>
                         <div>
                           <h4 className="text-sm sm:text-base font-extrabold text-[#3A3A3A] flex items-center gap-1.5">
-                            <span>النشاط البدني واللياقة الرياضية</span>
+                            <span>{t.sportsAndFitness || 'النشاط البدني واللياقة الرياضية'}</span>
                             <span className="text-xs text-amber-600">⚡</span>
                           </h4>
                           <p className="text-[11px] text-gray-500 font-medium">
@@ -1022,19 +1021,19 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       <label className="text-xs font-extrabold text-[#5A5A40] flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
                           <Trophy className="w-4 h-4 text-amber-600" />
-                          <span>1. اختر نوع التمرين اليوم:</span>
+                          <span>{t.chooseWorkoutType || '1. اختر نوع التمرين اليوم:'}</span>
                         </span>
-                        <span className="text-[10px] text-gray-400 font-bold">محدد: {sportsType}</span>
+                        <span className="text-[10px] text-gray-400 font-bold">{t.selectedWorkout || 'محدد:'} {sportsType}</span>
                       </label>
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                         {[
-                          { id: 'walking', name: 'مشي', emoji: '🚶‍♂️', desc: 'مشي خفيف/سريع' },
-                          { id: 'strength', name: 'تمارين قوة', emoji: '🏋️‍♂️', desc: 'حديد ومقاومة' },
-                          { id: 'yoga', name: 'يوجا واستطالة', emoji: '🧘‍♀️', desc: 'استرخاء وتنفس' },
-                          { id: 'cardio', name: 'جري وكارديو', emoji: '🏃‍♂️', desc: 'لياقة وزيادة نبض' },
-                          { id: 'cycling', name: 'دراجة هوائية', emoji: '🚴‍♂️', desc: 'دراجة ثابتة/خارجية' },
-                          { id: 'swimming', name: 'سباحة', emoji: '🏊‍♂️', desc: 'تمارين مائية' },
+                          { id: 'walking', name: t.sportWalking || 'مشي', emoji: '🚶‍♂️', desc: t.sportWalkingDesc || 'مشي خفيف/سريع' },
+                          { id: 'strength', name: t.sportStrength || 'تمارين قوة', emoji: '🏋️‍♂️', desc: t.sportStrengthDesc || 'حديد ومقاومة' },
+                          { id: 'yoga', name: t.sportYoga || 'يوجا واستطالة', emoji: '🧘‍♀️', desc: t.sportYogaDesc || 'استرخاء وتنفس' },
+                          { id: 'cardio', name: t.sportCardio || 'جري وكارديو', emoji: '🏃‍♂️', desc: t.sportCardioDesc || 'لياقة وزيادة نبض' },
+                          { id: 'cycling', name: t.sportCycling || 'دراجة هوائية', emoji: '🚴‍♂️', desc: t.sportCyclingDesc || 'دراجة ثابتة/خارجية' },
+                          { id: 'swimming', name: t.sportSwimming || 'سباحة', emoji: '🏊‍♂️', desc: t.sportSwimmingDesc || 'تمارين مائية' },
                         ].map((typeItem) => {
                           const isSelected = sportsType === typeItem.name;
                           return (
@@ -1045,7 +1044,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                                 handleUpdateHabit('sportsType', typeItem.name);
                                 showToast(`تم تحديد نوع التمرين: ${typeItem.name} ${typeItem.emoji}`);
                               }}
-                              className={`p-2.5 rounded-2xl border text-right transition-all cursor-pointer flex items-center space-x-2 space-x-reverse ${
+                              className={`p-2.5 rounded-2xl border text-start transition-all cursor-pointer flex items-center space-x-2 space-x-reverse ${
                                 isSelected
                                   ? 'bg-amber-50/90 border-amber-400 text-amber-900 shadow-2xs font-extrabold ring-2 ring-amber-300/60 scale-[1.02]'
                                   : 'bg-white hover:bg-gray-50 border-[#E2DCC8]/80 text-[#3A3A3A]'
@@ -1069,14 +1068,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                         <label className="text-xs font-extrabold text-[#5A5A40] flex items-center justify-between">
                           <span className="flex items-center gap-1.5">
                             <Zap className="w-3.5 h-3.5 text-amber-600" />
-                            <span>2. مستوى شدة المجهود البدني:</span>
+                            <span>{t.workoutIntensity || '2. مستوى شدة المجهود البدني:'}</span>
                           </span>
                         </label>
                         <div className="grid grid-cols-3 gap-1.5">
                           {[
-                            { id: 'light', label: 'خفيف 🟢', desc: 'مجهود بسيط' },
-                            { id: 'medium', label: 'متوسط 🟡', desc: 'معتدل متوازن' },
-                            { id: 'high', label: 'مكثف 🔴', desc: 'عالي الجهد' },
+                            { id: 'light', label: t.intensityLight || 'خفيف 🟢', desc: t.intensityLightDesc || 'مجهود بسيط' },
+                            { id: 'medium', label: t.intensityMedium || 'متوسط 🟡', desc: t.intensityMediumDesc || 'معتدل متوازن' },
+                            { id: 'high', label: t.intensityHigh || 'مكثف 🔴', desc: t.intensityHighDesc || 'عالي الجهد' },
                           ].map((intItem) => {
                             const isSelected = sportsIntensity === intItem.id;
                             return (
@@ -1106,7 +1105,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                         <div className="flex justify-between items-center text-xs font-bold text-gray-700">
                           <span className="flex items-center gap-1.5 text-[#5A5A40]">
                             <Activity className="w-4 h-4 text-amber-500" />
-                            <span>3. المدة المسجلة (دقائق):</span>
+                            <span>{t.recordedDuration || '3. المدة المسجلة (دقائق):'}</span>
                           </span>
                           <span className="font-mono text-[#8B9D83] font-black text-sm">{sportsDuration} دقيقة</span>
                         </div>
@@ -1149,7 +1148,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-gray-100 pb-2">
                         <span className="text-xs font-extrabold text-[#5A5A40] flex items-center gap-1.5">
                           <HeartPulse className="w-4 h-4 text-rose-500" />
-                          <span>مقياس مستوى الطاقة والانتعاش النفسي (قبل وبعد التمرين):</span>
+                          <span>{t.mentalMoodEnergy || 'مقياس مستوى الطاقة والانتعاش النفسي (قبل وبعد التمرين):'}</span>
                         </span>
                         {sportsEnergyAfter > sportsEnergyBefore && (
                           <span className="text-[10px] font-black text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full self-start sm:self-auto">
@@ -1161,7 +1160,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         {/* Energy Before */}
                         <div className="flex items-center justify-between bg-[#FBF9F5] p-2 rounded-xl border border-[#E2DCC8]/50">
-                          <span className="font-bold text-gray-700">⚡ قبل التمرين:</span>
+                          <span className="font-bold text-gray-700">{t.beforeWorkout || '⚡ قبل التمرين:'}</span>
                           <div className="flex items-center space-x-1 space-x-reverse">
                             {[1, 2, 3, 4, 5].map((lvl) => (
                               <button
@@ -1182,7 +1181,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
                         {/* Energy After */}
                         <div className="flex items-center justify-between bg-[#FBF9F5] p-2 rounded-xl border border-[#E2DCC8]/50">
-                          <span className="font-bold text-gray-700">🚀 بعد التمرين:</span>
+                          <span className="font-bold text-gray-700">{t.afterWorkout || '🚀 بعد التمرين:'}</span>
                           <div className="flex items-center space-x-1 space-x-reverse">
                             {[1, 2, 3, 4, 5].map((lvl) => (
                               <button
@@ -1208,7 +1207,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center space-x-1.5 space-x-reverse text-xs font-extrabold text-[#5A5A40]">
                           <Timer className="w-4 h-4 text-amber-600" />
-                          <span>مؤقت التمرين المباشر ({sportsType}):</span>
+                          <span>{t.liveWorkoutTimer || 'مؤقت التمرين المباشر'} ({sportsType}):</span>
                         </div>
 
                         {/* Mode Switcher: Stopwatch vs Tabata */}
@@ -1217,13 +1216,13 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                             type="button"
                             onClick={() => {
                               setTimerMode('stopwatch');
-                              showToast('تم التحويل لنظام مؤقت عادي ⏱️');
+                              showToast(`تم التحويل لنظام ${t.regularTimer || 'مؤقت عادي ⏱️'}`);
                             }}
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                               timerMode === 'stopwatch' ? 'bg-white text-[#3A3A3A] shadow-3xs font-black' : 'text-gray-600'
                             }`}
                           >
-                            مؤقت عادي ⏱️
+                            {t.regularTimer || 'مؤقت عادي ⏱️'}
                           </button>
                           <button
                             type="button"
@@ -1235,7 +1234,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                               timerMode === 'tabata' ? 'bg-amber-500 text-white shadow-3xs font-black' : 'text-gray-600'
                             }`}
                           >
-                            تاباتا HIIT ⚡
+                            {t.tabataTimer || 'تاباتا HIIT ⚡'}
                           </button>
                         </div>
                       </div>
@@ -1255,10 +1254,10 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                                   ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
                                   : 'bg-emerald-500 text-white border-emerald-600'
                               }`}>
-                                {tabataPhase === 'work' ? '🔥 مجهود (20ث)' : '🧘 راحة (10ث)'}
+                                {tabataPhase === 'work' ? t.workPhase || t.workPhase || '🔥 مجهود (20ث)' : t.restPhase || t.restPhase || '🧘 راحة (10ث)'}
                               </span>
                               <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
-                                جولة #{tabataCycleCount}
+                                {t('roundLabel', { val: tabataCycleCount }) || `جولة #${tabataCycleCount}`}
                               </span>
                             </div>
                           )}
@@ -1280,7 +1279,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                               className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center space-x-1 space-x-reverse shadow-xs transition-all active:scale-95 cursor-pointer"
                             >
                               <Play className="w-3.5 h-3.5 fill-current" />
-                              <span>{workoutSeconds > 0 ? 'استئناف' : 'بدء التمرين'}</span>
+                              <span>{workoutSeconds > 0 ? t.resumeWorkout || t.resumeWorkout || 'استئناف' : t.startWorkout || t.startWorkout || 'بدء التمرين'}</span>
                             </button>
                           ) : (
                             <button
@@ -1289,7 +1288,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                               className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black flex items-center space-x-1 space-x-reverse shadow-xs transition-all active:scale-95 cursor-pointer"
                             >
                               <Pause className="w-3.5 h-3.5 fill-current" />
-                              <span>إيقاف مؤقت</span>
+                              <span>{t.pauseWorkout || 'إيقاف مؤقت'}</span>
                             </button>
                           )}
 
@@ -1299,17 +1298,17 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                                 type="button"
                                 onClick={() => handleSaveWorkoutTimer('add')}
                                 className="px-3.5 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-black flex items-center space-x-1 space-x-reverse shadow-xs transition-all active:scale-95 cursor-pointer"
-                                title="حفظ وتراكم النتيجة تلقائياً في خانة الرياضة للمذكرة"
+                                title={t.autoSaveSportsTooltip || "حفظ وتراكم النتيجة تلقائياً في خانة الرياضة للمذكرة"}
                               >
                                 <Check className="w-3.5 h-3.5" />
-                                <span>تراكم وتحفيظ النتيجة</span>
+                                <span>{t.accumulateSave || 'تراكم وتحفيظ النتيجة'}</span>
                               </button>
 
                               <button
                                 type="button"
                                 onClick={handleResetWorkoutTimer}
                                 className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer"
-                                title="إعادة ضبط المؤقت"
+                                title={t.resetTimer || 'إعادة ضبط المؤقت'}
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
                               </button>
@@ -1328,7 +1327,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                           className="text-xs font-extrabold text-[#5A5A40] hover:text-[#3A3A3A] flex items-center gap-1.5 cursor-pointer"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                          <span>تعديل/إضافة ملاحظات التمرين والإنجاز الشخصي</span>
+                          <span>{t.editWorkoutNotes || 'تعديل/إضافة ملاحظات التمرين والإنجاز الشخصي'}</span>
                         </button>
                       </div>
 
@@ -1337,7 +1336,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                           rows={2}
                           value={sportsNotes}
                           onChange={(e) => handleUpdateHabit('sportsNotes', e.target.value)}
-                          placeholder="مثال: قطع مسافة 4 كم في الهواء الطلق، شعور بالراحة والانتعاش الذهني..."
+                          placeholder={t.workoutNotesPlaceholder || 'مثال: قطع مسافة 4 كم في الهواء الطلق، شعور بالراحة الانتعاش الذهني...'}
                           className="w-full text-xs p-2.5 bg-white border border-[#E2DCC8] rounded-xl text-[#3A3A3A] focus:ring-2 focus:ring-amber-300 outline-none transition-all placeholder:text-gray-400"
                         />
                       ) : null}
@@ -1354,7 +1353,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                         </div>
                         <div>
                           <h4 className="text-sm sm:text-base font-extrabold text-sky-950 flex items-center gap-1.5">
-                            <span>معدل شرب الماء اليومي</span>
+                            <span>{t.dailyWaterIntake || 'معدل شرب الماء اليومي'}</span>
                             <span className="text-xs text-sky-600">💧</span>
                           </h4>
                           <p className="text-[11px] text-sky-700/80 font-medium">
@@ -1369,7 +1368,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                           <span>{waterCups} / 8 كوب اليوم</span>
                           <span className="text-sky-400">•</span>
                           <span className="text-sky-700 font-extrabold">
-                            {waterCups >= 8 ? '✨ مكتمل!' : `${Math.round((waterCups / 8) * 100)}%`}
+                            {waterCups >= 8 ? t.waterComplete || t.waterComplete || '✨ مكتمل!' : `${Math.round((waterCups / 8) * 100)}%`}
                           </span>
                         </div>
                       </div>
@@ -1380,7 +1379,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       {/* Interactive Visual Glass Icons */}
                       <div className="space-y-1.5 flex-1">
                         <div className="flex items-center justify-between text-xs font-bold text-sky-900">
-                          <span>مستوى الترطيب الحالي:</span>
+                          <span>{t.hydrationLevel || 'مستوى الترطيب الحالي:'}</span>
                           <span className="text-[11px] font-mono text-sky-600">{waterCups} من 8 أكواب (الهدف اليومي)</span>
                         </div>
                         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -1410,12 +1409,12 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                       </div>
 
                       {/* Quick Controls & Plus/Minus */}
-                      <div className="flex items-center space-x-2 space-x-reverse justify-end border-t md:border-t-0 md:border-r border-sky-100 pt-2 md:pt-0 md:pr-3 shrink-0">
+                      <div className="flex items-center gap-2 justify-end border-t md:border-t-0 md:border-e border-sky-100 pt-2 md:pt-0 md:pe-3 shrink-0">
                         <button
                           type="button"
                           onClick={() => handleUpdateHabit('water', Math.max(0, waterCups - 1))}
                           className="w-8 h-8 rounded-xl bg-white border border-sky-200 text-sky-700 hover:bg-sky-50 flex items-center justify-center font-black text-sm cursor-pointer shadow-3xs active:scale-95"
-                          title="إنقاص كوب"
+                          title={t.decreaseCupTooltip || 'إنقاص كوب'}
                         >
                           -
                         </button>
@@ -1431,7 +1430,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                             showToast('أحسنت! سُجل كوب ماء جديد 🥛💧');
                           }}
                           className="w-8 h-8 rounded-xl bg-sky-500 text-white hover:bg-sky-600 flex items-center justify-center font-black text-sm cursor-pointer shadow-3xs active:scale-95"
-                          title="زيادة كوب"
+                          title={t.increaseCupTooltip || 'زيادة كوب'}
                         >
                           +
                         </button>
@@ -1444,7 +1443,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                           }}
                           className="px-2.5 py-1.5 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl text-xs font-black shadow-3xs hover:opacity-95 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
                         >
-                          <span>+1 كوب</span>
+                          <span>{t.addOneCupBtn || '+1 كوب'}</span>
                           <Coffee className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -1458,8 +1457,8 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                             <BellRing className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className="text-xs font-extrabold text-sky-950 block">تنبيهات شرب الماء الدوريّة (كل ساعة) ⏰</span>
-                            <span className="text-[10px] text-gray-500 font-bold block">إشعار لطيف بصري وعلى النظام للتذكير بشرب الماء</span>
+                            <span className="text-xs font-extrabold text-sky-950 block">{t.hourlyWaterReminders || 'تنبيهات شرب الماء الدوريّة (كل ساعة) ⏰'}</span>
+                            <span className="text-[10px] text-gray-500 font-bold block">{t.waterReminderDesc || 'إشعار لطيف بصري وعلى النظام للتذكير بشرب الماء'}</span>
                           </div>
                         </div>
 
@@ -1493,7 +1492,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                             className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-bold border border-sky-200 transition-all cursor-pointer flex items-center gap-1.5"
                           >
                             <Bell className="w-3.5 h-3.5 text-sky-600" />
-                            <span>تجربة التنبيه الآن 🔔</span>
+                            <span>{t.testReminderBtn || 'تجربة التنبيه الآن 🔔'}</span>
                           </button>
 
                           <button
@@ -1502,14 +1501,14 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                             className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl font-bold border border-amber-200/80 transition-all cursor-pointer flex items-center gap-1"
                           >
                             <Smartphone className="w-3.5 h-3.5 text-amber-600" />
-                            <span>📱 كيف تظهر التنبيهات على الهاتف وباقي التطبيقات؟</span>
+                            <span>{t.mobileNotificationsInfo || '📱 كيف تظهر التنبيهات على الهاتف وباقي التطبيقات؟'}</span>
                           </button>
                         </div>
 
                         {waterReminderEnabled && (
                           <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                            <span>التنبيه نشط كل ساعة</span>
+                            <span>{t.reminderActiveBadge || 'التنبيه نشط كل ساعة'}</span>
                           </span>
                         )}
                       </div>
@@ -1522,8 +1521,8 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                         <div className="flex items-center space-x-2 space-x-reverse">
                           <TrendingUp className="w-4.5 h-4.5 text-sky-600" />
                           <div>
-                            <span className="text-xs font-extrabold text-sky-950 block">مؤشر الالتزام الأسبوعي بشرب الماء 📊</span>
-                            <span className="text-[10px] text-gray-500 font-bold block">مجموع الأكواب المسجلة خلال الـ 7 أيام الماضية</span>
+                            <span className="text-xs font-extrabold text-sky-950 block">{t.weeklyWaterCommitment || 'مؤشر الالتزام الأسبوعي بشرب الماء 📊'}</span>
+                            <span className="text-[10px] text-gray-500 font-bold block">{t.weeklyWaterDesc || 'مجموع الأكواب المسجلة خلال الـ 7 أيام الماضية'}</span>
                           </div>
                         </div>
 
@@ -1536,7 +1535,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                               ? 'bg-amber-500 text-white border-amber-600'
                               : 'bg-rose-500 text-white border-rose-600'
                           }`}>
-                            نسبة الالتزام الأسبوعي: {weeklyWaterStats.commitmentPercentage}%
+                            {t('weeklyCommitmentRate', { val: weeklyWaterStats.commitmentPercentage }) || `نسبة الالتزام الأسبوعي: ${weeklyWaterStats.commitmentPercentage}%`}
                           </div>
                           <span className="text-xs font-mono font-bold text-sky-800">
                             ({weeklyWaterStats.totalCupsDrunk} / {weeklyWaterStats.targetTotal} كوب)
@@ -1665,7 +1664,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-bold text-base text-[#3A3A3A] flex items-center gap-2">
                 <Pill className="w-5 h-5 text-[#8B9D83]" />
-                <span>إضافة دواء أو مكمل جديد</span>
+                <span>{t.addMedModalTitle || 'إضافة دواء أو مكمل جديد'}</span>
               </h3>
               <button
                 type="button"
@@ -1684,7 +1683,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="مثال: مكمل فيتامين D، أوميغا 3، مسكن..."
+                  placeholder={t.medNamePlaceholder || 'مثال: مكمل فيتامين D، أوميغا 3، مسكن...'}
                   value={newMedName}
                   onChange={(e) => setNewMedName(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#8B9D83]"
@@ -1697,7 +1696,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="مثال: 10:00 ص، بعد وجبة الإفطار، قبل النوم..."
+                  placeholder={t.medTimePlaceholder || 'مثال: 10:00 ص، بعد وجبة الإفطار، قبل النوم...'}
                   value={newMedTime}
                   onChange={(e) => setNewMedTime(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#8B9D83]"
@@ -1735,7 +1734,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
             </div>
 
             <div>
-              <h3 className="text-lg font-black text-sky-950">💧 حان وقت شرب الماء الانتعاش!</h3>
+              <h3 className="text-lg font-black text-sky-950">{t.drinkWaterTitle || '💧 حان وقت شرب الماء الانتعاش!'}</h3>
               <p className="text-xs text-sky-800 font-medium mt-1">
                 تذكير صحي لطيف: شرب كوب من الماء الانتعاش الآن يجدد نشاطك، يغذي خلايا عقلك ويحميك من الإجهاد والجفاف.
               </p>
@@ -1752,7 +1751,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
                 className="w-full py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Coffee className="w-4 h-4" />
-                <span>سَجّل +1 كوب ماء الآن 🥛</span>
+                <span>{t.logWaterBtn || 'سَجّل +1 كوب ماء الآن 🥛'}</span>
               </button>
 
               <button
@@ -1777,7 +1776,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-bold text-base text-sky-950 flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-sky-600" />
-                <span>إظهار التنبيهات على الهاتف وباقي التطبيقات</span>
+                <span>{t.mobileAlertTitle || 'إظهار التنبيهات على الهاتف وباقي التطبيقات'}</span>
               </h3>
               <button
                 type="button"
@@ -1792,17 +1791,17 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
               <div className="p-3 bg-sky-50/80 border border-sky-200/80 rounded-2xl font-bold text-sky-900 flex items-start gap-2">
                 <span className="text-base">✅</span>
                 <div>
-                  <span className="font-extrabold block text-sm">نعم، تظهر في شريط إشعارات الهاتف وعلى شاشة القفل!</span>
-                  <span>عند سماحك بالإشعارات من المتصفح (مثل Google Chrome على Android أو Safari PWA على iPhone)، يستخدم التطبيق نظام إشعارات النظام الرسمية (Web Push Notifications).</span>
+                  <span className="font-extrabold block text-sm">{t.waterPushNotificationHeader || "نعم، تظهر في شريط إشعارات الهاتف وعلى شاشة القفل!"}</span>
+                  <span>{t.waterPushNotificationDesc || "عند سماحك بالإشعارات من المتصفح (مثل Google Chrome على Android أو Safari PWA على iPhone)، يستخدم التطبيق نظام إشعارات النظام الرسمية (Web Push Notifications)."}</span>
                 </div>
               </div>
 
               <div className="space-y-2 pt-1">
-                <h4 className="font-black text-gray-900">كيف تضمن وصول التنبيهات أثناء استخدام تطبيقات أخرى؟</h4>
+                <h4 className="font-black text-gray-900">{t.howToEnsureRemindersTitle || "كيف تضمن وصول التنبيهات أثناء استخدام تطبيقات أخرى؟"}</h4>
                 <ul className="list-disc list-inside space-y-1.5 text-gray-600 pr-1 font-medium">
-                  <li><strong>السماح بالإشعارات:</strong> انقر على تفعيل التنبيهات واقبل الإذن الذي يظهره المتصفح.</li>
-                  <li><strong>تثبيت التطبيق على الشاشة الرئيسية (PWA):</strong> خيار "إضافة إلى الشاشة الرئيسية" من قائمة المتصفح يجعله يعمل كتطبيق مستقل يرسل الإشعارات بدقة.</li>
-                  <li><strong>التنبيه البصري الداخلي:</strong> عند فتح التطبيق يتم إظهار نافذة تذكير تفاعلية شفافة وسريعة لتسجيل شرب الماء بضغطة واحدة.</li>
+                  <li><strong>{t.waterPermGuideTitle || "السماح بالإشعارات:"}</strong> {t.waterPermGuideDesc || "انقر على تفعيل التنبيهات واقبل الإذن الذي يظهره المتصفح."}</li>
+                  <li><strong>{t.waterPwaGuideTitle || "تثبيت التطبيق على الشاشة الرئيسية (PWA):"}</strong> {t.waterPwaGuideDesc || "خيار \"إضافة إلى الشاشة الرئيسية\" من قائمة المتصفح يجعله يعمل كتطبيق مستقل يرسل الإشعارات بدقة."}</li>
+                  <li><strong>{t.waterInternalGuideTitle || "التنبيه البصري الداخلي:"}</strong> {t.waterInternalGuideDesc || "عند فتح التطبيق يتم إظهار نافذة تذكير تفاعلية شفافة وسريعة لتسجيل شرب الماء بضغطة واحدة."}</li>
                 </ul>
               </div>
             </div>
@@ -1825,7 +1824,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#3A3A3A] text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-extrabold flex items-center space-x-2 space-x-reverse border border-amber-400/30 backdrop-blur-md animate-fade-in">
+        <div className="fixed bottom-6 end-6 z-50 bg-[#3A3A3A] text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-extrabold flex items-center space-x-2 space-x-reverse border border-amber-400/30 backdrop-blur-md animate-fade-in">
           <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
           <span>{toastMessage}</span>
         </div>

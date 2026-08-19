@@ -110,6 +110,7 @@ export interface RetrievedKnowledgeContext {
 }
 
 export interface KnowledgeIndexOptions {
+  appLanguage?: string;
   diaries?: DiaryEntry[];
   habits?: Habit[];
   gratitudeCards?: GratitudeCard[];
@@ -264,6 +265,7 @@ export class UnifiedKnowledgeIndex {
  * Normalizes all available app data into a UnifiedKnowledgeIndex instance.
  */
 export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): UnifiedKnowledgeIndex {
+  const t = getTranslation(options.appLanguage || 'EN');
   const entities: UnifiedKnowledgeEntity[] = [];
   const p = options.permissions || {
     diaries: true,
@@ -288,27 +290,7 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       const timestamp = parseTimestampSafe(d.createdAt);
       const cleanContent = stripHtmlAndClean(d.content);
       const entryType: KnowledgeSourceType = (d.diaryType as KnowledgeSourceType) || 'diary';
-      const typeLabelMapAr: Record<string, string> = {
-        diary: 'يومية',
-        thought: 'خاطرة',
-        gratitude: 'امتنان',
-        wisdom: 'حكمة',
-        quote: 'اقتباس',
-        idea: 'فكرة',
-        goal: 'هدف'
-      };
-      const typeLabelMapEn: Record<string, string> = {
-        diary: 'Diary',
-        thought: 'Thought',
-        gratitude: 'Gratitude',
-        wisdom: 'Wisdom',
-        quote: 'Quote',
-        idea: 'Idea',
-        goal: 'Goal'
-      };
-      const labelAr = typeLabelMapAr[entryType] || 'تدوينة';
-      const labelEn = typeLabelMapEn[entryType] || 'Entry';
-      const title = d.title || `${labelAr} بدون عنوان`;
+      const title = d.title || `${t.untitledEntry || 'Untitled'} ${t[entryType] || 'Entry'}`;
 
       const relKeys: string[] = [`date:${dateStr}`, `type:${entryType}`];
       if (d.isFavorite) {
@@ -343,15 +325,15 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         moods: d.moods || [],
         metrics,
         relationshipKeys: relKeys,
-        sourceLabelAr: `${labelAr} (${dateStr}) - "${title}"`,
-        sourceLabelEn: `${labelEn} (${dateStr}) - "${title}"`,
+        sourceLabelAr: `${t[entryType] || 'Entry'} (${dateStr}) - "${title}"`,
+        sourceLabelEn: `${t[entryType] || 'Entry'} (${dateStr}) - "${title}"`,
         rawRef: d
       });
 
       // 1.1 Extract Embedded Audio Recordings
       if (p.voiceNotes !== false && d.audioRecordings && Array.isArray(d.audioRecordings)) {
         d.audioRecordings.forEach((rec, idx) => {
-          const recTitle = rec.name || `تسجيل صوتي #${idx + 1} ملحق بيومية ${dateStr}`;
+          const recTitle = rec.name || `${t.audioRecording || 'Audio Recording'} #${idx + 1} - ${dateStr}`;
           const recTranscript = stripHtmlAndClean(rec.transcription || '');
           const recEmotion = rec.speechEmotion?.primaryEmotion || '';
 
@@ -362,8 +344,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             dateStr,
             timestamp,
             title: recTitle,
-            content: recTranscript ? `تفريغ التسجيل الصوتي: "${recTranscript}"` : `تسجيل صوتي مدته ${rec.duration || 0} ثانية`,
-            tags: [...(d.tags || []), 'صوت', 'تسجيل'],
+            content: recTranscript ? `${t.audioTranscription || 'Audio Transcription'}: "${recTranscript}"` : `${t.audioRecording || 'Audio Recording'} - ${rec.duration || 0}s`,
+            tags: [...(d.tags || []), 'audio', 'recording'],
             moods: recEmotion ? [recEmotion, ...(d.moods || [])] : d.moods || [],
             metrics: { durationSeconds: rec.duration, speechEmotion: rec.speechEmotion },
             mediaPayload: {
@@ -374,8 +356,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               speechEmotion: rec.speechEmotion
             },
             relationshipKeys: [...relKeys, 'type:audio', `parent:diary_${d.id}`],
-            sourceLabelAr: `تسجيل صوتي (${dateStr}) - "${recTitle}"`,
-            sourceLabelEn: `Voice Recording (${dateStr}) - "${recTitle}"`,
+            sourceLabelAr: `${t.audioRecording || 'Audio Recording'} (${dateStr}) - "${recTitle}"`,
+            sourceLabelEn: `${t.audioRecording || 'Audio Recording'} (${dateStr}) - "${recTitle}"`,
             rawRef: rec
           });
         });
@@ -389,9 +371,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
           memoryCategory: 'media',
           dateStr,
           timestamp,
-          title: `رسمة يدوية ملحقة بيومية ${dateStr}`,
-          content: `رسمة رقمية وتعبير تشكيلي قام المستخدم برسمه في يومية ${dateStr}. العنوان المصاحب: "${title}". محتوى التدوينة: "${cleanContent.substring(0, 200)}"`,
-          tags: [...(d.tags || []), 'رسم', 'canvas', 'drawing'],
+          title: `${t.canvasDrawing || 'Canvas Drawing'} - ${dateStr}`,
+          content: `${t.canvasDrawingDesc || 'Digital drawing attached to entry'}. "${cleanContent.substring(0, 200)}"`,
+          tags: [...(d.tags || []), 'canvas', 'drawing'],
           moods: d.moods || [],
           metrics: {},
           mediaPayload: {
@@ -400,8 +382,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             previewUrl: d.drawing
           },
           relationshipKeys: [...relKeys, 'type:drawing', `parent:diary_${d.id}`],
-          sourceLabelAr: `رسمة يدوية (${dateStr})`,
-          sourceLabelEn: `Drawing Canvas (${dateStr})`,
+          sourceLabelAr: `${t.canvasDrawing || 'Canvas Drawing'} (${dateStr})`,
+          sourceLabelEn: `${t.canvasDrawing || 'Canvas Drawing'} (${dateStr})`,
           rawRef: d.drawing
         });
       }
@@ -410,14 +392,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       if (p.cbtExercises !== false && d.cbtWorksheets && Array.isArray(d.cbtWorksheets)) {
         d.cbtWorksheets.forEach((cbt, idx) => {
           const cbtContent = [
-            `الحدث المثير / المحفز: ${cbt.triggerEvent}`,
-            `الأفكار التلقائية السلبية: ${cbt.negativeThoughts}`,
-            `التشوه المعرفي المكتشف: ${cbt.cognitiveDistortion}`,
-            `الفكرة البديلة العقلانية: ${cbt.rationalAlternative}`,
-            cbt.evidenceFor ? `الأدلة المؤيدة للفكرة: ${cbt.evidenceFor}` : '',
-            cbt.evidenceAgainst ? `الأدلة المعارضة للفكرة: ${cbt.evidenceAgainst}` : '',
-            cbt.coreBelief ? `المعتقد الجذري: ${cbt.coreBelief}` : '',
-            cbt.healthierBelief ? `المعتقد الصحي البديل: ${cbt.healthierBelief}` : ''
+            `${t.cbtTriggerEvent || 'Trigger Event'}: ${cbt.triggerEvent}`,
+            `${t.cbtNegativeThoughts || 'Negative Thoughts'}: ${cbt.negativeThoughts}`,
+            `${t.cbtCognitiveDistortion || 'Cognitive Distortion'}: ${cbt.cognitiveDistortion}`,
+            `${t.cbtRationalAlternative || 'Rational Alternative'}: ${cbt.rationalAlternative}`,
+            cbt.evidenceFor ? `${t.cbtEvidenceFor || 'Evidence For'}: ${cbt.evidenceFor}` : '',
+            cbt.evidenceAgainst ? `${t.cbtEvidenceAgainst || 'Evidence Against'}: ${cbt.evidenceAgainst}` : '',
+            cbt.coreBelief ? `${t.cbtCoreBelief || 'Core Belief'}: ${cbt.coreBelief}` : '',
+            cbt.healthierBelief ? `${t.cbtHealthierBelief || 'Healthier Belief'}: ${cbt.healthierBelief}` : ''
           ].filter(Boolean).join(' | ');
 
           entities.push({
@@ -426,9 +408,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             memoryCategory: 'semantic',
             dateStr,
             timestamp: parseTimestampSafe(cbt.createdAt) || timestamp,
-            title: `تمرين علاج معرفي سلوكي (CBT) - ${cbt.triggerEvent || dateStr}`,
+            title: `${t.cbtExercise || 'CBT Exercise'} - ${cbt.triggerEvent || dateStr}`,
             content: cbtContent,
-            tags: [...(d.tags || []), 'CBT', 'علاج معرفي سلوكي', cbt.cognitiveDistortion || ''].filter(Boolean),
+            tags: [...(d.tags || []), 'CBT', cbt.cognitiveDistortion || ''].filter(Boolean),
             moods: d.moods || [],
             metrics: {
               emotionBefore: cbt.emotionBefore,
@@ -436,8 +418,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               exerciseType: cbt.exerciseType
             },
             relationshipKeys: [...relKeys, 'type:cbt', `parent:diary_${d.id}`],
-            sourceLabelAr: `تمرين CBT (${dateStr}) - "${cbt.triggerEvent}"`,
-            sourceLabelEn: `CBT Exercise (${dateStr}) - "${cbt.triggerEvent}"`,
+            sourceLabelAr: `${t.cbtExercise || 'CBT Exercise'} (${dateStr}) - "${cbt.triggerEvent}"`,
+            sourceLabelEn: `${t.cbtExercise || 'CBT Exercise'} (${dateStr}) - "${cbt.triggerEvent}"`,
             rawRef: cbt
           });
         });
@@ -454,9 +436,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             memoryCategory: isPdf ? 'document' : 'media',
             dateStr,
             timestamp,
-            title: `مرفق: ${f.name}`,
-            content: `ملف مرفق "${f.name}" بحجم ${f.size || 'غير محدد'} ملحق بيومية ${dateStr} ("${title}")`,
-            tags: [...(d.tags || []), 'مرفق', f.type || 'file'],
+            title: `${t.attachment || 'Attachment'}: ${f.name}`,
+            content: `${t.attachedFile || 'Attached file'} "${f.name}" ${t.size || 'size'}: ${f.size || 'unknown'} - ${dateStr} ("${title}")`,
+            tags: [...(d.tags || []), 'attachment', f.type || 'file'],
             moods: d.moods || [],
             metrics: { fileSize: f.size, fileType: f.type },
             mediaPayload: {
@@ -465,8 +447,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               dataUrl: f.dataUrl
             },
             relationshipKeys: [...relKeys, 'type:attachment', `parent:diary_${d.id}`],
-            sourceLabelAr: `مرفق (${dateStr}) - "${f.name}"`,
-            sourceLabelEn: `Attachment (${dateStr}) - "${f.name}"`,
+            sourceLabelAr: `${t.attachment || 'Attachment'} (${dateStr}) - "${f.name}"`,
+            sourceLabelEn: `${t.attachment || 'Attachment'} (${dateStr}) - "${f.name}"`,
             rawRef: f
           });
         });
@@ -481,9 +463,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             memoryCategory: 'media',
             dateStr,
             timestamp,
-            title: `صورة ملحقة بيومية ${dateStr} #${idx + 1}`,
-            content: `صورة مرئية مضافة في يومية ${dateStr} ("${title}"). نص اليومية: "${cleanContent.substring(0, 150)}"`,
-            tags: [...(d.tags || []), 'صورة', 'image'],
+            title: `${t.attachedImage || 'Attached Image'} - ${dateStr} #${idx + 1}`,
+            content: `${t.visualImageAdded || 'Visual image added in entry'} ${dateStr} ("${title}"). "${cleanContent.substring(0, 150)}"`,
+            tags: [...(d.tags || []), 'image'],
             moods: d.moods || [],
             metrics: {},
             mediaPayload: {
@@ -492,8 +474,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               previewUrl: imgUrl
             },
             relationshipKeys: [...relKeys, 'type:image', `parent:diary_${d.id}`],
-            sourceLabelAr: `صورة مضافة (${dateStr})`,
-            sourceLabelEn: `Image (${dateStr})`,
+            sourceLabelAr: `${t.attachedImage || 'Attached Image'} (${dateStr})`,
+            sourceLabelEn: `${t.attachedImage || 'Attached Image'} (${dateStr})`,
             rawRef: imgUrl
           });
         });
@@ -521,13 +503,13 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         : 0;
 
       const habitText = [
-        `العادة: "${h.name}" (القسم: ${h.category || 'عام'})`,
-        h.question ? `السؤال/المحفز: ${h.question}` : '',
-        `التكرار المستهدف: ${h.frequency || 'يومي'}`,
-        h.targetValue ? `الهدف الرقمي: ${h.targetValue} ${h.unit || ''}` : '',
-        `نسبة الإنجاز الإجمالية: ${completionRate}% (${completedDates.length} أيام مكتملة)`,
-        `آخر الأيام المنجزة مؤخراً: [${recentCompletions.join(', ') || 'لا يوجد تسجيل حديث'}]`,
-        h.notes ? `ملاحظات العادة: ${h.notes}` : ''
+        `${t.habit || 'Habit'}: "${h.name}" (${t.category || 'Category'}: ${h.category || t.general || 'General'})`,
+        h.question ? `${t.habitQuestion || 'Question/Trigger'}: ${h.question}` : '',
+        `${t.targetFrequency || 'Target Frequency'}: ${h.frequency || t.daily || 'Daily'}`,
+        h.targetValue ? `${t.targetValue || 'Numeric Target'}: ${h.targetValue} ${h.unit || ''}` : '',
+        `${t.completionRate || 'Total Completion Rate'}: ${completionRate}% (${completedDates.length} ${t.daysCompleted || 'days completed'})`,
+        `${t.recentCompletions || 'Recent completions'}: [${recentCompletions.join(', ') || t.noRecentRecord || 'No recent record'}]`,
+        h.notes ? `${t.habitNotes || 'Habit Notes'}: ${h.notes}` : ''
       ].filter(Boolean).join(' | ');
 
       const relKeys: string[] = [`habit:${h.name.toLowerCase().trim()}`, `category:${h.category}`];
@@ -539,9 +521,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'semantic',
         dateStr: normalizeDateToYMD(h.createdAt),
         timestamp: parseTimestampSafe(h.createdAt),
-        title: `عادة: "${h.name}"`,
+        title: `${t.habit || 'Habit'}: "${h.name}"`,
         content: habitText,
-        tags: ['عادة', h.category || 'صحة', h.name],
+        tags: ['habit', h.category || 'health', h.name],
         moods: [],
         metrics: {
           completionRate,
@@ -550,8 +532,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
           frequency: h.frequency
         },
         relationshipKeys: relKeys,
-        sourceLabelAr: `عادة: "${h.name}" (${h.category || 'سلوك'})`,
-        sourceLabelEn: `Habit: "${h.name}" (${h.category || 'Behavior'})`,
+        sourceLabelAr: `${t.habit || 'Habit'}: "${h.name}" (${h.category || t.behavior || 'Behavior'})`,
+        sourceLabelEn: `${t.habit || 'Habit'}: "${h.name}" (${h.category || t.behavior || 'Behavior'})`,
         rawRef: h
       });
     }
@@ -575,14 +557,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'episodic',
         dateStr,
         timestamp,
-        title: `بطاقة امتنان (${dateStr})`,
+        title: `${t.gratitudeCard || 'Gratitude Card'} (${dateStr})`,
         content: cleanText,
-        tags: g.tags || ['امتنان', 'تفكير إيجابي'],
+        tags: g.tags || ['gratitude', 'positive thinking'],
         moods: ['grateful', 'joy', 'calm'],
         metrics: { likes: g.likes || 0 },
         relationshipKeys: relKeys,
-        sourceLabelAr: `مفكرة الامتنان (${dateStr})`,
-        sourceLabelEn: `Gratitude Journal (${dateStr})`,
+        sourceLabelAr: `${t.gratitudeJournal || 'Gratitude Journal'} (${dateStr})`,
+        sourceLabelEn: `${t.gratitudeJournal || 'Gratitude Journal'} (${dateStr})`,
         rawRef: g
       });
     }
@@ -596,13 +578,13 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       const cleanNotes = stripHtmlAndClean(b.notes || '');
 
       const bookText = [
-        `الكتاب: "${b.title}"`,
-        b.category ? `التصنيف: ${b.category}` : '',
-        b.rating ? `تقييم المستخدم: ${b.rating}/5 نجوم` : '',
-        cleanNotes ? `الملخص والأفكار المستفادة: "${cleanNotes}"` : 'لا توجد ملاحظات مفصلة بعد',
-        b.hasMindMap ? 'يحتوي على خريطة ذهنية' : '',
-        b.referenceLink ? `رابط مرجعي: ${b.referenceLink}` : '',
-        b.pdfPath ? `ملف PDF: ${b.pdfPath}` : ''
+        `${t.bookTitle || 'Book'}: "${b.title}"`,
+        b.category ? `${t.category || 'Category'}: ${b.category}` : '',
+        b.rating ? `${t.userRating || 'User Rating'}: ${b.rating}/5` : '',
+        cleanNotes ? `${t.summaryNotes || 'Summary and Notes'}: "${cleanNotes}"` : t.noDetailedNotes || 'No detailed notes yet',
+        b.hasMindMap ? t.hasMindMap || 'Has mind map' : '',
+        b.referenceLink ? `${t.referenceLink || 'Reference Link'}: ${b.referenceLink}` : '',
+        b.pdfPath ? `PDF: ${b.pdfPath}` : ''
       ].filter(Boolean).join(' | ');
 
       const relKeys: string[] = [`book:${b.title.toLowerCase().trim()}`, 'type:book'];
@@ -617,14 +599,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'document',
         dateStr,
         timestamp,
-        title: `كتاب: "${b.title}"`,
+        title: `${t.bookTitle || 'Book'}: "${b.title}"`,
         content: bookText,
-        tags: b.tags || ['كتاب', 'قراءة', b.category || 'ثقافة'],
+        tags: b.tags || ['book', 'reading', b.category || 'culture'],
         moods: [],
         metrics: { rating: b.rating, hasMindMap: b.hasMindMap },
         relationshipKeys: relKeys,
-        sourceLabelAr: `كتاب: "${b.title}"`,
-        sourceLabelEn: `Book: "${b.title}"`,
+        sourceLabelAr: `${t.bookTitle || 'Book'}: "${b.title}"`,
+        sourceLabelEn: `${t.bookTitle || 'Book'}: "${b.title}"`,
         rawRef: b
       });
     }
@@ -637,11 +619,11 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
     const todayStr = new Date().toISOString().split('T')[0];
 
     const dhikrSummary = [
-      `إجمالي الأذكار والتسبيحات اليوم: ${stats.todayTotal || 0} من أصل هدف ${stats.targetGoal || 300} (${stats.completionRatePercentage || 0}%)`,
-      `سلسلة المواظبة اليومية: ${stats.streakDays || 1} أيام متتالية`,
-      `الأقسام المكتملة اليوم: [${(stats.completedCategories || []).join('، ') || 'لا يوجد'}]`,
-      `الذكر الأخير المقروء: "${active.lastDhikrRead || ''}" (${active.category || 'عام'})`,
-      options.athkarContext.psychologicalSpiritualStatus ? `التقييم الروحي والنفسي: ${options.athkarContext.psychologicalSpiritualStatus}` : ''
+      `${t.dhikrTodayTotal || 'Total Dhikr Today'}: ${stats.todayTotal || 0} ${t.outOfTarget || 'out of target'} ${stats.targetGoal || 300} (${stats.completionRatePercentage || 0}%)`,
+      `${t.dailyStreak || 'Daily Streak'}: ${stats.streakDays || 1} ${t.daysConsecutive || 'days'}`,
+      `${t.completedCategories || 'Completed Categories'}: [${(stats.completedCategories || []).join(', ') || t.none || 'None'}]`,
+      `${t.lastDhikrRead || 'Last Dhikr Read'}: "${active.lastDhikrRead || ''}" (${active.category || t.general || 'General'})`,
+      options.athkarContext.psychologicalSpiritualStatus ? `${t.spiritualStatus || 'Spiritual/Psychological Status'}: ${options.athkarContext.psychologicalSpiritualStatus}` : ''
     ].filter(Boolean).join(' | ');
 
     entities.push({
@@ -650,9 +632,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       memoryCategory: 'semantic',
       dateStr: todayStr,
       timestamp: Date.now(),
-      title: 'سجل الأذكار والتسبيح والتأمل الروحي اليومي',
+      title: t.dhikrLogTitle || 'Daily Athkar & Spiritual Log',
       content: dhikrSummary,
-      tags: ['أذكار', 'تسبيح', 'روحانية', 'سكينة'],
+      tags: ['athkar', 'dhikr', 'spirituality', 'peace'],
       moods: ['calm', 'spiritual', 'peaceful'],
       metrics: {
         todayTotal: stats.todayTotal || 0,
@@ -660,8 +642,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         streakDays: stats.streakDays || 1
       },
       relationshipKeys: [`date:${todayStr}`, 'type:athkar', 'type:spirituality'],
-      sourceLabelAr: 'سجل الأذكار والتسبيح اليومي',
-      sourceLabelEn: 'Daily Athkar & Dhikr Log',
+      sourceLabelAr: t.dailyAthkarLog || 'Daily Athkar Log',
+      sourceLabelEn: t.dailyAthkarLog || 'Daily Athkar & Dhikr Log',
       rawRef: options.athkarContext
     });
   }
@@ -671,10 +653,10 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
     options.customCopingCards.forEach((card, idx) => {
       const dateStr = normalizeDateToYMD(card.createdAt || new Date());
       const cardContent = [
-        `الموقف / الشعور المسبب للقلق: "${card.situation || card.title || 'عام'}"`,
-        `الفكرة التلقائية: "${card.thought || ''}"`,
-        `استراتيجية التكيف / الفكرة البديلة المهدئة: "${card.copingStatement || card.text || ''}"`,
-        card.category ? `التصنيف: ${card.category}` : ''
+        `${t.triggerSituation || 'Trigger Situation'}: "${card.situation || card.title || t.general || 'General'}"`,
+        `${t.automaticThought || 'Automatic Thought'}: "${card.thought || ''}"`,
+        `${t.copingStrategy || 'Coping Strategy'}: "${card.copingStatement || card.text || ''}"`,
+        card.category ? `${t.category || 'Category'}: ${card.category}` : ''
       ].filter(Boolean).join(' | ');
 
       entities.push({
@@ -683,14 +665,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'semantic',
         dateStr,
         timestamp: parseTimestampSafe(card.createdAt) || Date.now(),
-        title: `بطاقة تكيف نفسي (Coping Card) - "${card.situation || 'إرشاد'}"`,
+        title: `${t.copingCard || 'Coping Card'} - "${card.situation || t.guidance || 'Guidance'}"`,
         content: cardContent,
-        tags: ['CBT', 'بطاقة تكيف', 'تهدئة', card.category || 'عام'],
+        tags: ['CBT', 'coping card', card.category || 'general'],
         moods: ['calm', 'coping'],
         metrics: {},
         relationshipKeys: [`date:${dateStr}`, 'type:coping_card', 'type:cbt'],
-        sourceLabelAr: `بطاقة تكيف CBT - "${card.situation || 'إرشاد'}"`,
-        sourceLabelEn: `CBT Coping Card - "${card.situation || 'Strategy'}"`,
+        sourceLabelAr: `${t.cbtCopingCard || 'CBT Coping Card'} - "${card.situation || t.guidance || 'Guidance'}"`,
+        sourceLabelEn: `${t.cbtCopingCard || 'CBT Coping Card'} - "${card.situation || t.guidance || 'Guidance'}"`,
         rawRef: card
       });
     });
@@ -700,15 +682,15 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
   if (p.prosCons !== false && options.prosConsRecords && Array.isArray(options.prosConsRecords)) {
     options.prosConsRecords.forEach((record, idx) => {
       const dateStr = normalizeDateToYMD(record.createdAt || new Date());
-      const prosList = (record.pros || []).map((p: any) => `+ ${p.text} (وزن: ${p.weight})`).join(' ، ');
-      const consList = (record.cons || []).map((c: any) => `- ${c.text} (وزن: ${c.weight})`).join(' ، ');
+      const prosList = (record.pros || []).map((p: any) => `+ ${p.text} (${t.weight || 'Weight'}: ${p.weight})`).join(' , ');
+      const consList = (record.cons || []).map((c: any) => `- ${c.text} (${t.weight || 'Weight'}: ${c.weight})`).join(' , ');
 
       const recordContent = [
-        `موضوع القرار: "${record.title || 'قرار شخصي'}"`,
-        prosList ? `الإيجابيات والمميزات: [${prosList}]` : '',
-        consList ? `السلبيات والمخاوف: [${consList}]` : '',
-        record.conclusion ? `النتيجة والخلاصة: "${record.conclusion}"` : '',
-        record.decisionTaken ? `القرار المتخذ: "${record.decisionTaken}"` : ''
+        `${t.decisionTopic || 'Decision Topic'}: "${record.title || t.personalDecision || 'Personal Decision'}"`,
+        prosList ? `${t.prosAndAdvantages || 'Pros and Advantages'}: [${prosList}]` : '',
+        consList ? `${t.consAndConcerns || 'Cons and Concerns'}: [${consList}]` : '',
+        record.conclusion ? `${t.conclusionAndSummary || 'Conclusion and Summary'}: "${record.conclusion}"` : '',
+        record.decisionTaken ? `${t.decisionTaken || 'Decision Taken'}: "${record.decisionTaken}"` : ''
       ].filter(Boolean).join(' | ');
 
       entities.push({
@@ -717,14 +699,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'episodic',
         dateStr,
         timestamp: parseTimestampSafe(record.createdAt) || Date.now(),
-        title: `ميزان القرار (Pros & Cons) - "${record.title || 'موازنة'}"`,
+        title: `${t.decisionBalance || 'Decision Balance'} - "${record.title || t.decision || 'Decision'}"`,
         content: recordContent,
-        tags: ['قرار', 'موازنة', 'pros_cons', record.category || 'عام'],
+        tags: ['decision', 'pros_cons', record.category || 'general'],
         moods: [],
         metrics: { totalScore: record.totalScore },
         relationshipKeys: [`date:${dateStr}`, 'type:pros_cons', 'type:decision'],
-        sourceLabelAr: `ميزان القرار (${dateStr}) - "${record.title || 'موازنة'}"`,
-        sourceLabelEn: `Decision Balance (${dateStr}) - "${record.title || 'Decision'}"`,
+        sourceLabelAr: `${t.decisionBalance || 'Decision Balance'} (${dateStr}) - "${record.title || t.decision || 'Decision'}"`,
+        sourceLabelEn: `${t.decisionBalance || 'Decision Balance'} (${dateStr}) - "${record.title || t.decision || 'Decision'}"`,
         rawRef: record
       });
     });
@@ -1098,12 +1080,12 @@ export async function retrieveRelevantKnowledge(
     if (ents.length >= 2) {
       // Find multi-source correlations on the same date (e.g. Diary + Habit + Audio)
       const evidence = ents.map(e => ({
-        source: e.sourceLabelAr,
+        source: options.appLanguage === 'ar' ? e.sourceLabelAr : e.sourceLabelEn,
         detail: e.content.substring(0, 150)
       }));
 
       correlations.push({
-        title: `ارتباط وتقاطع بيانات متعددة في تاريخ ${date}`,
+        title: `${t.dataCorrelation || 'Data Correlation'} ${date}`,
         date,
         evidence
       });
@@ -1126,7 +1108,7 @@ export async function retrieveRelevantKnowledge(
             multimodalParts.push({
               mimeType: mime,
               data: parts[1],
-              description: `[مرفق مرئي/رسمة من ${ent.sourceLabelAr}]`
+              description: `[${t.visualAttachment || 'Visual Attachment'} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
             });
           }
         }
@@ -1135,7 +1117,7 @@ export async function retrieveRelevantKnowledge(
           multimodalParts.push({
             mimeType: ent.mediaPayload.mimeType || 'application/octet-stream',
             fileUri: ent.mediaPayload.fileUri,
-            description: `[ملف عبر Google Files API من ${ent.sourceLabelAr}]`
+            description: `[${t.fileApiAttachment || 'File API Attachment'} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
           });
         }
         // 3. Blob in IndexedDB
@@ -1156,7 +1138,7 @@ export async function retrieveRelevantKnowledge(
                 multimodalParts.push({
                   mimeType: blob.type || ent.mediaPayload.mimeType || 'image/jpeg',
                   data: base64,
-                  description: `[ملف مسترجع من الذاكرة المحلية: ${ent.title}]`
+                  description: `[${t.localMemoryFile || 'File from local memory'}: ${ent.title}]`
                 });
               }
             }
@@ -1175,25 +1157,24 @@ export async function retrieveRelevantKnowledge(
 
   if (topMatches.length > 0) {
     const isAr = (options.appLanguage || 'ar') === 'ar';
-    formattedText += isAr 
-      ? `### 📂 البيانات الموثقة المسترجعة من سجلات التطبيق ذات الصلة (${topMatches.length} مصدر):\n\n`
-      : `### 📂 Verified Records Retrieved from App (${topMatches.length} sources):\n\n`;
+    formattedText += `### 📂 ${t.verifiedRecordsRetrieved || 'Verified Records Retrieved from App'} (${topMatches.length} ${t.sources || 'sources'}):\n\n`;
 
     topMatches.forEach((ent, index) => {
-      formattedText += `#### [${isAr ? 'مصدر' : 'Source'} ${index + 1}] — ${ent.sourceLabelAr}\n`;
-      formattedText += `- **${isAr ? 'النوع والتصنيف:' : 'Type & Category:'}** ${ent.sourceType} | ${isAr ? 'الفئة:' : 'Group:'} ${ent.memoryCategory}\n`;
-      formattedText += `- **${isAr ? 'التاريخ:' : 'Date:'}** ${ent.dateStr}\n`;
-      if (ent.moods.length > 0) formattedText += `- **${isAr ? 'المزاج/المشاعر المرصودة:' : 'Moods:'}** [${ent.moods.join(' , ')}]\n`;
-      if (ent.tags.length > 0) formattedText += `- **${isAr ? 'الوسوم (Tags):' : 'Tags:'}** [${ent.tags.join(' , ')}]\n`;
+      const srcLbl = isAr ? ent.sourceLabelAr : ent.sourceLabelEn;
+      formattedText += `#### [${t.source || 'Source'} ${index + 1}] — ${srcLbl}\n`;
+      formattedText += `- **${t.typeAndCategory || 'Type & Category'}:** ${ent.sourceType} | ${t.group || 'Group'}: ${ent.memoryCategory}\n`;
+      formattedText += `- **${t.date || 'Date'}:** ${ent.dateStr}\n`;
+      if (ent.moods.length > 0) formattedText += `- **${t.moods || 'Moods'}:** [${ent.moods.join(' , ')}]\n`;
+      if (ent.tags.length > 0) formattedText += `- **${t.tags || 'Tags'}:** [${ent.tags.join(' , ')}]\n`;
       if (ent.metrics && Object.keys(ent.metrics).length > 0) {
         const metricStr = Object.entries(ent.metrics).map(([k, v]) => `${k}: ${v}`).join(' | ');
-        formattedText += `- **${isAr ? 'المؤشرات والأرقام:' : 'Metrics:'}** ${metricStr}\n`;
+        formattedText += `- **${t.metrics || 'Metrics'}:** ${metricStr}\n`;
       }
-      formattedText += `- **${isAr ? 'المحتوى الفعلي:' : 'Content:'}**\n> ${ent.content.replace(/\n/g, '\n> ')}\n\n`;
+      formattedText += `- **${t.content || 'Content'}:**\n> ${ent.content.replace(/\n/g, '\n> ')}\n\n`;
     });
 
     if (correlations.length > 0) {
-      formattedText += isAr ? `### 🔗 شبكة التقاطعات والروابط المكتشفة بين المصادر:\n` : `### 🔗 Discovered Cross-Source Correlations:\n`;
+      formattedText += `### 🔗 ${t.discoveredCorrelations || 'Discovered Cross-Source Correlations'}:\n`;
       correlations.forEach((corr, idx) => {
         formattedText += `**${idx + 1}. ${corr.title}**\n`;
         corr.evidence.forEach(ev => {
@@ -1209,7 +1190,7 @@ export async function retrieveRelevantKnowledge(
   const citations = topMatches.map(e => ({
     id: e.id,
     type: e.sourceType,
-    label: e.sourceLabelAr,
+    label: (options.appLanguage === 'ar') ? e.sourceLabelAr : e.sourceLabelEn,
     date: e.dateStr
   }));
 

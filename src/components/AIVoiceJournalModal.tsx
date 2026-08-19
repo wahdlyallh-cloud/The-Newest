@@ -275,7 +275,7 @@ Return pure JSON only in the following schema:
         const blobUrl = URL.createObjectURL(audioBlobRef.current);
         const newAudioRec: AudioRecording = {
           id: `rec-${Date.now()}`,
-          name: `تسجيل صوتي ${timeStr}.webm`,
+          name: `${t.voiceRecordingPrefix || 'Voice Recording'} ${timeStr}.webm`,
           dataUrl: blobUrl,
           blobUrl: blobUrl,
           duration: exactDuration,
@@ -392,7 +392,7 @@ Return pure JSON only in the following schema:
                       type="button"
                       disabled={isSaving}
                       onClick={() => handleConfirmSaveWithType(typeKey)}
-                      className={`p-3 rounded-2xl border text-right transition-all flex items-center justify-between group cursor-pointer ${cfg.colorBg} ${cfg.colorBorder} hover:shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50`}
+                      className={`p-3 rounded-2xl border text-start transition-all flex items-center justify-between group cursor-pointer ${cfg.colorBg} ${cfg.colorBorder} hover:shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50`}
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="text-2xl shrink-0">{cfg.icon}</span>

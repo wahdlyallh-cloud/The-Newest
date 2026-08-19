@@ -39,7 +39,7 @@ const PASTEL_COLORS = [
   { id: 'peach', nameAr: 'خوخي ناعم', nameEn: 'Soft Peach', class: 'bg-[#FBEEE6] border-[#F5CBA7] text-[#6E2C00] shadow-orange-100/50 hover:bg-[#F5CBA7]/30' },
   { id: 'lavender', nameAr: 'لافندر هادئ', nameEn: 'Calm Lavender', class: 'bg-[#F4ECF7] border-[#D7BDE2] text-[#5B2C6F] shadow-purple-100/50 hover:bg-[#EBDEF0]' },
   { id: 'blue', name: 'أزرق سماوي', nameEn: 'Sky Blue', class: 'bg-[#EBF5FB] border-[#AED6F1] text-[#1B4F72] shadow-blue-100/50 hover:bg-[#D4E6F1]' },
-  { id: 'pink', nameAr: 'وردي لطيف', nameEn: 'Soft Pink', class: 'bg-[#FDEDEC] border-[#F2D7D5] text-[#641E16] shadow-red-100/50 hover:bg-[#FADBD8]' },
+  { id: 'pink', nameAr: t.gratitudeColorPink || 'وردي لطيف', nameEn: 'Soft Pink', class: 'bg-[#FDEDEC] border-[#F2D7D5] text-[#641E16] shadow-red-100/50 hover:bg-[#FADBD8]' },
 ];
 
 const ARABIC_PROMPTS = [
@@ -394,9 +394,9 @@ export default function GratitudeJournal({
 
     const typeLabel = cfg.labelEn;
     showToast(
-      isEn
-        ? `🌿 Gratitude successfully added to [${typeLabel}] section in Journal!`
-        : `🌿 تمت إضافة الامتنان بنجاح إلى قسم [${typeLabel}] في اليوميات!`
+      t.gratitudeAddedSuccess
+        ? t.gratitudeAddedSuccess.replace('{section}', typeLabel)
+        : `✅ Added to [${typeLabel}]`
     );
 
     setCardToExport(null);
@@ -542,7 +542,13 @@ export default function GratitudeJournal({
     return matchesSearch && matchesColor;
   });
 
-  const activePrompts = ENGLISH_PROMPTS;
+  const activePrompts = [
+    { label: t.gratitude_prompt_label_1 || (isAr ? 'لقاء لطيف ☕' : 'Warm Drink ☕'), text: t.gratitude_prompt_text_1 || (isAr ? 'شرب فنجان قهوة ساخن وممتع بمشاركة صديق مقرب والحديث الدافئ معه...' : 'Enjoying a fresh cup of coffee in absolute peace and quiet...') },
+    { label: t.gratitude_prompt_label_2 || (isAr ? 'إنجاز عملي 💻' : 'Small Victory 💻'), text: t.gratitude_prompt_text_2 || (isAr ? 'إكمال جزء مذهل من كود المشروع وحل المشكلة التي واجهتني بالأمس...' : 'Finally completing an important task and seeing positive progress...') },
+    { label: t.gratitude_prompt_label_3 || (isAr ? 'صحة وعافية 🥦' : 'Health & Energy 🥦'), text: t.gratitude_prompt_text_3 || (isAr ? 'الشعور بالنشاط بعد ممارسة تمرين خفيف وتناول وجبة صحية تروي جسدي...' : 'Feeling energized after a gentle workout and nourishing my body...') },
+    { label: t.gratitude_prompt_label_4 || (isAr ? 'موقف مضحك 😂' : 'Good Laugh 😂'), text: t.gratitude_prompt_text_4 || (isAr ? 'موقف طريف حدث اليوم جعلني أضحك من قلبي وأتشارك الابتسامة...' : 'A funny conversation or moment that brought an authentic smile to my face...') },
+    { label: t.gratitude_prompt_label_5 || (isAr ? 'نعمة السكن 🏠' : 'Cozy Shelter 🏠'), text: t.gratitude_prompt_text_5 || (isAr ? 'العودة لغرفتي الدافئة والهادئة والشعور بالأمان والسلام بعد يوم حافل...' : 'Returning to a calm, cozy space and feeling safe, warm, and at peace...') },
+  ];
 
   return (
     <div className="space-y-6" id="gratitude-journal-section">
@@ -552,10 +558,10 @@ export default function GratitudeJournal({
         <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-100/25 rounded-full blur-2xl translate-x-10 translate-y-10" />
         
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl text-right">
+          <div className="space-y-1.5 max-w-2xl text-start">
             <span className="inline-flex items-center space-x-1.5 space-x-reverse text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200/50 px-3 py-1 rounded-full">
               <span>🌸</span>
-              <span>{"Positive Psychology Apps"}</span>
+              <span>{t.positivePsychologyAppsTag || 'Positive Psychology Apps'}</span>
             </span>
             <h2 className="text-xl md:text-2xl font-extrabold text-[#3A3A3A] tracking-tight">
               {"My Gratitude Journal"}
@@ -572,7 +578,7 @@ export default function GratitudeJournal({
               <div className="p-1.5 bg-rose-50 border border-rose-100 text-rose-500 rounded-xl">
                 <Heart className="w-5 h-5 fill-rose-500 animate-pulse" />
               </div>
-              <div className="text-right">
+              <div className="text-start">
                 <p className="text-[10px] text-gray-400 font-bold">{"Total Moments"}</p>
                 <p className="text-sm font-extrabold text-[#3A3A3A]">{gratitudeCards.length} {"cards"}</p>
               </div>
@@ -656,13 +662,13 @@ export default function GratitudeJournal({
 
               {/* Color Selection */}
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-gray-500">{"Select Polaroid Card Color Theme:"}</label>
+                <label className="block text-[11px] font-bold text-gray-500">{t.selectCardThemeLabel || 'Select Polaroid Card Color Theme:'}</label>
                 <div className="flex flex-wrap gap-2">
                   {PASTEL_COLORS.map((col, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      title={col.name}
+                      title={t['color_' + col.id] || (isAr ? col.nameAr : col.nameEn)}
                       onClick={() => setSelectedColor(col.class)}
                       className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer relative ${col.class.split(' ')[0]} ${
                         selectedColor === col.class ? 'scale-115 border-[#8B9D83] shadow-md' : 'border-transparent hover:scale-105'
@@ -1096,7 +1102,7 @@ export default function GratitudeJournal({
 
                         {/* Export Toolbar */}
                         <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-gray-100">
-                          <span className="text-[10px] text-gray-400 font-bold ml-1">{"Export to:"}</span>
+                          <span className="text-[10px] text-gray-400 font-bold ms-1">{"Export to:"}</span>
 
                           {/* Save to Gratitude Card */}
                           <button
@@ -1137,7 +1143,7 @@ export default function GratitudeJournal({
                             onClick={() => {
                               const fullText = item.userAnswer ? `${item.content}\n\n${'My Answer:'} ${item.userAnswer}` : item.content;
                               navigator.clipboard.writeText(fullText);
-                              showToast("Copied to clipboard!");
+                              showToast(t.copiedToClipboard || 'Copied!');
                             }}
                             className="px-2 py-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1"
                             title={"Copy text"}
@@ -1156,7 +1162,7 @@ export default function GratitudeJournal({
         </div>
 
         {/* Right Column: Cards Grid with Filters & Actions */}
-        <div className="lg:col-span-7 space-y-4 text-right">
+        <div className="lg:col-span-7 space-y-4 text-start">
           
           {/* Card Filter Toolbar */}
           <div className="bg-white border border-[#E2DCC8] p-4 rounded-3xl shadow-3xs space-y-3">
@@ -1168,20 +1174,20 @@ export default function GratitudeJournal({
               
               {/* Search input */}
               <div className="relative w-full sm:max-w-xs">
-                <Search className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-2.5" />
+                <Search className="w-3.5 h-3.5 text-gray-400 absolute start-3 top-2.5" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={"Search positive cards..."}
-                  className="w-full bg-[#F9F7F2] border border-[#E2DCC8]/80 focus:border-[#8B9D83] rounded-xl py-1.5 pl-3 pr-8 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none"
+                  className="w-full bg-[#F9F7F2] border border-[#E2DCC8]/80 focus:border-[#8B9D83] rounded-xl py-1.5 ps-8 pe-3 text-xs text-[#3A3A3A] placeholder-gray-400 focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Color filter pills */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-[#E2DCC8]/30">
-              <span className="text-[10px] font-bold text-gray-400 ml-1.5 flex items-center gap-1">
+              <span className="text-[10px] font-bold text-gray-400 ms-1.5 flex items-center gap-1">
                 <Filter className="w-3 h-3 text-gray-400" />
                 {"Color Filter:"}
               </span>
@@ -1209,7 +1215,7 @@ export default function GratitudeJournal({
                             : 'border-gray-200/40 text-current opacity-80'
                         }`}
                       >
-                        {col.name || ''}
+                        {t['color_' + col.id] || (isAr ? col.nameAr : col.nameEn)}
                       </button>
                     );
                   })}

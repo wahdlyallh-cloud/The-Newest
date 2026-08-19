@@ -245,7 +245,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-            <span>مزاج نوم جاد (&gt;7.5س)</span>
+            <span>{t.goodSleepMoodLabel || 'Good Sleep Mood (>7.5h)'}</span>
           </span>
           <p className="text-lg font-black text-emerald-700">{stats.avgMoodGoodSleep} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
         </div>
@@ -253,9 +253,9 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Zap className="w-3.5 h-3.5 text-amber-600" />
-            <span>{t.sleepMoodImprovement || 'تحسن المزاج بالنوم الكافي'}</span>
+            <span>{t.moodImprovesWithSleep || 'Mood improves with adequate sleep'}</span>
           </span>
-          <p className="text-lg font-black text-amber-600">+{stats.moodBoostPercent}% <span className="text-xs font-normal text-gray-500">ارتفاع</span></p>
+          <p className="text-lg font-black text-amber-600">+{stats.moodBoostPercent}% <span className="text-xs font-normal text-gray-500">{t.highLabel || 'High'}</span></p>
         </div>
       </div>
 

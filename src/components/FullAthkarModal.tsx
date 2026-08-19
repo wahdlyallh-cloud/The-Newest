@@ -751,7 +751,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
             {/* Merged Inline Progress Bar */}
             <div className="hidden lg:flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded-full border border-amber-500/20 text-[11px] shrink-0">
-              <span className="text-amber-300/80 font-sans font-medium">الإنجاز:</span>
+              <span className="text-amber-300/80 font-sans font-medium">{t.achievementLabel || "الإنجاز:"}</span>
               <span className="font-mono font-bold text-amber-300">{progressPercent}%</span>
               <div className="w-16 sm:w-24 h-2 bg-slate-900 rounded-full overflow-hidden border border-amber-500/20">
                 <motion.div

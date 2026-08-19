@@ -562,7 +562,7 @@ export default function ShareableGratitudeCardModal({
                           : 'border-[#E2DCC8] bg-white text-gray-700 hover:border-[#8B9D83]'
                       }`}
                     >
-                      <span>{item[appLanguage] || item.nameEn || item.nameAr}</span>
+                      <span>{t['card_theme_' + themeKey] || item.nameEn || item.nameAr}</span>
                     </button>
                   );
                 })}
@@ -586,7 +586,7 @@ export default function ShareableGratitudeCardModal({
                       : 'bg-white text-gray-700 border-[#E2DCC8] hover:border-[#8B9D83]'
                   }`}
                 >
-                  <span>1:1 Square (مربع)</span>
+                  <span>{t.squareFormat || '1:1 Square'}</span>
                 </button>
 
                 <button
@@ -598,7 +598,7 @@ export default function ShareableGratitudeCardModal({
                       : 'bg-white text-gray-700 border-[#E2DCC8] hover:border-[#8B9D83]'
                   }`}
                 >
-                  <span>9:16 Story (ستوري)</span>
+                  <span>{t.storyFormat || '9:16 Story'}</span>
                 </button>
               </div>
             </div>
@@ -611,7 +611,7 @@ export default function ShareableGratitudeCardModal({
                 onChange={(e) => setShowWatermark(e.target.checked)}
                 className="w-4 h-4 rounded text-[#4E685B] accent-[#4E685B]"
               />
-              <span>{t.showWatermarkAndDate || "Show app watermark & date"}</span>
+              <span>{t.showWatermarkDate || 'Show watermark & date'}</span>
             </label>
 
           </div>
