@@ -1,4 +1,5 @@
-import { t } from '../lib/languages';
+import { getAISystemLanguageContract, getAILanguageInstruction, getLocalizedAIFallback, getLocalizedAIError, normalizeAppLanguage, getCurrentAppLanguage } from '../services/aiLanguageContract';
+import { t, getTranslation } from '../lib/languages';
 import {
   getActiveApiKeyFromSettings,
   rotateToNextKey,
@@ -12,7 +13,7 @@ import {
 } from '../services/unifiedAIKnowledgeService';
 
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
+  if (!modelName || !modelName.trim()) return 'gemini-3.7-flash';
   return modelName.trim().replace(/^models\//, '');
 }
 
@@ -75,7 +76,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
-  const modelsToTry = ['gemini-3.5-flash-lite'];
+  const modelsToTry = ['gemini-3.7-flash'];
   let lastErrorMsg = '';
 
   for (const model of modelsToTry) {
@@ -217,23 +218,26 @@ async function handleClientSideFallback(url: string, init?: RequestInit): Promis
     }
   }
 
+  const reqLang = normalizeAppLanguage(reqHeaders.get('x-app-language') || requestBody.appLanguage || requestBody.langCode || getCurrentAppLanguage());
+  const t_resp = getTranslation(reqLang);
+
   // Endpoint Router
   if (url.includes('/api/gemini/verify-key')) {
     const key = requestBody.key || keyToUse;
     if (!key || key.trim() === '') {
-      return createErrorResponse("API Key is empty");
+      return createErrorResponse(reqLang === 'ar' ? "مفتاح API فارغ" : "API Key is empty");
     }
     try {
       await generateWithGeminiREST("Say 'ok' in 1 word", undefined, false, key);
-      return createSuccessResponse({ success: true, message: "API key verified successfully! 🎉" });
+      return createSuccessResponse({ success: true, message: reqLang === 'ar' ? "تم التحقق من مفتاح API بنجاح! 🎉" : "API key verified successfully! 🎉" });
     } catch (err: any) {
       if (err.message?.includes("Quota") || err.message?.includes("limit") || err.message?.includes("429") || err.message?.includes("EXHAUSTED")) {
         return createSuccessResponse({
           success: true,
-          message: "Key saved successfully! 🎉"
+          message: reqLang === 'ar' ? "تم حفظ المفتاح بنجاح! 🎉" : "Key saved successfully! 🎉"
         });
       }
-      return createErrorResponse(err.message || "Key verification failed.");
+      return createErrorResponse(err.message || t_resp.keyVerificationFailed || "Key verification failed.");
     }
   }
 
@@ -293,18 +297,21 @@ Return JSON array format:
       return aCount - bCount;
     })[0];
 
+    const topHabitText = topHabit ? (t_resp.topHabitInsight ? t_resp.topHabitInsight.replace('{habit}', topHabit.name) : `أبرز عاداتك التزاماً هي **"${topHabit.name}"**، وهو ما يوضح قدرتك العالية على تثبيت هذا السلوك وتحويله إلى جزء من هويتك اليومية.`) : "";
+    const leastHabitText = leastHabit ? (t_resp.leastHabitInsight ? t_resp.leastHabitInsight.replace('{habit}', leastHabit.name) : `تظهر السجلات تراجعاً نسبياً في عادة **"${leastHabit.name}"**.`) : "";
+
     const fallbackAnswer = `# 📊 تقرير تقييم العادات الشخصية والسلوك (نسخة محاكاة محلية)
   
 ### 1. 📈 قراءة تحليلية سلوكية للفترة: *${period}*
 يظهر من سجلاتك التزام بنسبة **${overallCompliance}%** إجمالاً. هذا مستوى من الانضباط يعكس رغبة صادقة ومحاولة مستمرة لتطوير الذات وبناء هيكل روتيني منظم. 
-${topHabit ? `أبرز عاداتك التزاماً هي **"${topHabit.name}"**، وهو ما يوضح قدرتك العالية على تثبيت هذا السلوك وتحويله إلى جزء من هويتك اليومية.` : ""}
+${topHabitText}
 
 ### 2. 🧠 الرابط النفسي والعصبي للعادات المسجلة
 * **العادات البدنية والصحية:** شرب الماء وممارسة الرياضة تحفز تدفق الدم والناقلات العصبية مثل *الإندورفين* و*الدوبامين*، مما يقلل بشكل مباشر من مستويات هرمون القلق (الكورتيزول).
 * **عادات العقل والتأمل:** التمارين الذهنية والتأمل تعزز مرونة القشرة الجبهية في الدماغ المسؤول عن تنظيم المشاعر والتخطيط، مما يقلل من حدة استجابة الغدة اللوزية (Amygdala) للمواقف الموترة.
 
 ### 3. ⚠️ رصد العقبات والتحديات
-${leastHabit ? `تظهر السجلات تراجعاً نسبياً في عادة **"${leastHabit.name}"**.` : ""} 
+${leastHabitText}
 غالباً ما ينشأ تراجع الالتزام بعادات معينة من:
 * **التسويف:** نتيجة ربط العادة بالجهد بدلاً من المكافأة.
 * **فقدان المرونة:** محاولة تدوين العادة في أوقات مزدحمة أو غير مريحة.
@@ -450,7 +457,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
     try {
       const activeKey = getActiveApiKeyFromSettings();
       if (!activeKey) {
-        return createErrorResponse('لا يوجد مفتاح Gemini API صالح لاستخدامه في الرفع.', 400);
+        return createErrorResponse(reqLang === 'ar' ? 'لا يوجد مفتاح Gemini API صالح لاستخدامه في الرفع.' : 'No valid Gemini API key found for uploading.', 400);
       }
 
       const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${activeKey.trim()}`;
@@ -468,13 +475,13 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
           rotateToNextKey('quota_exhausted', `Gemini Files Upload HTTP ${uploadRes.status}`);
         }
         const errTxt = await uploadRes.text().catch(() => '');
-        return createErrorResponse(`فشل رفع الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}`, uploadRes.status);
+        return createErrorResponse(reqLang === 'ar' ? `فشل رفع الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}` : `Failed to upload file to Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}`, uploadRes.status);
       }
 
       const uploadData = await uploadRes.json();
       return createSuccessResponse({ success: true, file: uploadData.file });
     } catch (err: any) {
-      return createErrorResponse(`خطأ شبكة أثناء رفع الملف: ${err?.message || String(err)}`, 500);
+      return createErrorResponse(reqLang === 'ar' ? `خطأ شبكة أثناء رفع الملف: ${err?.message || String(err)}` : `Network error during file upload: ${err?.message || String(err)}`, 500);
     }
   }
 
@@ -682,40 +689,26 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
   if (url.includes('/api/gemini/diary-assistant')) {
     const { title, content, promptType } = requestBody;
     if (!content || content.trim() === "") {
-      return createSuccessResponse({ success: true, answer: "يرجى كتابة بعض الكلمات أولاً لكي أتمكن من مساعدتك في تحليل هذه اليومية." });
+      return createSuccessResponse({ success: true, answer: getLocalizedAIError('key-missing', reqLang, 'Please write some thoughts first so I can assist you.') });
     }
 
     let prompt = "";
     if (promptType === "summarize") {
-      prompt = `لخص هذه اليومية المكتوبة باللغة العربية باختصار شديد وبشكل نقاط مركزة وأنيقة:
-العنوان: "${title || 'بدون عنوان'}"
-اليومية: "${content}"`;
+      prompt = `Analyze and summarize the following diary entry concisely in clear, elegant bullet points:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getAILanguageInstruction(reqLang)}`;
     } else if (promptType === "mistakes") {
-      prompt = `اقرأ اليومية التالية واستخرج بلطف وحكمة أي أخطاء سلوكية، فكرية، أو أنماط تفكير سلبية (مثل لوم الذات، التفكير الكارثي، التعميم) قد ارتكبتها، وقدم لي بديلاً فكرياً صحياً:
-العنوان: "${title || 'بدون عنوان'}"
-اليومية: "${content}"`;
+      prompt = `Read the following diary entry and gently identify any cognitive distortions, behavioral mistakes, or negative thinking patterns, explaining a healthy, rational alternative:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getAILanguageInstruction(reqLang)}`;
     } else if (promptType === "plan") {
-      prompt = `بناءً على هذه اليومية والمشاعر المسجلة فيها، صمم لي خطة عمل عملية من 3 نقاط ملموسة للغد لمساعدتي على التقدم والتحسن:
-العنوان: "${title || 'بدون عنوان'}"
-اليومية: "${content}"`;
+      prompt = `Based on this diary entry and the recorded emotions, design an actionable 3-step growth plan for tomorrow:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getAILanguageInstruction(reqLang)}`;
     } else {
-      prompt = `اليومية: "${content}"
-الطلب: قم بتحليل هذه اليومية واستخرج أهم النقاط والمحاور الواردة فيها.`;
+      prompt = `Analyze the following diary entry and extract the primary insights:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getAILanguageInstruction(reqLang)}`;
     }
 
     try {
-      const answer = await generateWithGeminiREST(prompt, undefined, false, keyToUse);
+      const answer = await generateWithGeminiREST(prompt, getAISystemLanguageContract(reqLang, "Diary assistant providing structured psychological summaries and growth steps."), false, keyToUse);
       return createSuccessResponse({ success: true, answer, source: "gemini" });
     } catch (err) {
-      let answer = "";
-      if (promptType === "summarize") {
-        answer = `📝 **ملخص اليومية (نسخة محاكاة):**\n• تسجل التدوينة الحالة الشعورية والذهنية الراهنة بدقة.\n• هناك رغبة واضحة في التوازن والتعافي الذاتي وتنظيم الأفكار.`;
-      } else if (promptType === "mistakes") {
-        answer = `💡 **تحليل الأنماط الفكرية (نسخة محاكاة):**\n• يلاحظ وجود ميل خفيف لـ **\"التفكير بكل شيء أو لا شيء\"**.\n• **البديل الفكري الصحي:** تذكر أن الخطوة البسيطة نحو الأمام تظل مكسباً حقيقياً!`;
-      } else {
-        answer = `🎯 **خطة مقترحة ليوم الغد (نسخة محاكاة):**\n1. خصص أول 15 دقيقة في الصباح لنفسك.\n2. اختر أهم مهمتين فقط وركز عليهما.\n3. حدد موعداً للتوقف وممارسة تمرين تنفس مهدئ.`;
-      }
-      return createSuccessResponse({ success: true, answer, source: "local-simulation" });
+      const fallback = getLocalizedAIFallback('diary-assistant', { promptType }, reqLang);
+      return createSuccessResponse(fallback);
     }
   }
 
@@ -725,7 +718,7 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
     const formattedDiaries = (diaries || []).slice(0, 5).map((d: any) => `العنوان: ${d.title}\nالمحتوى: ${d.content}`).join("\n\n");
 
     try {
-      let systemInstruction = "أنت أخصائي ومعالج نفسي خبير في علم النفس الإيجابي وتطبيقات الامتنان والوعي الذاتي باللغة العربية. مهمتك هي تشجيع المستخدم، تحليل بطاقات الامتنان التي يسجلها، ومساعدته على تحويل وعيه نحو الجوانب الإيجابية للتخفيف من القلق والاكتئاب.";
+      const systemInstruction = getAISystemLanguageContract(reqLang, "Positive psychology and gratitude advisor specializing in mindfulness and resilience.");
       let userPrompt = "";
       const isJson = action === "ai_generator";
 
@@ -793,7 +786,7 @@ ${formattedDiaries || "لا توجد يوميات مسجلة."}
         return createSuccessResponse({
           success: true,
           answer: JSON.stringify({
-            text: "أنا ممتن للغاية لراحة بال اليوم والفرصة الجديدة لتدوين خواطري وأفكاري.",
+            text: reqLang === 'ar' ? "أنا ممتن للغاية لراحة بال اليوم والفرصة الجديدة لتدوين خواطري وأفكاري." : "I am deeply grateful for the peace of mind today and the new opportunity to record my thoughts and ideas.",
             suggestedColor: "green"
           }),
           source: "local-simulation"
@@ -801,7 +794,7 @@ ${formattedDiaries || "لا توجد يوميات مسجلة."}
       }
       return createSuccessResponse({
         success: true,
-        answer: "الامتنان للأشياء الصغيرة في حياتنا يفتح آفاق السكينة ويعزز المرونة النفسية بشكل مستمر.",
+        answer: reqLang === 'ar' ? "الامتنان للأشياء الصغيرة في حياتنا يفتح آفاق السكينة ويعزز المرونة النفسية بشكل مستمر." : "Gratitude for the little things in our lives opens up horizons of tranquility and continuously enhances psychological resilience.",
         source: "local-simulation"
       });
     }
@@ -810,59 +803,51 @@ ${formattedDiaries || "لا توجد يوميات مسجلة."}
   if (url.includes('/api/gemini/cbt-analyze')) {
     const { triggerEvent, negativeThoughts } = requestBody;
     try {
-      const prompt = `أنت معالج نفسي عيادي خبير في العلاج المعرفي السلوكي (CBT) باللغة العربية.
-قم بتحليل الفكرة السلبية التلقائية التالية الناتجة عن الحدث المثير اللاحق:
-الحدث المثير: "${triggerEvent || 'غير محدد'}"
-الفكرة السلبية التلقائية: "${negativeThoughts}"
+      const prompt = `You are a clinical CBT cognitive restructuring expert.
+Analyze the following negative automatic thought triggered by an activating event:
+Trigger Event: "${triggerEvent || 'Unspecified'}"
+Negative Automatic Thought: "${negativeThoughts}"
 
-المطلوب:
-1. تحديد نوع "التشوه المعرفي" (Cognitive Distortion) الأكثر مطابقة (مثل: التفكير القطبي بالأبيض والأسود، القفز إلى الاستنتاجات، التهويل/الكارثية، شخصنة الأمور، التصفية الذهنية، لوم الذات). مع تقديم شرح بسيط ومقنع له باللغة العربية (في سطرين).
-2. صياغة "الفكرة البديلة الأكثر عقلانية ومنطقية" (Rational Alternative Thought) التي تفكك هذه الفكرة وتساعد المستخدم على الشعور بالهدوء والواقعية (في سطرين أو ثلاثة).
+Goal:
+1. Identify the most matching Cognitive Distortion (e.g. All-or-Nothing Thinking, Catastrophizing, Personalization, Mind Reading, Emotional Reasoning, Overgeneralization) and provide a concise, convincing explanation in 2 lines.
+2. Formulate the most rational and balanced alternative thought that deconstructs the negative belief and restores mental clarity and composure in 2-3 lines.
 
-يرجى إرجاع النتيجة ككائن JSON صرف فقط بالتنسيق التالي:
+Return strictly as a raw JSON object with format:
 {
-  "cognitiveDistortion": "اسم التشوه المعرفي وشرحه القصير",
-  "rationalAlternative": "الفكرة البديلة العقلانية المقترحة بدقة"
+  "cognitiveDistortion": "Name and brief explanation of distortion",
+  "rationalAlternative": "Proposed rational alternative thought"
 }
-أرجع JSON الصرف فقط وبدون أي ماركداون أو تعليقات خارجية.`;
+${getAILanguageInstruction(reqLang)}`;
 
-      const text = await generateWithGeminiREST(prompt, undefined, true, keyToUse);
+      const text = await generateWithGeminiREST(prompt, getAISystemLanguageContract(reqLang, "Clinical CBT restructuring and distortion analysis."), true, keyToUse);
       const parsed = JSON.parse(text.trim());
       return createSuccessResponse({ success: true, ...parsed, source: "gemini" });
     } catch (err: any) {
-      return createSuccessResponse({
-        success: true,
-        cognitiveDistortion: "التفكير الإما كل شيء أو لا شيء (All-or-Nothing Thinking)",
-        rationalAlternative: "حاول النظر للأمور بمرونة وتدرج بدلاً من التقييم الحاد، فكل خطوة بسيطة تعتبر إنجازاً مستحقاً.",
-        source: "local-simulation"
-      });
+      const fallback = getLocalizedAIFallback('cbt-analyze', undefined, reqLang);
+      return createSuccessResponse(fallback);
     }
   }
 
   if (url.includes('/api/gemini/daily-inspiration')) {
     const { moods } = requestBody;
-    const moodsStr = moods ? moods.join(", ") : "طبيعي";
+    const moodsStr = moods ? moods.join(", ") : "Normal";
     try {
-      const prompt = `أنت طبيب نفسي وأخصائي تنمية ذاتية وبناء مرونة نفسية رائد في الوطن العربي.
-بناءً على المشاعر الراهنة للمستخدم اليوم وهي: (${moodsStr})، قم بتوليد حكمة نفسية بليغة وملهمة أو نصيحة عملية عميقة لراحة البال السلام الداخلي باللغة العربية الفصحى.
+      const prompt = `You are an expert in positive psychology, self-actualization, and emotional resilience.
+Based on the user's current moods today: (${moodsStr}), generate a profound, inspirational wisdom quote or practical mindful reflection for peace of mind and inner strength.
 
-يرجى إرجاع النتيجة ككائن JSON صرف بالتنسيق التالي:
+Return strictly as a raw JSON object with format:
 {
-  "quote": "نص الحكمة أو النصيحة بأسلوب دافئ ومطمئن للنفس يبعث الأمل والسكينة",
-  "author": "اسم القائل أو مصدر الحكمة (مثال: 'طبيبك النفسي الصديق'، 'علم النفس المعرفي')"
+  "quote": "Inspirational mindful quote or reflection",
+  "author": "Attribution or source name"
 }
-أرجع JSON الصرف فقط وبدون أي ماركداون أو تعليقات خارجية.`;
+${getAILanguageInstruction(reqLang)}`;
 
-      const text = await generateWithGeminiREST(prompt, undefined, true, keyToUse);
+      const text = await generateWithGeminiREST(prompt, getAISystemLanguageContract(reqLang, "Inspiring psychological wisdom generation."), true, keyToUse);
       const parsed = JSON.parse(text.trim());
       return createSuccessResponse({ success: true, ...parsed, source: "gemini" });
     } catch (err: any) {
-      return createSuccessResponse({
-        success: true,
-        quote: "الاستمرار في الخطوات البسيطة اليومية يصنع نتائج عظيمة ومستدامة مع مرور الوقت.",
-        author: "حكمة اليوم",
-        source: "local-simulation"
-      });
+      const fallback = getLocalizedAIFallback('daily-inspiration', undefined, reqLang);
+      return createSuccessResponse(fallback);
     }
   }
 
@@ -942,7 +927,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (key && (base64Data || fileUri)) {
-        const modelsToTry = ['gemini-3.5-flash-lite'];
+        const modelsToTry = ['gemini-3.7-flash'];
         let lastError = "";
 
         for (const modName of modelsToTry) {
@@ -1009,12 +994,12 @@ Return pure JSON only in the following format:
             const parsed = JSON.parse(rawText.trim());
             return createSuccessResponse({
               success: true,
-              transcription: parsed.transcription || "تم تفريغ الصوت بنجاح.",
+              transcription: parsed.transcription || (reqLang === 'ar' ? "تم تفريغ الصوت بنجاح." : "Audio transcribed successfully."),
               speechEmotion: {
-                emotion: parsed.emotion || "طبيعي",
+                emotion: parsed.emotion || (reqLang === 'ar' ? "طبيعي" : "Normal"),
                 intensityScore: parsed.intensityScore || 70,
-                intensityLabel: parsed.intensityLabel || "متوسطة",
-                vocalToneDetails: parsed.vocalToneDetails || "نبرة صوت هادئة ومستقرة",
+                intensityLabel: parsed.intensityLabel || (reqLang === 'ar' ? "متوسطة" : "Medium"),
+                vocalToneDetails: parsed.vocalToneDetails || (reqLang === 'ar' ? "نبرة صوت هادئة ومستقرة" : "Calm and stable vocal tone"),
                 recommendedColor: parsed.recommendedColor || "teal"
               },
               source: "gemini"
@@ -1037,28 +1022,29 @@ Return pure JSON only in the following format:
       return createErrorResponse(err.message || "تعذر معالجة التسجيل الصوتي.");
     }
 
-    return createErrorResponse("يرجى إرفاق ملف صوتي صالح لتفريغه بالذكاء الاصطناعي.");
+    return createErrorResponse(reqLang === 'ar' ? "يرجى إرفاق ملف صوتي صالح لتفريغه بالذكاء الاصطناعي." : "Please attach a valid audio file for AI transcription.");
   }
 
   if (url.includes('/api/gemini/generate-note')) {
     const { promptTopic } = requestBody;
-    const topic = promptTopic || "نصائح صحية ونفسية";
+    const topic = promptTopic || "Mental wellness, balance and daily productivity";
     try {
-      const prompt = `أنت مساعد ذكاء اصطناعي متميز باللغة العربية. قم بكتابة مقال أو ملاحظة ثرية ومفيدة ومنظمة بدقة حول الموضوع التالي:
-الموضوع المطلوب: "${topic}"
+      const prompt = `You are an expert AI knowledge synthesizer and personal growth writer. Write a rich, insightful, well-structured article or reflective note about the following topic:
+Requested Topic: "${topic}"
 
-يرجى إرجاع النتيجة ككائن JSON بصيغة:
+Return strictly as a raw JSON object with format:
 {
-  "title": "عنوان جذاب ومناسب للملاحظة",
-  "content": "المحتوى التفصيلي المكتوب بلغة عربية فصحى وبأسلوب سلس ومنظم مع استخدام نقاط واضحة ورسومات تعبيرية تناسب الموضوع"
+  "title": "Compelling and relevant title",
+  "content": "Detailed, structured article content with clear bullet points, actionable insights, and fitting formatting"
 }
-أرجع JSON الصرف فقط وبدون أي ماركداون خارجي.`;
+${getAILanguageInstruction(reqLang)}`;
 
-      const text = await generateWithGeminiREST(prompt, undefined, true, keyToUse);
+      const text = await generateWithGeminiREST(prompt, getAISystemLanguageContract(reqLang, "Synthesizing structured notes and wellness articles."), true, keyToUse);
       const parsed = JSON.parse(text.trim());
       return createSuccessResponse({ success: true, ...parsed, source: "gemini" });
     } catch (err: any) {
-      return createErrorResponse(err.message || "يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لتوليد الملاحظات بالذكاء الاصطناعي.");
+      const fallback = getLocalizedAIFallback('generate-note', { topic }, reqLang);
+      return createSuccessResponse(fallback);
     }
   }
 

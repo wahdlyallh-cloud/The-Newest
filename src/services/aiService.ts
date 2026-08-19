@@ -1,3 +1,4 @@
+import { getCurrentAppLanguage, getAILanguageInstruction, getAISystemLanguageContract } from './aiLanguageContract';
 // ============================================================
 //  aiService.ts — Centralized AI Service Architecture
 //  Unified layer for all AI features across Hayat AI.
@@ -62,7 +63,7 @@ export const aiService = {
   /**
    * 2. Analyze Entry Mood (Automatic Sentiment Analysis)
    */
-  async analyzeMood(title: string, content: string, customKey?: string, appLanguage = 'ar') {
+  async analyzeMood(title: string, content: string, customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/analyze-mood', {
       title,
       content,
@@ -73,7 +74,7 @@ export const aiService = {
   /**
    * 3. Evaluate Habits Performance & Adherence Report
    */
-  async evaluateHabits(habits: any[], period: string, overallCompliance: number, customKey?: string, appLanguage = 'ar') {
+  async evaluateHabits(habits: any[], period: string, overallCompliance: number, customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/evaluate-habits', {
       habits,
       period,
@@ -98,14 +99,14 @@ export const aiService = {
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/smart-advisor', payload, {
       customKey,
-      activeLanguage: payload.appLanguage || 'ar'
+      activeLanguage: payload.appLanguage || getCurrentAppLanguage()
     });
   },
 
   /**
    * 5. Single-Shot Diary Assistant (Summarize, Cognitive Mistakes, Action Steps)
    */
-  async assistDiary(title: string, content: string, promptType: 'summarize' | 'mistakes' | 'plan' | string, customKey?: string, appLanguage = 'ar') {
+  async assistDiary(title: string, content: string, promptType: 'summarize' | 'mistakes' | 'plan' | string, customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/diary-assistant', {
       title,
       content,
@@ -131,7 +132,7 @@ export const aiService = {
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/diary-chat', payload, {
       customKey,
-      activeLanguage: payload.appLanguage || 'ar'
+      activeLanguage: payload.appLanguage || getCurrentAppLanguage()
     });
   },
 
@@ -148,14 +149,14 @@ export const aiService = {
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/gratitude-advisor', payload, {
       customKey,
-      activeLanguage: payload.appLanguage || 'ar'
+      activeLanguage: payload.appLanguage || getCurrentAppLanguage()
     });
   },
 
   /**
    * 8. CBT Cognitive Restructuring
    */
-  async analyzeCBT(triggerEvent: string, negativeThought: string, cognitiveDistortion?: string, customKey?: string, appLanguage = 'ar') {
+  async analyzeCBT(triggerEvent: string, negativeThought: string, cognitiveDistortion?: string, customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/cbt-analyze', {
       triggerEvent,
       negativeThought,
@@ -167,7 +168,7 @@ export const aiService = {
   /**
    * 9. Daily Inspiration Generator
    */
-  async generateDailyInspiration(moods: string[], customKey?: string, appLanguage = 'ar') {
+  async generateDailyInspiration(moods: string[], customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/daily-inspiration', {
       moods,
       appLanguage
@@ -177,7 +178,7 @@ export const aiService = {
   /**
    * 10. AI Article & Note Generator
    */
-  async generateNote(topic: string, customKey?: string, appLanguage = 'ar') {
+  async generateNote(topic: string, customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/generate-note', {
       topic,
       appLanguage
@@ -187,7 +188,7 @@ export const aiService = {
   /**
    * 11. Multimodal Audio Transcription & Emotion Analysis
    */
-  async transcribeAudio(audioBase64: string, mimeType = 'audio/webm', customKey?: string, appLanguage = 'ar') {
+  async transcribeAudio(audioBase64: string, mimeType = 'audio/webm', customKey?: string, appLanguage = getCurrentAppLanguage()) {
     return callGeminiApiSafely('/api/gemini/transcribe-audio', {
       audioBase64,
       mimeType,

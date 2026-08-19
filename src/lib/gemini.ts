@@ -4,12 +4,12 @@
 //  NEVER executes synchronously on app boot.
 // ============================================================
 
-export const AI_MODEL = 'gemini-3.5-flash-lite';
+export const AI_MODEL = 'gemini-3.7-flash';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
  * Returns the exact model identifier without any alias translation or mapping.
- * Strictly preserves 'gemini-3.5-flash-lite' as the literal Model ID sent to Google API.
+ * Strictly preserves 'gemini-3.7-flash' as the literal Model ID sent to Google API.
  */
 export function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return AI_MODEL;
@@ -169,8 +169,10 @@ export function getLanguageSystemInstruction(activeLanguage?: string): string {
 
 // ─── Localized error message helper ──────────────────────────
 import { getTranslation } from './languages';
+import { getAISystemLanguageContract, getLocalizedAIError, getCurrentAppLanguage } from '../services/aiLanguageContract';
 
 function getLocalizedError(key: string, lang: string, rawMsg?: string): string {
+  return getLocalizedAIError(key, lang, rawMsg);
   const t = getTranslation(lang as any);
   switch (key) {
     case 'key-missing': return (t as any).apiKeyCheckSettings || 'Please check your API key in settings';
@@ -197,7 +199,7 @@ export async function callGeminiApiSafely(
   options?: { customKey?: string; activeLanguage?: string }
 ): Promise<{ success: boolean; answer?: string; error?: string; source?: string; requiresApiKey?: boolean }> {
   const key = getGeminiApiKey(options?.customKey);
-  const lang = options?.activeLanguage || payload?.appLanguage || payload?.langCode || 'ar';
+  const lang = options?.activeLanguage || payload?.appLanguage || payload?.langCode || getCurrentAppLanguage();
 
   // ── Key guard (checked before any network activity) ───────────
   if (isKeyObviouslyInvalid(key)) {
@@ -363,7 +365,7 @@ export async function validateGeminiApiKey(
  * Calls the Gemini generateContent REST endpoint directly from the client.
  *
  * Model resolution strategy:
- *   gemini-3.5-flash-lite (Direct Model ID)
+ *   gemini-3.7-flash (Direct Model ID)
  *
  * Every request includes BLOCK_NONE safety settings.
  * All error messages returned to callers are in Arabic.

@@ -2573,7 +2573,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'x-gemini-key': settings.userApiKey || ''
         },
-        body: JSON.stringify({ promptTopic: topic })
+        body: JSON.stringify({ promptTopic: topic, appLanguage: settings.appLanguage || 'ar' })
       });
       const data = await res.json();
       if (data.success && data.title && data.content) {

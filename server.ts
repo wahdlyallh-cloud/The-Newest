@@ -1,5 +1,5 @@
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
+  if (!modelName || !modelName.trim()) return 'gemini-3.7-flash';
   return modelName.trim().replace(/^models\//, '');
 }
 
@@ -439,7 +439,7 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 
 // Helper function to generate content with fallback models
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = ['gemini-3.5-flash-lite'];
+  const modelsToTry = ['gemini-3.7-flash'];
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
@@ -527,7 +527,7 @@ app.post("/api/gemini/verify-key", async (req, res) => {
     } else if (errorMsg.includes("Quota exceeded") || errorMsg.includes("limit") || errorMsg.includes("exhausted")) {
       errorMsg = "تم تجاوز حد الاستخدام المسموح به لهذا المفتاح (Quota Exceeded).";
     } else if (errorMsg.includes("unsupported country") || errorMsg.includes("not available in your country") || errorMsg.includes("not supported")) {
-      errorMsg = "طراز الذكاء الاصطناعي (gemini-3.5-flash-lite) أو منطقتك غير مدعومة حالياً مع هذا المفتاح.";
+      errorMsg = "طراز الذكاء الاصطناعي (gemini-3.7-flash) أو منطقتك غير مدعومة حالياً مع هذا المفتاح.";
     } else {
       errorMsg = `فشل التحقق بسبب: ${errorMsg}`;
     }
@@ -1177,10 +1177,11 @@ ${formattedAthkar}
 
 // API Endpoint 3: Assistant inside a specific diary (AI داخل اليومية)
 app.post("/api/gemini/diary-assistant", async (req, res) => {
-  const { title, content, promptType } = req.body;
+  const { title, content, promptType, appLanguage } = req.body;
+  const lang = appLanguage || req.headers["x-app-language"] as string || 'ar';
 
   if (!content || content.trim() === "") {
-    return res.json({ success: true, answer: "يرجى كتابة بعض الكلمات أولاً لكي أتمكن من مساعدتك في تحليل هذه اليومية." });
+    return res.json({ success: true, answer: "Please write some thoughts first so I can assist you." });
   }
 
   const customKey = req.headers["x-gemini-key"] as string;
@@ -1189,17 +1190,13 @@ app.post("/api/gemini/diary-assistant", async (req, res) => {
     try {
       let prompt = "";
       if (promptType === "summarize") {
-        prompt = `لخص هذه اليومية المكتوبة باللغة العربية باختصار شديد وبشكل نقاط مركزة وأنيقة:
-العنوان: "${title || 'بدون عنوان'}"
-اليومية: "${content}"`;
+        prompt = `Analyze and summarize the following diary entry concisely in clear, elegant bullet points:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getLanguageInstruction(lang)}`;
       } else if (promptType === "mistakes") {
-        prompt = `اقرأ اليومية التالية واستخرج بلطف وحكمة أي أخطاء سلوكية، فكرية، أو أنماط تفكير سلبية (مثل التهويل، الشخصنة) واشرح البديل العقلاني لها:
-العنوان: "${title || "بدون عنوان"}"
-اليومية: "${content}"`;
+        prompt = `Read the following diary entry and gently identify any cognitive distortions, behavioral mistakes, or negative thinking patterns, explaining a healthy, rational alternative:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getLanguageInstruction(lang)}`;
+      } else if (promptType === "plan") {
+        prompt = `Based on this diary entry and the recorded emotions, design an actionable 3-step growth plan for tomorrow:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getLanguageInstruction(lang)}`;
       } else {
-        prompt = `حلل هذه اليومية وقدم نصيحة مخصصة:
-العنوان: "${title || "بدون عنوان"}"
-اليومية: "${content}"`;
+        prompt = `Analyze the following diary entry and extract the primary insights:\nTitle: "${title || 'Untitled'}"\nEntry: "${content}"${getLanguageInstruction(lang)}`;
       }
       const response = await generateWithGenAI(ai, { contents: prompt });
       return res.json({ success: true, answer: response.text, source: "gemini" });
@@ -1207,7 +1204,7 @@ app.post("/api/gemini/diary-assistant", async (req, res) => {
       return handleGeminiError(res, error, customKey);
     }
   }
-  return res.json({ success: true, answer: "تحليل محلي للمذكرة...", source: "local-simulation" });
+  return res.json({ success: true, answer: "Simulated diary summary analysis...", source: "local-simulation" });
 });
 
 // API Endpoint: Interactive chat with AI within a specific diary (مساحة الفضفضة والتحليل 🧠✨)
