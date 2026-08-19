@@ -62,6 +62,13 @@ const langLabels = {
   HI_DICT: 'Hindi (hi)'
 };
 
+const charSets = {
+  hindi: /[\u0900-\u097F]/,
+  cyrillic: /[\u0400-\u04FF]/,
+  japaneseKana: /[\u3040-\u309F\u30A0-\u30FF]/,
+  cjkIdeograph: /[\u4E00-\u9FFF]/
+};
+
 const validCognates = new Set(['no', 'text', 'section', 'mode', 'radio', 'canal', 'album', 'status']);
 const auditReportTable = [];
 let totalFailures = 0;
@@ -73,11 +80,25 @@ dictNames.forEach(dName => {
   let arFallback = 0;
   let missing = 0;
   let placeholderLeaks = 0;
+  let foreignCharsetLeaks = 0;
 
   allBaseKeys.forEach(key => {
     if (dict[key] !== undefined && dict[key].trim() !== '') {
       const val = dict[key];
       const titleFromKey = key.replace(/([A-Z])/g, ' $1').trim().toLowerCase();
+      
+      // Charset contamination checks
+      if (dName === 'AR_DICT') {
+        if (charSets.hindi.test(val) || charSets.cyrillic.test(val) || charSets.japaneseKana.test(val) || charSets.cjkIdeograph.test(val)) {
+          foreignCharsetLeaks++;
+        }
+      }
+      if (dName === 'EN_DICT') {
+        if (charSets.hindi.test(val) || charSets.cyrillic.test(val) || charSets.japaneseKana.test(val) || charSets.cjkIdeograph.test(val)) {
+          foreignCharsetLeaks++;
+        }
+      }
+
       // Detect TitleCase placeholder leaks
       if (titleFromKey === val.trim().toLowerCase() && /[A-Z]/.test(val) && dName !== 'EN_DICT' && !validCognates.has(key)) {
         placeholderLeaks++;
@@ -95,7 +116,7 @@ dictNames.forEach(dName => {
     }
   });
 
-  const isFullPass = directNative === totalRequired && enFallback === 0 && arFallback === 0 && missing === 0 && placeholderLeaks === 0;
+  const isFullPass = directNative === totalRequired && enFallback === 0 && arFallback === 0 && missing === 0 && placeholderLeaks === 0 && foreignCharsetLeaks === 0;
   if (!isFullPass) totalFailures++;
 
   auditReportTable.push({
@@ -106,6 +127,7 @@ dictNames.forEach(dName => {
     ArFallback: arFallback,
     Missing: missing,
     PlaceholderLeaks: placeholderLeaks,
+    CharsetLeaks: foreignCharsetLeaks,
     Status: isFullPass ? 'PASS ✅' : 'FAIL ❌'
   });
 });
@@ -152,7 +174,7 @@ allSourceFiles.forEach(filePath => {
 console.log('\n========================================================================');
 if (violationsFound === 0 && totalFailures === 0) {
   console.log('🎉 100% STRICT MULTI-LAYER i18n & ARCHITECTURE AUDIT PASSED!');
-  console.log('   All 12 languages achieved 2400/2400 Direct Native Keys with 0 Fallbacks!');
+  console.log('   All 12 languages achieved 2400/2400 Direct Native Keys with 0 Fallbacks & 0 Charset Leaks!');
 } else {
   console.error(`❌ Audit failed with ${totalFailures} language discrepancies and ${violationsFound} violations.`);
   process.exit(1);
