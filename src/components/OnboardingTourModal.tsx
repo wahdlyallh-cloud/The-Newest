@@ -76,28 +76,28 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'welcome',
       icon: Compass,
-      badge: 'Step 1 of 7',
+      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '1').replace('{total}', '7'),
       accentColor: 'from-[#2B3E50] to-[#3A506B]',
       iconBg: 'bg-[#2B3E50]/10 text-[#2B3E50]',
-      title: '🌿 Welcome to Hayat AI',
+      title: t.onboardingWelcomeTitle || '🌿 Welcome to Hayat AI',
       subtitle: t.onboardingWelcomeSubtitle || 'Your safe psychological space to write, express, and grow with smart AI guidance.',
       description: t.onboardingWelcomeDesc || 'You do not need to learn everything at once. We will accompany you step-by-step to discover what you can do.',
       interactiveWidget: (
         <div className="grid grid-cols-3 gap-2 sm:gap-2.5 py-1">
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">✍️</span>
-            <span className="text-xs font-black text-[#2B3E50]">{'Express'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{'Write freely'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingExpressLabel || 'Express'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingExpressSub || 'Write freely'}</span>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">🧠</span>
-            <span className="text-xs font-black text-[#2B3E50]">{'Understand'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{'Explore feelings'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingUnderstandLabel || 'Understand'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingUnderstandSub || 'Explore feelings'}</span>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">🌱</span>
-            <span className="text-xs font-black text-[#2B3E50]">{'Grow'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{'Track progress'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingGrowLabel || 'Grow'}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingGrowSub || 'Track progress'}</span>
           </div>
         </div>
       ),
@@ -108,41 +108,35 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'diaries',
       icon: BookOpen,
-      badge: 'Step 2 of 7',
+      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '2').replace('{total}', '7'),
       accentColor: 'from-[#4F772D] to-[#31572E]',
       iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
-      title: '✍️ Express What Lies Within',
-      subtitle: isEn
-        ? 'Write your reflections freely, record daily moments, and keep life memories in one safe spot.'
-        : 'اكتب يومياتك وخواطرك بحرية، وسجّل ما حدث في يومك، وما شعرت به، وما يدور في ذهنك.',
-      description: isEn
-        ? 'You can easily attach photos and audio recordings to keep all your experiences together.'
-        : 'يمكنك أيضًا إرفاق الصور والتسجيلات الصوتية لتحتفظ بتفاصيل تجربتك في مكان واحد مرتب وآمن.',
+      title: t.onboardingDiariesTitle || '✍️ Express What Lies Within',
+      subtitle: t.onboardingDiariesSubtitle || 'Write your reflections freely, record daily moments, and keep life memories in one safe spot.',
+      description: t.onboardingDiariesDesc || 'You can easily attach photos and audio recordings to keep all your experiences together.',
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#2B3E50]">
               <Smile className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{'Calm & Grateful'}</span>
+              <span>{t.calmAndGrateful || 'Calm & Grateful'}</span>
             </div>
             <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-              {'Mood Analysis'}
+              {t.moodAnalysis || 'Mood Analysis'}
             </span>
           </div>
           <p className="text-xs text-gray-700 leading-relaxed font-medium bg-white/80 p-2.5 rounded-xl border border-gray-100">
-            {isEn
-              ? '"Today I took time to breathe and reflect on my day calmly..."'
-              : '"أخذت اليوم وقتاً مستقطعاً للتنفس بهدوء وترتيب أولوياتي مع بداية المساء..."'}
+            {t.onboardingDiariesSample || '"Today I took time to breathe and reflect on my day calmly..."'}
           </p>
           <div className="flex items-center gap-3 pt-0.5 text-[11px] text-gray-500 font-semibold">
-            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {'Rich Text'}</span>
-            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {'Photo'}</span>
-            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {'Audio'}</span>
+            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {t.richText || 'Rich Text'}</span>
+            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {t.photo || 'Photo'}</span>
+            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {t.audio || 'Audio'}</span>
           </div>
         </div>
       ),
       actionButton: {
-        text: 'Try Diaries',
+        text: t.onboardingTryDiariesBtn || 'Try Diaries',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('diaries');
@@ -242,34 +236,30 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'analytics',
       icon: TrendingUp,
-      badge: 'Step 5 of 7',
+      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '5').replace('{total}', '7'),
       accentColor: 'from-[#197278] to-[#124E52]',
       iconBg: 'bg-[#197278]/10 text-[#197278]',
-      title: '🌱 Track Your Growth',
-      subtitle: isEn
-        ? 'Monitor your daily habits, mood, and progress to discover how your journey evolves over time.'
-        : 'راقب عاداتك ومزاجك وتقدمك اليومي، واكتشف كيف تتغير رحلتك مع مرور الوقت.',
-      description: isEn
-        ? 'Every small step you achieve today can be the beginning of a greater positive change tomorrow.'
-        : 'كل خطوة صغيرة تحرزها اليوم يمكن أن تكون بداية لتغيير أكبر غدًا، مع شجرة نمو نفسي تزدهر مع التزامك.',
+      title: t.onboardingGrowthTitle || '🌱 Track Your Growth',
+      subtitle: t.onboardingGrowthSubtitle || 'Monitor your daily habits, mood, and progress to discover how your journey evolves over time.',
+      description: t.onboardingGrowthDesc || 'Every small step you achieve today can be the beginning of a greater positive change tomorrow.',
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2">
           <div className="flex justify-between items-center text-xs font-extrabold text-[#2B3E50]">
-            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {'Psychological Growth Tree'}</span>
-            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{'Flourishing'}</span>
+            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {t.psychologicalGrowthTree || 'Psychological Growth Tree'}</span>
+            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{t.onboardingFlourishingBadge || 'Flourishing'}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full w-[85%] transition-all"></div>
           </div>
           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 pt-0.5">
-            <span>✅ {'Daily Habits'}</span>
-            <span>📊 {'Mood Trends'}</span>
-            <span>🎯 {'Achievements'}</span>
+            <span>✅ {t.dailyHabits || 'Daily Habits'}</span>
+            <span>📊 {t.moodTrends || 'Mood Trends'}</span>
+            <span>🎯 {t.achievements || 'Achievements'}</span>
           </div>
         </div>
       ),
       actionButton: {
-        text: 'Discover Your Progress',
+        text: t.onboardingDiscoverProgressBtn || 'Discover Your Progress',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('analytics');
@@ -281,37 +271,33 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'privacy',
       icon: ShieldCheck,
-      badge: 'Step 6 of 7',
+      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '6').replace('{total}', '7'),
       accentColor: 'from-[#3A506B] to-[#1C2541]',
       iconBg: 'bg-[#3A506B]/10 text-[#3A506B]',
-      title: '🔒 Your Privacy First',
-      subtitle: isEn
-        ? 'This is your private sanctuary. Protection tools are crafted to keep you in total control of your data.'
-        : 'هذه مساحتك الخاصة، ولذلك صُممت أدوات الحماية في حياة AI لمساعدتك على التحكم الكامل في بياناتك وحمايتها.',
-      description: isEn
-        ? 'Your entries are saved locally on your device with PIN passcode protection, biometric lock, and private cloud backup.'
-        : 'تبقى بياناتك محفوظة محلياً على جهازك، مع إمكانية قفل التطبيق برمز PIN وبصمة الإصبع أو الوجه ونسخ احتياطي مشفر.',
+      title: t.onboardingPrivacyTitle || '🔒 Your Privacy First',
+      subtitle: t.onboardingPrivacySubtitle || 'This is your private sanctuary. Protection tools are crafted to keep you in total control of your data.',
+      description: t.onboardingPrivacyDesc || 'Your entries are saved locally on your device with PIN passcode protection, biometric lock, and private cloud backup.',
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="flex items-center gap-2 text-xs font-bold text-[#2B3E50]">
             <Lock className="w-4 h-4 text-[#3A506B] shrink-0" />
-            <span>{'Local Device Storage & Security'}</span>
+            <span>{t.localStorageSecurity || 'Local Device Storage & Security'}</span>
           </div>
           <ul className="text-[11px] text-gray-700 space-y-1 font-medium">
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {'Passcode & Biometrics App Lock'}
+              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature1 || 'Passcode & Biometrics App Lock'}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {'Offline-first Local Database'}
+              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature2 || 'Offline-first Local Database'}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {'Encrypted Cloud Backup options'}
+              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature3 || 'Encrypted Cloud Backup options'}
             </li>
           </ul>
         </div>
       ),
       actionButton: {
-        text: 'Privacy Settings',
+        text: t.onboardingPrivacySettingsBtn || 'Privacy Settings',
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('settings');
@@ -323,23 +309,17 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'ready',
       icon: Sparkles,
-      badge: 'Step 7 of 7',
+      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '7').replace('{total}', '7'),
       accentColor: 'from-[#4F772D] to-[#1B4332]',
       iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
-      title: '🚀 You Are All Set',
-      subtitle: isEn
-        ? 'You have now discovered the core essence of Hayat AI.'
-        : 'لقد تعرّفت الآن إلى أهم ما يقدمه تطبيق حياة AI.',
-      description: isEn
-        ? 'Write what you feel, speak about what is on your mind, follow your habits, and enjoy your journey step by step.'
-        : 'اكتب ما تشعر به، تحدّث عمّا يشغلك، تابع عاداتك، واكتشف رحلتك خطوة بخطوة.',
+      title: t.onboardingReadyTitle || '🚀 You Are All Set',
+      subtitle: t.onboardingReadySubtitle || 'You have now discovered the core essence of Hayat AI.',
+      description: t.onboardingReadyDesc || 'Write what you feel, speak about what is on your mind, follow your habits, and enjoy your journey step by step.',
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-4 text-center space-y-2">
           <span className="text-3xl animate-bounce inline-block">✨</span>
           <p className="text-xs font-black text-[#2B3E50] leading-relaxed">
-            {isEn
-              ? 'There is no single correct way to use Hayat AI. Start in whatever way suits you best.'
-              : '«لا توجد طريقة صحيحة واحدة لاستخدام حياة AI. ابدأ بالطريقة التي تناسبك.»'}
+            {t.onboardingReadyQuote || '«There is no single correct way to use Hayat AI. Start in whatever way suits you best.»'}
           </p>
         </div>
       ),
@@ -399,7 +379,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleComplete}
                 className="text-[11px] sm:text-xs font-bold text-gray-500 hover:text-[#2B3E50] transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 cursor-pointer"
               >
-                {'Skip'}
+                {t.skipBtn || 'Skip'}
               </button>
             )}
             <button
@@ -496,7 +476,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleComplete}
                 className="py-2.5 px-6 rounded-2xl bg-gradient-to-r from-[#4F772D] to-[#31572E] text-white font-black text-xs hover:opacity-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{'Start My Journey Now'}</span>
+                <span>{t.onboardingStartJourneyBtn || 'Start My Journey Now'}</span>
                 <CheckCircle2 className="w-4 h-4" />
               </button>
             ) : (
@@ -505,7 +485,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleNext}
                 className="py-2.5 px-5 rounded-2xl bg-[#2B3E50] text-white font-bold text-xs hover:bg-[#1C2541] transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{isFirstStep ? ('Start Tour') : (t.nextBtn)}</span>
+                <span>{isFirstStep ? (t.onboardingStartTourBtn || 'Start Tour') : (t.nextBtn)}</span>
                 {isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
             )}

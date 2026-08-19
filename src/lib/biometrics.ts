@@ -1,6 +1,6 @@
 // Helper utility for WebAuthn & Capacitor Native Biometric registration & verification (Fingerprint / Face ID)
 
-import { AppLanguage, getTranslation } from './languages';
+import { AppLanguage, getTranslation, t } from './languages';
 
 /**
  * Check if app is running inside an iframe or constrained WebView

@@ -91,6 +91,15 @@ export const JOURNAL_TYPES_CONFIG: Record<JournalEntryType, JournalTypeConfig> =
     colorText: 'text-[#57534E]',
     pillBadgeClass: 'bg-[#F5F5F4] text-[#57534E] border-[#E7E5E4]',
   },
+  goal: {
+    type: 'goal',
+    icon: '🎯',
+    key: 'journal_type_goal',
+    colorBg: 'bg-[#FEF2F2]',
+    colorBorder: 'border-[#FECACA]',
+    colorText: 'text-[#DC2626]',
+    pillBadgeClass: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
+  },
   memory: {
     type: 'memory',
     icon: '🖼️',

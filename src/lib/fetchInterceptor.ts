@@ -344,7 +344,7 @@ ${formattedHabits}
     }
   }
 
-function getDynamicSmartAdvisorFallback(query: string, reportType: string, diaries: any[], books: any[], gratitudeCards: any[], habits: any[]): string {
+function getDynamicSmartAdvisorFallback(query: string, reportType: string, diaries: any[], books: any[], gratitudeCards: any[], habits: any[], lang: string = 'ar'): string {
   if (reportType === "therapist") {
     return `# 🎓 تقرير جلسة العلاج النفسي الذكي (تحليل مخصص)
 *تم التوليد بناءً على سجل بياناتك اليومية المحفوظة*
@@ -457,7 +457,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
     try {
       const activeKey = getActiveApiKeyFromSettings();
       if (!activeKey) {
-        return createErrorResponse(reqLang === 'ar' ? 'لا يوجد مفتاح Gemini API صالح لاستخدامه في الرفع.' : 'No valid Gemini API key found for uploading.', 400);
+        return createErrorResponse(reqLang === 'ar' ? 'لا يوجد مفتاح Gemini API صالح لاستخدامه في الرفع.' : 'No valid Gemini API key found for uploading.');
       }
 
       const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${activeKey.trim()}`;
@@ -472,16 +472,16 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
 
       if (!uploadRes.ok) {
         if (uploadRes.status === 429 || uploadRes.status === 403) {
-          rotateToNextKey('quota_exhausted', `Gemini Files Upload HTTP ${uploadRes.status}`);
+          rotateToNextKey(activeKey, 'quota_exhausted');
         }
         const errTxt = await uploadRes.text().catch(() => '');
-        return createErrorResponse(reqLang === 'ar' ? `فشل رفع الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}` : `Failed to upload file to Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}`, uploadRes.status);
+        return createErrorResponse(reqLang === 'ar' ? `فشل رفع الملف لـ Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}` : `Failed to upload file to Gemini Files API (HTTP ${uploadRes.status}): ${errTxt}`);
       }
 
       const uploadData = await uploadRes.json();
       return createSuccessResponse({ success: true, file: uploadData.file });
     } catch (err: any) {
-      return createErrorResponse(reqLang === 'ar' ? `خطأ شبكة أثناء رفع الملف: ${err?.message || String(err)}` : `Network error during file upload: ${err?.message || String(err)}`, 500);
+      return createErrorResponse(reqLang === 'ar' ? `خطأ شبكة أثناء رفع الملف: ${err?.message || String(err)}` : `Network error during file upload: ${err?.message || String(err)}`);
     }
   }
 

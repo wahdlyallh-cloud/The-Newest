@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Mic, Sparkles, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import { DiaryEntry, JournalEntryType, AudioRecording } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
-import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig } from '../lib/journalTypes';
+import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from '../lib/journalTypes';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { generateGeminiContentDirect } from '../lib/gemini';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
@@ -286,7 +286,7 @@ Return pure JSON only in the following schema:
       }
 
       const newEntryData: Partial<DiaryEntry> = {
-        title: processedResult.title || `${typeConfig.labelAr} - ${dayName} ${timeStr}`,
+        title: processedResult.title || `${getJournalTypeLabel(typeConfig.type, t)} - ${dayName} ${timeStr}`,
         content: formattedContent,
         diaryType: chosenType,
         moods: processedResult.moods || ['مرتاح'],

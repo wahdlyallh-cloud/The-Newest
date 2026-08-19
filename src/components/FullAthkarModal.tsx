@@ -434,6 +434,7 @@ interface FullAthkarModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: string;
+  appLanguage?: AppLanguage;
 }
 
 export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning', appLanguage = 'ar' }: FullAthkarModalProps) {

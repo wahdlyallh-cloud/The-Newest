@@ -3,6 +3,8 @@ import { AppLanguage, getTranslation } from './languages';
 
 export interface CorrelationInsight {
   id: string;
+  summary?: string;
+  recommendation?: string;
   type: 'sleep_water' | 'exercise_mood' | 'cbt_anxiety' | 'gratitude_stability';
   title: string;
   description: string;

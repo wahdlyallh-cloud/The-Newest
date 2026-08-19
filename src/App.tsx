@@ -36,7 +36,7 @@ import PasskeyAuth from './components/PasskeyAuth';
 import { registerBiometrics } from './lib/biometrics';
 import { TasksChecklistSection } from './components/TasksChecklistSection';
 import { CBTExercisesSection } from './components/CBTExercisesSection';
-import { MULTI_TRANSLATIONS, SUPPORTED_LANGUAGES, getLanguageInfo, getTranslation } from './lib/languages';
+import { MULTI_TRANSLATIONS, SUPPORTED_LANGUAGES, getLanguageInfo, getTranslation, getHabitDisplayName, getReminderDisplayName, t, DEFAULT_GLOBAL_TRANSLATION_PROXY } from './lib/languages';
 import IntegratedTherapyReport from './components/IntegratedTherapyReport';
 import WeeklyHabitsMoodChart from './components/WeeklyHabitsMoodChart';
 import SleepMoodCorrelationChart from './components/SleepMoodCorrelationChart';
@@ -327,33 +327,18 @@ const INITIAL_HABITS: Habit[] = [
 ];
 
 
-const getHabitCategoryLabel = (category?: string): string => {
+const getHabitCategoryLabel = (category?: string, trans?: any): string => {
+  const tr = trans || t;
   switch (category) {
-    case 'health': return t.healthCategoryFilter || 'Physical Health 🥦';
-    case 'mind': return t.mindCategoryFilter || 'Mind & Meditation 🧠';
-    case 'sport': return t.sportCategoryFilter || 'Sports & Fitness 🏃';
-    case 'culture': return t.cultureCategoryFilter || 'Reading & Culture 📚';
+    case 'health': return tr.healthCategoryFilter || 'Physical Health 🥦';
+    case 'mind': return tr.mindCategoryFilter || 'Mind & Meditation 🧠';
+    case 'sport': return tr.sportCategoryFilter || 'Sports & Fitness 🏃';
+    case 'culture': return tr.cultureCategoryFilter || 'Reading & Culture 📚';
     case 'custom':
-    default: return t.customCategoryFilter || 'Other Goals 🎯';
+    default: return tr.customCategoryFilter || 'Other Goals 🎯';
   }
 };
 
-const getReminderDisplayName = (rem: { id?: string; title: string } | undefined | null, t?: any): string => {
-  if (!rem) return '';
-  const trans = t || DEFAULT_GLOBAL_TRANSLATION_PROXY;
-  if (rem.id === 'rem-1') return trans.defaultReminder1Title || rem.title;
-  if (rem.id === 'rem-2') return trans.defaultReminder2Title || rem.title;
-  if (rem.id === 'rem-3') return trans.defaultReminder3Title || rem.title;
-  return rem.title;
-};
-
-const getHabitDisplayName = (habit: { id?: string; name: string }): string => {
-  if (habit.id === 'habit-1') return t.defaultHabit1Name || habit.name;
-  if (habit.id === 'habit-2') return t.defaultHabit2Name || habit.name;
-  if (habit.id === 'habit-3') return t.defaultHabit3Name || habit.name;
-  if (habit.id === 'habit-4') return t.defaultHabit4Name || habit.name;
-  return habit.name;
-};
 
 const HABIT_CATEGORIES: Record<string, { label: string; color: string; dot: string }> = {
   health: { label: 'health', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
@@ -866,6 +851,7 @@ export function getInitialGratitudeCards(lang: AppLanguage): GratitudeCard[] {
   return [
     {
       id: 'grat-1',
+      color: 'green',
       text: t.gratitudeCardSample1 || 'Watching the warm morning sun rise and starting a brand new day with peace and hope',
       category: 'life',
       createdAt: '2026-07-14T08:00:00.000Z',
@@ -873,6 +859,7 @@ export function getInitialGratitudeCards(lang: AppLanguage): GratitudeCard[] {
     },
     {
       id: 'grat-2',
+      color: 'peach',
       text: t.gratitudeCardSample2 || 'Drinking a hot, perfect cup of coffee with my family and having a warm chat',
       category: 'relationships',
       createdAt: '2026-07-15T09:30:00.000Z',
@@ -880,6 +867,7 @@ export function getInitialGratitudeCards(lang: AppLanguage): GratitudeCard[] {
     },
     {
       id: 'grat-3',
+      color: 'lavender',
       text: t.gratitudeCardSample3 || 'Finding solutions to a tough coding challenge and feeling the joy of personal progress',
       category: 'work',
       createdAt: '2026-07-16T14:15:00.000Z',
@@ -990,7 +978,7 @@ const AudioPlayerWithIndexedDBFallback: React.FC<{
         <div className="flex items-center justify-between text-[11px] font-bold text-[#5A5A40]">
           <span className="flex items-center gap-1.5">
             <span>🎧</span>
-            <span>{t.audioRecordingPlayer || "Audio Recording Player:"}</span>
+            <span>{t?.audioRecordingPlayer || "Audio Recording Player:"}</span>
           </span>
           <span className="text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] border border-emerald-200">
             جاهز للتشغيل والاستماع
@@ -1003,7 +991,7 @@ const AudioPlayerWithIndexedDBFallback: React.FC<{
 
   return (
     <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-center justify-between my-1">
-      <span>⚠️ {t.audioCannotPlay || "Cannot play audio (file not fully saved)."}</span>
+      <span>⚠️ {t?.audioCannotPlay || "Cannot play audio (file not fully saved)."}</span>
       <button
         type="button"
         onClick={() => onToggleRecording()}
@@ -6245,12 +6233,12 @@ export default function App() {
                             <div className="flex items-center space-x-1.5 space-x-reverse">
                               {habit.icon && <span className="text-sm shrink-0 font-bold">{habit.icon}</span>}
                               <span className={`text-xs font-bold block transition-all ${isCompleted ? 'line-through text-gray-400' : 'text-[#3A3A3A]'}`}>
-                                {getHabitDisplayName(habit)}
+                                {getHabitDisplayName(habit, t)}
                               </span>
                             </div>
                             <div className="flex items-center space-x-2 space-x-reverse">
                               <span className={`text-[9px] px-1.5 py-0.5 rounded-md border font-medium ${catInfo.color}`}>
-                                {getHabitCategoryLabel(habit.category)}
+                                {getHabitCategoryLabel(habit.category, t)}
                               </span>
                               {habit.reminderTime && (
                                 <span className="text-[9px] text-gray-400 flex items-center space-x-0.5 space-x-reverse">
@@ -10807,7 +10795,8 @@ export default function App() {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
         // Localized month names using Intl
-        const monthFormatter = new Intl.DateTimeFormat(settings?.appLanguage === 'ar' ? 'ar-EG' : 'en-US', { month: 'long' });
+        const activeBcp47 = getLanguageInfo(settings?.appLanguage).bcp47 || 'en-US';
+        const monthFormatter = new Intl.DateTimeFormat(activeBcp47, { month: 'long' });
         const currentMonthName = monthFormatter.format(firstDayOfMonth);
 
         // Days list
@@ -10821,7 +10810,15 @@ export default function App() {
           days.push(new Date(year, month, d));
         }
 
-        const weekdays = settings?.appLanguage === 'ar' ? ['أح', 'اث', 'ثلاث', 'أر', 'خم', 'جم', 'سب'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const weekdays = (() => {
+          const baseDate = new Date(2026, 7, 2); // Sunday Aug 2, 2026
+          const fmt = new Intl.DateTimeFormat(activeBcp47, { weekday: 'narrow' });
+          return Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(baseDate);
+            d.setDate(baseDate.getDate() + i);
+            return fmt.format(d);
+          });
+        })();
 
         const handlePrevMonth = () => {
           setCalendarViewDate(new Date(year, month - 1, 1));
@@ -10985,7 +10982,7 @@ export default function App() {
                         ◀
                       </button>
                       <span className="text-xs font-black text-[#5A5A40]">
-                        {arabicMonths[month]} {year}
+                        {currentMonthName} {year}
                       </span>
                       <button 
                         type="button"

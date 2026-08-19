@@ -35,7 +35,7 @@ import {
   X
 } from 'lucide-react';
 import { DiaryEntry, TaskItem, Habit, HabitSettings, AppLanguage } from '../types';
-import { getLanguageInfo, getTranslation } from '../lib/languages';
+import { getLanguageInfo, getTranslation, getHabitDisplayName } from '../lib/languages';
 import WeeklyHabitsMoodChart from './WeeklyHabitsMoodChart';
 import { HabitFormModal } from './HabitFormModal';
 import { HabitsMatrixGrid } from './HabitsMatrixGrid';
@@ -238,7 +238,7 @@ export const TasksChecklistSection: React.FC<TasksChecklistSectionProps> = ({
     const targetPerDay = 8;
     const getDayName = (date: Date) => {
       try {
-        return date.toLocaleDateString(langInfo.locale || 'en', { weekday: 'short' });
+        return date.toLocaleDateString(langInfo.bcp47 || 'en', { weekday: 'short' });
       } catch {
         return date.toLocaleDateString('en', { weekday: 'short' });
       }

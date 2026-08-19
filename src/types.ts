@@ -59,13 +59,15 @@ export interface DiaryEdit {
 }
 
 export type JournalEntryType =
-  | 'diary'      // 📔 يوميات
-  | 'thought'    // 💭 خواطر وأفكار
-  | 'gratitude'  // ❤️ امتنانات
-  | 'wisdom'     // 💡 حكم قصيرة
-  | 'quote'      // 📌 اقتباسات
-  | 'idea'       // 🧠 أفكار سريعة
-  | 'goal';      // 🎯 أهداف قصيرة
+  | 'diary'        // 📔 يوميات
+  | 'thought'      // 💭 خواطر وأفكار
+  | 'gratitude'    // ❤️ امتنانات
+  | 'wisdom'       // 💡 حكم قصيرة
+  | 'quote'        // 📌 اقتباسات
+  | 'idea'         // 🧠 أفكار سريعة
+  | 'goal'         // 🎯 أهداف قصيرة
+  | 'free_writing' // ✍️ كتابة حرة
+  | 'memory';      // 🖼️ ذكريات مصورة      // 🎯 أهداف قصيرة
 
 export interface DiaryEntry {
   id: string;

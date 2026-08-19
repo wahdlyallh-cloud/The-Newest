@@ -7,15 +7,16 @@ interface AthkarHeaderIconProps {
   onOpenFullAthkar: () => void;
   onOpenLockScreen: () => void;
   className?: string;
+  appLanguage?: any;
 }
 
 export default function AthkarHeaderIcon({
   appLanguage = "ar", onOpenFullAthkar, onOpenLockScreen, className = '' }: AthkarHeaderIconProps) {
+  const t = getTranslation(appLanguage);
   const [isOpenMenu, setIsOpenMenu] = useState(false);
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [streakDays, setStreakDays] = useState<number>(1);
 
-  // Compute today's progress percentage from localStorage
   useEffect(() => {
     const calculateTodayProgress = () => {
       try {

@@ -319,17 +319,16 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   // Calculate Start & End Date and Report Title based on selected period
   const { startDateStr, endDateStr, periodTitle, periodLabel } = useMemo(() => {
     const now = new Date();
-    const arabicMonths = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
+    const activeLocaleTag = getLanguageInfo(appLanguage).bcp47 || 'en-US';
+    const monthFormatter = new Intl.DateTimeFormat(activeLocaleTag, { month: 'long' });
+    const formatMonth = (mIndex: number) => monthFormatter.format(new Date(2026, mIndex, 1));
 
     if (periodType === 'custom') {
       return {
         startDateStr: customStartDate,
         endDateStr: customEndDate,
-        periodTitle: `تقرير مخصص للصحة النفسية (${customStartDate} إلى ${customEndDate})`,
-        periodLabel: `فترة مخصصة (${customStartDate} ⬅️ ${customEndDate})`
+        periodTitle: `${t.customReportTitle || 'Custom Report'} (${customStartDate} - ${customEndDate})`,
+        periodLabel: `${customStartDate} ⬅️ ${customEndDate}`
       };
     }
 
@@ -357,12 +356,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
       const startFormatted = startOfWeek.toISOString().split('T')[0];
       const endFormatted = endOfWeek.toISOString().split('T')[0];
-      const weekName = selectedOffset === 0 ? 'الأسبوع الحالي' : selectedOffset === 1 ? 'الأسبوع الماضي' : `قبل ${selectedOffset} أسابيع`;
+      const weekName = selectedOffset === 0 ? (t.currentWeek || 'Current Week') : selectedOffset === 1 ? (t.lastWeek || 'Last Week') : `${selectedOffset} ${t.weeksAgo || 'weeks ago'}`;
 
       return {
         startDateStr: startFormatted,
         endDateStr: endFormatted,
-        periodTitle: `تقرير الصحة النفسية الأسبوعي (${weekName})`,
+        periodTitle: `${t.weeklyReportTitle || 'Weekly Report'} (${weekName})`,
         periodLabel: `${weekName} (${startFormatted} - ${endFormatted})`
       };
     }
@@ -374,12 +373,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
       const startFormatted = startOfMonth.toISOString().split('T')[0];
       const endFormatted = endOfMonth.toISOString().split('T')[0];
-      const monthNameStr = `${arabicMonths[startOfMonth.getMonth()]} ${startOfMonth.getFullYear()}`;
+      const monthNameStr = `${formatMonth(startOfMonth.getMonth())} ${startOfMonth.getFullYear()}`;
 
       return {
         startDateStr: startFormatted,
         endDateStr: endFormatted,
-        periodTitle: `تقرير الصحة النفسية الشهري (${monthNameStr})`,
+        periodTitle: `${t.monthlyReportTitle || 'Monthly Report'} (${monthNameStr})`,
         periodLabel: monthNameStr
       };
     }
@@ -396,12 +395,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
       const startFormatted = startOfQ.toISOString().split('T')[0];
       const endFormatted = endOfQ.toISOString().split('T')[0];
-      const qLabel = `الربع ${targetQ + 1} (${arabicMonths[startMonth]} - ${arabicMonths[startMonth + 2]} ${targetYear})`;
+      const qLabel = `${t.quarterLabel || 'Q'}${targetQ + 1} (${formatMonth(startMonth)} - ${formatMonth(startMonth + 2)} ${targetYear})`;
 
       return {
         startDateStr: startFormatted,
         endDateStr: endFormatted,
-        periodTitle: `تقرير الصحة النفسية الربع سنوي (${qLabel})`,
+        periodTitle: `${t.quarterlyReportTitle || 'Quarterly Report'} (${qLabel})`,
         periodLabel: qLabel
       };
     }

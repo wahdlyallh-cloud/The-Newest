@@ -7,7 +7,7 @@ import {
   Send, Edit3, MessageSquare, BookmarkPlus, X
 } from 'lucide-react';
 import { GratitudeCard, AppSettings, DiaryEntry, JournalEntryType } from '../types';
-import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig } from '../lib/journalTypes';
+import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from '../lib/journalTypes';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 
 export interface AIGratitudeHistoryItem {
@@ -39,7 +39,7 @@ const PASTEL_COLORS = [
   { id: 'peach', nameAr: 'خوخي ناعم', nameEn: 'Soft Peach', class: 'bg-[#FBEEE6] border-[#F5CBA7] text-[#6E2C00] shadow-orange-100/50 hover:bg-[#F5CBA7]/30' },
   { id: 'lavender', nameAr: 'لافندر هادئ', nameEn: 'Calm Lavender', class: 'bg-[#F4ECF7] border-[#D7BDE2] text-[#5B2C6F] shadow-purple-100/50 hover:bg-[#EBDEF0]' },
   { id: 'blue', name: 'أزرق سماوي', nameEn: 'Sky Blue', class: 'bg-[#EBF5FB] border-[#AED6F1] text-[#1B4F72] shadow-blue-100/50 hover:bg-[#D4E6F1]' },
-  { id: 'pink', nameAr: t.gratitudeColorPink || 'وردي لطيف', nameEn: 'Soft Pink', class: 'bg-[#FDEDEC] border-[#F2D7D5] text-[#641E16] shadow-red-100/50 hover:bg-[#FADBD8]' },
+  { id: 'pink', nameAr: 'وردي لطيف', nameEn: 'Soft Pink', class: 'bg-[#FDEDEC] border-[#F2D7D5] text-[#641E16] shadow-red-100/50 hover:bg-[#FADBD8]' },
 ];
 
 const ARABIC_PROMPTS = [
@@ -361,7 +361,7 @@ export default function GratitudeJournal({
 
     const newEntry: DiaryEntry = {
       id: `diary-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      title: `${cfg.icon} ${cfg.labelEn} - ${card.category || ('Gratitude Moment')}`,
+      title: `${cfg.icon} ${getJournalTypeLabel(chosenType, t)} - ${card.category || ('Gratitude Moment')}`,
       content: card.text.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -392,7 +392,7 @@ export default function GratitudeJournal({
       }
     }
 
-    const typeLabel = cfg.labelEn;
+    const typeLabel = getJournalTypeLabel(chosenType, t);
     showToast(
       t.gratitudeAddedSuccess
         ? t.gratitudeAddedSuccess.replace('{section}', typeLabel)
@@ -1504,10 +1504,10 @@ export default function GratitudeJournal({
                         <span className="text-xl shrink-0">{cfg.icon}</span>
                         <div className="min-w-0 flex-1">
                           <p className={`text-xs font-black truncate ${cfg.colorText}`}>
-                            {cfg.labelEn}
+                            {getJournalTypeLabel(typeKey, t)}
                           </p>
                           <p className="text-[9px] text-gray-500 font-medium truncate">
-                            {cfg.descriptionEn}
+                            {getJournalTypeDescription(typeKey, t)}
                           </p>
                         </div>
                       </button>

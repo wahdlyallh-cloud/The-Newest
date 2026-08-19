@@ -6,10 +6,12 @@ interface DrawingCanvasProps {
   initialDataUrl?: string;
   onSave: (dataUrl: string) => void;
   onCancel: () => void;
+  appLanguage?: any;
 }
 
 export default function DrawingCanvas({
   appLanguage = "ar", initialDataUrl, onSave, onCancel }: DrawingCanvasProps) {
+  const t = getTranslation(appLanguage);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
