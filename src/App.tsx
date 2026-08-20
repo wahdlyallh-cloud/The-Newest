@@ -11997,10 +11997,10 @@ export default function App() {
       {/* Simulated Hardware Power Button protruding from the right edge */}
       <div 
         onClick={() => setSettings(prev => ({ ...prev, isAppLocked: true }))}
-        className="fixed right-0 top-[35%] w-3.5 h-16 bg-gradient-to-l from-[#222] to-[#444] rounded-l-lg hover:from-[#333] hover:to-[#555] border border-gray-600 border-r-0 shadow-xl cursor-pointer transition-all hover:w-4 z-[9999] flex items-center justify-center group"
+        className="fixed end-0 top-[35%] w-3.5 h-16 bg-gradient-to-l from-[#222] to-[#444] rounded-s-lg hover:from-[#333] hover:to-[#555] border border-gray-600 border-e-0 shadow-xl cursor-pointer transition-all hover:w-4 z-[9999] flex items-center justify-center group"
         title={t.hardwarePowerBtnTooltip || 'Hardware Power Button to lock the app 🔌'}
       >
-        <span className="opacity-0 group-hover:opacity-100 absolute right-6 bg-black/85 text-white text-[10px] font-extrabold py-1 px-2 rounded-lg whitespace-nowrap transition-opacity pointer-events-none shadow-md">
+        <span className="opacity-0 group-hover:opacity-100 absolute end-6 bg-black/85 text-white text-[10px] font-extrabold py-1 px-2 rounded-lg whitespace-nowrap transition-opacity pointer-events-none shadow-md">
           {t.lockScreenTooltip || 'Lock Screen 🔌'}
         </span>
       </div>

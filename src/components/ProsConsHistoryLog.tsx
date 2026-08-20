@@ -250,9 +250,9 @@ export default function ProsConsHistoryLog({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t.searchProsConsPlaceholder || 'Search by day key, date, or keywords...'}
-            className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl pr-9 pl-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
+            className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl pe-9 ps-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
           />
-          <Search className="w-4 h-4 text-gray-400 absolute right-3 top-2.5" />
+          <Search className="w-4 h-4 text-gray-400 absolute end-3 top-2.5" />
         </div>
 
         {/* Filter Buttons */}

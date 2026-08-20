@@ -251,12 +251,12 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
             </p>
           </div>
         ) : (
-          <div className="relative border-r-2 border-[#E2DCC8] pr-6 mr-3 space-y-8">
+          <div className="relative border-e-2 border-[#E2DCC8] pe-6 me-3 space-y-8">
             {events.map((ev) => (
               <div key={ev.id} className="relative">
                 
                 {/* Visual Circle Icon on Timeline Axis */}
-                <div className="absolute -right-[33px] top-1 bg-white border-2 border-[#E2DCC8] p-1.5 rounded-full shadow-xs z-10 transition-colors">
+                <div className="absolute -end-[33px] top-1 bg-white border-2 border-[#E2DCC8] p-1.5 rounded-full shadow-xs z-10 transition-colors">
                   {ev.icon === 'moon' && <Moon className="w-3.5 h-3.5 text-blue-500" />}
                   {ev.icon === 'pill' && <Pill className="w-3.5 h-3.5 text-[#D4A373]" />}
                   {ev.icon === 'sports' && <Activity className="w-3.5 h-3.5 text-emerald-500" />}
