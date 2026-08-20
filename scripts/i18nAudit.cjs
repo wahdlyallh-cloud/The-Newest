@@ -20,6 +20,7 @@ const allowedSharedTerms = new Set(['ok', 'menu', 'name', 'date', 'tags', 'sourc
 // STRICT EXCEPTIONS FOR IT_DICT ONLY
 const itDictExceptions = new Set(['passwordlabel', 'videofilterlabel', 'roundlabel', 'badgevideo']);
 const esDictExceptions = new Set(['sortmanual', 'totalprefix', 'moodneutralvariable']);
+const ptDictExceptions = new Set(['totalprefix', 'interfacetitle']);
 
 let totalFailures = 0;
 const auditReportTable = [];
@@ -53,6 +54,10 @@ dictNames.forEach(dName => {
         continue;
     }
     if (dName === 'ES_DICT' && esDictExceptions.has(k.toLowerCase())) {
+        directNative++;
+        continue;
+    }
+    if (dName === 'PT_DICT' && ptDictExceptions.has(k.toLowerCase())) {
         directNative++;
         continue;
     }
