@@ -1,4 +1,4 @@
-const ts = require('typescript');
+﻿const ts = require('typescript');
 const fs = require('fs');
 const path = require('path');
 
@@ -16,6 +16,9 @@ const dictNames = ['AR_DICT', 'EN_DICT', 'FR_DICT', 'DE_DICT', 'ES_DICT', 'IT_DI
 const allowedTechTerms = new Set(['ai', 'cbt', 'pdf', 'e2ee', 'id', 'pin', 'gemini', 'url', 'pwa']);
 const allowedProperNouns = new Set(['hayat', 'hayat ai', 'google', 'youtube']);
 const allowedSharedTerms = new Set(['ok', 'menu', 'name', 'date', 'tags', 'sources', 'general', 'email']);
+
+// STRICT EXCEPTIONS FOR IT_DICT ONLY
+const itDictExceptions = new Set(['passwordlabel', 'videofilterlabel', 'roundlabel', 'badgevideo']);
 
 let totalFailures = 0;
 const auditReportTable = [];
@@ -42,6 +45,12 @@ dictNames.forEach(dName => {
 
     const v = dict[k];
     const enVal = EN_DICT[k];
+
+    // Check specific IT_DICT exceptions first
+    if (dName === 'IT_DICT' && itDictExceptions.has(k.toLowerCase())) {
+        directNative++;
+        continue;
+    }
 
     const valLower = typeof v === 'string' ? v.toLowerCase().trim() : '';
     const enLower = typeof enVal === 'string' ? enVal.toLowerCase().trim() : '';

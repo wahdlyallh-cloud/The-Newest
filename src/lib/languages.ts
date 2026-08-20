@@ -16849,8 +16849,8 @@ export const TR_DICT: Record<string, any> = {
   aiAnalyzing: "Danışman verilerinizi analiz ediyor...",
   exportChatBtn: 'Export',
   insightOneTitle: "Uyku ve Ruh Hali Korelasyonu",
-  insightTwoTitle: 'Habit Consistency',
-  insightThreeTitle: 'Physical Activity',
+  insightTwoTitle: "Alışkanlık Tutarlılığı",
+  insightThreeTitle: "Fiziksel Aktivite",
   chatModeBasic: 'Normal',
   chatModeTherapy: 'CBT',
   chatModeCoach: 'Life Coach',
@@ -17221,7 +17221,7 @@ export const TR_DICT: Record<string, any> = {
   calendarModalSubtitle: 'Günlükleri, okunan kitapları ve entegre ruh sağlığı raporlarını inceleyin',
   badgeRefLink: 'Ref 🔗',
   badgeAudio: 'Ses 🎙️',
-  badgeVideo: 'Video 📹',
+  badgeVideo: "Video 📹",
   badgeMindmap: 'Harita 🎨',
 };
 
