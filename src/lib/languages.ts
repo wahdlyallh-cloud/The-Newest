@@ -14456,8 +14456,8 @@ export const IT_DICT: Record<string, any> = {
   aiAnalyzing: "Il consulente sta analizzando i tuoi dati...",
   exportChatBtn: 'Export',
   insightOneTitle: "Correlazione Sonno e Umore",
-  insightTwoTitle: 'Habit Consistency',
-  insightThreeTitle: 'Physical Activity',
+  insightTwoTitle: "Costanza nelle Abitudini",
+  insightThreeTitle: "Attività Fisica",
   chatModeBasic: 'Normal',
   chatModeTherapy: 'CBT',
   chatModeCoach: 'Life Coach',
@@ -14767,7 +14767,7 @@ export const IT_DICT: Record<string, any> = {
   calendarModalSubtitle: 'Sfoglia diari, libri letti e report di salute mentale integrati',
   badgeRefLink: 'Rif 🔗',
   badgeAudio: 'Audio 🎙️',
-  badgeVideo: 'Video 📹',
+  badgeVideo: "Video 📹",
   badgeMindmap: 'Mappa 🎨',
 };
 
