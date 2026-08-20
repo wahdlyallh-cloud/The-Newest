@@ -337,7 +337,7 @@ ${formattedHabits}
 يرجى إظهار التعاطف والتشجيع وتنسيق الرد بشكل منظم وجميل باستخدام Markdown.`;
 
       const systemInstruction = "أنت خبير ومستشار متميز في تحليل السلوكيات وبناء العادات الإيجابية والتنمية الشخصية المستندة للبيانات العلمية باللغة العربية الفصحى. مهمتك هي قراءة قائمة عادات المستخدم ومدى الالتزام وصياغة تقييم رصين ومحفز.";
-      const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse);
+      const answer = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse);
       return createSuccessResponse({ success: true, answer, source: "gemini" });
     } catch (err: any) {
       return createSuccessResponse({ success: true, answer: fallbackAnswer, source: "local-simulation" });
@@ -583,7 +583,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       }
 
       try {
-        const answer = await generateWithGeminiREST(userQuery || 'يرجى تحليل المحتوى المرفق', generalSystemInstruction, false, keyToUse, extraParts);
+        const answer = await generateWithGeminiREST(userQuery || 'Hello', generalSystemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts);
         return createSuccessResponse({ success: true, answer, source: 'gemini-general', citations: retrievedContext?.sourceCitations });
       } catch (err: any) {
         return createSuccessResponse({
@@ -673,7 +673,7 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
         });
       }
 
-      const answer = await generateWithGeminiREST(userPrompt, systemInstruction, false, keyToUse, extraParts);
+      const answer = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts);
       return createSuccessResponse({
         success: true,
         answer,
@@ -774,7 +774,7 @@ ${formattedDiaries || "لا توجد يوميات مسجلة."}
 اعطني الاقتراحات بأسلوب ودي ولطيف باللغة العربية، مع تقديم فكرة بسيطة خلف كل اقتراع وكيف تساهم في تحسين مزاجي وسلوكي اليومي.`;
       }
 
-      const text = await generateWithGeminiREST(userPrompt, systemInstruction, isJson, keyToUse);
+      const text = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), isJson, keyToUse);
       
       if (isJson) {
         const parsed = JSON.parse(text.trim());
@@ -881,7 +881,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
 5. حافظ على لغة عربية فصحى راقية، مشجعة، وواضحة، واجعل إجابتك كاملة ومفصلة ووافية.`;
 
     try {
-      const answer = await generateWithGeminiREST(prompt, undefined, false, keyToUse);
+      const answer = await generateWithGeminiREST(prompt + '\n\n' + getAILanguageInstruction(reqLang), undefined, false, keyToUse);
       if (answer && answer.trim() !== '') {
         return createSuccessResponse({ success: true, answer, source: "gemini" });
       }

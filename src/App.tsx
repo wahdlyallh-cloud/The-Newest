@@ -4329,8 +4329,7 @@ export default function App() {
         answerText = await generateGeminiContentDirect(
           promptContext,
           'أنت مستشار نفسي وعاطفي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومدعم وتفاعلي باللغة العربية.',
-          settings.userApiKey
-        );
+          settings.userApiKey, undefined, settings.appLanguage);
       }
 
       const defaultErrStr = !settings.userApiKey ? 'يرجى التحقق من مفتاح API في الإعدادات' : 'Google API Error: Failed to generate response';
@@ -4347,8 +4346,7 @@ export default function App() {
         fallbackText = await generateGeminiContentDirect(
           `رسالة الفضفضة: ${textToSend.trim()}`,
           'أنت مستشار نفسي حكيم وداعم في تطبيق حياة AI. أجب بأسلوب دافئ ومطمئن.',
-          settings.userApiKey
-        );
+          settings.userApiKey, undefined, settings.appLanguage);
       } catch (_) {}
 
       const netErrStr = error?.message || String(error);

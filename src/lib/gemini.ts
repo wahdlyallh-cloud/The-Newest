@@ -251,7 +251,7 @@ export async function callGeminiApiSafely(
     const prompt = payload?.prompt || payload?.newMessage || payload?.userPromptWithContext || payload?.content || payload?.query || '';
     const system = payload?.systemInstruction || payload?.systemPrompt;
     if (prompt) {
-      const fallbackAnswer = await generateGeminiContentDirect(prompt, system, options?.customKey);
+      const fallbackAnswer = await generateGeminiContentDirect(prompt, system, options?.customKey, undefined, lang);
       return {
         success: true,
         answer: fallbackAnswer,
@@ -374,8 +374,18 @@ export async function generateGeminiContentDirect(
   userPromptWithContext: string,
   systemInstruction?: string,
   customKey?: string,
-  extraParts?: any[]
+  extraParts?: any[],
+  appLanguage?: string
 ): Promise<string> {
+  let finalSystemInstruction = systemInstruction || '';
+  if (appLanguage) {
+    const langRule = getLanguageSystemInstruction(appLanguage);
+    if (!finalSystemInstruction.includes("CRITICAL REQUIREMENT: You MUST process input and generate your response EXCLUSIVELY in")) {
+      finalSystemInstruction = finalSystemInstruction 
+        ? finalSystemInstruction + '\n\n' + langRule
+        : langRule;
+    }
+  }
   // ── Key guard ─────────────────────────────────────────────────
   const cleanKey = getGeminiApiKey(customKey);
   if (isKeyObviouslyInvalid(cleanKey)) {
@@ -407,9 +417,9 @@ export async function generateGeminiContentDirect(
       safetySettings: SAFETY_SETTINGS_BLOCK_NONE,
     };
 
-    if (systemInstruction) {
+    if (finalSystemInstruction) {
       requestBody.systemInstruction = {
-        parts: [{ text: systemInstruction }],
+        parts: [{ text: finalSystemInstruction }],
       };
     }
 

@@ -429,9 +429,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         answerText = await generateGeminiContentDirect(
           groundedPrompt,
           isGeneralMode
-            ? `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب صوتياً بإيجاز وبراعة ومباشرة.`
-            : `أنت المستشار الذكي الموحد في تطبيق 'حياة AI'. أجب صوتياً بلغة دافئة وموجزة ومبنية على البيانات.`,
-          userApiKey
+            ? `أنت مساعد ذكي ومتعاطف في تطبيق 'حياة AI'. أجب بلغة المستخدم بشكل مريح وداعم.`
+            : `أنت مساعد ذكي ومتعاطف في تطبيق 'حياة AI'. أجب بناءً على المذكرات بشكل داعم وملهم.`,
+          userApiKey,
+          undefined,
+          appLanguage
         );
       }
 
@@ -742,8 +744,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           answerText = await generateGeminiContentDirect(
             textToSend || 'يرجى تقديم إجابة شاملة',
             `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح، حكمة، وذكاء، سواء كانت في المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو تحليل المرفقات.`,
-            userApiKey
-          );
+            userApiKey,
+          undefined,
+          appLanguage
+        );
         }
 
         const aiMsg: Message = {
@@ -884,7 +888,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         finalAnswer = await generateGeminiContentDirect(
           groundedPrompt,
           `أنت المستشار الذكي الموحد في تطبيق 'حياة AI'. التزم بالدقة والشفافية التامة، واذكر المصادر بوضوح.`,
-          userApiKey
+          userApiKey,
+          undefined,
+          appLanguage
         );
       }
 

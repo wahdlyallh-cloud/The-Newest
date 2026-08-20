@@ -199,7 +199,7 @@ Return pure JSON only in the following schema:
 
       let aiResultText = '';
       try {
-        aiResultText = await generateGeminiContentDirect(analysisPrompt, undefined, apiKey);
+        aiResultText = await generateGeminiContentDirect(analysisPrompt, undefined, apiKey, undefined, appLanguage);
       } catch (aiErr) {
         console.warn('Gemini post-processing note (preserving raw transcript):', aiErr);
       }
