@@ -21,6 +21,7 @@ const allowedSharedTerms = new Set(['ok', 'menu', 'name', 'date', 'tags', 'sourc
 const itDictExceptions = new Set(['passwordlabel', 'videofilterlabel', 'roundlabel', 'badgevideo']);
 const esDictExceptions = new Set(['sortmanual', 'totalprefix', 'moodneutralvariable']);
 const ptDictExceptions = new Set(['totalprefix', 'interfacetitle']);
+const trDictExceptions = new Set(['videofilterlabel', 'badgevideo']);
 
 let totalFailures = 0;
 const auditReportTable = [];
@@ -58,6 +59,10 @@ dictNames.forEach(dName => {
         continue;
     }
     if (dName === 'PT_DICT' && ptDictExceptions.has(k.toLowerCase())) {
+        directNative++;
+        continue;
+    }
+    if (dName === 'TR_DICT' && trDictExceptions.has(k.toLowerCase())) {
         directNative++;
         continue;
     }
