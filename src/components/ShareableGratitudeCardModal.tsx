@@ -359,8 +359,8 @@ export default function ShareableGratitudeCardModal({
       const filename = `gratitude-card-${Date.now()}.png`;
       const file = new File([blob], filename, { type: 'image/png' });
 
-      const shareTitle = t.gratitudeCardShareTitle || 'Gratitude Card 🌸';
-      const shareText = `«${cardText}» - ${authorName}\n${t.viaHayatAiBadge || "via Hayat AI 🌿"}`;
+      const shareTitle = t.gratitudeCardShareTitle;
+      const shareText = `«${cardText}» - ${authorName}\n${t.viaHayatAiBadge}`;
 
       let shareHandled = false;
 
@@ -427,7 +427,7 @@ export default function ShareableGratitudeCardModal({
   // Copy text handler
   const handleCopyText = async () => {
     if (isExporting) return;
-    const fullText = `«${cardText}» - ${authorName}\n${t.hayatAiAppBrand || 'Hayat AI App 🌿'}`;
+    const fullText = `«${cardText}» - ${authorName}\n${t.hayatAiAppBrand}`;
     const ok = await copyToClipboard(fullText);
     if (ok) {
       setCopied(true);
@@ -502,14 +502,14 @@ export default function ShareableGratitudeCardModal({
             <div className="space-y-1.5">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <Quote className="w-3.5 h-3.5 text-[#8B9D83]" />
-                <span>{t.cardTextOrQuoteLabel || 'Card Text or Quote:'}</span>
+                <span>{t.cardTextOrQuoteLabel}</span>
               </label>
               <textarea
                 value={cardText}
                 onChange={(e) => setCardText(e.target.value)}
                 rows={3}
                 className="w-full p-3 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 focus:outline-none focus:border-[#4E685B] shadow-2xs resize-none"
-                placeholder={t.cardTextOrQuotePlaceholder || 'Write your uplifting gratitude thought...'}
+                placeholder={t.cardTextOrQuotePlaceholder}
               />
             </div>
 
@@ -517,7 +517,7 @@ export default function ShareableGratitudeCardModal({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-[11px] font-black text-gray-600">
-                  {t.cardAuthorSignatureLabel || 'Author:'}
+                  {t.cardAuthorSignatureLabel}
                 </label>
                 <input
                   type="text"
@@ -529,7 +529,7 @@ export default function ShareableGratitudeCardModal({
 
               <div className="space-y-1">
                 <label className="text-[11px] font-black text-gray-600">
-                  {t.cardTagHeaderLabel || 'Tag Header:'}
+                  {t.cardTagHeaderLabel}
                 </label>
                 <input
                   type="text"
@@ -544,7 +544,7 @@ export default function ShareableGratitudeCardModal({
             <div className="space-y-1.5">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <Palette className="w-3.5 h-3.5 text-amber-600" />
-                <span>{t.cardThemeLabel || 'Card Theme:'}</span>
+                <span>{t.cardThemeLabel}</span>
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -573,7 +573,7 @@ export default function ShareableGratitudeCardModal({
             <div className="space-y-1.5 pt-2 border-t border-[#E2DCC8]">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <Layout className="w-3.5 h-3.5 text-sky-600" />
-                <span>{t.cardAspectRatioLabel || 'Card Aspect Ratio:'}</span>
+                <span>{t.cardAspectRatioLabel}</span>
               </label>
 
               <div className="grid grid-cols-2 gap-2">
@@ -586,7 +586,7 @@ export default function ShareableGratitudeCardModal({
                       : 'bg-white text-gray-700 border-[#E2DCC8] hover:border-[#8B9D83]'
                   }`}
                 >
-                  <span>{t.squareFormat || '1:1 Square'}</span>
+                  <span>{t.squareFormat}</span>
                 </button>
 
                 <button
@@ -598,7 +598,7 @@ export default function ShareableGratitudeCardModal({
                       : 'bg-white text-gray-700 border-[#E2DCC8] hover:border-[#8B9D83]'
                   }`}
                 >
-                  <span>{t.storyFormat || '9:16 Story'}</span>
+                  <span>{t.storyFormat}</span>
                 </button>
               </div>
             </div>
@@ -611,7 +611,7 @@ export default function ShareableGratitudeCardModal({
                 onChange={(e) => setShowWatermark(e.target.checked)}
                 className="w-4 h-4 rounded text-[#4E685B] accent-[#4E685B]"
               />
-              <span>{t.showWatermarkDate || 'Show watermark & date'}</span>
+              <span>{t.showWatermarkDate}</span>
             </label>
 
           </div>
@@ -619,7 +619,7 @@ export default function ShareableGratitudeCardModal({
           {/* LIVE EXPORT CANVAS PREVIEW (7 Cols) */}
           <div className="md:col-span-7 flex flex-col items-center justify-center bg-gray-200/50 p-4 rounded-3xl border border-[#E2DCC8]/80">
             <span className="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider">
-              {t.liveCardPreview || "Live Render Preview:"}
+              {t.liveCardPreview}
             </span>
 
             {/* EXPORTABLE CARD CONTAINER NODE */}

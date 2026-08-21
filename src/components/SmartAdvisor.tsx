@@ -664,14 +664,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     if (activeAdvisorTab === 'general') {
       const isUploadingOrProcessing = generalMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
       if (isUploadingOrProcessing) {
-        setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn || "Send"} الرسالة.');
+        setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn} الرسالة.');
         return;
       }
 
       const readyFiles = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
       if (!textToSend.trim() && readyFiles.length === 0) {
         if (generalMultimodalFiles.some(f => f.status === 'failed')) {
-          setFileErrorToast('تعذر {t.sendConsultationBtn || "Send"} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
+          setFileErrorToast('تعذر {t.sendConsultationBtn} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
         }
         return;
       }
@@ -773,14 +773,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     // Diary Pro Advisor Mode Logic
     const isUploadingOrProcessing = diaryMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
     if (isUploadingOrProcessing) {
-      setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn || "Send"} الرسالة.');
+      setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn} الرسالة.');
       return;
     }
 
     const readyFiles = diaryMultimodalFiles.filter(f => !f.status || f.status === 'ready');
     if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && readyFiles.length === 0) {
       if (diaryMultimodalFiles.some(f => f.status === 'failed')) {
-        setFileErrorToast('تعذر {t.sendConsultationBtn || "Send"} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
+        setFileErrorToast('تعذر {t.sendConsultationBtn} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
       }
       return;
     }
@@ -993,7 +993,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         const welcomeDiary: Message[] = [{
           id: 'welcome',
           sender: 'ai',
-          text: t.smartAdvisorChatClearedPrompt || 'Chat history cleared. How can I help you today in reviewing and analyzing your diary? 🧠',
+          text: t.smartAdvisorChatClearedPrompt,
           createdAt: new Date().toISOString()
         }];
         setMessages(welcomeDiary);
@@ -1019,7 +1019,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           }`}
         >
           <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-          <span className="truncate">{t.smartAdvisorDiaryProTab || 'Diary Pro Advisor'}</span>
+          <span className="truncate">{t.smartAdvisorDiaryProTab}</span>
         </button>
         <button
           type="button"
@@ -1031,7 +1031,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
-          <span className="truncate">{t.smartAdvisorGeneralTab || 'General AI Advisor 🌐'}</span>
+          <span className="truncate">{t.smartAdvisorGeneralTab}</span>
         </button>
       </div>
 
@@ -1044,10 +1044,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-bold text-[#5A5A40] text-xs sm:text-sm truncate">
-                {t.smartAdvisorDiaryProTitle || 'AI Smart Advisor Pro'}
+                {t.smartAdvisorDiaryProTitle}
               </h3>
               <p className="text-[9.5px] sm:text-[10px] text-gray-500 truncate hidden sm:block">
-                {t.smartAdvisorDiaryProDesc || 'Analyze behavioral patterns, mood trends & timeline correlations'}
+                {t.smartAdvisorDiaryProDesc}
               </p>
             </div>
           </div>
@@ -1059,22 +1059,22 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 startListeningVoiceChat();
               }}
               className="flex items-center space-x-1 space-x-reverse px-2 py-1 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-[10px] sm:text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
-              title={t.smartAdvisorStartVoiceChat || 'Start Voice Chat'}
+              title={t.smartAdvisorStartVoiceChat}
             >
               <span className="animate-pulse">🎙️</span>
-              <span className="truncate">{t.smartAdvisorVoiceChatBtn || 'Voice Chat'}</span>
+              <span className="truncate">{t.smartAdvisorVoiceChatBtn}</span>
             </button>
 
             <button
               onClick={() => setShowPermissionsModal(true)}
               className="flex items-center space-x-1 space-x-reverse px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[10px] sm:text-xs font-black rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
-              title={t.smartAdvisorAccessPermissions || 'Access Permissions'}
+              title={t.smartAdvisorAccessPermissions}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="truncate hidden xs:inline">{t.smartAdvisorPermissionsBtn || 'Permissions'}</span>
+              <span className="truncate hidden xs:inline">{t.smartAdvisorPermissionsBtn}</span>
             </button>
 
-            <div className="flex items-center bg-white p-1 rounded-lg border border-[#E2DCC8] shadow-xs gap-1" title={t.smartAdvisorDiariesAccess || 'Diaries Access'}>
+            <div className="flex items-center bg-white p-1 rounded-lg border border-[#E2DCC8] shadow-xs gap-1" title={t.smartAdvisorDiariesAccess}>
               <button
                 onClick={toggleDiariesConsent}
                 className={`w-8 h-4.5 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer flex items-center ${
@@ -1100,8 +1100,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-white text-xs sm:text-sm truncate">{t.smartAdvisorGeneralTitle || 'General AI Advisor'}</h3>
-              <p className="text-[9.5px] sm:text-[10px] text-gray-200 truncate">{t.smartAdvisorGeneralDesc || 'General answers, science & multimodal attachments'}</p>
+              <h3 className="font-bold text-white text-xs sm:text-sm truncate">{t.smartAdvisorGeneralTitle}</h3>
+              <p className="text-[9.5px] sm:text-[10px] text-gray-200 truncate">{t.smartAdvisorGeneralDesc}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -1111,14 +1111,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 startListeningVoiceChat();
               }}
               className="flex items-center space-x-1 space-x-reverse px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-300/30 text-[10px] sm:text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
-              title={t.smartAdvisorStartVoiceChat || 'Start Voice Chat'}
+              title={t.smartAdvisorStartVoiceChat}
             >
               <span className="animate-pulse">🎙️</span>
-              <span className="truncate">{t.smartAdvisorVoiceChatBtn || 'Voice Chat'}</span>
+              <span className="truncate">{t.smartAdvisorVoiceChatBtn}</span>
             </button>
 
             <span className="text-[9px] sm:text-[10px] bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-white/20 font-bold shrink-0 whitespace-nowrap hidden xs:inline-block">
-              {t.smartAdvisorIndependentContext || 'Independent Context'}
+              {t.smartAdvisorIndependentContext}
             </span>
           </div>
         </div>
@@ -1154,12 +1154,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                     {currentlySpeakingId === msg.id ? (
                       <>
                         <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></span>
-                        <span>⏹️ {t.smartAdvisorStopAudio || 'Stop Audio'}</span>
+                        <span>⏹️ {t.smartAdvisorStopAudio}</span>
                       </>
                     ) : (
                       <>
                         <span>🔊</span>
-                        <span>{t.smartAdvisorListenAudio || 'Listen Audio'}</span>
+                        <span>{t.smartAdvisorListenAudio}</span>
                       </>
                     )}
                   </button>
@@ -1172,7 +1172,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         {loading && (
           <div className="flex justify-end">
             <div className="bg-white border border-[#E2DCC8] rounded-2xl rounded-tl-none p-4 shadow-xs flex items-center space-x-2 space-x-reverse">
-              <span className="text-xs text-gray-500">{t.smartAdvisorAnalyzingLifeLog || 'Advisor is analyzing your life log...'}</span>
+              <span className="text-xs text-gray-500">{t.smartAdvisorAnalyzingLifeLog}</span>
               <div className="flex space-x-1 space-x-reverse">
                 <span className="w-1.5 h-1.5 bg-[#8B9D83] rounded-full animate-bounce delay-100"></span>
                 <span className="w-1.5 h-1.5 bg-[#8B9D83] rounded-full animate-bounce delay-200"></span>
@@ -1230,14 +1230,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         <div className="px-4 py-2 bg-[#F9F7F2] border-t border-[#E2DCC8] flex flex-wrap gap-2 shrink-0">
           {chatAttachments.links.map((link, idx) => (
             <div key={idx} className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-blue-200 flex items-center space-x-1.5 space-x-reverse">
-              <span>{t.smartAdvisorWebLinkOption || '🌐 Link'}</span>
+              <span>{t.smartAdvisorWebLinkOption}</span>
               <span className="truncate max-w-[120px]" dir="ltr">{link}</span>
               <button onClick={() => setChatAttachments(prev => ({ ...prev, links: prev.links.filter((_, i) => i !== idx) }))} className="text-red-500 font-bold hover:text-red-700 cursor-pointer text-xs">×</button>
             </div>
           ))}
           {chatAttachments.videos.map((vid, idx) => (
             <div key={idx} className="bg-purple-50 text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-purple-200 flex items-center space-x-1.5 space-x-reverse">
-              <span>{t.smartAdvisorVideoOption || '🎥 Video'}</span>
+              <span>{t.smartAdvisorVideoOption}</span>
               <span className="truncate max-w-[120px]" dir="ltr">{vid}</span>
               <button onClick={() => setChatAttachments(prev => ({ ...prev, videos: prev.videos.filter((_, i) => i !== idx) }))} className="text-red-500 font-bold hover:text-red-700 cursor-pointer text-xs">×</button>
             </div>
@@ -1256,7 +1256,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         <div className="p-3 bg-[#F0EDE4] border-t border-[#E2DCC8] space-y-2 shrink-0">
           {activeAttachmentType === 'link' && (
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#5A5A40]">{t.smartAdvisorEnterWebLink || 'Enter Reference Web Link:'}</label>
+              <label className="block text-[10px] font-bold text-[#5A5A40]">{t.smartAdvisorEnterWebLink}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -1275,14 +1275,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   }}
                   className="bg-[#8B9D83] text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
                 >
-                  {t.smartAdvisorAddLinkBtn || 'Add Link'}
+                  {t.smartAdvisorAddLinkBtn}
                 </button>
               </div>
             </div>
           )}
           {activeAttachmentType === 'video' && (
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#5A5A40]">{t.smartAdvisorEnterVideoUrl || 'Enter Video URL:'}</label>
+              <label className="block text-[10px] font-bold text-[#5A5A40]">{t.smartAdvisorEnterVideoUrl}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -1301,27 +1301,27 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   }}
                   className="bg-[#8B9D83] text-[#FAF8F5] font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
                 >
-                  {t.smartAdvisorAddVideoBtn || 'Add Video'}
+                  {t.smartAdvisorAddVideoBtn}
                 </button>
               </div>
             </div>
           )}
           {activeAttachmentType === 'pdf' && (
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#5A5A40]">{t.smartAdvisorEnterPdfInfo || 'Enter Attached PDF Info:'}</label>
+              <label className="block text-[10px] font-bold text-[#5A5A40]">{t.smartAdvisorEnterPdfInfo}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={tempPdfName}
                   onChange={(e) => setTempPdfName(e.target.value)}
-                  placeholder={t.smartAdvisorPdfNamePlaceholder || 'File name (e.g. report.pdf)'}
+                  placeholder={t.smartAdvisorPdfNamePlaceholder}
                   className="w-1/3 bg-white border border-[#E2DCC8] rounded-lg px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
                 />
                 <input
                   type="text"
                   value={tempPdfUrl}
                   onChange={(e) => setTempPdfUrl(e.target.value)}
-                  placeholder={t.smartAdvisorPdfUrlPlaceholder || 'URL or View Link...' }
+                  placeholder={t.smartAdvisorPdfUrlPlaceholder }
                   className="w-2/3 bg-white border border-[#E2DCC8] rounded-lg px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
                 />
                 <button
@@ -1335,7 +1335,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   }}
                   className="bg-[#8B9D83] text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer hover:bg-[#5A5A40]"
                 >
-                  {t.smartAdvisorAddPdfBtn || 'Add PDF'}
+                  {t.smartAdvisorAddPdfBtn}
                 </button>
               </div>
             </div>
@@ -1364,7 +1364,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         {showAttachmentMenu && (
           <div className="absolute bottom-full start-3 mb-2 z-50 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 w-56 space-y-1 animate-fade-in text-xs font-sans">
             <div className="text-[10px] font-bold text-gray-400 px-2 py-1 border-b border-gray-100 mb-1 flex items-center justify-between">
-              <span>{t.smartAdvisorAddAttachmentHeader || 'Add Attachment:'}</span>
+              <span>{t.smartAdvisorAddAttachmentHeader}</span>
               <button onClick={() => setShowAttachmentMenu(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xs">✕</button>
             </div>
 
@@ -1380,7 +1380,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F9F7F2] text-[#3A3A3A] transition-colors cursor-pointer"
             >
               <span className="text-base">📁</span>
-              <span className="font-bold">{t.smartAdvisorMediaUploadOption || 'Image / Video / Document / Audio'}</span>
+              <span className="font-bold">{t.smartAdvisorMediaUploadOption}</span>
             </button>
 
             <button
@@ -1394,7 +1394,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-blue-700 transition-colors cursor-pointer"
             >
               <span className="text-base">🌐</span>
-              <span className="font-bold">{t.smartAdvisorWebLinkCategory || 'Web Link'}</span>
+              <span className="font-bold">{t.smartAdvisorWebLinkCategory}</span>
             </button>
 
             <button
@@ -1408,7 +1408,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer"
             >
               <span className="text-base">🎥</span>
-              <span className="font-bold">{t.smartAdvisorVideoLinkCategory || 'Video Link'}</span>
+              <span className="font-bold">{t.smartAdvisorVideoLinkCategory}</span>
             </button>
 
             <button
@@ -1422,7 +1422,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               className="w-full text-start flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-red-50 text-red-700 transition-colors cursor-pointer"
             >
               <span className="text-base">📄</span>
-              <span className="font-bold">{t.smartAdvisorPdfDocCategory || 'PDF Document Info'}</span>
+              <span className="font-bold">{t.smartAdvisorPdfDocCategory}</span>
             </button>
           </div>
         )}
@@ -1447,7 +1447,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             className={`p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center justify-center ${
               activeAdvisorTab === 'general' ? 'bg-[#2B3E50] hover:bg-[#1E2B38] text-white' : 'bg-[#8B9D83] hover:bg-[#5A5A40] text-white'
             }`}
-            title={t.smartAdvisorAttachFilesTooltip || 'Attach Image, PDF, Audio, Link, or Video'}
+            title={t.smartAdvisorAttachFilesTooltip}
           >
             <Plus className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform ${showAttachmentMenu ? 'rotate-45 text-amber-300' : 'text-amber-300'}`} />
           </button>
@@ -1455,7 +1455,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           <button
             onClick={handleClearHistory}
             className="p-2 sm:p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0"
-            title={t.smartAdvisorClearChatTooltip || 'Clear Chat History'}
+            title={t.smartAdvisorClearChatTooltip}
           >
             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
@@ -1618,8 +1618,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   <ShieldCheck className="w-6 h-6 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-[#2B3E50]">{t.smartAdvisorPermissionsTitle || 'Smart Advisor Access Permissions 🛡️'}</h3>
-                  <p className="text-xs text-gray-500 font-bold">{t.smartAdvisorPermissionsSubtitle || 'Select data areas the advisor is allowed to analyze and read'}</p>
+                  <h3 className="text-base font-black text-[#2B3E50]">{t.smartAdvisorPermissionsTitle}</h3>
+                  <p className="text-xs text-gray-500 font-bold">{t.smartAdvisorPermissionsSubtitle}</p>
                 </div>
               </div>
               <button
@@ -1636,8 +1636,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               <div className="flex items-center gap-3">
                 <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
                 <div>
-                  <span className="text-xs font-black text-amber-950 block">{t.smartAdvisorEnableAllAccess || 'Enable All Access'}</span>
-                  <span className="text-[11px] text-amber-800 font-bold">{t.smartAdvisorEnableAllAccessDesc || 'When enabled, advisor can provide comprehensive insights across all activities'}</span>
+                  <span className="text-xs font-black text-amber-950 block">{t.smartAdvisorEnableAllAccess}</span>
+                  <span className="text-[11px] text-amber-800 font-bold">{t.smartAdvisorEnableAllAccessDesc}</span>
                 </div>
               </div>
 
@@ -1698,14 +1698,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             {/* Footer */}
             <div className="pt-3 border-t border-[#E2DCC8] flex items-center justify-between shrink-0">
               <span className="text-[10px] text-gray-500 font-bold">
-                {t.smartAdvisorPreferencesNote || '🔒 Preferences saved locally & applied instantly to AI responses.'}
+                {t.smartAdvisorPreferencesNote}
               </span>
               <button
                 type="button"
                 onClick={() => setShowPermissionsModal(false)}
                 className="px-5 py-2.5 bg-[#8B9D83] hover:bg-[#7A8C72] text-white text-xs font-black rounded-xl shadow-md transition-all cursor-pointer"
               >
-                {t.smartAdvisorSaveApplyBtn || 'Save & Apply 💾'}
+                {t.smartAdvisorSaveApplyBtn}
               </button>
             </div>
 

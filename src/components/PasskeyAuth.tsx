@@ -48,7 +48,7 @@ export default function PasskeyAuth({
 
       // If running inside iframe / restricted environment, show default fallback notice directly
       if (isIframeOrWebView() && !biometricCredentialId) {
-        setFallbackNotice(t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default.");
+        setFallbackNotice(t.biometricsFallbackPinNotice);
       }
     }
     checkSupport();
@@ -66,7 +66,7 @@ export default function PasskeyAuth({
       if (!preCheck.supported) {
         setFallbackNotice(
           preCheck.reason ||
-            t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
+            t.biometricsFallbackPinNotice
         );
         // Fallback to PIN Lock automatically
         setIsLockEnabled(true);
@@ -82,7 +82,7 @@ export default function PasskeyAuth({
       const res = await registerBiometrics(appLanguage);
 
       if (res.success && res.credentialId) {
-        setSuccessNotice(t.biometricsSuccessNotice || "Device biometrics linked successfully!");
+        setSuccessNotice(t.biometricsSuccessNotice);
         onUpdateSecuritySettings({
           biometricCredentialId: res.credentialId,
           isBiometricEnabled: true,
@@ -93,7 +93,7 @@ export default function PasskeyAuth({
         // Smooth fallback without popup alert
         setFallbackNotice(
           res.infoMessage ||
-            t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
+            t.biometricsFallbackPinNotice
         );
         setIsLockEnabled(true);
         onUpdateSecuritySettings({
@@ -104,7 +104,7 @@ export default function PasskeyAuth({
     } catch (err: any) {
       console.warn('Biometric linking error handled gracefully:', err);
       setFallbackNotice(
-        t.biometricsFallbackPinNotice || "Biometrics unavailable on this browser. PIN lock is default."
+        t.biometricsFallbackPinNotice
       );
       setIsLockEnabled(true);
       onUpdateSecuritySettings({
@@ -143,10 +143,10 @@ export default function PasskeyAuth({
           </div>
           <div>
             <h3 className="text-sm font-black text-[#2B3E50]">
-              {t.passkeyAndPinSecurity || 'Passkey & PIN Security'}
+              {t.passkeyAndPinSecurity}
             </h3>
             <p className="text-[11px] text-gray-500 font-bold">
-              {t.protectAppWithPinBiometrics || 'Protect your app with PIN & Biometric Authentication'}
+              {t.protectAppWithPinBiometrics}
             </p>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function PasskeyAuth({
         <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-amber-900 text-xs font-bold space-y-1.5 animate-in fade-in duration-300">
           <div className="flex items-center space-x-2 space-x-reverse text-amber-800 font-black">
             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>{t.securitySystemAlert || 'Security Alert'}</span>
+            <span>{t.securitySystemAlert}</span>
           </div>
           <p className="text-[11.5px] leading-relaxed text-amber-900/90 font-bold">
             {fallbackNotice}
@@ -190,11 +190,11 @@ export default function PasskeyAuth({
           <div className="flex items-center space-x-2 space-x-reverse">
             <KeyRound className="w-4 h-4 text-[#8B9D83]" />
             <span className="text-xs font-black text-[#2B3E50]">
-              {t.pinCode4Digits || '4-Digit Secret PIN Code'}
+              {t.pinCode4Digits}
             </span>
           </div>
           <span className="text-[10px] text-gray-400 font-bold">
-            {t.defaultPin1234 || 'Default: 1234'}
+            {t.defaultPin1234}
           </span>
         </div>
 
@@ -221,18 +221,18 @@ export default function PasskeyAuth({
           <div className="flex items-center space-x-2 space-x-reverse">
             <Fingerprint className="w-5 h-5 text-amber-600" />
             <h4 className="text-xs font-black text-[#2B3E50]">
-              {t.deviceBiometricsPasskey || 'Device Biometrics & Passkey'}
+              {t.deviceBiometricsPasskey}
             </h4>
           </div>
 
           {biometricCredentialId ? (
             <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-lg flex items-center space-x-1 space-x-reverse">
               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-              <span>{t.linkedAndActive || 'Linked & Active ✅'}</span>
+              <span>{t.linkedAndActive}</span>
             </span>
           ) : (
             <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-1 rounded-lg">
-              {t.notLinked || 'Not Linked ⚠️'}
+              {t.notLinked}
             </span>
           )}
         </div>
@@ -264,7 +264,7 @@ export default function PasskeyAuth({
         <Smartphone className="w-4 h-4 text-[#8B9D83] shrink-0 mt-0.5" />
         <div>
           <span className="font-black text-[#2B3E50]">
-            {t.androidCapacitorBiometrics || 'Android APK Native Biometrics:'}
+            {t.androidCapacitorBiometrics}
           </span>
           <p className="text-gray-500 font-medium leading-relaxed mt-0.5">
             {appLanguage === 'ar'

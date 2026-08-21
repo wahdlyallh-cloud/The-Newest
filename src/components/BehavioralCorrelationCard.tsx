@@ -49,14 +49,14 @@ export default function BehavioralCorrelationCard({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-black text-emerald-300 uppercase tracking-wider">
-                {t.behavioralCorrelationsTitle || 'Smart Analytics'}
+                {t.behavioralCorrelationsTitle}
               </span>
               <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-[10px] font-extrabold rounded-full">
                 AI Matrix
               </span>
             </div>
             <h3 className="text-base font-extrabold text-white mt-0.5">
-              {t.habitsAnxietyCorrelationTitle || 'Health Habits & Anxiety Correlations'}
+              {t.habitsAnxietyCorrelationTitle}
             </h3>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function BehavioralCorrelationCard({
         {/* Total Days Analyzed Badge */}
         <div className="text-right">
           <span className="text-xs font-black text-emerald-300 bg-white/10 border border-white/15 px-3 py-1.5 rounded-full inline-block">
-            <span>{stats.totalAnalyzedDays} {t.daysAnalyzedLabel || 'Days Analyzed'}</span>
+            <span>{stats.totalAnalyzedDays} {t.daysAnalyzedLabel}</span>
           </span>
         </div>
       </div>
@@ -72,19 +72,19 @@ export default function BehavioralCorrelationCard({
       {/* Snapshot Habit Metrics Grid */}
       <div className="grid grid-cols-4 gap-2 text-center bg-black/20 rounded-2xl p-3 border border-white/5">
         <div className="p-1">
-          <span className="text-[10px] font-bold text-emerald-300/80 block">{t.avgSleepLabel || 'Avg Sleep'}</span>
+          <span className="text-[10px] font-bold text-emerald-300/80 block">{t.avgSleepLabel}</span>
           <span className="text-sm font-black text-white">{stats.avgSleepHours}h</span>
         </div>
         <div className="p-1 border-x border-white/10">
-          <span className="text-[10px] font-bold text-sky-300/80 block">{t.avgWaterLabel || 'Avg Water'}</span>
-          <span className="text-sm font-black text-white">{stats.avgWaterCups} {t.cupsUnit || 'cups'}</span>
+          <span className="text-[10px] font-bold text-sky-300/80 block">{t.avgWaterLabel}</span>
+          <span className="text-sm font-black text-white">{stats.avgWaterCups} {t.cupsUnit}</span>
         </div>
         <div className="p-1 border-r border-white/10">
-          <span className="text-[10px] font-bold text-amber-300/80 block">{t.avgExerciseLabel || 'Avg Exercise'}</span>
-          <span className="text-sm font-black text-white">{stats.avgExerciseMins} {t.minutesUnit || 'mins'}</span>
+          <span className="text-[10px] font-bold text-amber-300/80 block">{t.avgExerciseLabel}</span>
+          <span className="text-sm font-black text-white">{stats.avgExerciseMins} {t.minutesUnit}</span>
         </div>
         <div className="p-1">
-          <span className="text-[10px] font-bold text-purple-300/80 block">{t.avgMoodLabel || 'Avg Mood'}</span>
+          <span className="text-[10px] font-bold text-purple-300/80 block">{t.avgMoodLabel}</span>
           <span className="text-sm font-black text-white">{stats.avgMoodScore}/10</span>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function BehavioralCorrelationCard({
                       <span>{insight.title}</span>
                       {insight.percentageChange > 0 && (
                         <span className="text-[10px] font-black px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full">
-                          -{insight.percentageChange}% {t.anxietyScoreLabel || 'Anxiety'}
+                          -{insight.percentageChange}% {t.anxietyScoreLabel}
                         </span>
                       )}
                     </h4>
@@ -149,20 +149,20 @@ export default function BehavioralCorrelationCard({
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl space-y-1">
                         <span className="text-[10px] font-bold text-emerald-300 block">
-                          {t.optimalHabitDaysLabel || 'Optimal Habit Days'}
+                          {t.optimalHabitDaysLabel}
                         </span>
                         <div className="flex items-center justify-between text-white font-extrabold">
-                          <span>{insight.details.goodDaysAvg}/10 {t.psychologicalBalanceLabel || 'Balance'}</span>
+                          <span>{insight.details.goodDaysAvg}/10 {t.psychologicalBalanceLabel}</span>
                           <span className="text-[10px] text-emerald-400 font-black">({insight.details.goodDaysCount} d)</span>
                         </div>
                       </div>
 
                       <div className="p-2.5 bg-rose-950/30 border border-rose-500/30 rounded-xl space-y-1">
                         <span className="text-[10px] font-bold text-rose-300 block">
-                          {t.suboptimalDaysLabel || 'Suboptimal Days'}
+                          {t.suboptimalDaysLabel}
                         </span>
                         <div className="flex items-center justify-between text-white font-extrabold">
-                          <span>{insight.details.badDaysAvg}/10 {t.higherAnxietyLabel || 'Higher Anxiety'}</span>
+                          <span>{insight.details.badDaysAvg}/10 {t.higherAnxietyLabel}</span>
                           <span className="text-[10px] text-rose-400 font-black">({insight.details.badDaysCount} d)</span>
                         </div>
                       </div>

@@ -1,7 +1,7 @@
 import { getTranslation } from '../lib/languages';
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  X, Sparkles, Volume2, VolumeX, Heart, Flame, Award, 
+import {
+  X, Sparkles, Volume2, VolumeX, Heart, Flame, Award,
   Lock, Moon, Sun, ShieldCheck, Zap, Layers, BookOpen,
   Fingerprint, Key, AlertCircle, ScanFace, ArrowLeft
 } from 'lucide-react';
@@ -16,8 +16,8 @@ export interface LockScreenAthkarOverlayProps {
   appLanguage?: AppLanguage;
 }
 
-export default function LockScreenAthkarOverlay({ 
-  isOpen, 
+export default function LockScreenAthkarOverlay({
+  isOpen,
   onClose,
   onNavigateToAthkarTab,
   appLanguage = 'ar'
@@ -25,16 +25,16 @@ export default function LockScreenAthkarOverlay({
   const t = getTranslation(appLanguage);
 
   const QUICK_ATHKAR_CATEGORIES = [
-    { key: 'morning', label: t.morningAthkarLabel || 'Morning Dhikr', icon: Sun },
-    { key: 'evening', label: t.eveningAthkarLabel || 'Evening Dhikr', icon: Moon },
-    { key: 'general', label: t.generalDhikrLabel || 'General Dhikr', icon: Sparkles },
+    { key: 'morning', label: t.morningAthkarLabel, icon: Sun },
+    { key: 'evening', label: t.eveningAthkarLabel, icon: Moon },
+    { key: 'general', label: t.generalDhikrLabel, icon: Sparkles },
     { key: 'salawat', label: 'الصلاة على النبي', icon: Heart },
     { key: 'istighfar', label: 'الاستغفار', icon: ShieldCheck },
     { key: 'hawqala', label: 'الحوقلة', icon: Zap },
     { key: 'baqiyat', label: 'الباقيات الصالحات', icon: Layers },
     { key: 'younus', label: 'دعاء يونس', icon: BookOpen },
     { key: 'tawheed', label: 'ذكر التوحيد', icon: Award },
-    { key: 'custom', label: t.customDhikrCategory || 'أذكاري الخاصة', icon: Flame },
+    { key: 'custom', label: t.customDhikrCategory, icon: Flame },
   ];
 
   // Live Clock States
@@ -81,7 +81,7 @@ export default function LockScreenAthkarOverlay({
     const updateClock = () => {
       const now = new Date();
       setTimeStr(now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: false }));
-      
+
       const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
       setDateStr(now.toLocaleDateString('ar-EG', options));
 
@@ -247,10 +247,10 @@ export default function LockScreenAthkarOverlay({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-md overflow-y-auto text-white select-none dir-rtl">
-        
+
         {/* Main Flexible Container with Safe Margins */}
         <div className="flex flex-col justify-between min-h-screen p-6 pt-12 pb-10 gap-6 max-w-3xl mx-auto w-full relative z-10">
-          
+
           {/* Background Ambient Glowing Orbs */}
           <div className="absolute top-1/3 -right-24 w-80 h-80 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-1/3 -left-24 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -264,7 +264,7 @@ export default function LockScreenAthkarOverlay({
                   <Lock className="w-4 h-4 animate-pulse" />
                 </span>
                 <span className="text-xs font-bold text-amber-200/90 font-sans tracking-wide">
-                  {t.lockScreenAndAthkar || 'شاشة القفل والأذكار'}
+                  {t.lockScreenAndAthkar}
                 </span>
               </div>
 
@@ -304,7 +304,7 @@ export default function LockScreenAthkarOverlay({
 
           {/* 2. Center Area: Quick Athkar Chips Bar & Unlock Controls */}
           <div className="flex-1 my-auto flex flex-col items-center justify-center space-y-6 w-full py-2">
-            
+
             {/* Spiritual Reflection Prompt */}
             <div className="text-center space-y-1.5">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-black font-sans shadow-sm">
@@ -312,7 +312,7 @@ export default function LockScreenAthkarOverlay({
                 <span>أَلا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ</span>
               </div>
               <p className="text-xs text-zinc-400 font-sans">
-                {t.clickSectionToNavigate || 'انقر على أي قسم للانتقال المباشر بعد فك القفل:'}
+                {t.clickSectionToNavigate}
               </p>
             </div>
 
@@ -335,7 +335,7 @@ export default function LockScreenAthkarOverlay({
                       key={cat.key}
                       onClick={() => handleCategoryClick(cat.key, cat.label)}
                       className="px-4 py-3 rounded-2xl text-xs font-extrabold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer bg-gradient-to-r from-amber-500/20 via-emerald-600/20 to-amber-500/20 hover:from-amber-500/40 hover:to-emerald-600/40 text-amber-100 border-2 border-amber-500/40 hover:border-amber-300 shadow-md active:scale-95 shrink-0 backdrop-blur-md group"
-                      title={`${t.navigateTo || 'Navigate to'} ${cat.label}`}
+                      title={`${t.navigateTo} ${cat.label}`}
                     >
                       <IconComp className="w-4 h-4 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
                       <span>{cat.label}</span>
@@ -382,7 +382,7 @@ export default function LockScreenAthkarOverlay({
           {/* 3. Bottom Area: Permanent Cumulative Salawat Counter Card */}
           <div className="shrink-0 max-w-xl mx-auto w-full">
             <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-950/90 via-emerald-950/95 to-amber-950/90 border-2 border-amber-400/60 backdrop-blur-xl shadow-2xl flex items-center justify-between gap-3 dir-rtl">
-              
+
               {/* Phrase text */}
               <div className="space-y-0.5 text-right flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 text-amber-400 text-[11px] font-bold">
@@ -401,11 +401,11 @@ export default function LockScreenAthkarOverlay({
                 animate={{ scale: isSalawatTapped ? 0.93 : 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl shadow-amber-500/20 active:scale-95 transition-all cursor-pointer shrink-0 border border-amber-300/80"
-                title={t.pressToTasbih || 'Tasbih'}
+                title={t.pressToTasbih}
               >
                 <Sparkles className="w-4 h-4 text-slate-950 fill-slate-950 shrink-0" />
                 <div className="flex flex-col items-center leading-none">
-                  <span className="text-[10px] font-sans font-bold text-slate-900 opacity-90">{t.pressToTasbih || 'Tasbih'}</span>
+                  <span className="text-[10px] font-sans font-bold text-slate-900 opacity-90">{t.pressToTasbih}</span>
                   <span className="font-mono text-base font-extrabold text-slate-950">{salawatCount}</span>
                 </div>
               </motion.button>
@@ -423,7 +423,7 @@ export default function LockScreenAthkarOverlay({
                 <div className="flex items-center gap-2">
                   <Lock className="w-5 h-5 text-amber-400" />
                   <h4 className="text-sm font-bold text-amber-200">
-                    {selectedCategoryToUnlock ? `${t.confirmLock || 'تأكيد القفل'} (${selectedCategoryToUnlock.label})` : (t.unlockApp || 'فتح قفل التطبيق')}
+                    {selectedCategoryToUnlock ? `${t.confirmLock} (${selectedCategoryToUnlock.label})` : (t.unlockApp)}
                   </h4>
                 </div>
                 <button
@@ -438,18 +438,18 @@ export default function LockScreenAthkarOverlay({
               </div>
 
               <p className="text-xs text-zinc-300 leading-relaxed font-medium">
-                {t.enterPinOrBiometric || 'أدخل رمز الـ PIN أو استخدم البصمة لفك القفل'} 
+                {t.enterPinOrBiometric}
                 {selectedCategoryToUnlock ? (
-                  <span> {t.andDirectNavigateTo || 'والانتقال المباشر إلى'} <strong className="text-amber-300">{selectedCategoryToUnlock.label}</strong>.</span>
+                  <span> {t.andDirectNavigateTo} <strong className="text-amber-300">{selectedCategoryToUnlock.label}</strong>.</span>
                 ) : (
-                  <span> {t.andEnterApp || 'والدخول إلى التطبيق.'}</span>
+                  <span> {t.andEnterApp}</span>
                 )}
               </p>
 
               <form onSubmit={handleVerifyPinSubmit} className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-amber-200/90 mb-1">
-                    {t.secretPinCode || 'رمز PIN السرّي (4 أرقام):'}
+                    {t.secretPinCode}
                   </label>
                   <input
                     type="password"
@@ -492,7 +492,7 @@ export default function LockScreenAthkarOverlay({
                     ) : (
                       <Fingerprint className="w-4 h-4 text-emerald-400" />
                     )}
-                    <span>{isAuthenticatingBiometrics ? (t.verifying || 'جاري التحقق...') : (t.biometric || 'بصمة')}</span>
+                    <span>{isAuthenticatingBiometrics ? (t.verifying) : (t.biometric)}</span>
                   </button>
                 </div>
               </form>

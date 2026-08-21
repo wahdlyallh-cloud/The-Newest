@@ -79,7 +79,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
   const handleToggle = (key: keyof HabitSettings, label: string) => {
     const newValue = !mergedSettings[key];
     onUpdateSettings({ [key]: newValue });
-    showToast(`${newValue ? (t.settingEnabled || "Enabled") : (t.settingDisabled || "Disabled")}: ${label}`);
+    showToast(`${newValue ? (t.settingEnabled) : (t.settingDisabled)}: ${label}`);
   };
 
   // 1. Export Full JSON Backup
@@ -99,7 +99,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast(t.exportJsonSuccess || 'JSON backup exported! 📥');
+    showToast(t.exportJsonSuccess);
   };
 
   // 2. Export CSV Data
@@ -137,7 +137,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast(t.exportCsvSuccess || 'CSV exported! 📊');
+    showToast(t.exportCsvSuccess);
   };
 
   // 3. Import Data
@@ -154,12 +154,12 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           const importedHabits = parsed.habits || (Array.isArray(parsed) ? parsed : []);
           const importedDiaries = parsed.diaries || [];
           onImportData(importedHabits, importedDiaries);
-          showToast(t.importBackupSuccess || 'Backup imported! 🎉');
+          showToast(t.importBackupSuccess);
         } else if (file.name.endsWith('.csv')) {
-          showToast(t.importCsvSuccess || 'CSV read! 📄');
+          showToast(t.importCsvSuccess);
         }
       } catch (err) {
-        showToast(t.importError || 'حدث خطأ أثناء قراءة الملف. يرجى التأكد من أن الملف بصيغة JSON صحيحة.');
+        showToast(t.importError);
       }
     };
     reader.readAsText(file);
@@ -181,10 +181,10 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           <div>
             <h3 className="font-extrabold text-base text-[#3A3A3A] flex items-center gap-1.5">
               <span>⚙️</span>
-              <span>{t.settingsTitleBar || 'إعدادات العادات والبيانات'}</span>
+              <span>{t.settingsTitleBar}</span>
             </h3>
             <p className="text-[10px] text-gray-500 font-medium">
-              {t.settingsDescBar || 'تخصيص السطح البيني والتنبيهات والنسخ الاحتياطي الكامل'}
+              {t.settingsDescBar}
             </p>
           </div>
         </div>
@@ -193,7 +193,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           onClick={onBack}
           className="px-4 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
         >
-          {t.doneBtn || 'تم'}
+          {t.doneBtn}
         </button>
       </div>
 
@@ -202,7 +202,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
         <div className="border-b border-gray-100 pb-3">
           <h4 className="font-black text-sm text-[#5A5A40] flex items-center gap-2">
             <Settings className="w-4 h-4 text-[#8B9D83]" />
-            <span>{t.interfaceTitle || 'السطح البيني (Interface)'}</span>
+            <span>{t.interfaceTitle}</span>
           </h4>
         </div>
 
@@ -211,11 +211,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 1: Single tap toggle */}
           <div className="flex items-center justify-between pt-2">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.singleTapToggleTitle || 'تبديل وضعية العادة بضغطة قصيرة'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.singleTapToggleDesc || 'ضع علامات اختيار بنقرة واحدة بدلاً من الضغط مع الاستمرار.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.singleTapToggleTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.singleTapToggleDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('singleTapToggle', t.singleTapToggleTitle || 'تبديل العادة بضغطة قصيرة')}
+              onClick={() => handleToggle('singleTapToggle', t.singleTapToggleTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.singleTapToggle ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -227,11 +227,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 2: Extend day past midnight */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.extendDayTitle || 'تمديد اليوم بضع ساعات بعد منتصف الليل'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.extendDayDesc || 'انتظر حتى 3:00 صباحاً لعرض يوم جديد. مفيد إذا كنت تذهب إلى السكون بعد منتصف الليل.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.extendDayTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.extendDayDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('extendDayPastMidnight', t.extendDayTitle || 'تمديد اليوم بعد منتصف الليل')}
+              onClick={() => handleToggle('extendDayPastMidnight', t.extendDayTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.extendDayPastMidnight ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -243,11 +243,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 3: Enable skip days */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.enableSkipTitle || 'تمكين أيام التخطي'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.enableSkipDesc || 'بدل مرتين لإضافة علامة تخطي بدلاً من اختيار. التخطي يحافظ على درجاتك دون تغيير سلسلة الانتصارات.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.enableSkipTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.enableSkipDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('enableSkipDays', t.enableSkipTitle || 'تمكين أيام التخطي')}
+              onClick={() => handleToggle('enableSkipDays', t.enableSkipTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.enableSkipDays ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -259,11 +259,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 4: Show question marks for missing data */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.missingDataTitle || 'إظهار علامات الاستفهام للبيانات المفقودة'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.missingDataDesc || 'التفريغ بين الأيام التي لا تحتوي على بيانات من الهفوات الفعلية.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.missingDataTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.missingDataDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('showMissingDataMark', t.missingDataTitle || 'علامات الاستفهام للبيانات المفقودة')}
+              onClick={() => handleToggle('showMissingDataMark', t.missingDataTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.showMissingDataMark ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -275,11 +275,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 5: Reverse day order */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.reverseDayTitle || 'ترتيب عكسي أيام'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.reverseDayDesc || 'عرض الأيام في ترتيب عكسي على الشاشة الرئيسية.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.reverseDayTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.reverseDayDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('reverseDayOrder', t.reverseDayTitle || 'ترتيب عكسي للأيام')}
+              onClick={() => handleToggle('reverseDayOrder', t.reverseDayTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.reverseDayOrder ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -291,11 +291,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 6: Pure AMOLED dark mode */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.pureBlackTitle || 'استخدام أسود نقي في الوضع الليلى'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.pureBlackDesc || 'يستبدل خلفيات رمادية مع أسود نقي في الوضع الليلى.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.pureBlackTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.pureBlackDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('pureBlackDarkMode', t.pureBlackTitle || 'الوضع الليلي الأسود النقي')}
+              onClick={() => handleToggle('pureBlackDarkMode', t.pureBlackTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.pureBlackDarkMode ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -307,11 +307,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Toggle 7: Disable animations */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5 max-w-md">
-              <span className="text-xs font-bold block text-gray-800">{t.disableAnimTitle || 'تعطيل التكتكة والمؤثرات المتحركة (Disable animations)'}</span>
-              <p className="text-[10px] text-gray-400 font-medium">{t.disableAnimDesc || 'Disable confetti animation after adding a checkmark.'}</p>
+              <span className="text-xs font-bold block text-gray-800">{t.disableAnimTitle}</span>
+              <p className="text-[10px] text-gray-400 font-medium">{t.disableAnimDesc}</p>
             </div>
             <button
-              onClick={() => handleToggle('disableAnimations', t.disableAnimTitle || 'تعطيل المؤثرات المتحركة')}
+              onClick={() => handleToggle('disableAnimations', t.disableAnimTitle)}
               className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center ${
                 mergedSettings.disableAnimations ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
               }`}
@@ -323,19 +323,19 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
           {/* Select: First day of week */}
           <div className="flex items-center justify-between pt-3">
             <div className="space-y-0.5">
-              <span className="text-xs font-bold block text-gray-800">{t.firstDayOfWeekTitle || 'اليوم الأول من الأسبوع'}</span>
+              <span className="text-xs font-bold block text-gray-800">{t.firstDayOfWeekTitle}</span>
             </div>
             <select
               value={mergedSettings.firstDayOfWeek}
               onChange={(e) => {
                 onUpdateSettings({ firstDayOfWeek: e.target.value as any });
-                showToast(`${t.firstDayChangeToast || 'تم تغيير بداية الأسبوع إلى:'} ${e.target.options[e.target.selectedIndex].text}`);
+                showToast(`${t.firstDayChangeToast} ${e.target.options[e.target.selectedIndex].text}`);
               }}
               className="py-1.5 px-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl text-xs font-bold text-gray-800 cursor-pointer"
             >
-              <option value="saturday">{t.firstDaySat || 'السبت (Saturday)'}</option>
-              <option value="sunday">{t.firstDaySun || 'الأحد (Sunday)'}</option>
-              <option value="monday">{t.firstDayMon || 'الاثنين (Monday)'}</option>
+              <option value="saturday">{t.firstDaySat}</option>
+              <option value="sunday">{t.firstDaySun}</option>
+              <option value="monday">{t.firstDayMon}</option>
             </select>
           </div>
 
@@ -347,9 +347,9 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                   <Maximize className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-xs font-black text-gray-800 block">{t.fullscreenModeTitle2 || 'وضع الشاشة الكاملة وإخفاء شريط المتصفح العلوي'}</span>
+                  <span className="text-xs font-black text-gray-800 block">{t.fullscreenModeTitle2}</span>
                   <p className="text-[10px] text-gray-500 font-bold mt-0.5">
-                    {t.fullscreenModeDesc2 || 'إخفاء شريط عنوان المتصفح (URL Bar) وعناصر التحكم العلوية للحصول على تطبيق ملء الشاشة بدون تشتيت.'}
+                    {t.fullscreenModeDesc2}
                   </p>
                 </div>
               </div>
@@ -357,7 +357,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
               <button
                 onClick={async () => {
                   const newState = !mergedSettings.fullscreenModeEnabled;
-                  handleToggle('fullscreenModeEnabled', t.fullscreenModeTitle2 || 'وضع الشاشة الكاملة');
+                  handleToggle('fullscreenModeEnabled', t.fullscreenModeTitle2);
                   if (!document.fullscreenElement) {
                     try {
                       if (document.documentElement.requestFullscreen) {
@@ -383,16 +383,16 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
             <div className="flex items-center justify-between pt-1 border-t border-blue-100 text-[10px]">
               <span className="text-blue-900 font-extrabold flex items-center gap-1">
                 <Globe className="w-3 h-3 text-blue-600" />
-                <span>{t.hideBrowserNotice || 'إخفاء شريط المتصفح نهائياً: ثبت التطبيق على الشاشة الرئيسية (PWA)'}</span>
+                <span>{t.hideBrowserNotice}</span>
               </span>
               <button
                 type="button"
                 onClick={() => {
-                  alert(t.alertInstallPwa || "💡 لإخفاء شريط المتصفح العلوي نهائياً وحذفه من الشاشة:\n1. انقر على القائمة (⋮) أو مشاركة بمتصفحك.\n2. اختر 'إضافة إلى الشاشة الرئيسية' (Add to Home Screen).\n3. افتح التطبيق من أيقونة الشاشة الرئيسية وسيعمل كتطبيق كامل بدون شريط متصفح!");
+                  alert(t.alertInstallPwa);
                 }}
                 className="text-blue-700 underline font-black cursor-pointer hover:text-blue-900"
               >
-                {t.installMethodBtn || 'طريقة التثبيت ℹ️'}
+                {t.installMethodBtn}
               </button>
             </div>
           </div>
@@ -405,7 +405,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
         <div className="border-b border-gray-100 pb-3">
           <h4 className="font-black text-sm text-[#5A5A40] flex items-center gap-2">
             <Bell className="w-4 h-4 text-[#8B9D83]" />
-            <span>{t.remindersSectionTitle || 'إعدادات التذكير والإشعارات (Notifications Center)'}</span>
+            <span>{t.remindersSectionTitle}</span>
           </h4>
         </div>
 
@@ -418,11 +418,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
               </div>
               <div>
                 <span className="text-xs sm:text-sm font-black text-gray-800 block flex items-center gap-1.5">
-                  <span>{t.lockScreenWidgetTitle || "إشعار ويدجت شاشة القفل المثبت"}</span>
-                  <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-extrabold">{t.recommendedBadge || "مُوصى به 🔥"}</span>
+                  <span>{t.lockScreenWidgetTitle}</span>
+                  <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-extrabold">{t.recommendedBadge}</span>
                 </span>
                 <p className="text-[10px] sm:text-xs text-gray-500 font-bold mt-0.5">
-                  {t.lockScreenWidgetDesc || "إظهار بطاقة (حياة AI) بجميع الاختصارات السريعة كإشعار مثبّت على شاشة القفل الخارجية وشريط النظام عند ضغط زر الباور للهاتف."}
+                  {t.lockScreenWidgetDesc}
                 </p>
               </div>
             </div>
@@ -503,12 +503,12 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
               className="px-3.5 py-1.5 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center gap-1.5 active:scale-95"
             >
               <BellRing className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
-              <span>{t.testLockScreenNotificationBtn || "تثبيت / تجربة الإشعار على شاشة القفل الآن 📌"}</span>
+              <span>{t.testLockScreenNotificationBtn}</span>
             </button>
 
             <span className="text-[10px] text-amber-800 font-extrabold bg-amber-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
               <Lock className="w-3 h-3 text-amber-600" />
-              <span>{t.availablePwaNotice || "متاح على Android وiOS عند إضافته للشاشة الرئيسية (PWA)"}</span>
+              <span>{t.availablePwaNotice}</span>
             </span>
           </div>
 
@@ -518,10 +518,10 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
             <div className="p-4 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-2 shadow-2xs">
               <div className="flex items-center gap-2 text-emerald-900 font-black text-xs sm:text-sm">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{t.lockScreenResolvedBadge || "تم حل مشكلة التثبيت!"}</span>
+                <span>{t.lockScreenResolvedBadge}</span>
               </div>
               <p className="text-xs text-emerald-950 font-bold leading-relaxed">
-                {t.lockScreenResolvedDesc || "للتوافق مع شاشة قفل النظام، تم تفعيل لوحة الإشعارات المستمرة كـ \"إشعار وويدجت عائم\". تأكد من منح التطبيق \"إذن التشغيل في الخلفية\" من إعدادات النظام للوصول السريع."}
+                {t.lockScreenResolvedDesc}
               </p>
             </div>
 
@@ -530,13 +530,13 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
               <div className="md:col-span-7 space-y-2">
                 <span className="text-xs font-black text-[#5A5A40] flex items-center gap-1.5">
                   <Smartphone className="w-4 h-4 text-[#4E685B]" />
-                  <span>{t.lockScreenPreviewTitle || "معاينة التثبيت على شاشة القفل الرئيسية"}</span>
+                  <span>{t.lockScreenPreviewTitle}</span>
                 </span>
                 <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
-                  {t.lockScreenPreviewDesc || "تظهر لوحة (حياة AI) بشكل دائري ومثبت كـ \"إشعار وويدجت عائم\" فور تشغيل الهاتف لضمان الوصول الفوري لجميع المذكرات وأدوات المزاج والتسجيل."}
+                  {t.lockScreenPreviewDesc}
                 </p>
                 <div className="inline-block text-[10px] font-black text-amber-900 bg-amber-100 border border-amber-200 px-3 py-1 rounded-xl shadow-3xs">
-                  {t.pinnedFloatingWidgetBadge || "مثبت كـ \"إشعار وويدجت عائم\""}
+                  {t.pinnedFloatingWidgetBadge}
                 </div>
               </div>
 
@@ -553,7 +553,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                   {/* Lock Screen Time */}
                   <div className="text-center py-2 space-y-0.5">
                     <span className="text-xl font-black text-slate-100 block font-mono">12:45</span>
-                    <span className="text-[9px] text-slate-400 font-bold block">{t.mockPhoneDate || "الأربعاء، 12 أغسطس"}</span>
+                    <span className="text-[9px] text-slate-400 font-bold block">{t.mockPhoneDate}</span>
                   </div>
 
                   {/* Pinned Hayat AI Floating Widget Card */}
@@ -561,17 +561,17 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                     <div className="flex items-center justify-between text-[9px] border-b border-white/20 pb-1">
                       <div className="flex items-center gap-1 font-bold">
                         <span className="text-amber-300">🌿</span>
-                        <span>{t.mockPhoneTagline || "حياة AI • وويدجت عائم"}</span>
+                        <span>{t.mockPhoneTagline}</span>
                       </div>
-                      <span className="bg-amber-400 text-slate-900 text-[8px] font-black px-1.5 py-0.2 rounded-full">{t.mockPhonePinned || "مثبت"}</span>
+                      <span className="bg-amber-400 text-slate-900 text-[8px] font-black px-1.5 py-0.2 rounded-full">{t.mockPhonePinned}</span>
                     </div>
                     <p className="text-[8px] text-emerald-100 font-medium leading-tight">
-                      {t.mockPhonePrompt || "كيف تشعر الآن؟ اضغط للتدوين أو التسجيل الصوتي السريع."}
+                      {t.mockPhonePrompt}
                     </p>
                     <div className="grid grid-cols-4 gap-1 text-[7px] text-center font-bold pt-0.5">
-                      <div className="bg-white/10 rounded-lg p-1">{t.mockShortcutDiary || "✍️ تدوين"}</div>
-                      <div className="bg-white/10 rounded-lg p-1">{t.mockShortcutVoice || "🎙️ صوت"}</div>
-                      <div className="bg-white/10 rounded-lg p-1">{t.mockShortcutMood || "🔮 مزاج"}</div>
+                      <div className="bg-white/10 rounded-lg p-1">{t.mockShortcutDiary}</div>
+                      <div className="bg-white/10 rounded-lg p-1">{t.mockShortcutVoice}</div>
+                      <div className="bg-white/10 rounded-lg p-1">{t.mockShortcutMood}</div>
                       <div className="bg-white/10 rounded-lg p-1">🤖 AI</div>
                     </div>
                   </div>
@@ -591,11 +591,11 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
         {/* 🔒 2. Persistent Notifications Option */}
         <div className="flex items-center justify-between p-3.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]/60">
           <div className="space-y-0.5 max-w-md">
-            <span className="text-xs font-bold block text-gray-800">{t.persistentNotifTitle || 'جعل جميع الإشعارات والتنبيهات ثابتة (Persistent)'}</span>
-            <p className="text-[10px] text-gray-500 font-medium">{t.persistentNotifDesc || 'تثبيت التنبيهات وإبقاء الخيارات متاحة حتى ينقر عليها المستخدم بنفسه.'}</p>
+            <span className="text-xs font-bold block text-gray-800">{t.persistentNotifTitle}</span>
+            <p className="text-[10px] text-gray-500 font-medium">{t.persistentNotifDesc}</p>
           </div>
           <button
-            onClick={() => handleToggle('persistentNotifications', t.persistentNotifTitle || 'الإشعارات الثابتة')}
+            onClick={() => handleToggle('persistentNotifications', t.persistentNotifTitle)}
             className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer flex items-center shrink-0 ${
               mergedSettings.persistentNotifications ? 'bg-[#8B9D83] justify-end' : 'bg-gray-300 justify-start'
             }`}
@@ -610,7 +610,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
         <div className="border-b border-gray-100 pb-3">
           <h4 className="font-black text-sm text-[#5A5A40] flex items-center gap-2">
             <Database className="w-4 h-4 text-[#8B9D83]" />
-            <span>{t.databaseSectionTitle || 'قاعدة البيانات والتصدير/الاستيراد'}</span>
+            <span>{t.databaseSectionTitle}</span>
           </h4>
         </div>
 
@@ -621,15 +621,15 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
             <div className="space-y-0.5">
               <span className="text-xs font-bold block text-gray-800 flex items-center gap-1.5">
                 <Download className="w-4 h-4 text-[#8B9D83]" />
-                <span>{t.exportJsonTitle || 'صدر نسخة احتياطية كاملة (Full JSON Backup)'}</span>
+                <span>{t.exportJsonTitle}</span>
               </span>
-              <p className="text-[10px] text-gray-500">{t.exportJsonDesc || 'إنشاء ملف يحتوي على كافة البيانات. يمكن استيراد هذا الملف نفسه لاحقاً.'}</p>
+              <p className="text-[10px] text-gray-500">{t.exportJsonDesc}</p>
             </div>
             <button
               onClick={handleExportFullJSON}
               className="px-3.5 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs shrink-0"
             >
-              {t.exportJsonBtn || 'تصدير JSON'}
+              {t.exportJsonBtn}
             </button>
           </div>
 
@@ -638,15 +638,15 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
             <div className="space-y-0.5">
               <span className="text-xs font-bold block text-gray-800 flex items-center gap-1.5">
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                <span>{t.exportCsvTitle || 'تصدير البيانات (CSV)'}</span>
+                <span>{t.exportCsvTitle}</span>
               </span>
-              <p className="text-[10px] text-gray-500">{t.exportCsvDesc || 'صدر ملف يمكنك فتحه ببرنامج جداول البيانات مثل إكسل (Excel).'}</p>
+              <p className="text-[10px] text-gray-500">{t.exportCsvDesc}</p>
             </div>
             <button
               onClick={handleExportCSV}
               className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs shrink-0"
             >
-              {t.exportCsvBtn || 'تصدير CSV'}
+              {t.exportCsvBtn}
             </button>
           </div>
 
@@ -655,9 +655,9 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
             <div className="space-y-0.5">
               <span className="text-xs font-bold block text-gray-800 flex items-center gap-1.5">
                 <Upload className="w-4 h-4 text-blue-600" />
-                <span>{t.importDataTitle || 'استيراد بيانات (Import Data)'}</span>
+                <span>{t.importDataTitle}</span>
               </span>
-              <p className="text-[10px] text-gray-500">{t.importDataDesc || 'تدعم النسخ الاحتياطي الكامل المصدرة من هذا التطبيق و أداة HabitTracker.'}</p>
+              <p className="text-[10px] text-gray-500">{t.importDataDesc}</p>
             </div>
             <div>
               <input
@@ -671,7 +671,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs shrink-0"
               >
-                {t.importDataBtn || 'استيراد ملف'}
+                {t.importDataBtn}
               </button>
             </div>
           </div>

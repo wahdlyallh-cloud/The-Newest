@@ -130,7 +130,7 @@ export default function PsychologicalGrowthTree({
               <span>{stageName}</span>
               {isLevel5AncientTree && (
                 <span className="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-full">
-                  {t.oneYearMilestoneBadge || '1 Year Milestone ✨'}
+                  {t.oneYearMilestoneBadge}
                 </span>
               )}
             </h3>
@@ -141,14 +141,14 @@ export default function PsychologicalGrowthTree({
           {/* Active Streak Badge */}
           <div className={`flex items-center gap-1.5 px-3 py-1.5 ${effectiveStreak >= 365 ? 'bg-gradient-to-r from-amber-500/30 to-yellow-400/30 border-amber-300/60 text-amber-200' : 'bg-amber-500/20 border-amber-400/40 text-amber-300'} border rounded-2xl text-xs font-black shadow-3xs`}>
             <Flame className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse" />
-            <span>{effectiveStreak} {t.daysUnit || 'Days'}</span>
+            <span>{effectiveStreak} {t.daysUnit}</span>
           </div>
 
           <button
             type="button"
             onClick={() => setShowInfoModal(true)}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-2xl text-emerald-200 transition-colors cursor-pointer"
-            title={t.howItWorksTooltip || "كيف يعمل"}
+            title={t.howItWorksTooltip}
           >
             <Info className="w-4 h-4" />
           </button>
@@ -318,7 +318,7 @@ export default function PsychologicalGrowthTree({
                 className="mt-3 px-3.5 py-1 bg-gradient-to-r from-amber-500/30 via-yellow-400/40 to-amber-500/30 border border-amber-300/50 rounded-full text-[11px] font-black text-amber-200 flex items-center gap-1.5 shadow-lg backdrop-blur-md"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-                <span>{t.ancientTreeMedal || 'Ancient Tree of Wisdom • 365 Days'}</span>
+                <span>{t.ancientTreeMedal}</span>
               </motion.div>
             </div>
           )}
@@ -339,7 +339,7 @@ export default function PsychologicalGrowthTree({
               className="absolute top-2 bg-emerald-500 text-gray-950 font-black text-xs px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5 fill-gray-950" />
-              <span>{t.treeNurturedSuccess || 'Tree nurtured! Consciousness XP gained! 💧✨'}</span>
+              <span>{t.treeNurturedSuccess}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -384,7 +384,7 @@ export default function PsychologicalGrowthTree({
               <BookOpen className="w-3.5 h-3.5" />
             </div>
             <div className="text-right rtl:text-right ltr:text-left">
-              <span className="block text-[11px] leading-tight text-white">{t.journalSubTab || 'Journal'}</span>
+              <span className="block text-[11px] leading-tight text-white">{t.journalSubTab}</span>
               <span className="text-[9px] text-emerald-300/80 font-mono">+10 XP</span>
             </div>
           </button>
@@ -399,7 +399,7 @@ export default function PsychologicalGrowthTree({
               <Heart className="w-3.5 h-3.5" />
             </div>
             <div className="text-right rtl:text-right ltr:text-left">
-              <span className="block text-[11px] leading-tight text-white">{t.gratitudeSubTab || 'Gratitude'}</span>
+              <span className="block text-[11px] leading-tight text-white">{t.gratitudeSubTab}</span>
               <span className="text-[9px] text-rose-300/80 font-mono">+8 XP</span>
             </div>
           </button>
@@ -414,7 +414,7 @@ export default function PsychologicalGrowthTree({
               <Brain className="w-3.5 h-3.5" />
             </div>
             <div className="text-right rtl:text-right ltr:text-left">
-              <span className="block text-[11px] leading-tight text-white">{t.cbtSubTab || 'CBT'}</span>
+              <span className="block text-[11px] leading-tight text-white">{t.cbtSubTab}</span>
               <span className="text-[9px] text-purple-300/80 font-mono">+15 XP</span>
             </div>
           </button>
@@ -429,7 +429,7 @@ export default function PsychologicalGrowthTree({
               <Droplets className="w-3.5 h-3.5" />
             </div>
             <div className="text-right rtl:text-right ltr:text-left">
-              <span className="block text-[11px] leading-tight text-white">{t.habitsSubTab || 'Habit'}</span>
+              <span className="block text-[11px] leading-tight text-white">{t.habitsSubTab}</span>
               <span className="text-[9px] text-sky-300/80 font-mono">+5 XP</span>
             </div>
           </button>
@@ -470,24 +470,24 @@ export default function PsychologicalGrowthTree({
 
                 <ul className="space-y-2 bg-black/30 p-3 rounded-2xl border border-white/5">
                   <li className="flex items-center justify-between">
-                    <span>🌱 {t.treeStage1Name || 'Seedling (Lvl 1)'}</span>
+                    <span>🌱 {t.treeStage1Name}</span>
                     <span className="font-mono text-amber-300">0 - 29 XP</span>
                   </li>
                   <li className="flex items-center justify-between">
-                    <span>🌿 {t.treeStage2Name || 'Sprout (Lvl 2)'}</span>
+                    <span>🌿 {t.treeStage2Name}</span>
                     <span className="font-mono text-amber-300">30 - 79 XP</span>
                   </li>
                   <li className="flex items-center justify-between">
-                    <span>🌳 {t.treeStage3Name || 'Tree of Balance (Lvl 3)'}</span>
+                    <span>🌳 {t.treeStage3Name}</span>
                     <span className="font-mono text-amber-300">80 - 179 XP</span>
                   </li>
                   <li className="flex items-center justify-between">
-                    <span>🌸🌳 {t.treeStage4Name || 'Blooming Tree (Lvl 4)'}</span>
+                    <span>🌸🌳 {t.treeStage4Name}</span>
                     <span className="font-mono text-amber-300">180 - 319 XP</span>
                   </li>
                   <li className="flex items-center justify-between p-2 bg-amber-500/20 border border-amber-400/40 rounded-xl font-bold text-amber-200">
-                    <span className="flex items-center gap-1">🌲👑 {t.treeStage5Name || 'Ancient Wisdom Tree (Lvl 5)'}</span>
-                    <span className="font-mono text-amber-300">{t.threeSixtyFiveDaysStreak || '365 Days Streak'}</span>
+                    <span className="flex items-center gap-1">🌲👑 {t.treeStage5Name}</span>
+                    <span className="font-mono text-amber-300">{t.threeSixtyFiveDaysStreak}</span>
                   </li>
                 </ul>
 
@@ -521,7 +521,7 @@ export default function PsychologicalGrowthTree({
                 onClick={() => setShowInfoModal(false)}
                 className="w-full py-3 bg-emerald-500 text-gray-950 font-black rounded-2xl hover:bg-emerald-400 transition-colors cursor-pointer"
               >
-                {t.gotItContinueJournaling || "Got it, let’s grow! 🌱"}
+                {t.gotItContinueJournaling}
               </button>
             </motion.div>
           </div>

@@ -93,7 +93,7 @@ export default function OfflineSyncBanner({
               ) : pendingCount > 0 ? (
                 <span>
                   {isRtl
-                    ? `${pendingCount} ${t.pendingCloudSyncNotice || "operations pending cloud sync"}`
+                    ? `${pendingCount} ${t.pendingCloudSyncNotice}`
                     : `${pendingCount} offline actions pending cloud synchronization`}
                 </span>
               ) : (

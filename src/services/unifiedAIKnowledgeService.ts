@@ -290,7 +290,7 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       const timestamp = parseTimestampSafe(d.createdAt);
       const cleanContent = stripHtmlAndClean(d.content);
       const entryType: KnowledgeSourceType = (d.diaryType as KnowledgeSourceType) || 'diary';
-      const title = d.title || `${t.untitledEntry || 'Untitled'} ${t[entryType] || 'Entry'}`;
+      const title = d.title || `${t.untitledEntry} ${t[entryType] || 'Entry'}`;
 
       const relKeys: string[] = [`date:${dateStr}`, `type:${entryType}`];
       if (d.isFavorite) {
@@ -333,7 +333,7 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       // 1.1 Extract Embedded Audio Recordings
       if (p.voiceNotes !== false && d.audioRecordings && Array.isArray(d.audioRecordings)) {
         d.audioRecordings.forEach((rec, idx) => {
-          const recTitle = rec.name || `${t.audioRecording || 'Audio Recording'} #${idx + 1} - ${dateStr}`;
+          const recTitle = rec.name || `${t.audioRecording} #${idx + 1} - ${dateStr}`;
           const recTranscript = stripHtmlAndClean(rec.transcription || '');
           const recEmotion = rec.speechEmotion?.primaryEmotion || '';
 
@@ -344,7 +344,7 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             dateStr,
             timestamp,
             title: recTitle,
-            content: recTranscript ? `${t.audioTranscription || 'Audio Transcription'}: "${recTranscript}"` : `${t.audioRecording || 'Audio Recording'} - ${rec.duration || 0}s`,
+            content: recTranscript ? `${t.audioTranscription}: "${recTranscript}"` : `${t.audioRecording} - ${rec.duration || 0}s`,
             tags: [...(d.tags || []), 'audio', 'recording'],
             moods: recEmotion ? [recEmotion, ...(d.moods || [])] : d.moods || [],
             metrics: { durationSeconds: rec.duration, speechEmotion: rec.speechEmotion },
@@ -356,8 +356,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               speechEmotion: rec.speechEmotion
             },
             relationshipKeys: [...relKeys, 'type:audio', `parent:diary_${d.id}`],
-            sourceLabelAr: `${t.audioRecording || 'Audio Recording'} (${dateStr}) - "${recTitle}"`,
-            sourceLabelEn: `${t.audioRecording || 'Audio Recording'} (${dateStr}) - "${recTitle}"`,
+            sourceLabelAr: `${t.audioRecording} (${dateStr}) - "${recTitle}"`,
+            sourceLabelEn: `${t.audioRecording} (${dateStr}) - "${recTitle}"`,
             rawRef: rec
           });
         });
@@ -371,8 +371,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
           memoryCategory: 'media',
           dateStr,
           timestamp,
-          title: `${t.canvasDrawing || 'Canvas Drawing'} - ${dateStr}`,
-          content: `${t.canvasDrawingDesc || 'Digital drawing attached to entry'}. "${cleanContent.substring(0, 200)}"`,
+          title: `${t.canvasDrawing} - ${dateStr}`,
+          content: `${t.canvasDrawingDesc}. "${cleanContent.substring(0, 200)}"`,
           tags: [...(d.tags || []), 'canvas', 'drawing'],
           moods: d.moods || [],
           metrics: {},
@@ -382,8 +382,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             previewUrl: d.drawing
           },
           relationshipKeys: [...relKeys, 'type:drawing', `parent:diary_${d.id}`],
-          sourceLabelAr: `${t.canvasDrawing || 'Canvas Drawing'} (${dateStr})`,
-          sourceLabelEn: `${t.canvasDrawing || 'Canvas Drawing'} (${dateStr})`,
+          sourceLabelAr: `${t.canvasDrawing} (${dateStr})`,
+          sourceLabelEn: `${t.canvasDrawing} (${dateStr})`,
           rawRef: d.drawing
         });
       }
@@ -392,14 +392,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       if (p.cbtExercises !== false && d.cbtWorksheets && Array.isArray(d.cbtWorksheets)) {
         d.cbtWorksheets.forEach((cbt, idx) => {
           const cbtContent = [
-            `${t.cbtTriggerEvent || 'Trigger Event'}: ${cbt.triggerEvent}`,
-            `${t.cbtNegativeThoughts || 'Negative Thoughts'}: ${cbt.negativeThoughts}`,
-            `${t.cbtCognitiveDistortion || 'Cognitive Distortion'}: ${cbt.cognitiveDistortion}`,
-            `${t.cbtRationalAlternative || 'Rational Alternative'}: ${cbt.rationalAlternative}`,
-            cbt.evidenceFor ? `${t.cbtEvidenceFor || 'Evidence For'}: ${cbt.evidenceFor}` : '',
-            cbt.evidenceAgainst ? `${t.cbtEvidenceAgainst || 'Evidence Against'}: ${cbt.evidenceAgainst}` : '',
-            cbt.coreBelief ? `${t.cbtCoreBelief || 'Core Belief'}: ${cbt.coreBelief}` : '',
-            cbt.healthierBelief ? `${t.cbtHealthierBelief || 'Healthier Belief'}: ${cbt.healthierBelief}` : ''
+            `${t.cbtTriggerEvent}: ${cbt.triggerEvent}`,
+            `${t.cbtNegativeThoughts}: ${cbt.negativeThoughts}`,
+            `${t.cbtCognitiveDistortion}: ${cbt.cognitiveDistortion}`,
+            `${t.cbtRationalAlternative}: ${cbt.rationalAlternative}`,
+            cbt.evidenceFor ? `${t.cbtEvidenceFor}: ${cbt.evidenceFor}` : '',
+            cbt.evidenceAgainst ? `${t.cbtEvidenceAgainst}: ${cbt.evidenceAgainst}` : '',
+            cbt.coreBelief ? `${t.cbtCoreBelief}: ${cbt.coreBelief}` : '',
+            cbt.healthierBelief ? `${t.cbtHealthierBelief}: ${cbt.healthierBelief}` : ''
           ].filter(Boolean).join(' | ');
 
           entities.push({
@@ -408,9 +408,9 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             memoryCategory: 'semantic',
             dateStr,
             timestamp: parseTimestampSafe(cbt.createdAt) || timestamp,
-            title: `${t.cbtExercise || 'CBT Exercise'} - ${cbt.triggerEvent || dateStr}`,
+            title: `${t.cbtExercise} - ${cbt.triggerEvent || dateStr}`,
             content: cbtContent,
-            tags: [...(d.tags || []), 'CBT', cbt.cognitiveDistortion || ''].filter(Boolean),
+            tags: [...(d.tags || []), 'CBT', cbt.cognitiveDistortion].filter(Boolean),
             moods: d.moods || [],
             metrics: {
               emotionBefore: cbt.emotionBefore,
@@ -418,8 +418,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               exerciseType: cbt.exerciseType
             },
             relationshipKeys: [...relKeys, 'type:cbt', `parent:diary_${d.id}`],
-            sourceLabelAr: `${t.cbtExercise || 'CBT Exercise'} (${dateStr}) - "${cbt.triggerEvent}"`,
-            sourceLabelEn: `${t.cbtExercise || 'CBT Exercise'} (${dateStr}) - "${cbt.triggerEvent}"`,
+            sourceLabelAr: `${t.cbtExercise} (${dateStr}) - "${cbt.triggerEvent}"`,
+            sourceLabelEn: `${t.cbtExercise} (${dateStr}) - "${cbt.triggerEvent}"`,
             rawRef: cbt
           });
         });
@@ -436,8 +436,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             memoryCategory: isPdf ? 'document' : 'media',
             dateStr,
             timestamp,
-            title: `${t.attachment || 'Attachment'}: ${f.name}`,
-            content: `${t.attachedFile || 'Attached file'} "${f.name}" ${t.size || 'size'}: ${f.size || 'unknown'} - ${dateStr} ("${title}")`,
+            title: `${t.attachment}: ${f.name}`,
+            content: `${t.attachedFile} "${f.name}" ${t.size}: ${f.size || 'unknown'} - ${dateStr} ("${title}")`,
             tags: [...(d.tags || []), 'attachment', f.type || 'file'],
             moods: d.moods || [],
             metrics: { fileSize: f.size, fileType: f.type },
@@ -447,8 +447,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               dataUrl: f.dataUrl
             },
             relationshipKeys: [...relKeys, 'type:attachment', `parent:diary_${d.id}`],
-            sourceLabelAr: `${t.attachment || 'Attachment'} (${dateStr}) - "${f.name}"`,
-            sourceLabelEn: `${t.attachment || 'Attachment'} (${dateStr}) - "${f.name}"`,
+            sourceLabelAr: `${t.attachment} (${dateStr}) - "${f.name}"`,
+            sourceLabelEn: `${t.attachment} (${dateStr}) - "${f.name}"`,
             rawRef: f
           });
         });
@@ -463,8 +463,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             memoryCategory: 'media',
             dateStr,
             timestamp,
-            title: `${t.attachedImage || 'Attached Image'} - ${dateStr} #${idx + 1}`,
-            content: `${t.visualImageAdded || 'Visual image added in entry'} ${dateStr} ("${title}"). "${cleanContent.substring(0, 150)}"`,
+            title: `${t.attachedImage} - ${dateStr} #${idx + 1}`,
+            content: `${t.visualImageAdded} ${dateStr} ("${title}"). "${cleanContent.substring(0, 150)}"`,
             tags: [...(d.tags || []), 'image'],
             moods: d.moods || [],
             metrics: {},
@@ -474,8 +474,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
               previewUrl: imgUrl
             },
             relationshipKeys: [...relKeys, 'type:image', `parent:diary_${d.id}`],
-            sourceLabelAr: `${t.attachedImage || 'Attached Image'} (${dateStr})`,
-            sourceLabelEn: `${t.attachedImage || 'Attached Image'} (${dateStr})`,
+            sourceLabelAr: `${t.attachedImage} (${dateStr})`,
+            sourceLabelEn: `${t.attachedImage} (${dateStr})`,
             rawRef: imgUrl
           });
         });
@@ -503,13 +503,13 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         : 0;
 
       const habitText = [
-        `${t.habit || 'Habit'}: "${h.name}" (${t.category || 'Category'}: ${h.category || t.general || 'General'})`,
-        h.question ? `${t.habitQuestion || 'Question/Trigger'}: ${h.question}` : '',
-        `${t.targetFrequency || 'Target Frequency'}: ${h.frequency || t.daily || 'Daily'}`,
-        h.targetValue ? `${t.targetValue || 'Numeric Target'}: ${h.targetValue} ${h.unit || ''}` : '',
-        `${t.completionRate || 'Total Completion Rate'}: ${completionRate}% (${completedDates.length} ${t.daysCompleted || 'days completed'})`,
-        `${t.recentCompletions || 'Recent completions'}: [${recentCompletions.join(', ') || t.noRecentRecord || 'No recent record'}]`,
-        h.notes ? `${t.habitNotes || 'Habit Notes'}: ${h.notes}` : ''
+        `${t.habit}: "${h.name}" (${t.category}: ${h.category || t.general})`,
+        h.question ? `${t.habitQuestion}: ${h.question}` : '',
+        `${t.targetFrequency}: ${h.frequency || t.daily}`,
+        h.targetValue ? `${t.targetValue}: ${h.targetValue} ${h.unit || ''}` : '',
+        `${t.completionRate}: ${completionRate}% (${completedDates.length} ${t.daysCompleted})`,
+        `${t.recentCompletions}: [${recentCompletions.join(', ') || t.noRecentRecord}]`,
+        h.notes ? `${t.habitNotes}: ${h.notes}` : ''
       ].filter(Boolean).join(' | ');
 
       const relKeys: string[] = [`habit:${h.name.toLowerCase().trim()}`, `category:${h.category}`];
@@ -521,7 +521,7 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'semantic',
         dateStr: normalizeDateToYMD(h.createdAt),
         timestamp: parseTimestampSafe(h.createdAt),
-        title: `${t.habit || 'Habit'}: "${h.name}"`,
+        title: `${t.habit}: "${h.name}"`,
         content: habitText,
         tags: ['habit', h.category || 'health', h.name],
         moods: [],
@@ -532,8 +532,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
           frequency: h.frequency
         },
         relationshipKeys: relKeys,
-        sourceLabelAr: `${t.habit || 'Habit'}: "${h.name}" (${h.category || t.behavior || 'Behavior'})`,
-        sourceLabelEn: `${t.habit || 'Habit'}: "${h.name}" (${h.category || t.behavior || 'Behavior'})`,
+        sourceLabelAr: `${t.habit}: "${h.name}" (${h.category || t.behavior})`,
+        sourceLabelEn: `${t.habit}: "${h.name}" (${h.category || t.behavior})`,
         rawRef: h
       });
     }
@@ -557,14 +557,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'episodic',
         dateStr,
         timestamp,
-        title: `${t.gratitudeCard || 'Gratitude Card'} (${dateStr})`,
+        title: `${t.gratitudeCard} (${dateStr})`,
         content: cleanText,
         tags: g.tags || ['gratitude', 'positive thinking'],
         moods: ['grateful', 'joy', 'calm'],
         metrics: { likes: g.likes || 0 },
         relationshipKeys: relKeys,
-        sourceLabelAr: `${t.gratitudeJournal || 'Gratitude Journal'} (${dateStr})`,
-        sourceLabelEn: `${t.gratitudeJournal || 'Gratitude Journal'} (${dateStr})`,
+        sourceLabelAr: `${t.gratitudeJournal} (${dateStr})`,
+        sourceLabelEn: `${t.gratitudeJournal} (${dateStr})`,
         rawRef: g
       });
     }
@@ -578,12 +578,12 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       const cleanNotes = stripHtmlAndClean(b.notes || '');
 
       const bookText = [
-        `${t.bookTitle || 'Book'}: "${b.title}"`,
-        b.category ? `${t.category || 'Category'}: ${b.category}` : '',
-        b.rating ? `${t.userRating || 'User Rating'}: ${b.rating}/5` : '',
-        cleanNotes ? `${t.summaryNotes || 'Summary and Notes'}: "${cleanNotes}"` : t.noDetailedNotes || 'No detailed notes yet',
-        b.hasMindMap ? t.hasMindMap || 'Has mind map' : '',
-        b.referenceLink ? `${t.referenceLink || 'Reference Link'}: ${b.referenceLink}` : '',
+        `${t.bookTitle}: "${b.title}"`,
+        b.category ? `${t.category}: ${b.category}` : '',
+        b.rating ? `${t.userRating}: ${b.rating}/5` : '',
+        cleanNotes ? `${t.summaryNotes}: "${cleanNotes}"` : t.noDetailedNotes,
+        b.hasMindMap ? t.hasMindMap : '',
+        b.referenceLink ? `${t.referenceLink}: ${b.referenceLink}` : '',
         b.pdfPath ? `PDF: ${b.pdfPath}` : ''
       ].filter(Boolean).join(' | ');
 
@@ -599,14 +599,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'document',
         dateStr,
         timestamp,
-        title: `${t.bookTitle || 'Book'}: "${b.title}"`,
+        title: `${t.bookTitle}: "${b.title}"`,
         content: bookText,
         tags: b.tags || ['book', 'reading', b.category || 'culture'],
         moods: [],
         metrics: { rating: b.rating, hasMindMap: b.hasMindMap },
         relationshipKeys: relKeys,
-        sourceLabelAr: `${t.bookTitle || 'Book'}: "${b.title}"`,
-        sourceLabelEn: `${t.bookTitle || 'Book'}: "${b.title}"`,
+        sourceLabelAr: `${t.bookTitle}: "${b.title}"`,
+        sourceLabelEn: `${t.bookTitle}: "${b.title}"`,
         rawRef: b
       });
     }
@@ -619,11 +619,11 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
     const todayStr = new Date().toISOString().split('T')[0];
 
     const dhikrSummary = [
-      `${t.dhikrTodayTotal || 'Total Dhikr Today'}: ${stats.todayTotal || 0} ${t.outOfTarget || 'out of target'} ${stats.targetGoal || 300} (${stats.completionRatePercentage || 0}%)`,
-      `${t.dailyStreak || 'Daily Streak'}: ${stats.streakDays || 1} ${t.daysConsecutive || 'days'}`,
-      `${t.completedCategories || 'Completed Categories'}: [${(stats.completedCategories || []).join(', ') || t.none || 'None'}]`,
-      `${t.lastDhikrRead || 'Last Dhikr Read'}: "${active.lastDhikrRead || ''}" (${active.category || t.general || 'General'})`,
-      options.athkarContext.psychologicalSpiritualStatus ? `${t.spiritualStatus || 'Spiritual/Psychological Status'}: ${options.athkarContext.psychologicalSpiritualStatus}` : ''
+      `${t.dhikrTodayTotal}: ${stats.todayTotal || 0} ${t.outOfTarget} ${stats.targetGoal || 300} (${stats.completionRatePercentage || 0}%)`,
+      `${t.dailyStreak}: ${stats.streakDays || 1} ${t.daysConsecutive}`,
+      `${t.completedCategories}: [${(stats.completedCategories || []).join(', ') || t.none}]`,
+      `${t.lastDhikrRead}: "${active.lastDhikrRead || ''}" (${active.category || t.general})`,
+      options.athkarContext.psychologicalSpiritualStatus ? `${t.spiritualStatus}: ${options.athkarContext.psychologicalSpiritualStatus}` : ''
     ].filter(Boolean).join(' | ');
 
     entities.push({
@@ -632,7 +632,7 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       memoryCategory: 'semantic',
       dateStr: todayStr,
       timestamp: Date.now(),
-      title: t.dhikrLogTitle || 'Daily Athkar & Spiritual Log',
+      title: t.dhikrLogTitle,
       content: dhikrSummary,
       tags: ['athkar', 'dhikr', 'spirituality', 'peace'],
       moods: ['calm', 'spiritual', 'peaceful'],
@@ -642,8 +642,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         streakDays: stats.streakDays || 1
       },
       relationshipKeys: [`date:${todayStr}`, 'type:athkar', 'type:spirituality'],
-      sourceLabelAr: t.dailyAthkarLog || 'Daily Athkar Log',
-      sourceLabelEn: t.dailyAthkarLog || 'Daily Athkar & Dhikr Log',
+      sourceLabelAr: t.dailyAthkarLog,
+      sourceLabelEn: t.dailyAthkarLog,
       rawRef: options.athkarContext
     });
   }
@@ -653,10 +653,10 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
     options.customCopingCards.forEach((card, idx) => {
       const dateStr = normalizeDateToYMD(card.createdAt || new Date());
       const cardContent = [
-        `${t.triggerSituation || 'Trigger Situation'}: "${card.situation || card.title || t.general || 'General'}"`,
-        `${t.automaticThought || 'Automatic Thought'}: "${card.thought || ''}"`,
-        `${t.copingStrategy || 'Coping Strategy'}: "${card.copingStatement || card.text || ''}"`,
-        card.category ? `${t.category || 'Category'}: ${card.category}` : ''
+        `${t.triggerSituation}: "${card.situation || card.title || t.general}"`,
+        `${t.automaticThought}: "${card.thought || ''}"`,
+        `${t.copingStrategy}: "${card.copingStatement || card.text || ''}"`,
+        card.category ? `${t.category}: ${card.category}` : ''
       ].filter(Boolean).join(' | ');
 
       entities.push({
@@ -665,14 +665,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'semantic',
         dateStr,
         timestamp: parseTimestampSafe(card.createdAt) || Date.now(),
-        title: `${t.copingCard || 'Coping Card'} - "${card.situation || t.guidance || 'Guidance'}"`,
+        title: `${t.copingCard} - "${card.situation || t.guidance}"`,
         content: cardContent,
         tags: ['CBT', 'coping card', card.category || 'general'],
         moods: ['calm', 'coping'],
         metrics: {},
         relationshipKeys: [`date:${dateStr}`, 'type:coping_card', 'type:cbt'],
-        sourceLabelAr: `${t.cbtCopingCard || 'CBT Coping Card'} - "${card.situation || t.guidance || 'Guidance'}"`,
-        sourceLabelEn: `${t.cbtCopingCard || 'CBT Coping Card'} - "${card.situation || t.guidance || 'Guidance'}"`,
+        sourceLabelAr: `${t.cbtCopingCard} - "${card.situation || t.guidance}"`,
+        sourceLabelEn: `${t.cbtCopingCard} - "${card.situation || t.guidance}"`,
         rawRef: card
       });
     });
@@ -682,15 +682,15 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
   if (p.prosCons !== false && options.prosConsRecords && Array.isArray(options.prosConsRecords)) {
     options.prosConsRecords.forEach((record, idx) => {
       const dateStr = normalizeDateToYMD(record.createdAt || new Date());
-      const prosList = (record.pros || []).map((p: any) => `+ ${p.text} (${t.weight || 'Weight'}: ${p.weight})`).join(' , ');
-      const consList = (record.cons || []).map((c: any) => `- ${c.text} (${t.weight || 'Weight'}: ${c.weight})`).join(' , ');
+      const prosList = (record.pros || []).map((p: any) => `+ ${p.text} (${t.weight}: ${p.weight})`).join(' , ');
+      const consList = (record.cons || []).map((c: any) => `- ${c.text} (${t.weight}: ${c.weight})`).join(' , ');
 
       const recordContent = [
-        `${t.decisionTopic || 'Decision Topic'}: "${record.title || t.personalDecision || 'Personal Decision'}"`,
-        prosList ? `${t.prosAndAdvantages || 'Pros and Advantages'}: [${prosList}]` : '',
-        consList ? `${t.consAndConcerns || 'Cons and Concerns'}: [${consList}]` : '',
-        record.conclusion ? `${t.conclusionAndSummary || 'Conclusion and Summary'}: "${record.conclusion}"` : '',
-        record.decisionTaken ? `${t.decisionTaken || 'Decision Taken'}: "${record.decisionTaken}"` : ''
+        `${t.decisionTopic}: "${record.title || t.personalDecision}"`,
+        prosList ? `${t.prosAndAdvantages}: [${prosList}]` : '',
+        consList ? `${t.consAndConcerns}: [${consList}]` : '',
+        record.conclusion ? `${t.conclusionAndSummary}: "${record.conclusion}"` : '',
+        record.decisionTaken ? `${t.decisionTaken}: "${record.decisionTaken}"` : ''
       ].filter(Boolean).join(' | ');
 
       entities.push({
@@ -699,14 +699,14 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
         memoryCategory: 'episodic',
         dateStr,
         timestamp: parseTimestampSafe(record.createdAt) || Date.now(),
-        title: `${t.decisionBalance || 'Decision Balance'} - "${record.title || t.decision || 'Decision'}"`,
+        title: `${t.decisionBalance} - "${record.title || t.decision}"`,
         content: recordContent,
         tags: ['decision', 'pros_cons', record.category || 'general'],
         moods: [],
         metrics: { totalScore: record.totalScore },
         relationshipKeys: [`date:${dateStr}`, 'type:pros_cons', 'type:decision'],
-        sourceLabelAr: `${t.decisionBalance || 'Decision Balance'} (${dateStr}) - "${record.title || t.decision || 'Decision'}"`,
-        sourceLabelEn: `${t.decisionBalance || 'Decision Balance'} (${dateStr}) - "${record.title || t.decision || 'Decision'}"`,
+        sourceLabelAr: `${t.decisionBalance} (${dateStr}) - "${record.title || t.decision}"`,
+        sourceLabelEn: `${t.decisionBalance} (${dateStr}) - "${record.title || t.decision}"`,
         rawRef: record
       });
     });
@@ -958,7 +958,7 @@ export async function retrieveRelevantKnowledge(
     return {
       matchedEntities: [],
       crossSourceCorrelations: [],
-      formattedContextText: t.noDataLoggedInAppYet || 'No data currently logged in the application.',
+      formattedContextText: t.noDataLoggedInAppYet,
       multimodalParts: [],
       sourceCitations: [],
       confidenceScore: 0
@@ -1085,7 +1085,7 @@ export async function retrieveRelevantKnowledge(
       }));
 
       correlations.push({
-        title: `${t.dataCorrelation || 'Data Correlation'} ${date}`,
+        title: `${t.dataCorrelation} ${date}`,
         date,
         evidence
       });
@@ -1108,7 +1108,7 @@ export async function retrieveRelevantKnowledge(
             multimodalParts.push({
               mimeType: mime,
               data: parts[1],
-              description: `[${t.visualAttachment || 'Visual Attachment'} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
+              description: `[${t.visualAttachment} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
             });
           }
         }
@@ -1117,7 +1117,7 @@ export async function retrieveRelevantKnowledge(
           multimodalParts.push({
             mimeType: ent.mediaPayload.mimeType || 'application/octet-stream',
             fileUri: ent.mediaPayload.fileUri,
-            description: `[${t.fileApiAttachment || 'File API Attachment'} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
+            description: `[${t.fileApiAttachment} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
           });
         }
         // 3. Blob in IndexedDB
@@ -1138,7 +1138,7 @@ export async function retrieveRelevantKnowledge(
                 multimodalParts.push({
                   mimeType: blob.type || ent.mediaPayload.mimeType || 'image/jpeg',
                   data: base64,
-                  description: `[${t.localMemoryFile || 'File from local memory'}: ${ent.title}]`
+                  description: `[${t.localMemoryFile}: ${ent.title}]`
                 });
               }
             }
@@ -1157,24 +1157,24 @@ export async function retrieveRelevantKnowledge(
 
   if (topMatches.length > 0) {
     const isAr = (options.appLanguage || 'ar') === 'ar';
-    formattedText += `### 📂 ${t.verifiedRecordsRetrieved || 'Verified Records Retrieved from App'} (${topMatches.length} ${t.sources || 'sources'}):\n\n`;
+    formattedText += `### 📂 ${t.verifiedRecordsRetrieved} (${topMatches.length} ${t.sources}):\n\n`;
 
     topMatches.forEach((ent, index) => {
       const srcLbl = isAr ? ent.sourceLabelAr : ent.sourceLabelEn;
-      formattedText += `#### [${t.source || 'Source'} ${index + 1}] — ${srcLbl}\n`;
-      formattedText += `- **${t.typeAndCategory || 'Type & Category'}:** ${ent.sourceType} | ${t.group || 'Group'}: ${ent.memoryCategory}\n`;
-      formattedText += `- **${t.date || 'Date'}:** ${ent.dateStr}\n`;
-      if (ent.moods.length > 0) formattedText += `- **${t.moods || 'Moods'}:** [${ent.moods.join(' , ')}]\n`;
-      if (ent.tags.length > 0) formattedText += `- **${t.tags || 'Tags'}:** [${ent.tags.join(' , ')}]\n`;
+      formattedText += `#### [${t.source} ${index + 1}] — ${srcLbl}\n`;
+      formattedText += `- **${t.typeAndCategory}:** ${ent.sourceType} | ${t.group}: ${ent.memoryCategory}\n`;
+      formattedText += `- **${t.date}:** ${ent.dateStr}\n`;
+      if (ent.moods.length > 0) formattedText += `- **${t.moods}:** [${ent.moods.join(' , ')}]\n`;
+      if (ent.tags.length > 0) formattedText += `- **${t.tags}:** [${ent.tags.join(' , ')}]\n`;
       if (ent.metrics && Object.keys(ent.metrics).length > 0) {
         const metricStr = Object.entries(ent.metrics).map(([k, v]) => `${k}: ${v}`).join(' | ');
-        formattedText += `- **${t.metrics || 'Metrics'}:** ${metricStr}\n`;
+        formattedText += `- **${t.metrics}:** ${metricStr}\n`;
       }
-      formattedText += `- **${t.content || 'Content'}:**\n> ${ent.content.replace(/\n/g, '\n> ')}\n\n`;
+      formattedText += `- **${t.content}:**\n> ${ent.content.replace(/\n/g, '\n> ')}\n\n`;
     });
 
     if (correlations.length > 0) {
-      formattedText += `### 🔗 ${t.discoveredCorrelations || 'Discovered Cross-Source Correlations'}:\n`;
+      formattedText += `### 🔗 ${t.discoveredCorrelations}:\n`;
       correlations.forEach((corr, idx) => {
         formattedText += `**${idx + 1}. ${corr.title}**\n`;
         corr.evidence.forEach(ev => {
@@ -1184,7 +1184,7 @@ export async function retrieveRelevantKnowledge(
       });
     }
   } else {
-    formattedText = t.noPersonalRecordsMatched || 'No personal records matched the search query in app data.';
+    formattedText = t.noPersonalRecordsMatched;
   }
 
   const citations = topMatches.map(e => ({

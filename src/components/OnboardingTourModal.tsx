@@ -76,28 +76,28 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'welcome',
       icon: Compass,
-      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '1').replace('{total}', '7'),
+      badge: (t.onboardingStepOf).replace('{step}', '1').replace('{total}', '7'),
       accentColor: 'from-[#2B3E50] to-[#3A506B]',
       iconBg: 'bg-[#2B3E50]/10 text-[#2B3E50]',
-      title: t.onboardingWelcomeTitle || '🌿 Welcome to Hayat AI',
-      subtitle: t.onboardingWelcomeSubtitle || 'Your safe psychological space to write, express, and grow with smart AI guidance.',
-      description: t.onboardingWelcomeDesc || 'You do not need to learn everything at once. We will accompany you step-by-step to discover what you can do.',
+      title: t.onboardingWelcomeTitle,
+      subtitle: t.onboardingWelcomeSubtitle,
+      description: t.onboardingWelcomeDesc,
       interactiveWidget: (
         <div className="grid grid-cols-3 gap-2 sm:gap-2.5 py-1">
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">✍️</span>
-            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingExpressLabel || 'Express'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingExpressSub || 'Write freely'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingExpressLabel}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingExpressSub}</span>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">🧠</span>
-            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingUnderstandLabel || 'Understand'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingUnderstandSub || 'Explore feelings'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingUnderstandLabel}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingUnderstandSub}</span>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 sm:p-3 text-center flex flex-col items-center justify-center space-y-1">
             <span className="text-lg sm:text-xl">🌱</span>
-            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingGrowLabel || 'Grow'}</span>
-            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingGrowSub || 'Track progress'}</span>
+            <span className="text-xs font-black text-[#2B3E50]">{t.onboardingGrowLabel}</span>
+            <span className="text-[10px] text-gray-500 leading-tight">{t.onboardingGrowSub}</span>
           </div>
         </div>
       ),
@@ -108,35 +108,35 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'diaries',
       icon: BookOpen,
-      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '2').replace('{total}', '7'),
+      badge: (t.onboardingStepOf).replace('{step}', '2').replace('{total}', '7'),
       accentColor: 'from-[#4F772D] to-[#31572E]',
       iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
-      title: t.onboardingDiariesTitle || '✍️ Express What Lies Within',
-      subtitle: t.onboardingDiariesSubtitle || 'Write your reflections freely, record daily moments, and keep life memories in one safe spot.',
-      description: t.onboardingDiariesDesc || 'You can easily attach photos and audio recordings to keep all your experiences together.',
+      title: t.onboardingDiariesTitle,
+      subtitle: t.onboardingDiariesSubtitle,
+      description: t.onboardingDiariesDesc,
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#2B3E50]">
               <Smile className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{t.calmAndGrateful || 'Calm & Grateful'}</span>
+              <span>{t.calmAndGrateful}</span>
             </div>
             <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-              {t.moodAnalysis || 'Mood Analysis'}
+              {t.moodAnalysis}
             </span>
           </div>
           <p className="text-xs text-gray-700 leading-relaxed font-medium bg-white/80 p-2.5 rounded-xl border border-gray-100">
-            {t.onboardingDiariesSample || '"Today I took time to breathe and reflect on my day calmly..."'}
+            {t.onboardingDiariesSample}
           </p>
           <div className="flex items-center gap-3 pt-0.5 text-[11px] text-gray-500 font-semibold">
-            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {t.richText || 'Rich Text'}</span>
-            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {t.photo || 'Photo'}</span>
-            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {t.audio || 'Audio'}</span>
+            <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-amber-600" /> {t.richText}</span>
+            <span className="flex items-center gap-1"><Image className="w-3.5 h-3.5 text-blue-600" /> {t.photo}</span>
+            <span className="flex items-center gap-1"><Mic className="w-3.5 h-3.5 text-purple-600" /> {t.audio}</span>
           </div>
         </div>
       ),
       actionButton: {
-        text: t.onboardingTryDiariesBtn || 'Try Diaries',
+        text: t.onboardingTryDiariesBtn,
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('diaries');
@@ -163,17 +163,17 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
           <div className="flex items-center justify-between text-xs font-bold text-[#6B4E71]">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>{t.liveVoiceJournaling || "يوميات صوتية مباشرة"}</span>
+              <span>{t.liveVoiceJournaling}</span>
             </span>
             <span className="text-[10px] font-extrabold bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
-              {t.continuousRecording || "تسجيل مستمر"}
+              {t.continuousRecording}
             </span>
           </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-extrabold text-[#2B3E50]">
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {t.speakAction || "تحدث"}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {t.pauseAction || "إيقاف مؤقت"}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {t.continueAction || "متابعة"}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {t.saveAction || "حفظ"}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {t.speakAction}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {t.pauseAction}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {t.continueAction}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {t.saveAction}</div>
           </div>
         </div>
       ),
@@ -207,13 +207,13 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="bg-white/90 p-2 rounded-xl border border-gray-100 text-xs text-gray-800">
-            <span className="font-black text-[#2B3E50] block text-[10px] mb-0.5">{'You:'}</span>
+            <span className="font-black text-[#2B3E50] block text-[10px] mb-0.5">{t.chatYouLabel}</span>
             <span className="leading-snug">{'"I feel a bit anxious and do not know why."'}</span>
           </div>
           <div className="bg-purple-50/90 p-2 rounded-xl border border-purple-100 text-xs text-purple-950">
             <span className="font-black text-purple-900 flex items-center gap-1 text-[10px] mb-0.5">
               <Sparkles className="w-3 h-3 text-purple-600 shrink-0" />
-              <span>{'Hayat AI Advisor:'}</span>
+              <span>{t.chatAdvisorLabel}</span>
             </span>
             <span className="leading-snug">
               {isEn
@@ -236,30 +236,30 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'analytics',
       icon: TrendingUp,
-      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '5').replace('{total}', '7'),
+      badge: (t.onboardingStepOf).replace('{step}', '5').replace('{total}', '7'),
       accentColor: 'from-[#197278] to-[#124E52]',
       iconBg: 'bg-[#197278]/10 text-[#197278]',
-      title: t.onboardingGrowthTitle || '🌱 Track Your Growth',
-      subtitle: t.onboardingGrowthSubtitle || 'Monitor your daily habits, mood, and progress to discover how your journey evolves over time.',
-      description: t.onboardingGrowthDesc || 'Every small step you achieve today can be the beginning of a greater positive change tomorrow.',
+      title: t.onboardingGrowthTitle,
+      subtitle: t.onboardingGrowthSubtitle,
+      description: t.onboardingGrowthDesc,
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2">
           <div className="flex justify-between items-center text-xs font-extrabold text-[#2B3E50]">
-            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {t.psychologicalGrowthTree || 'Psychological Growth Tree'}</span>
-            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{t.onboardingFlourishingBadge || 'Flourishing'}</span>
+            <span className="flex items-center gap-1.5"><TreePine className="w-4 h-4 text-emerald-600" /> {t.psychologicalGrowthTree}</span>
+            <span className="text-emerald-700 bg-emerald-100 text-[10px] px-2 py-0.5 rounded-full font-black">{t.onboardingFlourishingBadge}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full w-[85%] transition-all"></div>
           </div>
           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 pt-0.5">
-            <span>✅ {t.dailyHabits || 'Daily Habits'}</span>
-            <span>📊 {t.moodTrends || 'Mood Trends'}</span>
-            <span>🎯 {t.achievements || 'Achievements'}</span>
+            <span>✅ {t.dailyHabits}</span>
+            <span>📊 {t.moodTrends}</span>
+            <span>🎯 {t.achievements}</span>
           </div>
         </div>
       ),
       actionButton: {
-        text: t.onboardingDiscoverProgressBtn || 'Discover Your Progress',
+        text: t.onboardingDiscoverProgressBtn,
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('analytics');
@@ -271,33 +271,33 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'privacy',
       icon: ShieldCheck,
-      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '6').replace('{total}', '7'),
+      badge: (t.onboardingStepOf).replace('{step}', '6').replace('{total}', '7'),
       accentColor: 'from-[#3A506B] to-[#1C2541]',
       iconBg: 'bg-[#3A506B]/10 text-[#3A506B]',
-      title: t.onboardingPrivacyTitle || '🔒 Your Privacy First',
-      subtitle: t.onboardingPrivacySubtitle || 'This is your private sanctuary. Protection tools are crafted to keep you in total control of your data.',
-      description: t.onboardingPrivacyDesc || 'Your entries are saved locally on your device with PIN passcode protection, biometric lock, and private cloud backup.',
+      title: t.onboardingPrivacyTitle,
+      subtitle: t.onboardingPrivacySubtitle,
+      description: t.onboardingPrivacyDesc,
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-3 sm:p-3.5 space-y-2 text-start">
           <div className="flex items-center gap-2 text-xs font-bold text-[#2B3E50]">
             <Lock className="w-4 h-4 text-[#3A506B] shrink-0" />
-            <span>{t.localStorageSecurity || 'Local Device Storage & Security'}</span>
+            <span>{t.localStorageSecurity}</span>
           </div>
           <ul className="text-[11px] text-gray-700 space-y-1 font-medium">
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature1 || 'Passcode & Biometrics App Lock'}
+              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature1}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature2 || 'Offline-first Local Database'}
+              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature2}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature3 || 'Encrypted Cloud Backup options'}
+              <span className="text-emerald-600">✓</span> {t.onboardingPrivacyFeature3}
             </li>
           </ul>
         </div>
       ),
       actionButton: {
-        text: t.onboardingPrivacySettingsBtn || 'Privacy Settings',
+        text: t.onboardingPrivacySettingsBtn,
         onClick: () => {
           onClose();
           if (onNavigateTab) onNavigateTab('settings');
@@ -309,17 +309,17 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     {
       id: 'ready',
       icon: Sparkles,
-      badge: (t.onboardingStepOf || 'Step {step} of {total}').replace('{step}', '7').replace('{total}', '7'),
+      badge: (t.onboardingStepOf).replace('{step}', '7').replace('{total}', '7'),
       accentColor: 'from-[#4F772D] to-[#1B4332]',
       iconBg: 'bg-[#4F772D]/10 text-[#4F772D]',
-      title: t.onboardingReadyTitle || '🚀 You Are All Set',
-      subtitle: t.onboardingReadySubtitle || 'You have now discovered the core essence of Hayat AI.',
-      description: t.onboardingReadyDesc || 'Write what you feel, speak about what is on your mind, follow your habits, and enjoy your journey step by step.',
+      title: t.onboardingReadyTitle,
+      subtitle: t.onboardingReadySubtitle,
+      description: t.onboardingReadyDesc,
       interactiveWidget: (
         <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-4 text-center space-y-2">
           <span className="text-3xl animate-bounce inline-block">✨</span>
           <p className="text-xs font-black text-[#2B3E50] leading-relaxed">
-            {t.onboardingReadyQuote || '«There is no single correct way to use Hayat AI. Start in whatever way suits you best.»'}
+            {t.onboardingReadyQuote}
           </p>
         </div>
       ),
@@ -379,14 +379,14 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleComplete}
                 className="text-[11px] sm:text-xs font-bold text-gray-500 hover:text-[#2B3E50] transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 cursor-pointer"
               >
-                {t.skipBtn || 'Skip'}
+                {t.skipBtn}
               </button>
             )}
             <button
               type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100 cursor-pointer"
-              aria-label={t.closeGuideAction || "إغلاق الدليل"}
+              aria-label={t.closeGuideAction}
             >
               <X className="w-4 h-4" />
             </button>
@@ -439,13 +439,13 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         <div className="p-4 sm:px-6 sm:py-4 border-t border-gray-100 bg-[#FAF8F5]/90 space-y-3">
 
           {/* Dots Indicator */}
-          <div className="flex items-center justify-center gap-1.5" aria-label={t.tourProgress || 'Tour progress'}>
+          <div className="flex items-center justify-center gap-1.5" aria-label={t.tourProgress}>
             {steps.map((s, idx) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => setCurrentStep(idx)}
-                aria-label={`${t.goToSection || 'Go to'} ${s.title}`}
+                aria-label={`${t.goToSection} ${s.title}`}
                 className={`h-2 rounded-full transition-all cursor-pointer ${
                   idx === currentStep
                     ? 'w-6 bg-[#2B3E50]'
@@ -476,7 +476,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleComplete}
                 className="py-2.5 px-6 rounded-2xl bg-gradient-to-r from-[#4F772D] to-[#31572E] text-white font-black text-xs hover:opacity-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{t.onboardingStartJourneyBtn || 'Start My Journey Now'}</span>
+                <span>{t.onboardingStartJourneyBtn}</span>
                 <CheckCircle2 className="w-4 h-4" />
               </button>
             ) : (
@@ -485,7 +485,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 onClick={handleNext}
                 className="py-2.5 px-5 rounded-2xl bg-[#2B3E50] text-white font-bold text-xs hover:bg-[#1C2541] transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>{isFirstStep ? (t.onboardingStartTourBtn || 'Start Tour') : (t.nextBtn)}</span>
+                <span>{isFirstStep ? (t.onboardingStartTourBtn) : (t.nextBtn)}</span>
                 {isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
             )}

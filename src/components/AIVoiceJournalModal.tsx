@@ -218,7 +218,7 @@ Return pure JSON only in the following schema:
       const finalCleanContent = parsed?.content || rawSpeechText;
       const finalMoods = Array.isArray(parsed?.moods) && parsed.moods.length > 0
         ? parsed.moods
-        : [t.mood_calm || 'Calm', t.mood_productive || 'Productive'];
+        : [t.mood_calm, t.mood_productive];
 
       setProcessedResult({
         title: finalTitle,
@@ -234,7 +234,7 @@ Return pure JSON only in the following schema:
         title: `${t.voiceJournalTitle} - ${new Date().toLocaleTimeString(langInfo.bcp47, { hour: '2-digit', minute: '2-digit' })}`,
         content: rawSpeechText,
         rawTranscript: rawSpeechText,
-        moods: [t.mood_reflective || 'Reflective'],
+        moods: [t.mood_reflective],
       });
     } finally {
       setIsAnalyzing(false);
@@ -253,11 +253,11 @@ Return pure JSON only in the following schema:
     try {
       const now = new Date();
       const isAr = (appLanguage || 'ar') === 'ar';
-      const dayName = now.toLocaleDateString(t.voiceJournalTitle || "Smart Voice Journal", { weekday: 'long' });
-      const timeStr = now.toLocaleTimeString(t.voiceJournalTitle || "Smart Voice Journal", { hour: '2-digit', minute: '2-digit' });
+      const dayName = now.toLocaleDateString(t.voiceJournalTitle, { weekday: 'long' });
+      const timeStr = now.toLocaleTimeString(t.voiceJournalTitle, { hour: '2-digit', minute: '2-digit' });
       const typeConfig = getJournalTypeConfig(chosenType);
 
-      const voiceBadge = t.voiceJournalTitle || "Smart Voice Journal";
+      const voiceBadge = t.voiceJournalTitle;
 
       const formattedContent = `${voiceBadge}\n\n${processedResult.content}`;
 
@@ -275,7 +275,7 @@ Return pure JSON only in the following schema:
         const blobUrl = URL.createObjectURL(audioBlobRef.current);
         const newAudioRec: AudioRecording = {
           id: `rec-${Date.now()}`,
-          name: `${t.voiceRecordingPrefix || 'Voice Recording'} ${timeStr}.webm`,
+          name: `${t.voiceRecordingPrefix} ${timeStr}.webm`,
           dataUrl: blobUrl,
           blobUrl: blobUrl,
           duration: exactDuration,
@@ -294,7 +294,7 @@ Return pure JSON only in the following schema:
         sportsDuration: processedResult.sportsDuration,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
-        tags: [t.voice_journal || 'Voice Journal', t.ai_assistant || 'AI Assistant', getJournalTypeLabel(typeConfig.type, t)],
+        tags: [t.voice_journal, t.ai_assistant, getJournalTypeLabel(typeConfig.type, t)],
         importance: 4,
         audioRecordings: audioRecordingsList,
         isLocked: false

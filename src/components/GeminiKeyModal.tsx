@@ -53,7 +53,7 @@ export default function GeminiKeyModal({
     } else if (apiKey && apiKey.trim() !== '') {
       const initialMain: ApiKeyPoolEntry = {
         id: 'key_main_init',
-        name: t.mainApiKeyLabel || 'Primary Key',
+        name: t.mainApiKeyLabel,
         key: apiKey.trim(),
         status: 'ready',
         isEnabled: true,
@@ -78,13 +78,13 @@ export default function GeminiKeyModal({
     const cleanKey = newKeyInput.trim();
     if (!cleanKey) return;
     if (keysList.length >= 5) {
-      alert(t.apiKeyMaxLimitAlert || 'Maximum 5 API keys allowed.');
+      alert(t.apiKeyMaxLimitAlert);
       return;
     }
 
     const newEntry: ApiKeyPoolEntry = {
       id: `key_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      name: newKeyName.trim() || `${t.apiKeyLabel || 'Key'} ${keysList.length + 1}`,
+      name: newKeyName.trim() || `${t.apiKeyLabel} ${keysList.length + 1}`,
       key: cleanKey,
       status: 'ready',
       isEnabled: true,
@@ -256,10 +256,10 @@ export default function GeminiKeyModal({
                     <span>{maskApiKey(entry.key)}</span>
                     <button
                       type="button"
-                      onClick={() => alert(`${t.fullApiKey || 'Full API Key'}:\n${entry.key}`)}
+                      onClick={() => alert(`${t.fullApiKey}:\n${entry.key}`)}
                       className="text-gray-400 hover:text-gray-600 p-1 text-[11px] font-sans font-bold"
                     >
-                      {t.showBtn || 'إظهار'}
+                      {t.showBtn}
                     </button>
                   </div>
 
@@ -300,7 +300,7 @@ export default function GeminiKeyModal({
                         type="button"
                         onClick={() => handleDeleteKey(entry.id)}
                         className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
-                        title={t.deleteDhikr || t.deleteKey || 'Delete key'}
+                        title={t.deleteDhikr || t.deleteKey}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

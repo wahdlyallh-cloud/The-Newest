@@ -123,7 +123,7 @@ export default function LanguagesModal({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t.searchLanguagePlaceholder || "Search language..."}
+                placeholder={t.searchLanguagePlaceholder}
                 className="w-full px-9 py-2.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#4E685B] shadow-3xs"
               />
               <Search className="w-4 h-4 text-gray-400 absolute end-3 top-3" />
@@ -182,7 +182,7 @@ export default function LanguagesModal({
             <div className="space-y-2">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <Type className="w-4 h-4 text-[#8B9D83]" />
-                <span>{t.selectMainFontLabel || 'Main Font Family:'}</span>
+                <span>{t.selectMainFontLabel}</span>
               </label>
 
               <div className="grid grid-cols-1 gap-2">
@@ -211,7 +211,7 @@ export default function LanguagesModal({
                           )}
                         </div>
                         <p className={`text-[11px] font-bold mt-1 ${isSelected ? 'text-amber-100' : 'text-gray-500'}`} style={{ fontFamily: fontItem.fontFamilyCss }}>
-                          {t['font' + fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1) + 'Sample'] || t.fontDefaultSample || 'The quick brown fox jumps over the lazy dog.'}
+                          {t['font' + fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1) + 'Sample'] || t.fontDefaultSample}
                         </p>
                       </div>
 
@@ -230,7 +230,7 @@ export default function LanguagesModal({
             <div className="space-y-2 pt-3 border-t border-[#E2DCC8]">
               <label className="text-xs font-black text-gray-700 flex items-center gap-1.5">
                 <AlignLeft className="w-4 h-4 text-[#D4A373]" />
-                <span>{t.lineSpacingLabel || 'Line Height Spacing:'}</span>
+                <span>{t.lineSpacingLabel}</span>
               </label>
 
               <div className="grid grid-cols-2 gap-2">

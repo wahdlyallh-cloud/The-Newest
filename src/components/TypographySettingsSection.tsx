@@ -64,7 +64,7 @@ export default function TypographySettingsSection({
             const fontSampleKey = `font${fontItem.id.charAt(0).toUpperCase() + fontItem.id.slice(1)}Sample`;
             const fontName = t[fontNameKey] || fontItem.id;
             const fontCat = t[fontCatKey] || '';
-            const fontSample = t[fontSampleKey] || t.fontDefaultSample || 'The quick brown fox jumps over the lazy dog.';
+            const fontSample = t[fontSampleKey] || t.fontDefaultSample;
 
             return (
               <button

@@ -293,7 +293,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
                       <input
                         type="number"
                         min="1"
-                        placeholder={t.habitTargetExample || "مثال: 15"}
+                        placeholder={t.habitTargetExample}
                         value={targetValue}
                         onChange={(e) => setTargetValue(e.target.value)}
                         className="w-full py-2 px-3 bg-white border border-gray-300 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-blue-500"
@@ -305,7 +305,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
                       <label className="text-[11px] font-bold text-gray-600 block">{t['habit.unit'] || 'الوحدة'}</label>
                       <input
                         type="text"
-                        placeholder={t.habitUnitExample || "مثلا: كيلومترات"}
+                        placeholder={t.habitUnitExample}
                         value={unit}
                         onChange={(e) => setUnit(e.target.value)}
                         className="w-full py-2 px-3 bg-white border border-gray-300 rounded-xl text-xs font-bold text-gray-800 outline-none focus:border-blue-500"

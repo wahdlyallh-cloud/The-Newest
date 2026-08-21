@@ -103,15 +103,15 @@ export function getLocalizedAIError(errorType: 'key-missing' | 'rate-limit' | 'c
 
   switch (errorType) {
     case 'key-missing':
-      return t.apiKeyCheckSettings || 'Please configure your Gemini API Key in App Settings to enable AI features.';
+      return t.apiKeyCheckSettings;
     case 'rate-limit':
-      return t.dailyLimitReached || 'Daily API rate limit reached. Please try again shortly or add a backup key in settings.';
+      return t.dailyLimitReached;
     case 'connection':
-      return rawDetails ? `${t.connectionError || 'Connection error'}: ${rawDetails}` : (t.connectionError || 'Connection error. Please verify your internet connection.');
+      return rawDetails ? `${t.connectionError}: ${rawDetails}` : (t.connectionError);
     case 'unauthorized':
-      return t.keyVerificationFailed || 'Invalid API Key. Please verify your key in settings.';
+      return t.keyVerificationFailed;
     default:
-      return rawDetails || t.connectionError || 'An unexpected error occurred while communicating with the AI service.';
+      return rawDetails || t.connectionError;
   }
 }
 

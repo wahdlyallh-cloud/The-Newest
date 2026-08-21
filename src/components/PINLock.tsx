@@ -176,7 +176,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
         setBiometricErrorMessage(
           res.infoMessage ||
           res.error ||
-          (t.biometricsUnavailable || 'Biometrics unavailable')
+          (t.biometricsUnavailable)
         );
       }
     } else {

@@ -736,10 +736,10 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             <button
               onClick={onClose}
               className="p-1.5 sm:p-2 rounded-xl bg-amber-500/25 hover:bg-amber-500/40 text-amber-300 border-2 border-amber-500/50 hover:border-amber-400 transition-all active:scale-95 cursor-pointer shrink-0 flex items-center gap-1.5 font-black text-xs shadow-lg group"
-              title={t.back || "Back"}
+              title={t.back}
             >
               <ArrowRight className="w-5 h-5 text-amber-300 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="font-sans">{t.back || "Back"}</span>
+              <span className="font-sans">{t.back}</span>
             </button>
 
             <div className="p-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shrink-0">
@@ -752,7 +752,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
             {/* Merged Inline Progress Bar */}
             <div className="hidden lg:flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded-full border border-amber-500/20 text-[11px] shrink-0">
-              <span className="text-amber-300/80 font-sans font-medium">{t.achievementLabel || "الإنجاز:"}</span>
+              <span className="text-amber-300/80 font-sans font-medium">{t.achievementLabel}</span>
               <span className="font-mono font-bold text-amber-300">{progressPercent}%</span>
               <div className="w-16 sm:w-24 h-2 bg-slate-900 rounded-full overflow-hidden border border-amber-500/20">
                 <motion.div
@@ -772,7 +772,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               <button
                 onClick={() => setFontSize(prev => Math.max(14, prev - 2))}
                 className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors"
-                title={t.decreaseFontSize || "تصغير الخط"}
+                title={t.decreaseFontSize}
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -780,7 +780,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               <button
                 onClick={() => setFontSize(prev => Math.min(36, prev + 2))}
                 className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors"
-                title={t.increaseFontSize || "تكبير الخط"}
+                title={t.increaseFontSize}
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -812,7 +812,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             <button
               onClick={handleResetCurrentTab}
               className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-              title={t.resetDailyCounters || "إعادة تصفير العدادات اليومية"}
+              title={t.resetDailyCounters}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -821,10 +821,10 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             <button
               onClick={onClose}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 transition-all font-sans font-bold text-xs shadow-sm cursor-pointer"
-              title={t.closeFullScreen || "إغلاق الشاشة الكاملة"}
+              title={t.closeFullScreen}
             >
               <X className="w-4 h-4 text-rose-300" />
-              <span className="hidden xs:inline">{t.closeBtn || "إغلاق"}</span>
+              <span className="hidden xs:inline">{t.closeBtn}</span>
             </button>
           </div>
         </div>
@@ -864,7 +864,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
             }`}
           >
             <Layers className="w-3 h-3 text-amber-400" />
-            {t.customDhikrCategory || "أذكاري الخاصة"} ({customAthkar.length})
+            {t.customDhikrCategory} ({customAthkar.length})
           </button>
         </div>
 
@@ -878,7 +878,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
           <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 shadow-lg">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-sans font-bold text-amber-200">
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
-              <span>{t.addNewDhikrMessage || "إضافة ذكر جديد مخصص للقسم الحالي أو أي قسم آخر"}</span>
+              <span>{t.addNewDhikrMessage}</span>
             </div>
             <button
               onClick={() => {
@@ -892,16 +892,16 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-slate-950 font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 text-slate-950 font-black" />
-              <span>{t.addNewDhikrSection || "إضافة ذكر جديد (+)"}</span>
+              <span>{t.addNewDhikrSection}</span>
             </button>
           </div>
 
           {currentCategoryItems.length === 0 ? (
             <div className="text-center py-16 text-zinc-400">
               <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-40 text-amber-400" />
-              <p className="text-lg font-sans font-bold">{t.noCustomDhikrYet || "لا توجد أذكار مضافة حالياً في هذا القسم."}</p>
+              <p className="text-lg font-sans font-bold">{t.noCustomDhikrYet}</p>
               <p className="text-xs font-sans text-amber-300/80 mt-1.5">
-                {t.addDhikrHint || "يمكنك إستخدام زر \"إضافة ذكر جديد (+)\" أعلى الصفحة لإضافة ذكر إلى هذا القسم بسهولة."}
+                {t.addDhikrHint}
               </p>
             </div>
           ) : (
@@ -929,11 +929,11 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                   <div className="flex items-center justify-between mb-3 border-b border-amber-500/15 pb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-sans font-black px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300">
-                        {t.dhikrNumberLabel || "الذكر #"} {index + 1}
+                        {t.dhikrNumberLabel} {index + 1}
                       </span>
                       {isUserCustom && (
                         <span className="text-[10px] font-sans font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          {t.customDhikrLabel || "ذكر مخصص"}
+                          {t.customDhikrLabel}
                         </span>
                       )}
                     </div>
@@ -951,14 +951,14 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                               setShowAddCustomModal(true);
                             }}
                             className="p-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
-                            title={t.editCustomDhikr || "تعديل الذكر"}
+                            title={t.editCustomDhikr}
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteCustom(item.id)}
                             className="p-1 rounded-md bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition-colors"
-                            title={t.deleteDhikr || "حذف الذكر"}
+                            title={t.deleteDhikr}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -967,11 +967,11 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
                       {isCompleted ? (
                         <span className="flex items-center gap-1 text-xs font-sans font-black text-emerald-400 bg-emerald-500/15 px-3 py-0.5 rounded-full border border-emerald-500/40 shadow-sm">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> {t.completedPraise || "تم بحمد الله"}
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> {t.completedPraise}
                         </span>
                       ) : (
                         <span className="text-xs font-sans text-zinc-400">
-                          {t.requiredCount || "العدد المطلوب:"} <strong className="text-amber-300 font-mono text-sm">{item.count}</strong>
+                          {t.requiredCount} <strong className="text-amber-300 font-mono text-sm">{item.count}</strong>
                         </span>
                       )}
                     </div>
@@ -993,12 +993,12 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                       {item.virtue && (
                         <p className="flex items-start gap-1.5">
                           <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                          <span><strong>{t.virtue || "Virtue"}:</strong> {item.virtue}</span>
+                          <span><strong>{t.virtue}:</strong> {item.virtue}</span>
                         </p>
                       )}
                       {item.source && (
                         <p className="text-amber-300/70 text-[11px] font-mono pt-1 border-t border-amber-500/10">
-                          {t.source || "Source"}: {item.source}
+                          {t.source}: {item.source}
                         </p>
                       )}
                     </div>
@@ -1011,10 +1011,10 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                         setCounts(prev => ({ ...prev, [item.id]: item.count }));
                       }}
                       className="text-xs font-sans text-zinc-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
-                      title={t.resetThisDhikr || "Reset this dhikr"}
+                      title={t.resetThisDhikr}
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      {t.resetThisDhikr || "إعادة"}
+                      {t.resetThisDhikr}
                     </button>
 
                     <button
@@ -1026,7 +1026,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                           : 'bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-slate-950 shadow-amber-500/30 border border-amber-200/50'
                       }`}
                     >
-                      <span>{isCompleted ? (t.dhikrCompleted || "Completed ✨") : (t.tapToCount || "Tap to count")}</span>
+                      <span>{isCompleted ? (t.dhikrCompleted) : (t.tapToCount)}</span>
                       <span className="w-8 h-8 rounded-lg bg-slate-950/80 text-amber-300 flex items-center justify-center font-mono text-lg font-black border border-amber-400/40 shadow-inner">
                         {remaining}
                       </span>
@@ -1042,14 +1042,14 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
         <div className="px-3 py-1.5 border-t border-amber-500/15 bg-slate-950/95 text-[11px] sm:text-xs font-sans text-amber-200/70 flex items-center justify-between shrink-0 h-9">
           <span className="flex items-center gap-1.5 truncate">
             <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span className="truncate">{t.aiLiveSyncAutoSave || "Live AI sync & auto-save"}</span>
+            <span className="truncate">{t.aiLiveSyncAutoSave}</span>
           </span>
           <button
             onClick={handleResetCurrentTab}
             className="text-amber-400 hover:underline flex items-center gap-1 font-bold shrink-0 text-xs"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            {t.resetCurrentSection || "تصفير القسم الحالي"}
+            {t.resetCurrentSection}
           </button>
         </div>
 
@@ -1060,7 +1060,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
               <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
                 <h4 className="text-base font-bold text-amber-300 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  {editingItem ? (t.editCustomDhikr || "Edit Custom Dhikr") : (t.addNewDhikr || "Add New Dhikr (+)")}
+                  {editingItem ? (t.editCustomDhikr) : (t.addNewDhikr)}
                 </h4>
                 <button
                   onClick={() => setShowAddCustomModal(false)}
@@ -1080,7 +1080,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     rows={3}
                     value={newDhikrText}
                     onChange={(e) => setNewDhikrText(e.target.value)}
-                    placeholder={t.enterDhikrText || "Enter dhikr or supplication text..."}
+                    placeholder={t.enterDhikrText}
                     required
                     className="w-full bg-zinc-800/90 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-serif leading-relaxed"
                   />
@@ -1115,7 +1115,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                         type="number"
                         min={1}
                         max={999999}
-                        placeholder={t.enterCustomCount || "Enter any custom count..."}
+                        placeholder={t.enterCustomCount}
                         value={newDhikrCount || ''}
                         onChange={(e) => {
                           const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
@@ -1135,7 +1135,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
                     {/* Quick count presets */}
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-bold text-zinc-400 font-sans">{t.quickCounts || "Quick counts:"}</span>
+                      <span className="text-[11px] font-bold text-zinc-400 font-sans">{t.quickCounts}</span>
                       {[3, 10, 33, 100, 500, 1000].map(cnt => (
                         <button
                           key={cnt}
@@ -1163,7 +1163,7 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     type="text"
                     value={newDhikrVirtue}
                     onChange={(e) => setNewDhikrVirtue(e.target.value)}
-                    placeholder={t.dhikrVirtuePlaceholder || "e.g., Whoever says this..."}
+                    placeholder={t.dhikrVirtuePlaceholder}
                     className="w-full bg-zinc-800/90 border border-amber-500/30 rounded-xl p-2.5 text-xs text-amber-100 focus:outline-none focus:border-amber-400"
                   />
                 </div>
@@ -1175,13 +1175,13 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
                     onClick={() => setShowAddCustomModal(false)}
                     className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-bold hover:bg-zinc-700"
                   >
-                    {t.cancel || "إلغاء"}
+                    {t.cancel}
                   </button>
                   <button
                     type="submit"
                     className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-600 text-slate-950 text-xs font-black hover:opacity-95 shadow-md"
                   >
-                    {t.saveDhikr || "حفظ الذكر"}
+                    {t.saveDhikr}
                   </button>
                 </div>
               </form>

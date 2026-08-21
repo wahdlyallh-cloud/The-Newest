@@ -36,13 +36,13 @@ const STORAGE_KEY_DHIKR_DATA = 'yawmiyaty_dhikr_data_v2';
 function derivePsychologicalSpiritualStatus(rate: number, streak: number, lastCategory: string, langCode: string = 'ar'): string {
   const t = getTranslation(langCode);
   if (rate >= 90) {
-    return `${t.statusExcellent || 'التزام ممتاز جداً'} (${rate}%)، ${t.statusExcellentDesc || 'ارتفاع ملحوظ في السكينة النفسية والانشراح مع انتظام'} ${lastCategory || 'الأذكار'}.`;
+    return `${t.statusExcellent} (${rate}%)، ${t.statusExcellentDesc} ${lastCategory || 'الأذكار'}.`;
   } else if (rate >= 60) {
-    return `${t.statusGood || 'التزام جيد جداً'} (${rate}%)، ${t.statusGoodDesc || 'تحسن في الاستقرار النفسي والهدوء الذاتي متواصل منذ'} ${streak} ${t.days || 'أيام'}.`;
+    return `${t.statusGood} (${rate}%)، ${t.statusGoodDesc} ${streak} ${t.days}.`;
   } else if (rate >= 30) {
-    return `${t.statusMedium || 'التزام متوسط'} (${rate}%)، ${t.statusMediumDesc || 'يوصى بقضاء 5 دقائق في أذكار المساء أو التسبيح لتخفيف توتر اليوم.'}`;
+    return `${t.statusMedium} (${rate}%)، ${t.statusMediumDesc}`;
   } else {
-    return `${t.statusLow || 'نسبة الإنجاز منخفضة'} (${rate}%)، ${t.statusLowDesc || 'تذكر أن الأذكار طمأنينة للقلب وتخفيف للضغوط النفسية.'}`;
+    return `${t.statusLow} (${rate}%)، ${t.statusLowDesc}`;
   }
 }
 

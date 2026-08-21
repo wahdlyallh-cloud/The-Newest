@@ -203,7 +203,7 @@ export default function DrawingCanvas({
           className="flex items-center space-x-1 space-x-reverse px-3 py-1.5 text-xs font-medium text-[#D4A373] hover:bg-[#FAEDCD] rounded-lg transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
-          <span>{t.clearCanvas || "Clear Canvas"}</span>
+          <span>{t.clearCanvas}</span>
         </button>
 
         <div className="flex items-center space-x-2 space-x-reverse">
@@ -212,7 +212,7 @@ export default function DrawingCanvas({
             className="flex items-center space-x-1 space-x-reverse px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-[#E2DCC8] rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
-            <span>{t.cancel || 'Cancel'}</span>
+            <span>{t.cancel}</span>
           </button>
           
           <button
@@ -220,7 +220,7 @@ export default function DrawingCanvas({
             className="flex items-center space-x-1 space-x-reverse px-4 py-1.5 text-xs font-semibold text-white bg-[#8B9D83] hover:bg-[#5A5A40] shadow-xs rounded-lg transition-colors cursor-pointer"
           >
             <Check className="w-3.5 h-3.5" />
-            <span>{t.saveDrawing || "Save Drawing"}</span>
+            <span>{t.saveDrawing}</span>
           </button>
         </div>
       </div>
@@ -229,21 +229,21 @@ export default function DrawingCanvas({
       {showExitConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 text-center shadow-xl border border-[#E2DCC8]">
-            <h3 className="text-sm font-bold text-[#3A3A3A]">{t.saveDrawingExitConfirm || "Do you want to save drawing before exit?"}</h3>
+            <h3 className="text-sm font-bold text-[#3A3A3A]">{t.saveDrawingExitConfirm}</h3>
             <div className="flex items-center justify-center space-x-4 space-x-reverse pt-2">
               <button
                 type="button"
                 onClick={onCancel}
                 className="text-xs font-bold text-blue-600 hover:text-blue-800 px-4 py-2 rounded-lg bg-blue-50 cursor-pointer"
               >
-                {t.discardAction || "Discard"}
+                {t.discardAction}
               </button>
               <button
                 type="button"
                 onClick={handleSave}
                 className="text-xs font-bold text-emerald-700 hover:text-emerald-900 px-4 py-2 rounded-lg bg-emerald-50 cursor-pointer"
               >
-                {t.saveDrawing || "Save Drawing"}
+                {t.saveDrawing}
               </button>
             </div>
           </div>

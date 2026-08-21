@@ -431,7 +431,7 @@ export default function WriteDiaryImporter({
       audioRecordings: [],
       files: [],
       tasks: [],
-      tags: [t.tag_imported || 'imported', t.tag_diaries || 'diaries'],
+      tags: [t.tag_imported, t.tag_diaries],
       chatLogs: [],
       isLocked: false,
       diaryType: 'diary'

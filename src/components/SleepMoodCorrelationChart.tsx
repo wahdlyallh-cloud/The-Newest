@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, ReferenceLine 
+import {
+  ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip as ChartTooltip, Legend, ResponsiveContainer, Area, ReferenceLine
 } from 'recharts';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
@@ -31,7 +31,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
       diaryTitle?: string;
     }[] = [];
 
-    const arabicDays = [t.weekdaySunShort || 'Sun', t.weekdayMonShort || 'Mon', t.weekdayTueShort || 'Tue', t.weekdayWedShort || 'Wed', t.weekdayThuShort || 'Thu', t.weekdayFriShort || 'Fri', t.weekdaySatShort || 'Sat'];
+    const arabicDays = [t.weekdaySunShort, t.weekdayMonShort, t.weekdayTueShort, t.weekdayWedShort, t.weekdayThuShort, t.weekdayFriShort, t.weekdaySatShort];
 
     // Map existing diaries by date string YYYY-MM-DD
     const diaryByDate: Record<string, DiaryEntry> = {};
@@ -75,7 +75,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         const cyclicSleep = Number((6.5 + Math.sin(i * 0.7) * 1.5 + (i % 3 === 0 ? 0.8 : -0.4)).toFixed(1));
         // Mood strongly correlates with sleep + minor variance
         const cyclicMood = Number(Math.min(10, Math.max(2, cyclicSleep * 1.05 + Math.cos(i * 0.5) * 1.2)).toFixed(1));
-        
+
         sleepHours = cyclicSleep;
         moodScore = cyclicMood;
         primaryMood = cyclicMood >= 7.5 ? 'سعيد 😃' : cyclicMood >= 5.5 ? 'طبيعي 🙂' : 'قلق 😟';
@@ -146,7 +146,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
             </span>
             {data.hasDiary && (
               <span className="bg-[#8B9D83] text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
-                {t.diaryLoggedEntryBadge || 'Diary Entry 📓'}
+                {t.diaryLoggedEntryBadge}
               </span>
             )}
           </div>
@@ -155,21 +155,21 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
             <div className="flex items-center justify-between">
               <span className="text-gray-300 flex items-center gap-1.5">
                 <Moon className="w-3.5 h-3.5 text-indigo-400" />
-                <span>{t.sleepHoursLabel || 'Sleep Hours:'}</span>
+                <span>{t.sleepHoursLabel}</span>
               </span>
-              <span className="font-black text-indigo-300 text-sm">{data.sleepHours} {t.hoursUnit || 'hrs'}</span>
+              <span className="font-black text-indigo-300 text-sm">{data.sleepHours} {t.hoursUnit}</span>
             </div>
 
             <div className="flex items-center justify-between">
               <span className="text-gray-300 flex items-center gap-1.5">
                 <Smile className="w-3.5 h-3.5 text-amber-400" />
-                <span>{t.fastMoodScoreLabel || 'Mood Score:'}</span>
+                <span>{t.fastMoodScoreLabel}</span>
               </span>
               <span className="font-black text-amber-300 text-sm">{data.moodScore} / 10</span>
             </div>
 
             <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-700/60">
-              <span className="text-gray-400">{t.predominantFeelingLabel || 'Predominant Feeling:'}</span>
+              <span className="text-gray-400">{t.predominantFeelingLabel}</span>
               <span className="font-bold text-emerald-400">{data.primaryMood}</span>
             </div>
 
@@ -193,20 +193,20 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
           <div className="flex items-center gap-2">
             <span className="p-2 bg-indigo-50 text-indigo-600 rounded-2xl text-lg shadow-3xs">🌙</span>
             <h3 className="font-extrabold text-[#3A3A3A] text-sm md:text-base">
-              {t.sleepMoodCorrelationChartTitle || 'Sleep & Mood Correlation (Fast Mood Score)'}
+              {t.sleepMoodCorrelationChartTitle}
             </h3>
           </div>
           <p className="text-xs text-gray-500 font-medium leading-relaxed pr-10">
-            {t.sleepMoodCorrelationChartSubtitle || 'Track how daily sleep hours influence your mood stability.'}
+            {t.sleepMoodCorrelationChartSubtitle}
           </p>
         </div>
 
         {/* Timeframe Selector */}
         <div className="flex items-center bg-[#F4F1EA] p-1 rounded-2xl border border-[#E2DCC8] shrink-0 self-start sm:self-auto">
           {[
-            { id: '30', label: t.thirtyDaysLabel || '30 Days (Month)' },
-            { id: '14', label: t.fourteenDaysLabel || '14 Days' },
-            { id: '7', label: t.sevenDaysLabel || '7 Days' },
+            { id: '30', label: t.thirtyDaysLabel },
+            { id: '14', label: t.fourteenDaysLabel },
+            { id: '7', label: t.sevenDaysLabel },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -229,15 +229,15 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Moon className="w-3.5 h-3.5 text-indigo-500" />
-            <span>{t.avgDailySleepLabel || 'Avg Daily Sleep'}</span>
+            <span>{t.avgDailySleepLabel}</span>
           </span>
-          <p className="text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{t.hoursUnit || 'hrs'}</span></p>
+          <p className="text-lg font-black text-[#2B3E50]">{stats.avgSleep} <span className="text-xs font-normal text-gray-500">{t.hoursUnit}</span></p>
         </div>
 
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Smile className="w-3.5 h-3.5 text-amber-500" />
-            <span>{t.avgMoodQualityLabel || 'Avg Mood Quality'}</span>
+            <span>{t.avgMoodQualityLabel}</span>
           </span>
           <p className="text-lg font-black text-[#2B3E50]">{stats.avgMood} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
         </div>
@@ -245,7 +245,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{t.goodSleepMoodLabel || 'Good Sleep Mood (>7.5h)'}</span>
+            <span>{t.goodSleepMoodLabel}</span>
           </span>
           <p className="text-lg font-black text-emerald-700">{stats.avgMoodGoodSleep} <span className="text-xs font-normal text-gray-500">/ 10</span></p>
         </div>
@@ -253,9 +253,9 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="bg-[#FAF8F5] border border-[#E2DCC8]/80 p-3.5 rounded-2xl space-y-1">
           <span className="text-[10px] text-gray-500 font-bold flex items-center gap-1">
             <Zap className="w-3.5 h-3.5 text-amber-600" />
-            <span>{t.moodImprovesWithSleep || 'Mood improves with adequate sleep'}</span>
+            <span>{t.moodImprovesWithSleep}</span>
           </span>
-          <p className="text-lg font-black text-amber-600">+{stats.moodBoostPercent}% <span className="text-xs font-normal text-gray-500">{t.highLabel || 'High'}</span></p>
+          <p className="text-lg font-black text-amber-600">+{stats.moodBoostPercent}% <span className="text-xs font-normal text-gray-500">{t.highLabel}</span></p>
         </div>
       </div>
 
@@ -264,11 +264,11 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
         <div className="flex items-center justify-between px-2 text-xs font-bold text-gray-500">
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span>
-            <span>{t.sleepHoursLabel || "Sleep Hours"} (العمود باللون البنفسجي/الأزرق)</span>
+            <span>{t.sleepHoursLabel} (العمود باللون البنفسجي/الأزرق)</span>
           </span>
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
-            <span>{t.moodQualityScore || 'نقاط جودة المزاج'} Fast Mood Score (المنحنى بالبرتقالي)</span>
+            <span>{t.moodQualityScore} Fast Mood Score (المنحنى بالبرتقالي)</span>
           </span>
         </div>
 
@@ -288,9 +288,9 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
 
               <CartesianGrid strokeDasharray="3 3" stroke="#E2DCC8" opacity={0.6} />
 
-              <XAxis 
-                dataKey="date" 
-                stroke="#5A5A40" 
+              <XAxis
+                dataKey="date"
+                stroke="#5A5A40"
                 tick={{ fontSize: 10, fontWeight: 700 }}
                 interval={timeRange === '30' ? 2 : 0}
                 angle={-25}
@@ -299,21 +299,21 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
               />
 
               {/* Left Y-Axis for Sleep Hours (0 to 12 hours) */}
-              <YAxis 
-                yAxisId="sleep" 
-                orientation="right" 
-                stroke="#6366F1" 
-                domain={[0, 12]} 
+              <YAxis
+                yAxisId="sleep"
+                orientation="right"
+                stroke="#6366F1"
+                domain={[0, 12]}
                 tick={{ fontSize: 10, fontWeight: 700 }}
                 unit="س"
               />
 
               {/* Right Y-Axis for Fast Mood Score (0 to 10 points) */}
-              <YAxis 
-                yAxisId="mood" 
-                orientation="left" 
-                stroke="#D97706" 
-                domain={[0, 10]} 
+              <YAxis
+                yAxisId="mood"
+                orientation="left"
+                stroke="#D97706"
+                domain={[0, 10]}
                 tick={{ fontSize: 10, fontWeight: 700 }}
                 unit=" درجات"
               />
@@ -322,38 +322,38 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
               <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
 
               {/* Sleep Hours Area/Bar Representation */}
-              <Bar 
-                yAxisId="sleep" 
-                dataKey="sleepHours" 
-                name={t.dailySleepHours || "Daily Sleep Hours"} 
-                fill="url(#sleepBarGradient)" 
-                radius={[6, 6, 0, 0]} 
+              <Bar
+                yAxisId="sleep"
+                dataKey="sleepHours"
+                name={t.dailySleepHours}
+                fill="url(#sleepBarGradient)"
+                radius={[6, 6, 0, 0]}
                 barSize={timeRange === '30' ? 12 : timeRange === '14' ? 18 : 28}
               />
 
               {/* Mood Score Area Gradient Fill */}
-              <Area 
-                yAxisId="mood" 
-                type="monotone" 
-                dataKey="moodScore" 
-                fill="url(#moodAreaGradient)" 
-                stroke="none" 
+              <Area
+                yAxisId="mood"
+                type="monotone"
+                dataKey="moodScore"
+                fill="url(#moodAreaGradient)"
+                stroke="none"
               />
 
               {/* Mood Score Line Overlay */}
-              <Line 
-                yAxisId="mood" 
-                type="monotone" 
-                dataKey="moodScore" 
-                name={t.moodScoreLabel || "Mood Score"} 
-                stroke="#D97706" 
-                strokeWidth={3} 
+              <Line
+                yAxisId="mood"
+                type="monotone"
+                dataKey="moodScore"
+                name={t.moodScoreLabel}
+                stroke="#D97706"
+                strokeWidth={3}
                 dot={{ r: timeRange === '30' ? 3 : 4, fill: '#D97706', strokeWidth: 1.5, stroke: '#FFFFFF' }}
                 activeDot={{ r: 6, fill: '#B45309' }}
               />
 
               {/* Health Benchmark Lines */}
-              <ReferenceLine yAxisId="sleep" y={8} stroke="#10B981" strokeDasharray="4 4" label={{ value: t.idealSleepHoursLabel || 'Optimal: 8h Sleep', fill: '#059669', fontSize: 9, position: 'insideTopLeft' }} />
+              <ReferenceLine yAxisId="sleep" y={8} stroke="#10B981" strokeDasharray="4 4" label={{ value: t.idealSleepHoursLabel, fill: '#059669', fontSize: 9, position: 'insideTopLeft' }} />
               <ReferenceLine yAxisId="mood" y={7} stroke="#F59E0B" strokeDasharray="2 2" />
             </ComposedChart>
           </ResponsiveContainer>
@@ -368,7 +368,7 @@ export const SleepMoodCorrelationChart: React.FC<SleepMoodCorrelationChartProps>
             الاستنتاج النفسي المعرفي (تحليل الترابط):
           </h4>
           <p className="text-gray-700 leading-relaxed font-normal">
-            يظهر التحليل أن أيام النوم التي تجاوزت <strong>7.5 ساعات</strong> {t.significantMoodImprovement || 'رافقها تحسن ملحوظ في جودة المزاج'} بنسبة متوسطة بلغت <strong>+{stats.moodBoostPercent}%</strong>. 
+            يظهر التحليل أن أيام النوم التي تجاوزت <strong>7.5 ساعات</strong> {t.significantMoodImprovement} بنسبة متوسطة بلغت <strong>+{stats.moodBoostPercent}%</strong>.
             في المقابل، تؤدي ليالي الأرق (أقل من 6 ساعات) إلى تراجع درجة المزاج السريع في الصباح التالي. يُنصح بالالتزام بروتين نوم هادئ والابتعاد عن الشاشات قبل النوم بـ 30 دقيقة.
           </p>
         </div>

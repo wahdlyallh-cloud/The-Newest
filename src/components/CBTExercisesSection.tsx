@@ -179,7 +179,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
   // Helper to delete CBT Worksheet
   const handleDeleteCbtItem = (id: string) => {
-    if (confirm(t.confirmDeleteExercise || 'هل أنت متأكد من حذف هذا التمرين العلاجي؟')) {
+    if (confirm(t.confirmDeleteExercise)) {
       const updated = todaysCbtWorksheets.filter(w => w.id !== id);
       handleUpdateHabit('cbt', updated);
     }
@@ -229,7 +229,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
       }, 1000);
     } else if (worryTimerSeconds === 0) {
       setWorryTimerRunning(false);
-      alert(t.worryHourEnded || 'انتهت 15 دقيقة المخصصة لساعة القلق اليومية! حان الوقت لإغلاق الصندوق والتفرغ لحياتك الحالية. 🧘✨');
+      alert(t.worryHourEnded);
     }
     return () => clearInterval(timer);
   }, [worryTimerRunning, worryTimerSeconds]);
@@ -269,13 +269,13 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="space-y-1.5 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B9D83]/20 text-[#5A5A40] text-xs font-bold">
               <Brain className="w-4 h-4 text-[#8B9D83]" />
-              <span>{t.cbtSuiteTitle || 'Advanced CBT & Psychological Suite'}</span>
+              <span>{t.cbtSuiteTitle}</span>
             </div>
             <h3 className="text-lg font-black text-[#3A3A3A]">
-              {t.cbtSuiteSubtitle || 'Cognitive Restructuring & Mental Response Tools 🧠✨'}
+              {t.cbtSuiteSubtitle}
             </h3>
             <p className="text-xs text-gray-600 leading-relaxed">
-              {t.cbtSuiteDescription || 'Scientifically proven psychological tools for restructuring thoughts, identifying core beliefs, postponing worry, and building resilience.'}
+              {t.cbtSuiteDescription}
             </p>
           </div>
 
@@ -325,10 +325,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <div className="space-y-1">
               <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                 <span>🧠</span>
-                <span>{t.cbtThoughtRecordsLogHeader || 'CBT Thought Records Log'}</span>
+                <span>{t.cbtThoughtRecordsLogHeader}</span>
               </h4>
               <p className="text-[10px] text-gray-500 font-medium">
-                {t.cbtThoughtRecordsDescription || 'Dissect automatic negative thoughts, identify cognitive distortions, and construct rational alternatives.'}
+                {t.cbtThoughtRecordsDescription}
               </p>
             </div>
 
@@ -348,7 +348,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               className="flex items-center justify-center space-x-1.5 space-x-reverse py-2.5 px-4 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs self-start sm:self-auto"
             >
               <Plus className="w-4 h-4" />
-              <span>{t.newThoughtRecordBtn || 'New Thought Record'}</span>
+              <span>{t.newThoughtRecordBtn}</span>
             </button>
           </div>
 
@@ -356,8 +356,8 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           {allCbtWorksheets.length === 0 ? (
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-12 text-center text-gray-400 text-sm">
               <Brain className="w-12 h-12 mx-auto mb-3 opacity-30 text-[#8B9D83]" />
-              <p className="font-bold text-[#3A3A3A]">{t.noThoughtRecordsLogged || 'No thought records logged yet.'}</p>
-              <p className="text-xs mt-1 text-gray-400">{t.clickNewThoughtRecordHint || 'Click New Thought Record to start analyzing distressing thoughts.'}</p>
+              <p className="font-bold text-[#3A3A3A]">{t.noThoughtRecordsLogged}</p>
+              <p className="text-xs mt-1 text-gray-400">{t.clickNewThoughtRecordHint}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -380,7 +380,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                         {reliefPct > 0 && (
                           <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                            📉 {t.anxietyReliefPrefix || 'Anxiety Relief:'} -{reliefPct}%
+                            📉 {t.anxietyReliefPrefix} -{reliefPct}%
                           </span>
                         )}
                         <button
@@ -394,12 +394,12 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
                     <div className="space-y-2 text-xs">
                       <div>
-                        <span className="text-[10px] font-bold text-gray-400 block">🚩 {t.triggerEventPrefix || 'Trigger Event:'}</span>
+                        <span className="text-[10px] font-bold text-gray-400 block">🚩 {t.triggerEventPrefix}</span>
                         <p className="font-bold text-gray-800">{item.triggerEvent || (t.notSpecified)}</p>
                       </div>
 
                       <div>
-                        <span className="text-[10px] font-bold text-gray-400 block">💭 {t.automaticNegativeThoughtPrefix || 'Automatic Negative Thought:'}</span>
+                        <span className="text-[10px] font-bold text-gray-400 block">💭 {t.automaticNegativeThoughtPrefix}</span>
                         <p className="font-medium text-red-700 bg-red-50/50 p-2 rounded-xl border border-red-100">
                           "{item.negativeThoughts}"
                         </p>
@@ -407,7 +407,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
                       {distortionInfo && (
                         <div>
-                          <span className="text-[10px] font-bold text-gray-400 block">🔍 {t.cognitiveDistortionPrefix || 'Cognitive Distortion:'}</span>
+                          <span className="text-[10px] font-bold text-gray-400 block">🔍 {t.cognitiveDistortionPrefix}</span>
                           <span className="inline-block text-[10px] font-extrabold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">
                             {distortionInfo.name}
                           </span>
@@ -415,15 +415,15 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                       )}
 
                       <div>
-                        <span className="text-[10px] font-bold text-gray-400 block">✨ {t.rationalAlternativePrefix || 'Rational Alternative:'}</span>
+                        <span className="text-[10px] font-bold text-gray-400 block">✨ {t.rationalAlternativePrefix}</span>
                         <p className="font-bold text-emerald-800 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 leading-relaxed">
                           {item.rationalAlternative}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-1 border-t border-[#E2DCC8]/30 text-[10px]">
-                        <span className="text-gray-500">{t.anxietyBeforeLabel || 'Anxiety Before:'} <strong className="text-red-600 font-mono text-xs">{item.emotionBefore}/10</strong></span>
-                        <span className="text-gray-500">{t.anxietyAfterLabel || 'Anxiety After:'} <strong className="text-emerald-600 font-mono text-xs">{item.emotionAfter}/10</strong></span>
+                        <span className="text-gray-500">{t.anxietyBeforeLabel} <strong className="text-red-600 font-mono text-xs">{item.emotionBefore}/10</strong></span>
+                        <span className="text-gray-500">{t.anxietyAfterLabel} <strong className="text-emerald-600 font-mono text-xs">{item.emotionAfter}/10</strong></span>
                       </div>
                     </div>
                   </div>
@@ -443,10 +443,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               <div className="space-y-1">
                 <h4 className="font-black text-base text-[#3A3A3A] flex items-center gap-2">
                   <ArrowDown className="w-5 h-5 text-indigo-600" />
-                  <span>{t.downwardArrowTechniqueHeader || 'Downward Arrow Technique'}</span>
+                  <span>{t.downwardArrowTechniqueHeader}</span>
                 </h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  {t.downwardArrowDescription || 'An exploratory technique uncovering deep core beliefs driving chronic anxiety by asking: "If this thought were true, what would it mean to you?"'}
+                  {t.downwardArrowDescription}
                 </p>
               </div>
 
@@ -463,27 +463,27 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 className="py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>{t.startDownwardArrowBtn || 'Start Downward Arrow'}</span>
+                <span>{t.startDownwardArrowBtn}</span>
               </button>
             </div>
 
             {/* Explanatory Steps Card */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2">
               <div className="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-1 text-xs">
-                <span className="font-extrabold text-indigo-900 block">1️⃣ {t.initialThoughtLabel || 'Initial Thought'}</span>
-                <p className="text-[10px] text-gray-600">{t.initialThoughtExample || 'e.g., "My client took long to reply."'}</p>
+                <span className="font-extrabold text-indigo-900 block">1️⃣ {t.initialThoughtLabel}</span>
+                <p className="text-[10px] text-gray-600">{t.initialThoughtExample}</p>
               </div>
               <div className="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-1 text-xs">
-                <span className="font-extrabold text-indigo-900 block">2️⃣ {t.whatDoesThatMeanLabel || 'What does that mean?'}</span>
-                <p className="text-[10px] text-gray-600">{t.whatDoesThatMeanExample || '"It means they are angry and will cancel."'}</p>
+                <span className="font-extrabold text-indigo-900 block">2️⃣ {t.whatDoesThatMeanLabel}</span>
+                <p className="text-[10px] text-gray-600">{t.whatDoesThatMeanExample}</p>
               </div>
               <div className="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-1 text-xs">
-                <span className="font-extrabold text-indigo-900 block">3️⃣ {t.whatIfCancelledLabel || 'What if it\'s cancelled?'}</span>
-                <p className="text-[10px] text-gray-600">{t.whatIfCancelledExample || '"It means I\'m a failure."'}</p>
+                <span className="font-extrabold text-indigo-900 block">3️⃣ {t.whatIfCancelledLabel}</span>
+                <p className="text-[10px] text-gray-600">{t.whatIfCancelledExample}</p>
               </div>
               <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1 text-xs">
-                <span className="font-extrabold text-emerald-900 block">4️⃣ {t.healthyAlternativeBeliefHeader || 'Healthy Alternative Belief'}</span>
-                <p className="text-[10px] text-gray-600">{t.healthyAlternativeBeliefExample || '"My self-worth isn\'t tied to daily responses."'}</p>
+                <span className="font-extrabold text-emerald-900 block">4️⃣ {t.healthyAlternativeBeliefHeader}</span>
+                <p className="text-[10px] text-gray-600">{t.healthyAlternativeBeliefExample}</p>
               </div>
             </div>
           </div>
@@ -492,33 +492,33 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           {allCbtWorksheets.filter(w => w.exerciseType === 'downward_arrow').length === 0 ? (
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-10 text-center text-gray-400 text-xs">
               <ArrowDown className="w-10 h-10 mx-auto mb-2 opacity-30 text-indigo-600" />
-              <p className="font-bold text-gray-700">{t.noDownwardArrowLogged || 'No downward arrow exercises logged yet.'}</p>
-              <p className="mt-1 text-gray-400">{t.useDownwardArrowHint || 'Use this technique when your negative thoughts conceal deeper unspoken fears.'}</p>
+              <p className="font-bold text-gray-700">{t.noDownwardArrowLogged}</p>
+              <p className="mt-1 text-gray-400">{t.useDownwardArrowHint}</p>
             </div>
           ) : (
             <div className="space-y-4">
               {allCbtWorksheets.filter(w => w.exerciseType === 'downward_arrow').map(item => (
                 <div key={item.id} className="p-5 bg-white border border-[#E2DCC8] rounded-3xl space-y-3">
                   <div className="flex justify-between items-center border-b pb-2 text-xs">
-                    <span className="font-bold text-[#8B9D83]">🗓️ {item.diaryDate} • {t.downwardArrowExerciseTitle || 'Downward Arrow Exercise'}</span>
+                    <span className="font-bold text-[#8B9D83]">🗓️ {item.diaryDate} • {t.downwardArrowExerciseTitle}</span>
                     <button onClick={() => handleDeleteCbtItem(item.id)} className="text-gray-400 hover:text-red-500">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="p-2.5 bg-gray-50 rounded-xl">
-                      <span className="font-bold text-gray-400 block text-[10px]">{t.initialAutomaticThoughtPrefix || 'Initial Automatic Thought:'}</span>
+                      <span className="font-bold text-gray-400 block text-[10px]">{t.initialAutomaticThoughtPrefix}</span>
                       <p className="font-bold text-gray-800">{item.negativeThoughts}</p>
                     </div>
                     {item.coreBelief && (
                       <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-xl">
-                        <span className="font-bold text-indigo-900 block text-[10px]">🔍 {t.discoveredCoreBeliefLabel || 'Discovered Core Belief:'}</span>
+                        <span className="font-bold text-indigo-900 block text-[10px]">🔍 {t.discoveredCoreBeliefLabel}</span>
                         <p className="font-extrabold text-indigo-950">"{item.coreBelief}"</p>
                       </div>
                     )}
                     {item.healthierBelief && (
                       <div className="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl">
-                        <span className="font-bold text-emerald-900 block text-[10px]">🌱 {t.healthyAlternativeBeliefPrefix || 'Healthy Alternative Belief:'}</span>
+                        <span className="font-bold text-emerald-900 block text-[10px]">🌱 {t.healthyAlternativeBeliefPrefix}</span>
                         <p className="font-bold text-emerald-800">{item.healthierBelief}</p>
                       </div>
                     )}
@@ -539,27 +539,27 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <div className="space-y-1">
               <h4 className="font-black text-sm text-[#3A3A3A] flex items-center gap-2">
                 <Archive className="w-5 h-5 text-amber-600" />
-                <span>{t.depositWorryInContainerTitle || 'Deposit Worry in Container'}</span>
+                <span>{t.depositWorryInContainerTitle}</span>
               </h4>
               <p className="text-[10px] text-gray-500">
-                {t.worryBoxDescription || 'If a worrying thought is troubling you now, deposit it here and postpone it until your designated Worry Time.'}
+                {t.worryBoxDescription}
               </p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">{t.whatIsWorryingPrompt || 'What is troubling or worrying you right now?'}</label>
+                <label className="text-xs font-bold text-gray-700 block mb-1">{t.whatIsWorryingPrompt}</label>
                 <textarea
                   rows={3}
                   value={worryText}
                   onChange={(e) => setWorryText(e.target.value)}
-                  placeholder={t.writeWorryPlaceholder || 'Write your worry candidly...'}
+                  placeholder={t.writeWorryPlaceholder}
                   className="w-full p-3 rounded-2xl border border-[#E2DCC8] text-xs font-normal outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">{t.worryClassificationLabel || 'Worry Classification:'}</label>
+                <label className="text-xs font-bold text-gray-700 block mb-1">{t.worryClassificationLabel}</label>
                 <div className="grid grid-cols-2 gap-2 text-xs font-bold">
                   <button
                     type="button"
@@ -570,7 +570,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                         : 'bg-gray-50 text-gray-600'
                     }`}
                   >
-                    🎯 {t.actionableRealProblem || 'Actionable Real Problem'}
+                    🎯 {t.actionableRealProblem}
                   </button>
                   <button
                     type="button"
@@ -581,24 +581,24 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                         : 'bg-gray-50 text-gray-600'
                     }`}
                   >
-                    ☁️ {t.uncontrollableHypothetical || 'Uncontrollable Hypothetical'}
+                    ☁️ {t.uncontrollableHypothetical}
                   </button>
                 </div>
               </div>
 
               {worryCategory === 'actionable' ? (
                 <div className="p-3 bg-amber-50/50 border border-amber-200 rounded-2xl space-y-2 text-xs">
-                  <span className="font-bold text-amber-900 block">{t.actionPlanStepsHeader || 'Action Plan Steps:'}</span>
+                  <span className="font-bold text-amber-900 block">{t.actionPlanStepsHeader}</span>
                   <input
                     type="text"
-                    placeholder={t.actionStep1Placeholder || 'Step 1: Review core outline...'}
+                    placeholder={t.actionStep1Placeholder}
                     value={worryStep1}
                     onChange={(e) => setWorryStep1(e.target.value)}
                     className="w-full p-2 bg-white border rounded-xl text-xs"
                   />
                   <input
                     type="text"
-                    placeholder={t.actionStep2Placeholder || 'Step 2: Practice calming breath...'}
+                    placeholder={t.actionStep2Placeholder}
                     value={worryStep2}
                     onChange={(e) => setWorryStep2(e.target.value)}
                     className="w-full p-2 bg-white border rounded-xl text-xs"
@@ -606,9 +606,9 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 </div>
               ) : (
                 <div className="p-3 bg-sky-50 border border-sky-200 rounded-2xl text-xs space-y-1">
-                  <span className="font-extrabold text-sky-900 block">💡 {t.acceptancePrincipleHeader || 'Acceptance & Letting Go:'}</span>
+                  <span className="font-extrabold text-sky-900 block">💡 {t.acceptancePrincipleHeader}</span>
                   <p className="text-[10px] text-sky-800 leading-relaxed">
-                    {t.uncontrollableWorryAdvice || "Since this fear is beyond your direct control, rumination won't change reality. Close the box and refocus on your present task."}
+                    {t.uncontrollableWorryAdvice}
                   </p>
                 </div>
               )}
@@ -620,7 +620,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   const newWorry: CBTWorksheet = {
                     id: `worry-${Date.now()}`,
                     createdAt: new Date().toISOString(),
-                    triggerEvent: t.worryBoxTitle || 'Worry Box',
+                    triggerEvent: t.worryBoxTitle,
                     negativeThoughts: worryText,
                     cognitiveDistortion: worryCategory === 'actionable' ? (t.realProblemLabel) : (t.uncontrollableFearLabel),
                     rationalAlternative: worryCategory === 'actionable'
@@ -640,7 +640,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
                 <Archive className="w-4 h-4" />
-                <span>{t.lockThoughtInContainerBtn || 'Lock Thought in Container 🔒'}</span>
+                <span>{t.lockThoughtInContainerBtn}</span>
               </button>
             </div>
           </div>
@@ -650,15 +650,15 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <div className="space-y-2">
               <h4 className="font-black text-sm text-[#3A3A3A] flex items-center gap-2">
                 <Clock className="w-5 h-5 text-amber-600" />
-                <span>{t.dailyWorryTimeHeader || 'Daily Worry Time'}</span>
+                <span>{t.dailyWorryTimeHeader}</span>
               </h4>
               <p className="text-xs text-gray-500 leading-relaxed">
-                {t.dailyWorryTimeDescription || 'Instead of worrying all day, dedicate 15 minutes daily to review and dissect deposited worries.'}
+                {t.dailyWorryTimeDescription}
               </p>
             </div>
 
             <div className="bg-[#F9F7F2] border border-[#E2DCC8] rounded-3xl p-6 text-center space-y-3">
-              <span className="text-xs font-bold text-gray-500 block">{t.worryCountdownLabel || 'Countdown for Dissection Session:'}</span>
+              <span className="text-xs font-bold text-gray-500 block">{t.worryCountdownLabel}</span>
               <div className="font-mono text-4xl font-black text-amber-700 tracking-wider">
                 {Math.floor(worryTimerSeconds / 60).toString().padStart(2, '0')}:
                 {(worryTimerSeconds % 60).toString().padStart(2, '0')}
@@ -684,14 +684,14 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   }}
                   className="py-2 px-3 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200"
                 >
-                  {t.resetTimerBtn || 'Reset'}
+                  {t.resetTimerBtn}
                 </button>
               </div>
             </div>
 
             <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200 text-[10px] text-amber-900 space-y-1">
-              <span className="font-bold block">💡 {t.goldenRuleOfWorryHeader || 'Golden Rule of Worry:'}</span>
-              <p>{t.goldenRuleOfWorryText || 'If a worry arises outside Worry Time, tell yourself: "I logged this and will review it during my dedicated Worry Time."'}</p>
+              <span className="font-bold block">💡 {t.goldenRuleOfWorryHeader}</span>
+              <p>{t.goldenRuleOfWorryText}</p>
             </div>
           </div>
 
@@ -706,10 +706,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               <div className="space-y-1">
                 <h4 className="font-black text-base text-[#3A3A3A] flex items-center gap-2">
                   <Layers className="w-5 h-5 text-sky-600" />
-                  <span>{t.exposureLadderHeader || 'Exposure Hierarchy Ladder'}</span>
+                  <span>{t.exposureLadderHeader}</span>
                 </h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  {t.exposureLadderDescription || 'Exposure therapy technique to overcome anxiety or phobias by breaking scenarios into progressive steps from easiest to most challenging.'}
+                  {t.exposureLadderDescription}
                 </p>
               </div>
 
@@ -718,7 +718,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 className="py-2.5 px-4 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
               >
                 <Plus className="w-4 h-4" />
-                <span>{t.createNewExposureLadderBtn || 'Create New Exposure Ladder'}</span>
+                <span>{t.createNewExposureLadderBtn}</span>
               </button>
             </div>
           </div>
@@ -727,8 +727,8 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           {allCbtWorksheets.filter(w => w.exerciseType === 'exposure_ladder').length === 0 ? (
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-10 text-center text-gray-400 text-xs">
               <Layers className="w-10 h-10 mx-auto mb-2 opacity-30 text-sky-600" />
-              <p className="font-bold text-gray-700">{t.noExposureLaddersCreated || 'No exposure hierarchy ladder created yet.'}</p>
-              <p className="mt-1 text-gray-400">{t.clickCreateExposureLadderHint || 'Click Create New Exposure Ladder to break large fears into manageable steps.'}</p>
+              <p className="font-bold text-gray-700">{t.noExposureLaddersCreated}</p>
+              <p className="mt-1 text-gray-400">{t.clickCreateExposureLadderHint}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -751,7 +751,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                           <span className="font-bold text-gray-800">{step.situation}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-gray-400">{t.expectedIntensityLabel || 'Expected Intensity:'}</span>
+                          <span className="text-[10px] font-bold text-gray-400">{t.expectedIntensityLabel}</span>
                           <span className="font-mono font-extrabold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">
                             {step.expectedAnxiety}%
                           </span>
@@ -773,10 +773,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <div className="space-y-1">
               <h4 className="font-black text-sm text-[#3A3A3A] flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-pink-600" />
-                <span>{t.copingCardsHeader || 'Coping Cards & Reminders'}</span>
+                <span>{t.copingCardsHeader}</span>
               </h4>
               <p className="text-[10px] text-gray-500">
-                {t.copingCardsDescription || 'Balanced reminder statements derived from your exercises for quick review during moments of anxiety.'}
+                {t.copingCardsDescription}
               </p>
             </div>
 
@@ -785,7 +785,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               className="py-2 px-3.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-all self-start sm:self-auto"
             >
               <Plus className="w-4 h-4" />
-              <span>{t.addCopingCardBtn || 'Add Coping Card'}</span>
+              <span>{t.addCopingCardBtn}</span>
             </button>
           </div>
 
@@ -798,7 +798,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               >
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] font-extrabold text-pink-700 bg-pink-100/70 px-2.5 py-0.5 rounded-full border border-pink-200">
-                    🛡️ {t.copingCardBadge || 'Coping Card'}
+                    🛡️ {t.copingCardBadge}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -810,7 +810,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                         window.speechSynthesis.speak(utterance);
                       }}
                       className="p-1 bg-white/80 hover:bg-pink-100 text-pink-600 rounded-lg text-xs transition-colors cursor-pointer border border-pink-200"
-                      title={t.listenClearlyTooltip || 'Listen clearly 🔊'}
+                      title={t.listenClearlyTooltip}
                     >
                       <Volume2 className="w-3.5 h-3.5" />
                     </button>
@@ -821,7 +821,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                         alert(t.copingCardCopied);
                       }}
                       className="p-1 bg-white/80 hover:bg-pink-100 text-pink-600 rounded-lg text-xs transition-colors cursor-pointer border border-pink-200"
-                      title={t.copyTextTooltip || 'Copy text 📋'}
+                      title={t.copyTextTooltip}
                     >
                       <Copy className="w-3.5 h-3.5" />
                     </button>
@@ -844,10 +844,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               🧭
             </div>
             <h4 className="font-black text-base text-[#3A3A3A]">
-              {t.sensoryGroundingGuideHeader || '5-4-3-2-1 Sensory Grounding Guide'}
+              {t.sensoryGroundingGuideHeader}
             </h4>
             <p className="text-xs text-gray-500 max-w-lg mx-auto">
-              {t.cbtGroundingDescription || 'A guided sensory grounding exercise connecting your mind to the present moment to interrupt panic and restore calm.'}
+              {t.cbtGroundingDescription}
             </p>
           </div>
 
@@ -867,7 +867,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="space-y-4">
             {groundingStep === 1 && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding5SeePrompt || 'Look around and name 5 things you can see:'}</p>
+                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding5SeePrompt}</p>
                 {groundingInputs.see.map((val, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-teal-100 text-teal-800 text-xs font-bold flex items-center justify-center shrink-0">
@@ -875,7 +875,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     </span>
                     <input
                       type="text"
-                      placeholder={`${t.itemISeePrefix || 'Item I see'} #${idx + 1}`}
+                      placeholder={`${t.itemISeePrefix} #${idx + 1}`}
                       value={val}
                       onChange={(e) => {
                         const updated = [...groundingInputs.see];
@@ -891,7 +891,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {groundingStep === 2 && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding4TouchPrompt || 'Focus on touch and name 4 things you can feel right now:'}</p>
+                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding4TouchPrompt}</p>
                 {groundingInputs.touch.map((val, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-teal-100 text-teal-800 text-xs font-bold flex items-center justify-center shrink-0">
@@ -899,7 +899,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     </span>
                     <input
                       type="text"
-                      placeholder={`${t.itemITouchPrefix || 'Item I touch'} #${idx + 1}`}
+                      placeholder={`${t.itemITouchPrefix} #${idx + 1}`}
                       value={val}
                       onChange={(e) => {
                         const updated = [...groundingInputs.touch];
@@ -915,7 +915,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {groundingStep === 3 && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding3HearPrompt || 'Listen quietly and name 3 sounds you hear around you:'}</p>
+                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding3HearPrompt}</p>
                 {groundingInputs.hear.map((val, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-teal-100 text-teal-800 text-xs font-bold flex items-center justify-center shrink-0">
@@ -923,7 +923,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     </span>
                     <input
                       type="text"
-                      placeholder={`${t.soundIHearPrefix || 'Sound I hear'} #${idx + 1}`}
+                      placeholder={`${t.soundIHearPrefix} #${idx + 1}`}
                       value={val}
                       onChange={(e) => {
                         const updated = [...groundingInputs.hear];
@@ -939,7 +939,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {groundingStep === 4 && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding2SmellPrompt || 'Notice scents and name 2 things you can smell:'}</p>
+                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding2SmellPrompt}</p>
                 {groundingInputs.smell.map((val, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-teal-100 text-teal-800 text-xs font-bold flex items-center justify-center shrink-0">
@@ -947,7 +947,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     </span>
                     <input
                       type="text"
-                      placeholder={`${t.scentISmellPrefix || 'Scent'} #${idx + 1}`}
+                      placeholder={`${t.scentISmellPrefix} #${idx + 1}`}
                       value={val}
                       onChange={(e) => {
                         const updated = [...groundingInputs.smell];
@@ -963,10 +963,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {groundingStep === 5 && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding1TastePrompt || 'Name 1 thing you can taste or remember the taste of:'}</p>
+                <p className="text-xs text-gray-700 font-bold">{t.cbtGrounding1TastePrompt}</p>
                 <input
                   type="text"
-                  placeholder={t.cbtGroundingTastePlaceholder || 'Coffee flavor, water taste, mint...'}
+                  placeholder={t.cbtGroundingTastePlaceholder}
                   value={groundingInputs.taste[0]}
                   onChange={(e) => setGroundingInputs({ ...groundingInputs, taste: [e.target.value] })}
                   className="w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-bold outline-none focus:border-teal-500"
@@ -982,7 +982,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 onClick={() => setGroundingStep(groundingStep - 1)}
                 className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold cursor-pointer"
               >
-                {t.previousStepArrow || '← Previous Step'}
+                {t.previousStepArrow}
               </button>
             ) : <div />}
 
@@ -991,7 +991,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 onClick={() => setGroundingStep(groundingStep + 1)}
                 className="py-2 px-5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
               >
-                {t.nextStepArrow || 'Next Step →'}
+                {t.nextStepArrow}
               </button>
             ) : (
               <button
@@ -1001,7 +1001,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 }}
                 className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
               >
-                {t.completeGroundingBtn || '✓ Complete Grounding Exercise'}
+                {t.completeGroundingBtn}
               </button>
             )}
           </div>
@@ -1014,31 +1014,31 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 space-y-2">
-              <span className="text-[10px] font-bold text-gray-400 block">{t.totalCompletedCbtExercises || 'Total Completed CBT Exercises'}</span>
+              <span className="text-[10px] font-bold text-gray-400 block">{t.totalCompletedCbtExercises}</span>
               <span className="text-2xl font-black text-purple-700 font-mono">{allCbtWorksheets.length}</span>
-              <p className="text-[10px] text-gray-500">{t.documentedCognitiveSessions || 'Documented cognitive sessions'}</p>
+              <p className="text-[10px] text-gray-500">{t.documentedCognitiveSessions}</p>
             </div>
 
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 space-y-2">
-              <span className="text-[10px] font-bold text-gray-400 block">{t.averageAnxietyRelief || 'Average Anxiety Relief'}</span>
+              <span className="text-[10px] font-bold text-gray-400 block">{t.averageAnxietyRelief}</span>
               {(() => {
                 const totalRelief = allCbtWorksheets.reduce((acc, w) => acc + (w.emotionBefore - w.emotionAfter), 0);
                 const avg = allCbtWorksheets.length > 0 ? (totalRelief / allCbtWorksheets.length).toFixed(1) : 0;
                 return (
                   <div>
-                    <span className="text-2xl font-black text-emerald-600 font-mono">-{avg} {t.pointsUnit || 'pts'}</span>
-                    <p className="text-[10px] text-gray-500">{t.emotionalImprovementRate || 'Emotional response improvement rate'}</p>
+                    <span className="text-2xl font-black text-emerald-600 font-mono">-{avg} {t.pointsUnit}</span>
+                    <p className="text-[10px] text-gray-500">{t.emotionalImprovementRate}</p>
                   </div>
                 );
               })()}
             </div>
 
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 space-y-2">
-              <span className="text-[10px] font-bold text-gray-400 block">{t.favoriteCopingCards || 'Favorite Coping Cards'}</span>
+              <span className="text-[10px] font-bold text-gray-400 block">{t.favoriteCopingCards}</span>
               <span className="text-2xl font-black text-pink-600 font-mono">
                 {PREBUILT_COPING_CARDS.length + customCards.length}
               </span>
-              <p className="text-[10px] text-gray-500">{t.supportiveCardsDistress || 'Supportive cards during distress'}</p>
+              <p className="text-[10px] text-gray-500">{t.supportiveCardsDistress}</p>
             </div>
 
           </div>
@@ -1047,7 +1047,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
           <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 space-y-4">
             <h4 className="font-bold text-sm text-[#3A3A3A] flex items-center gap-2">
               <BarChart2 className="w-5 h-5 text-purple-600" />
-              <span>{t.cognitiveDistortionsDistribution || 'Cognitive Distortions Distribution'}</span>
+              <span>{t.cognitiveDistortionsDistribution}</span>
             </h4>
 
             <div className="space-y-3">
@@ -1059,7 +1059,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   <div key={dist.id} className="space-y-1">
                     <div className="flex justify-between items-center text-xs font-bold text-gray-700">
                       <span>{dist.name}</span>
-                      <span className="font-mono text-purple-700">{count} {t.timesUnit || 'times'} ({pct}%)</span>
+                      <span className="font-mono text-purple-700">{count} {t.timesUnit} ({pct}%)</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                       <div
@@ -1089,12 +1089,12 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {trStep === 1 && (
               <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep1TriggerLabel || 'Step 1: Triggering Event / Situation'}</label>
+                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep1TriggerLabel}</label>
                 <textarea
                   rows={3}
                   value={trTrigger}
                   onChange={(e) => setTrTrigger(e.target.value)}
-                  placeholder={t.cbtStep1Placeholder || 'What situation happened before you felt distressed?'}
+                  placeholder={t.cbtStep1Placeholder}
                   className="w-full p-3 border rounded-2xl text-xs font-normal outline-none focus:border-[#8B9D83]"
                 />
               </div>
@@ -1102,12 +1102,12 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {trStep === 2 && (
               <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep2ThoughtLabel || 'Step 2: Automatic Negative Thought'}</label>
+                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep2ThoughtLabel}</label>
                 <textarea
                   rows={3}
                   value={trNegativeThought}
                   onChange={(e) => setTrNegativeThought(e.target.value)}
-                  placeholder={t.cbtStep2Placeholder || 'What automatic thought instantly crossed your mind?'}
+                  placeholder={t.cbtStep2Placeholder}
                   className="w-full p-3 border rounded-2xl text-xs font-normal outline-none focus:border-[#8B9D83]"
                 />
               </div>
@@ -1115,7 +1115,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {trStep === 3 && (
               <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep3DistortionLabel || 'Step 3: Select Potential Cognitive Distortion'}</label>
+                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep3DistortionLabel}</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
                   {localizedDistortions.map(dist => (
                     <button
@@ -1139,7 +1139,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             {trStep === 4 && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold text-gray-700 block">{t.cbtStep4AlternativeLabel || 'Step 4: Rational Balanced Alternative'}</label>
+                  <label className="text-xs font-bold text-gray-700 block">{t.cbtStep4AlternativeLabel}</label>
                   <button
                     type="button"
                     onClick={handleAiAnalyzeThought}
@@ -1155,7 +1155,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   rows={4}
                   value={trRationalAlt}
                   onChange={(e) => setTrRationalAlt(e.target.value)}
-                  placeholder={t.cbtStep4Placeholder || 'Write a balanced, rational alternative grounded in facts...'}
+                  placeholder={t.cbtStep4Placeholder}
                   className="w-full p-3 border rounded-2xl text-xs font-normal outline-none focus:border-[#8B9D83]"
                 />
               </div>
@@ -1163,7 +1163,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {trStep === 5 && (
               <div className="space-y-4">
-                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep5RatingLabel || 'Step 5: Rate Anxiety After Exercise (0 - 10)'}</label>
+                <label className="text-xs font-bold text-gray-700 block">{t.cbtStep5RatingLabel}</label>
                 <div className="p-4 bg-gray-50 rounded-2xl border space-y-2 text-center">
                   <span className="text-2xl font-black font-mono text-emerald-600">{trEmotionAfter} / 10</span>
                   <input
@@ -1185,7 +1185,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   onClick={() => setTrStep(trStep - 1)}
                   className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold"
                 >
-                  {t.previousBtn || 'Previous'}
+                  {t.previousBtn}
                 </button>
               ) : <div />}
 
@@ -1195,7 +1195,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   onClick={() => setTrStep(trStep + 1)}
                   className="py-2 px-5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold shadow-xs"
                 >
-                  {t.nextBtn || 'Next'}
+                  {t.nextBtn}
                 </button>
               ) : (
                 <button
@@ -1219,7 +1219,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   }}
                   className="py-2.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  💾 {t.saveExerciseBtn || 'Save Exercise'}
+                  💾 {t.saveExerciseBtn}
                 </button>
               )}
             </div>
@@ -1241,12 +1241,12 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {daStep === 1 && (
               <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-700 block">{t.initialDistressingThoughtLabel || 'Initial Distressing Thought:'}</label>
+                <label className="text-xs font-bold text-gray-700 block">{t.initialDistressingThoughtLabel}</label>
                 <textarea
                   rows={3}
                   value={daTrigger}
                   onChange={(e) => setDaTrigger(e.target.value)}
-                  placeholder={t.initialThoughtPlaceholder || 'Write initial thought...'}
+                  placeholder={t.initialThoughtPlaceholder}
                   className="w-full p-3 border rounded-2xl text-xs font-normal outline-none focus:border-indigo-500"
                 />
               </div>
@@ -1254,12 +1254,12 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
 
             {daStep === 2 && (
               <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-700 block">{t.worstMeaningQuestion || 'If that were true, what would be the worst meaning to you?'}</label>
+                <label className="text-xs font-bold text-gray-700 block">{t.worstMeaningQuestion}</label>
                 <textarea
                   rows={3}
                   value={daLevel1}
                   onChange={(e) => setDaLevel1(e.target.value)}
-                  placeholder={t.worstMeaningPlaceholder || 'e.g., It means they are ignoring me...'}
+                  placeholder={t.worstMeaningPlaceholder}
                   className="w-full p-3 border rounded-2xl text-xs font-normal outline-none focus:border-indigo-500"
                 />
               </div>
@@ -1268,23 +1268,23 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             {daStep === 3 && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">🔍 {t.discoveredCoreBeliefLabel || 'Discovered Core Belief:'}</label>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">🔍 {t.discoveredCoreBeliefLabel}</label>
                   <input
                     type="text"
                     value={daCoreBelief}
                     onChange={(e) => setDaCoreBelief(e.target.value)}
-                    placeholder={t.discoveredCoreBeliefPlaceholder || 'e.g., I am unlovable or unworthy of respect...'}
+                    placeholder={t.discoveredCoreBeliefPlaceholder}
                     className="w-full p-3 border rounded-2xl text-xs font-bold text-indigo-900 bg-indigo-50/50"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">🌱 {t.healthyAlternativeBeliefLabel || 'Healthy Alternative Belief:'}</label>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">🌱 {t.healthyAlternativeBeliefLabel}</label>
                   <textarea
                     rows={3}
                     value={daHealthyBelief}
                     onChange={(e) => setDaHealthyBelief(e.target.value)}
-                    placeholder={t.healthyAlternativeBeliefPlaceholder || 'Formulate a balanced belief...'}
+                    placeholder={t.healthyAlternativeBeliefPlaceholder}
                     className="w-full p-3 border rounded-2xl text-xs font-bold text-emerald-900 bg-emerald-50/50"
                   />
                 </div>
@@ -1298,7 +1298,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   onClick={() => setDaStep(daStep - 1)}
                   className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold"
                 >
-                  {t.previousBtn || 'Previous'}
+                  {t.previousBtn}
                 </button>
               ) : <div />}
 
@@ -1308,7 +1308,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   onClick={() => setDaStep(daStep + 1)}
                   className="py-2 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs"
                 >
-                  {t.nextBtn || 'Next'}
+                  {t.nextBtn}
                 </button>
               ) : (
                 <button
@@ -1318,9 +1318,9 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     const newArrow: CBTWorksheet = {
                       id: `da-${Date.now()}`,
                       createdAt: new Date().toISOString(),
-                      triggerEvent: t.downwardArrowExercise || 'Downward Arrow',
+                      triggerEvent: t.downwardArrowExercise,
                       negativeThoughts: daTrigger,
-                      cognitiveDistortion: t.deepCoreBelief || 'Deep core belief',
+                      cognitiveDistortion: t.deepCoreBelief,
                       rationalAlternative: daHealthyBelief || (t.balancedBeliefDefault),
                       emotionBefore: 9,
                       emotionAfter: 4,
@@ -1334,7 +1334,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   }}
                   className="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  💾 {t.saveCoreBeliefBtn || 'Save Core Belief Exercise'}
+                  💾 {t.saveCoreBeliefBtn}
                 </button>
               )}
             </div>
@@ -1349,16 +1349,16 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <div className="flex justify-between items-center border-b pb-3">
               <span className="text-xs font-black text-sky-900 flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-sky-600" />
-                <span>{t.createExposureLadderTitle || 'Create Exposure Hierarchy Ladder'}</span>
+                <span>{t.createExposureLadderTitle}</span>
               </span>
               <button onClick={() => setShowExposureWizard(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs font-bold text-gray-700 block">{t.ladderTitleLabel || 'Ladder Title (Target Fear or Situation):'}</label>
+              <label className="text-xs font-bold text-gray-700 block">{t.ladderTitleLabel}</label>
               <input
                 type="text"
-                placeholder={t.ladderTargetPlaceholder || 'e.g. Overcoming anxiety...'}
+                placeholder={t.ladderTargetPlaceholder}
                 value={expTitle}
                 onChange={(e) => setExpTitle(e.target.value)}
                 className="w-full p-2.5 border rounded-2xl text-xs font-bold outline-none focus:border-sky-500"
@@ -1366,7 +1366,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             </div>
 
             <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-              <label className="text-xs font-bold text-gray-700 block">{t.exposureStepsLabel || 'Progressive Exposure Steps (Easiest to Hardest):'}</label>
+              <label className="text-xs font-bold text-gray-700 block">{t.exposureStepsLabel}</label>
               {expStepsInput.map((step, idx) => (
                 <div key={idx} className="p-3 bg-gray-50 border rounded-2xl flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-sky-100 text-sky-800 text-xs font-extrabold flex items-center justify-center shrink-0">
@@ -1374,7 +1374,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                   </span>
                   <input
                     type="text"
-                    placeholder={`${t.stepLabel || 'Step'} ${idx + 1}`}
+                    placeholder={`${t.stepLabel} ${idx + 1}`}
                     value={step.situation}
                     onChange={(e) => {
                       const updated = [...expStepsInput];
@@ -1384,7 +1384,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     className="flex-1 p-2 bg-white border rounded-xl text-xs font-medium"
                   />
                   <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-[10px] text-gray-400">{t.intensityPercentLabel || 'Intensity %:'}</span>
+                    <span className="text-[10px] text-gray-400">{t.intensityPercentLabel}</span>
                     <input
                       type="number"
                       min="10"
@@ -1409,7 +1409,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 onClick={() => setExpStepsInput([...expStepsInput, { situation: '', expectedAnxiety: 60 }])}
                 className="py-1.5 px-3 bg-sky-50 text-sky-700 border border-sky-200 rounded-xl text-xs font-bold"
               >
-                + {t.addStepBtn || 'Add Step'}
+                + {t.addStepBtn}
               </button>
 
               <button
@@ -1420,9 +1420,9 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     id: `exp-${Date.now()}`,
                     createdAt: new Date().toISOString(),
                     triggerEvent: expTitle,
-                    negativeThoughts: t.exposureLadder || 'Exposure ladder',
-                    cognitiveDistortion: t.gradualExposure || 'Gradual exposure',
-                    rationalAlternative: t.gradualExposureRationalPrompt || 'Gradual exposure proves safety to the brain and reduces anxiety.',
+                    negativeThoughts: t.exposureLadder,
+                    cognitiveDistortion: t.gradualExposure,
+                    rationalAlternative: t.gradualExposureRationalPrompt,
                     emotionBefore: 8,
                     emotionAfter: 3,
                     exerciseType: 'exposure_ladder',
@@ -1440,7 +1440,7 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 }}
                 className="py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
               >
-                💾 {t.saveExposureLadderBtn || 'Save Exposure Ladder'}
+                💾 {t.saveExposureLadderBtn}
               </button>
             </div>
           </div>
@@ -1454,17 +1454,17 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
             <div className="flex justify-between items-center border-b pb-3">
               <span className="text-xs font-black text-pink-900 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-pink-600" />
-                <span>{t.addCustomCopingCardTitle || 'Add Custom Coping Card'}</span>
+                <span>{t.addCustomCopingCardTitle}</span>
               </span>
               <button type="button" onClick={() => setShowAddCardModal(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">{t.inspirationalCardTitleLabel || 'Inspirational Card Title:'}</label>
+                <label className="text-xs font-bold text-gray-700 block mb-1">{t.inspirationalCardTitleLabel}</label>
                 <input
                   type="text"
-                  placeholder={t.copingCardTitlePlaceholder || 'e.g. Safety phrase...'}
+                  placeholder={t.copingCardTitlePlaceholder}
                   value={newCardTitle}
                   onChange={(e) => setNewCardTitle(e.target.value)}
                   className="w-full p-2.5 border rounded-2xl text-xs font-bold outline-none focus:border-pink-500"
@@ -1472,10 +1472,10 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">{t.copingCardStatementLabel || 'Card Statement or Balanced Truth:'}</label>
+                <label className="text-xs font-bold text-gray-700 block mb-1">{t.copingCardStatementLabel}</label>
                 <textarea
                   rows={3}
-                  placeholder={t.copingCardStatementPlaceholder || 'Write statement that restores peace...'}
+                  placeholder={t.copingCardStatementPlaceholder}
                   value={newCardText}
                   onChange={(e) => setNewCardText(e.target.value)}
                   className="w-full p-2.5 border rounded-2xl text-xs font-medium outline-none focus:border-pink-500"
@@ -1489,13 +1489,13 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                 onClick={() => setShowAddCardModal(false)}
                 className="py-2 px-4 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold"
               >
-                {t.cancelBtn || 'Cancel'}
+                {t.cancelBtn}
               </button>
               <button
                 type="submit"
                 className="py-2 px-5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold cursor-pointer"
               >
-                {t.saveCardBtn || 'Save Card 💖'}
+                {t.saveCardBtn}
               </button>
             </div>
           </form>

@@ -790,7 +790,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
   return [
     {
       id: 'habit-1',
-      name: t.habitWater2L || 'Drink 2L Warm Water',
+      name: t.habitWater2L,
       category: 'health',
       frequency: 'daily',
       reminderTime: '08:00',
@@ -804,7 +804,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
     },
     {
       id: 'habit-2',
-      name: t.habitMeditation10min || '10 min Meditation & Muscle Relaxation',
+      name: t.habitMeditation10min,
       category: 'mind',
       frequency: 'daily',
       reminderTime: '07:30',
@@ -817,7 +817,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
     },
     {
       id: 'habit-3',
-      name: t.habitBriskWalk || 'Brisk Walking or Home Workout',
+      name: t.habitBriskWalk,
       category: 'sport',
       frequency: 'daily',
       reminderTime: '17:00',
@@ -831,7 +831,7 @@ export function getInitialHabits(lang: AppLanguage): Habit[] {
     },
     {
       id: 'habit-4',
-      name: t.habitRead10Pages || 'Read 10 Pages of a Book',
+      name: t.habitRead10Pages,
       category: 'culture',
       frequency: 'daily',
       reminderTime: '21:00',
@@ -852,26 +852,26 @@ export function getInitialGratitudeCards(lang: AppLanguage): GratitudeCard[] {
     {
       id: 'grat-1',
       color: 'green',
-      text: t.gratitudeCardSample1 || 'Watching the warm morning sun rise and starting a brand new day with peace and hope',
+      text: t.gratitudeCardSample1,
       category: 'life',
       createdAt: '2026-07-14T08:00:00.000Z',
-      tags: [t.tag_gratitude || 'gratitude', t.tag_morning || 'morning']
+      tags: [t.tag_gratitude, t.tag_morning]
     },
     {
       id: 'grat-2',
       color: 'peach',
-      text: t.gratitudeCardSample2 || 'Drinking a hot, perfect cup of coffee with my family and having a warm chat',
+      text: t.gratitudeCardSample2,
       category: 'relationships',
       createdAt: '2026-07-15T09:30:00.000Z',
-      tags: [t.tag_family || 'family', t.tag_warmth || 'warmth']
+      tags: [t.tag_family, t.tag_warmth]
     },
     {
       id: 'grat-3',
       color: 'lavender',
-      text: t.gratitudeCardSample3 || 'Finding solutions to a tough coding challenge and feeling the joy of personal progress',
+      text: t.gratitudeCardSample3,
       category: 'work',
       createdAt: '2026-07-16T14:15:00.000Z',
-      tags: [t.tag_achievement || 'achievement', t.tag_growth || 'growth']
+      tags: [t.tag_achievement, t.tag_growth]
     }
   ];
 }
@@ -890,18 +890,18 @@ export function getReminderTitle(rem: any, t: any): string {
 
 function localizeHabit(habit: Habit, t: any): Habit {
   if (!habit) return habit;
-  const name = habit.name || '';
+  const name = habit.name;
   if (name.includes('ماء') || name.includes('Water') || name.includes('Eau') || name.includes('Wasser') || name.includes('Su') || name.includes('Agua') || name.includes('Acqua') || name.includes('Вод') || name.includes('水') || name.includes('पानी')) {
-    return { ...habit, name: t.habitWaterName || 'Drink 2L Water' };
+    return { ...habit, name: t.habitWaterName };
   }
   if (name.includes('تأمل') || name.includes('Meditation') || name.includes('Méditation') || name.includes('Meditación') || name.includes('Meditazione') || name.includes('Медитация') || name.includes('瞑想') || name.includes('冥想') || name.includes('ध्यान')) {
-    return { ...habit, name: t.habitMeditationName || '10 min Meditation & Relaxation' };
+    return { ...habit, name: t.habitMeditationName };
   }
   if (name.includes('مشي') || name.includes('Walk') || name.includes('Marche') || name.includes('Gehen') || name.includes('Caminar') || name.includes('Camminata') || name.includes('Yürüyüş') || name.includes('Caminhada') || name.includes('Ходьба') || name.includes('ウォーキング') || name.includes('散步') || name.includes('सैर')) {
-    return { ...habit, name: t.habitWalkingName || 'Brisk Walking / Workout' };
+    return { ...habit, name: t.habitWalkingName };
   }
   if (name.includes('قراءة') || name.includes('Read') || name.includes('Lecture') || name.includes('Lesen') || name.includes('Leer') || name.includes('Leggere') || name.includes('Okuma') || name.includes('Leitura') || name.includes('Чтение') || name.includes('読書') || name.includes('阅读') || name.includes('पढ़ना')) {
-    return { ...habit, name: t.habitReadingName || 'Read 10 Pages of a Book' };
+    return { ...habit, name: t.habitReadingName };
   }
   return habit;
 }
@@ -909,13 +909,13 @@ function localizeHabit(habit: Habit, t: any): Habit {
 function localizeGratitudeCard(card: GratitudeCard, t: any): GratitudeCard {
   if (!card) return card;
   if (card.id === 'grat-1') {
-    return { ...card, text: t.gratitudeDemoText1 || card.text, tags: [t.tag_gratitude || 'gratitude', t.tag_morning || 'morning'] };
+    return { ...card, text: t.gratitudeDemoText1 || card.text, tags: [t.tag_gratitude, t.tag_morning] };
   }
   if (card.id === 'grat-2') {
-    return { ...card, text: t.gratitudeDemoText2 || card.text, tags: [t.tag_family || 'family', t.tag_warmth || 'warmth'] };
+    return { ...card, text: t.gratitudeDemoText2 || card.text, tags: [t.tag_family, t.tag_warmth] };
   }
   if (card.id === 'grat-3') {
-    return { ...card, text: t.gratitudeDemoText3 || card.text, tags: [t.tag_achievement || 'achievement', t.tag_growth || 'growth'] };
+    return { ...card, text: t.gratitudeDemoText3 || card.text, tags: [t.tag_achievement, t.tag_growth] };
   }
   return card;
 }
@@ -927,8 +927,8 @@ function localizeDiaryEntry(entry: DiaryEntry, t: any): DiaryEntry {
       ...entry,
       title: t.diaryDemoTitle1 || entry.title,
       content: t.diaryDemoContent1 || entry.content,
-      moods: [t.mood_anxious || 'Anxious', t.mood_grateful || 'Grateful', t.mood_happy || 'Happy'],
-      tags: [t.tag_study || 'study', t.tag_family || 'family', t.tag_hope || 'hope']
+      moods: [t.mood_anxious, t.mood_grateful, t.mood_happy],
+      tags: [t.tag_study, t.tag_family, t.tag_hope]
     };
   }
   if (entry.id === 'diary-2') {
@@ -936,8 +936,8 @@ function localizeDiaryEntry(entry: DiaryEntry, t: any): DiaryEntry {
       ...entry,
       title: t.diaryDemoTitle2 || entry.title,
       content: t.diaryDemoContent2 || entry.content,
-      moods: [t.mood_exhausted || 'Exhausted', t.mood_anxious || 'Anxious', t.mood_sad || 'Sad'],
-      tags: [t.tag_insomnia || 'insomnia', t.tag_anxiety || 'anxiety', t.tag_challenge || 'challenge']
+      moods: [t.mood_exhausted, t.mood_anxious, t.mood_sad],
+      tags: [t.tag_insomnia, t.tag_anxiety, t.tag_challenge]
     };
   }
   if (entry.id === 'diary-3') {
@@ -945,8 +945,8 @@ function localizeDiaryEntry(entry: DiaryEntry, t: any): DiaryEntry {
       ...entry,
       title: t.diaryDemoTitle3 || entry.title,
       content: t.diaryDemoContent3 || entry.content,
-      moods: [t.mood_joyful || 'Joyful', t.mood_excited || 'Excited', t.mood_satisfied || 'Satisfied'],
-      tags: [t.tag_achievement || 'achievement', t.tag_reading || 'reading', t.tag_happiness || 'happiness']
+      moods: [t.mood_joyful, t.mood_excited, t.mood_satisfied],
+      tags: [t.tag_achievement, t.tag_reading, t.tag_happiness]
     };
   }
   return entry;
@@ -1599,7 +1599,7 @@ export default function App() {
       });
       const data = await response.json();
       if (data.success) {
-        setCloudSyncMessage(data.message || `${t.cloudSyncSuccess || "Cloud sync successful"}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
+        setCloudSyncMessage(data.message || `${t.cloudSyncSuccess}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
       } else {
         setCloudSyncMessage('فشل التزامن السحابي التلقائي');
       }
@@ -1607,9 +1607,9 @@ export default function App() {
       console.error('Cloud Sync error:', e);
       try {
         localStorage.setItem('yawmiyati_cloud_sync_backup', JSON.stringify(payload));
-        setCloudSyncMessage(`${t.backupSavedSuccess || "Backup saved locally and in cloud 🔒"}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
+        setCloudSyncMessage(`${t.backupSavedSuccess}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
       } catch (err) {
-        setCloudSyncMessage(`${t.cloudSyncSuccess || "Cloud sync successful 🔒"}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
+        setCloudSyncMessage(`${t.cloudSyncSuccess}: ${new Date().toLocaleTimeString(langInfo?.bcp47 || "en-US")}`);
       }
     } finally {
       setIsCloudSyncing(false);
@@ -1688,7 +1688,7 @@ export default function App() {
       if (userData.chatMessages) {
         localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(userData.chatMessages));
       }
-      setCloudSyncMessage(`${t.welcomeCloudSync || 'Welcome'} ${user.name}! ${t.cloudSyncRestored || 'Data synced and restored successfully 🎉'}`);
+      setCloudSyncMessage(`${t.welcomeCloudSync} ${user.name}! ${t.cloudSyncRestored}`);
     } else {
       handleCloudRestoreWithToken(token);
     }
@@ -1709,7 +1709,7 @@ export default function App() {
     localStorage.removeItem('yawmiyati_user_profile');
     setAuthToken(null);
     setCurrentUser(null);
-    setCloudSyncMessage(t.logoutSuccess || 'Logged out successfully.');
+    setCloudSyncMessage(t.logoutSuccess);
   };
 
   // Auto-restore on load if local storage is completely empty (safeguard for clean/reset installs)
@@ -1947,7 +1947,7 @@ export default function App() {
   };
 
   const deleteHabit = (habitId: string) => {
-    if (confirm(t.confirmDeleteHabitPermanent || 'Are you sure you want to permanently delete this habit?')) {
+    if (confirm(t.confirmDeleteHabitPermanent)) {
       setHabits(prev => prev.filter(h => h.id !== habitId));
     }
   };
@@ -2048,7 +2048,7 @@ export default function App() {
         },
         body: JSON.stringify({
           habits,
-          period: habitPeriod === 'custom' ? `${t.customPeriod || 'Custom'} ${startStr} - ${endStr}` : habitPeriod,
+          period: habitPeriod === 'custom' ? `${t.customPeriod} ${startStr} - ${endStr}` : habitPeriod,
           startDate: startStr,
           endDate: endStr,
           overallCompliance
@@ -2059,11 +2059,11 @@ export default function App() {
       if (data.success) {
         setHabitEvaluationReport(data.answer);
       } else {
-        setHabitEvaluationReport(t.systemUnavailable || 'System currently unavailable, please try again later.');
+        setHabitEvaluationReport(t.systemUnavailable);
       }
     } catch (err) {
       console.error(err);
-      setHabitEvaluationReport(t.errorEvaluatingHabits || 'Error requesting habit evaluation.');
+      setHabitEvaluationReport(t.errorEvaluatingHabits);
     } finally {
       setHabitEvaluationLoading(false);
     }
@@ -2472,12 +2472,12 @@ export default function App() {
 
   // Helper to generate dynamic, topic-specific note content on client if server API is unreachable
   const generateSmartClientNoteFallback = (topic: string): { title: string; content: string } => {
-    const cleanTopic = (topic || t.healthMentalNoteType || 'Health Note').trim();
+    const cleanTopic = (topic || t.healthMentalNoteType).trim();
     const lower = cleanTopic.toLowerCase();
 
     if (lower.includes('مذاكرة') || lower.includes('جدول') || lower.includes('دراسة') || lower.includes('امتحان') || lower.includes('دروس') || lower.includes('study') || lower.includes('exam')) {
       return {
-        title: `${t.studyScheduleTitle || '📚 Study Schedule'}: ${cleanTopic}`,
+        title: `${t.studyScheduleTitle}: ${cleanTopic}`,
         content: `إليك جدول مذاكرة ذكي ومصمم خصيصاً لتنظيم وقتك وتحقيق أقصى درجات التركيز:
 
 📅 **التوزيع الزمني المقترح لليوم الدراسي:**
@@ -2502,7 +2502,7 @@ export default function App() {
 
     if (lower.includes('صح') || lower.includes('تمارين') || lower.includes('رياضة') || lower.includes('غذاء') || lower.includes('وزن') || lower.includes('لياقة') || lower.includes('health') || lower.includes('fitness')) {
       return {
-        title: `${t.healthPlanTitle || '🥦 Health Plan'}: ${cleanTopic}`,
+        title: `${t.healthPlanTitle}: ${cleanTopic}`,
         content: `بناءً على طلبك حول (${cleanTopic})، إليك دليل عملي شامل لتحسين صحتك ونشاطك:
 
 🏋️ **البرنامج البدني والرياضي:**
@@ -2519,7 +2519,7 @@ export default function App() {
 
     if (lower.includes('عمل') || lower.includes('مشروع') || lower.includes('تسويق') || lower.includes('خدمة') || lower.includes('إدارة') || lower.includes('أهداف') || lower.includes('work') || lower.includes('project') || lower.includes('plan')) {
       return {
-        title: `${t.actionPlanTitle || '🎯 Action Plan'}: ${cleanTopic}`,
+        title: `${t.actionPlanTitle}: ${cleanTopic}`,
         content: `إليك دليل تنفيذي منظم للتعامل مع موضوع (${cleanTopic}):
 
 📌 **الخطوات الاستراتيجية الأولية:**
@@ -2534,7 +2534,7 @@ export default function App() {
     }
 
     return {
-      title: `${t.comprehensiveAnalysisTitle || '✨ Comprehensive Analysis'}: ${cleanTopic}`,
+      title: `${t.comprehensiveAnalysisTitle}: ${cleanTopic}`,
       content: `بناءً على طلبك وتفكير الذكاء الاصطناعي حول موضوع (${cleanTopic})، إليك الملاحظة المنظمة الشاملة:
 
 💡 **المفاهيم والأفكار الرئيسية:**
@@ -2604,7 +2604,7 @@ export default function App() {
       const newDiary: DiaryEntry = {
         id: `diary-${Date.now()}`,
         title: aiWriterResult.title || `ملاحظة ذكية - ${selectedDate}`,
-        content: aiWriterResult.content || '',
+        content: aiWriterResult.content,
         createdAt: `${selectedDate}T20:00:00.000Z`,
         updatedAt: `${selectedDate}T20:00:00.000Z`,
         moods: ['مرتاح'],
@@ -2637,7 +2637,7 @@ export default function App() {
     const newDiary: DiaryEntry = {
       id: `diary-${Date.now()}`,
       title: aiWriterResult.title || `ملاحظة ذكية - ${selectedDate}`,
-      content: aiWriterResult.content || '',
+      content: aiWriterResult.content,
       createdAt: `${selectedDate}T20:00:00.000Z`,
       updatedAt: `${selectedDate}T20:00:00.000Z`,
       moods: ['مرتاح'],
@@ -2846,16 +2846,16 @@ export default function App() {
   // --- Dynamic Greeting Selector ---
   const getArabicGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return t.greetingMorning || 'Good Morning ☀️';
-    if (hour < 17) return t.greetingAfternoon || 'Welcome ☕';
-    return t.greetingEvening || 'Good Evening 🌙';
+    if (hour < 12) return t.greetingMorning;
+    if (hour < 17) return t.greetingAfternoon;
+    return t.greetingEvening;
   };
 
   const getArabicGreetingHeader = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return t.greetingMorningHeader || 'Good Morning & Peaceful Mind';
-    if (hour < 17) return t.greetingAfternoonHeader || 'Welcome & Have a Wonderful Day';
-    return t.greetingEveningHeader || 'Good Evening & Inner Tranquility';
+    if (hour < 12) return t.greetingMorningHeader;
+    if (hour < 17) return t.greetingAfternoonHeader;
+    return t.greetingEveningHeader;
   };
 
   const getArabicGreetingIcon = () => {
@@ -3737,7 +3737,7 @@ export default function App() {
 
     const newRec: AudioRecording = {
       id: newRecId,
-      name: fileName || `${t.audioRecording || 'Audio'} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
+      name: fileName || `${t.audioRecording} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
       dataUrl: validDataUrl,
       blobUrl: blobUrl || (validDataUrl.startsWith('blob:') ? validDataUrl : undefined),
       duration: duration || 5,
@@ -3839,7 +3839,7 @@ export default function App() {
     }
 
     if (!rawAudio && !audioBlob) {
-      alert(t.noValidAudioTranscription || 'No valid audio recording for transcription.');
+      alert(t.noValidAudioTranscription);
       return;
     }
 
@@ -4139,7 +4139,7 @@ export default function App() {
               dataUrl,
               blobUrl,
               mimeType: 'audio/webm',
-              fileName: `${t.voiceJournalTab || 'Voice Journal'} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
+              fileName: `${t.voiceJournalTab} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
               duration: finalSecs,
               liveSpeechText: combinedTranscript
             });
@@ -4412,12 +4412,12 @@ export default function App() {
           if (parsed.diaries) {
             setDiaries(parsed.diaries);
             if (parsed.settings) setSettings(parsed.settings);
-            alert(t.backupRestoredSuccess || 'Backup restored successfully! 🎉');
+            alert(t.backupRestoredSuccess);
           } else {
-            alert(t.invalidBackupFormat || 'Invalid backup file format.');
+            alert(t.invalidBackupFormat);
           }
         } catch (error) {
-          alert(t.fileReadFailed || 'Failed to read file. Make sure it is uploaded correctly.');
+          alert(t.fileReadFailed);
         }
       };
       fileReader.readAsText(file);
@@ -4656,7 +4656,7 @@ export default function App() {
       }
     } catch (e) {
       console.error(e);
-      alert(t.aiAdvisorError || 'An error occurred connecting to the AI advisor. A built-in fallback was used.');
+      alert(t.aiAdvisorError);
     } finally {
       setCbtLoading(false);
     }
@@ -4823,10 +4823,10 @@ export default function App() {
           <div className="flex-grow space-y-1">
             <h4 className="text-xs font-bold text-[#D4A373] flex items-center space-x-1 space-x-reverse">
               <span>🔔</span>
-              <span>{t.habitReminderAlertHeader || 'Daily Habit Reminder'}</span>
+              <span>{t.habitReminderAlertHeader}</span>
             </h4>
             <p className="text-[11px] text-[#5A5A40] leading-relaxed">
-              {t.habitReminderAlertPrompt || 'Time for habit:'} <strong className="text-[#3A3A3A]">"{activeHabitReminder.name}"</strong>.
+              {t.habitReminderAlertPrompt} <strong className="text-[#3A3A3A]">"{activeHabitReminder.name}"</strong>.
             </p>
             <div className="flex space-x-2 space-x-reverse pt-2">
               <button 
@@ -4836,13 +4836,13 @@ export default function App() {
                 }}
                 className="px-3 py-1 bg-[#8B9D83] text-white rounded-lg text-[10px] font-bold cursor-pointer hover:bg-[#5A5A40] transition-colors"
               >
-                {t.habitCompletedButton || 'Completed! ✓'}
+                {t.habitCompletedButton}
               </button>
               <button 
                 onClick={() => setActiveHabitReminder(null)}
                 className="px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[10px] cursor-pointer hover:bg-gray-200 transition-colors"
               >
-                {t.dismissTemporarilyButton || 'Dismiss'}
+                {t.dismissTemporarilyButton}
               </button>
             </div>
           </div>
@@ -4858,10 +4858,10 @@ export default function App() {
           <div className="flex-grow space-y-1">
             <h4 className="text-xs font-extrabold text-amber-700 flex items-center space-x-1.5 space-x-reverse">
               <span>🔔</span>
-              <span>{t.gratitudeSmartReminderHeader || 'Smart Daily Gratitude Reminder'}</span>
+              <span>{t.gratitudeSmartReminderHeader}</span>
             </h4>
             <p className="text-[11px] text-[#5A5A40] leading-relaxed">
-              {t.gratitudeSmartReminderPrompt || 'Time to reflect on positive moments and log your gratitude wall!'}
+              {t.gratitudeSmartReminderPrompt}
             </p>
             <div className="flex space-x-2 space-x-reverse pt-2.5">
               <button 
@@ -4872,13 +4872,13 @@ export default function App() {
                 }}
                 className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-[10px] font-extrabold cursor-pointer transition-colors"
               >
-                {t.openGratitudeJournalNow || 'Open Gratitude Journal 🌸'}
+                {t.openGratitudeJournalNow}
               </button>
               <button 
                 onClick={() => setActiveGratitudeReminderNotification(false)}
                 className="px-3 py-1.5 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-xl text-[10px] cursor-pointer transition-colors"
               >
-                {t.remindMeLaterButton || 'Remind Later'}
+                {t.remindMeLaterButton}
               </button>
             </div>
           </div>
@@ -4892,7 +4892,7 @@ export default function App() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                 <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">🎯</span>
-                <span>{t.addNewHabit || "Add New Habit"}</span>
+                <span>{t.addNewHabit}</span>
               </h3>
               <button 
                 onClick={() => setShowAddHabitModal(false)}
@@ -4904,7 +4904,7 @@ export default function App() {
             
             <form onSubmit={handleCreateHabit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitName || "Habit Name"}</label>
+                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitName}</label>
                 <div className="flex gap-2">
                   <div className="w-10 h-10 rounded-2xl bg-[#F9F7F2] border border-[#E2DCC8] flex items-center justify-center text-lg shrink-0 shadow-2xs font-bold text-[#3A3A3A]">
                     {newHabitIcon}
@@ -4913,7 +4913,7 @@ export default function App() {
                     type="text" 
                     value={newHabitName}
                     onChange={e => setNewHabitName(e.target.value)}
-                    placeholder={t.habitNamePlaceholder || "e.g., Drink water, Read, Stretch..."}
+                    placeholder={t.habitNamePlaceholder}
                     className="flex-1 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl px-4 py-2.5 text-xs text-[#3A3A3A] focus:outline-none focus:ring-1 focus:ring-[#8B9D83]"
                     required
                   />
@@ -4923,7 +4923,7 @@ export default function App() {
               {/* 🎨 أيقونة العادة المخصصة */}
               <div className="space-y-1.5 bg-[#F9F7F2]/80 p-3 rounded-2xl border border-[#E2DCC8]/80">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.chooseHabitIcon || "Choose Custom Habit Icon"}</label>
+                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.chooseHabitIcon}</label>
                   <span className="text-[10px] font-bold text-[#8B9D83] bg-white px-2 py-0.5 rounded-md border border-[#E2DCC8]/60">
                     المحددة: {newHabitIcon}
                   </span>
@@ -4947,14 +4947,14 @@ export default function App() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitCategoryLabel || "Habit Category"}</label>
+                <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitCategoryLabel}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { id: 'health', label: t.healthCategoryFilter || 'Physical Health 🥦' },
-                    { id: 'mind', label: t.mindCategoryFilter || 'Mind & Meditation 🧠' },
-                    { id: 'sport', label: t.sportCategoryFilter || 'Sports & Fitness 🏃' },
-                    { id: 'culture', label: t.cultureCategoryFilter || 'Reading & Culture 📚' },
-                    { id: 'custom', label: t.customGoalsCategoryFilter || 'Custom Goals 🎯' },
+                    { id: 'health', label: t.healthCategoryFilter },
+                    { id: 'mind', label: t.mindCategoryFilter },
+                    { id: 'sport', label: t.sportCategoryFilter },
+                    { id: 'culture', label: t.cultureCategoryFilter },
+                    { id: 'custom', label: t.customGoalsCategoryFilter },
                   ].map(cat => (
                     <button
                       key={cat.id}
@@ -4974,7 +4974,7 @@ export default function App() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.reminderTime || "Reminder Time"}</label>
+                  <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.reminderTime}</label>
                   <input 
                     type="time" 
                     value={newHabitReminderTime}
@@ -4990,7 +4990,7 @@ export default function App() {
                       onChange={e => setNewHabitReminderEnabled(e.target.checked)}
                       className="rounded text-[#8B9D83] focus:ring-[#8B9D83]"
                     />
-                    <span className="text-xs font-semibold text-gray-600">{t.dailyPushNotification || "Daily Push Notification"}</span>
+                    <span className="text-xs font-semibold text-gray-600">{t.dailyPushNotification}</span>
                   </label>
                 </div>
               </div>
@@ -6061,10 +6061,10 @@ export default function App() {
                   {/* Status Indicator text */}
                   <div className="text-center space-y-1 z-10">
                     <span className="text-sm font-black text-[#3A3A3A] block">
-                      {breathingPhase === 'inhale' && (t.breathingInhaleMessage || 'Inhale... Fill your lungs with peace')}
-                      {breathingPhase === 'hold1' && (t.breathingHold1Message || 'Hold... Feel gratitude throughout your body')}
-                      {breathingPhase === 'exhale' && (t.breathingExhaleMessage || 'Exhale... Release stress and tension')}
-                      {breathingPhase === 'hold2' && (t.breathingHold2Message || 'Hold... Embrace serenity and silence')}
+                      {breathingPhase === 'inhale' && (t.breathingInhaleMessage)}
+                      {breathingPhase === 'hold1' && (t.breathingHold1Message)}
+                      {breathingPhase === 'exhale' && (t.breathingExhaleMessage)}
+                      {breathingPhase === 'hold2' && (t.breathingHold2Message)}
                     </span>
                     <span className="text-[10px] text-gray-400 block font-bold">
                       {t('completedCycles')} <span className="font-mono text-xs font-black text-[#8B9D83]">{breathingCycle}</span> {t('cyclesCount')}
@@ -6162,7 +6162,7 @@ export default function App() {
                     <span>{t('habitsTrackerTitle')}</span>
                   </h3>
                   <p className="text-[10px] text-gray-500 font-medium">
-                    {t.habitsTrackerSub || 'Select a date and check off completed habits to record consistency.'}
+                    {t.habitsTrackerSub}
                   </p>
                 </div>
                 <button
@@ -6176,12 +6176,12 @@ export default function App() {
               {/* Category Filter Tabs */}
               <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto pb-1 scrollbar-none">
                 {[
-                  { id: 'all', label: t.allCategoriesFilter || 'All' },
-                  { id: 'health', label: t.healthCategoryFilter || 'Physical Health 🥦' },
-                  { id: 'mind', label: t.mindCategoryFilter || 'Mind & Meditation 🧠' },
-                  { id: 'sport', label: t.sportCategoryFilter || 'Sports & Fitness 🏃' },
-                  { id: 'culture', label: t.cultureCategoryFilter || 'Reading & Culture 📚' },
-                  { id: 'custom', label: t.customCategoryFilter || 'Other Goals 🎯' },
+                  { id: 'all', label: t.allCategoriesFilter },
+                  { id: 'health', label: t.healthCategoryFilter },
+                  { id: 'mind', label: t.mindCategoryFilter },
+                  { id: 'sport', label: t.sportCategoryFilter },
+                  { id: 'culture', label: t.cultureCategoryFilter },
+                  { id: 'custom', label: t.customCategoryFilter },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -6252,14 +6252,14 @@ export default function App() {
                           <button
                             onClick={() => triggerSimulatedHabitNotification(habit)}
                             className="p-1.5 text-[#5A5A40] hover:text-[#D4A373] hover:bg-[#FAEDCD]/50 rounded-lg transition-colors cursor-pointer"
-                            title={t.simulateReminderNotifTitle || 'Simulate Reminder Notification'}
+                            title={t.simulateReminderNotifTitle}
                           >
                             <Bell className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => deleteHabit(habit.id)}
                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                            title={t.deleteHabitBtnTitle || 'Delete Habit'}
+                            title={t.deleteHabitBtnTitle}
                           >
                             <Trash className="w-3.5 h-3.5" />
                           </button>
@@ -6270,12 +6270,12 @@ export default function App() {
 
                 {habits.filter(h => selectedHabitCategory === 'all' || h.category === selectedHabitCategory).length === 0 && (
                   <div className="col-span-full py-8 text-center bg-[#F9F7F2]/50 border border-dashed border-[#E2DCC8]/60 rounded-2xl">
-                    <p className="text-xs text-gray-400 font-medium">{t.noHabitsInCategory || 'No habits recorded in this category yet.'}</p>
+                    <p className="text-xs text-gray-400 font-medium">{t.noHabitsInCategory}</p>
                     <button
                       onClick={() => setShowAddHabitModal(true)}
                       className="text-xs font-bold text-[#8B9D83] underline mt-1.5 block mx-auto cursor-pointer"
                     >
-                      {t.addFirstHabitNowBtn || 'Add Your First Habit 🚀'}
+                      {t.addFirstHabitNowBtn}
                     </button>
                   </div>
                 )}
@@ -6290,20 +6290,20 @@ export default function App() {
                   <span>{t('aiBehavioralAssessmentTitle')}</span>
                 </h3>
                 <p className="text-[10px] text-gray-500 font-medium">
-                  {t.habitEvaluationPeriodSub || 'Select timeframe for AI behavioral trends and psychological recommendations.'}
+                  {t.habitEvaluationPeriodSub}
                 </p>
               </div>
 
               {/* Timeframe selector */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'daily', label: t.evalDailyLabel || 'Daily Evaluation 📅' },
-                  { id: 'weekly', label: t.evalWeeklyLabel || 'Weekly Evaluation 📅' },
-                  { id: 'monthly', label: t.evalMonthlyLabel || 'Monthly Evaluation 📅' },
-                  { id: 'quarterly', label: t.evalQuarterlyLabel || 'Quarterly (90 Days) 📅' },
-                  { id: 'semi-annually', label: t.evalSemiAnnuallyLabel || 'Semi-Annual (180 Days) 📅' },
-                  { id: 'annually', label: t.evalAnnuallyLabel || 'Annual Evaluation 📅' },
-                  { id: 'custom', label: t.evalCustomLabel || 'Custom Period 🎯' },
+                  { id: 'daily', label: t.evalDailyLabel },
+                  { id: 'weekly', label: t.evalWeeklyLabel },
+                  { id: 'monthly', label: t.evalMonthlyLabel },
+                  { id: 'quarterly', label: t.evalQuarterlyLabel },
+                  { id: 'semi-annually', label: t.evalSemiAnnuallyLabel },
+                  { id: 'annually', label: t.evalAnnuallyLabel },
+                  { id: 'custom', label: t.evalCustomLabel },
                 ].map(p => (
                   <button
                     key={p.id}
@@ -6323,7 +6323,7 @@ export default function App() {
               {habitPeriod === 'custom' && (
                 <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]/60">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.startDateLabel || 'Start Date:'}</label>
+                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.startDateLabel}</label>
                     <input 
                       type="date"
                       value={habitCustomStart}
@@ -6332,7 +6332,7 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.endDateLabel || 'End Date:'}</label>
+                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.endDateLabel}</label>
                     <input 
                       type="date"
                       value={habitCustomEnd}
@@ -6352,7 +6352,7 @@ export default function App() {
                 {habitEvaluationLoading ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>{t.analyzingBehavioralDataReport || 'Analyzing data & generating behavioral report...'}</span>
+                    <span>{t.analyzingBehavioralDataReport}</span>
                   </>
                 ) : (
                   <>
@@ -6368,10 +6368,10 @@ export default function App() {
                   <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-2">
                     <span className="text-xs font-extrabold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>📊</span>
-                      <span>{t.behavioralReportHeader || 'Behavioral Report & Psychological Analysis'}</span>
+                      <span>{t.behavioralReportHeader}</span>
                     </span>
                     <span className="text-[9px] bg-[#8B9D83]/10 text-[#8B9D83] px-2 py-0.5 rounded-full font-bold">
-                      {t.mentalHealthAiAdvisorRole || 'Mental Health AI Advisor'}
+                      {t.mentalHealthAiAdvisorRole}
                     </span>
                   </div>
 
@@ -6389,8 +6389,8 @@ export default function App() {
             <div className="p-4 bg-[#FAEDCD]/40 border border-[#D4A373]/30 text-[#D4A373] rounded-2xl text-xs leading-relaxed flex items-start space-x-3 space-x-reverse">
               <span className="text-lg">💡</span>
               <div>
-                <strong className="block font-bold mb-0.5">{t.mentalHealthTipOfDayHeader || 'Mental Health Tip of the Day:'}</strong>
-                <span>{t.boxBreathingMentalHealthTip || 'When feeling stressed or anxious, take a full minute for box breathing (inhale 4s, hold 4s, exhale 4s, hold 4s) to reset your nervous system.'}</span>
+                <strong className="block font-bold mb-0.5">{t.mentalHealthTipOfDayHeader}</strong>
+                <span>{t.boxBreathingMentalHealthTip}</span>
               </div>
             </div>
 
@@ -6742,11 +6742,11 @@ export default function App() {
 
                     {showColorPalette && (
                       <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-[#E2DCC8]">
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title={t.colorOrange || "برتقالي"} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title={t.colorGreen || "أخضر"} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title={t.colorBlue || "أزرق"} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title={t.colorRed || "أحمر"} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title={t.colorPurple || "أرجواني"} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title={t.colorOrange} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title={t.colorGreen} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title={t.colorBlue} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title={t.colorRed} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title={t.colorPurple} />
                       </div>
                     )}
                   </div>
@@ -6864,12 +6864,12 @@ export default function App() {
                         </button>
                         {showBgColorPicker && (
                           <div className="absolute right-0 sm:right-auto left-auto sm:left-0 bottom-full mb-2 flex flex-wrap items-center gap-2 p-2.5 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl z-50 animate-fadeIn max-w-[92vw] sm:max-w-none">
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgDefault || "الافتراضي"} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgWarmYellow || "أصفر دافئ"} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSkyBlue || "أزرق سماوي"} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSoftGreen || "أخضر ناعم"} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgLavender || "لافندر"} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgPink || "وردي"} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgDefault} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgWarmYellow} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSkyBlue} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSoftGreen} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgLavender} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgPink} />
                           </div>
                         )}
                       </div>
@@ -7031,7 +7031,7 @@ export default function App() {
 
                 {/* Tags input bar */}
                 <div>
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.tagsLabel || "Tags (press Space or comma to add):"}</label>
+                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.tagsLabel}</label>
                   <div className="flex flex-wrap gap-1.5 p-2 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl">
                     {editingDiary.tags.map((tag, idx) => (
                       <span key={idx} className="bg-[#F0EDE4] text-[#5A5A40] text-xs py-1 px-2.5 rounded-lg border border-[#E2DCC8] flex items-center space-x-1 space-x-reverse">
@@ -7047,7 +7047,7 @@ export default function App() {
                     ))}
                     <input
                       type="text"
-                      placeholder={t.addTagPlaceholder || "Add tag..."}
+                      placeholder={t.addTagPlaceholder}
                       onKeyDown={(e) => {
                         if (e.key === ' ' || e.key === ',') {
                           e.preventDefault();
@@ -7066,7 +7066,7 @@ export default function App() {
                 {/* Drawing / Image thumbnail Display inside editor */}
                 {(editingDiary.images.length > 0 || editingDiary.drawing) && (
                   <div className="space-y-2">
-                    <span className="block text-xs font-bold text-[#5A5A40]">{t.attachedImagesDrawings || "Attached images & drawings:"}</span>
+                    <span className="block text-xs font-bold text-[#5A5A40]">{t.attachedImagesDrawings}</span>
                     <div className="flex flex-wrap gap-3">
                       {editingDiary.images.map((img, idx) => (
                         <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group">
@@ -7084,7 +7084,7 @@ export default function App() {
                       {editingDiary.drawing && (
                         <div className="relative w-24 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white">
                           <img src={editingDiary.drawing} className="w-full h-full object-contain" />
-                          <div className="absolute top-0 right-0 bg-[#8B9D83] text-white text-[8px] px-1.5 py-0.5 rounded-bl">{t.drawing || "Drawing"}</div>
+                          <div className="absolute top-0 right-0 bg-[#8B9D83] text-white text-[8px] px-1.5 py-0.5 rounded-bl">{t.drawing}</div>
                           <button
                             type="button"
                             onClick={() => setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null)}
@@ -7103,7 +7103,7 @@ export default function App() {
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>🎥</span>
-                      <span>{t.attachedVideos || "Attached videos:"}</span>
+                      <span>{t.attachedVideos}</span>
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {editingDiary.videos.map((vid, idx) => (
@@ -7112,7 +7112,7 @@ export default function App() {
                             <video src={vid} controls className="w-full h-32 rounded-lg bg-black object-cover" />
                           ) : (
                             <div className="bg-white p-2.5 rounded-lg border border-[#E2DCC8]/60 text-xs text-[#5A5A40] truncate flex items-center space-x-2 space-x-reverse">
-                              <span className="font-semibold shrink-0">{t.videoLink || "Video link:"}</span>
+                              <span className="font-semibold shrink-0">{t.videoLink}</span>
                               <a href={vid} target="_blank" rel="noopener noreferrer" className="text-[#8B9D83] underline truncate flex-grow">
                                 {vid}
                               </a>
@@ -7136,7 +7136,7 @@ export default function App() {
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>📁</span>
-                      <span>{t.attachedFiles || "Attached files:"}</span>
+                      <span>{t.attachedFiles}</span>
                     </span>
                     <div className="space-y-2">
                       {editingDiary.files.map((file) => {
@@ -7170,7 +7170,7 @@ export default function App() {
                               </div>
                               <div className="min-w-0">
                                 <span className="font-semibold block text-[#3A3A3A] truncate max-w-[180px] sm:max-w-xs">{file.name}</span>
-                                <span className="text-[10px] text-gray-400">{t.fileSize || "Size"}: {file.size}</span>
+                                <span className="text-[10px] text-gray-400">{t.fileSize}: {file.size}</span>
                               </div>
                             </div>
                             
@@ -7214,7 +7214,7 @@ export default function App() {
                   <div className="space-y-2 mt-4">
                     <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
                       <span>🔗</span>
-                      <span>{t.attachedLinksRefs || "Attached links & references:"}</span>
+                      <span>{t.attachedLinksRefs}</span>
                     </span>
                     <div className="space-y-1.5">
                       {editingDiary.links.map((link, idx) => (
@@ -7247,13 +7247,13 @@ export default function App() {
 
                 {/* Media, Sketch and Voice attachment bar */}
                 <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <span className="text-xs font-bold text-[#5A5A40]">{t.addMediaAttachments || "Add media & attachments:"}</span>
+                  <span className="text-xs font-bold text-[#5A5A40]">{t.addMediaAttachments}</span>
                   <div className="flex flex-wrap gap-2">
                     
                     {/* Audio File Upload button */}
-                    <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title={t.chooseAudioFileTooltip || "اختر من (الملفات / Files) لرفع الملاحظة الصوتية"}>
+                    <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title={t.chooseAudioFileTooltip}>
                       <span>🎵</span>
-                      <span>{t.addAudioFile || "Add audio file"}</span>
+                      <span>{t.addAudioFile}</span>
                       <input
                         type="file"
                         accept="*/*"
@@ -7265,7 +7265,7 @@ export default function App() {
                     {/* Image Snapper / File upload */}
                     <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                       <Image className="w-3.5 h-3.5 text-[#D4A373]" />
-                      <span>{t.addPhotoScreenshot || "Add photo/screenshot"}</span>
+                      <span>{t.addPhotoScreenshot}</span>
                       <input
                         id="image-upload-trigger"
                         type="file"
@@ -7282,7 +7282,7 @@ export default function App() {
                       className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs"
                     >
                       <span className="text-[#8B9D83] font-bold">🎨</span>
-                      <span>{t.drawMindmap || "Draw mindmap"}</span>
+                      <span>{t.drawMindmap}</span>
                     </button>
 
                     {/* Voice record mic button */}
@@ -7296,7 +7296,7 @@ export default function App() {
                       }`}
                     >
                       <Mic className="w-3.5 h-3.5 text-red-500" />
-                      <span>{isRecording ? `${t.listening || "Listening"} (${recordingSeconds}s)` : (t.quickVoiceJournal || "🎤 Quick Voice Journal")}</span>
+                      <span>{isRecording ? `${t.listening} (${recordingSeconds}s)` : (t.quickVoiceJournal)}</span>
                     </button>
 
                     {/* Audio Upload Loading Banner */}
@@ -7318,7 +7318,7 @@ export default function App() {
                             </span>
                             <span className="font-black text-red-800 text-xs flex items-center gap-1">
                               <Mic className="w-3.5 h-3.5 text-red-600 animate-bounce" />
-                              <span>{t.listeningTranscribing || "Listening & transcribing..."}</span>
+                              <span>{t.listeningTranscribing}</span>
                             </span>
                           </div>
                           <span className="font-mono font-black text-red-700 bg-white/90 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] shadow-3xs">
@@ -7349,14 +7349,14 @@ export default function App() {
                             onClick={handleCancelRecording}
                             className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1"
                           >
-                            <span>{t.cancelAction || "❌ Cancel"}</span>
+                            <span>{t.cancelAction}</span>
                           </button>
                           <button
                             type="button"
                             onClick={handleStopAndInsertRecording}
                             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                           >
-                            <span>{t.finishInsertText || "✅ Finish & insert text"}</span>
+                            <span>{t.finishInsertText}</span>
                           </button>
                         </div>
                       </div>
@@ -7373,7 +7373,7 @@ export default function App() {
                       }`}
                     >
                       <span>🌐</span>
-                      <span>{t.webLink || "Web link"}</span>
+                      <span>{t.webLink}</span>
                     </button>
 
                     {/* Video attachment button */}
@@ -7387,7 +7387,7 @@ export default function App() {
                       }`}
                     >
                       <span>🎥</span>
-                      <span>{t.videoLabel || "Video"}</span>
+                      <span>{t.videoLabel}</span>
                     </button>
 
                     {/* PDF attachment button */}
@@ -7401,7 +7401,7 @@ export default function App() {
                       }`}
                     >
                       <span>📄</span>
-                      <span>{t.pdfFile || "PDF file"}</span>
+                      <span>{t.pdfFile}</span>
                     </button>
 
                   </div>
@@ -7412,7 +7412,7 @@ export default function App() {
                   <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 space-y-3">
                     {activeInputSection === 'link' && (
                       <div className="space-y-2">
-                        <label className="block text-xs font-bold text-[#5A5A40]">{t.enterWebLinkRef || "Enter website link or reference:"}</label>
+                        <label className="block text-xs font-bold text-[#5A5A40]">{t.enterWebLinkRef}</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
@@ -7434,13 +7434,13 @@ export default function App() {
 
                     {activeInputSection === 'video' && (
                       <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addVideoToEntry || "Add video to entry:"}</span>
+                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addVideoToEntry}</span>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {/* Option 1: File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalVideo || "Option 1: Upload local video"}</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalVideo}</span>
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>{t.chooseVideoFromDevice || "📁 Choose video from device"}</span>
+                              <span>{t.chooseVideoFromDevice}</span>
                               <input
                                 type="file"
                                 accept="*/*"
@@ -7452,7 +7452,7 @@ export default function App() {
 
                           {/* Option 2: Enter URL */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option2VideoLink || "Option 2: Enter video link (YouTube or direct)"}</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option2VideoLink}</span>
                             <div className="flex gap-1.5">
                               <input
                                 type="text"
@@ -7476,13 +7476,13 @@ export default function App() {
 
                     {activeInputSection === 'pdf' && (
                       <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addPdfToEntry || "Add PDF or document to entry:"}</span>
+                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addPdfToEntry}</span>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {/* Option 1: PDF File upload */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalFile || "Option 1: Upload file from device"}</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalFile}</span>
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>{t.chooseFileFromDevice || "📄 Choose file from device"}</span>
+                              <span>{t.chooseFileFromDevice}</span>
                               <input
                                 type="file"
                                 accept="*/*"
@@ -7494,18 +7494,18 @@ export default function App() {
 
                           {/* Option 2: Simulated PDF addition */}
                           <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option2PdfLink || "Option 2: Add reference doc or PDF link"}</span>
+                            <span className="text-[11px] font-bold text-gray-500">{t.option2PdfLink}</span>
                             <div className="flex gap-1.5">
                               <input
                                 id="manual-pdf-name"
                                 type="text"
-                                placeholder={t.pdfFileNamePlaceholder || "PDF file name..."}
+                                placeholder={t.pdfFileNamePlaceholder}
                                 className="w-1/2 bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2 py-1 text-xs"
                               />
                               <input
                                 id="manual-pdf-url"
                                 type="text"
-                                placeholder={t.fileLinkPlaceholder || "File link..."}
+                                placeholder={t.fileLinkPlaceholder}
                                 className="w-1/2 bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2 py-1 text-xs"
                               />
                               <button
@@ -7557,7 +7557,7 @@ export default function App() {
                                 </div>
                                 <div>
                                   <span className="font-bold block text-[#3A3A3A]">{rec.name}</span>
-                                  <span className="text-[10px] text-gray-500">{t.durationLabel || "Duration"}: {rec.duration}s</span>
+                                  <span className="text-[10px] text-gray-500">{t.durationLabel}: {rec.duration}s</span>
                                 </div>
                               </div>
                               
@@ -7601,12 +7601,12 @@ export default function App() {
                                     {transcribingAudioId === rec.id ? (
                                       <>
                                         <RefreshCw className="w-3 h-3 animate-spin text-[#4E685B]" />
-                                        <span>{t.analyzing || 'جاري التحليل...'}</span>
+                                        <span>{t.analyzing}</span>
                                       </>
                                     ) : (
                                       <>
                                         <Sparkles className="w-3 h-3 text-[#D4A373]" />
-                                        <span>{t.transcribeAndToneAnalysis || 'تحليل النبرة والتفريغ'}</span>
+                                        <span>{t.transcribeAndToneAnalysis}</span>
                                       </>
                                     )}
                                   </button>
@@ -7620,10 +7620,10 @@ export default function App() {
                                       setEditingTranscriptText(existing);
                                     }}
                                     className="px-2.5 py-1 bg-white/90 hover:bg-white text-indigo-800 border border-black/10 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 shadow-3xs"
-                                    title={t.editTranscriptTitle || "تعديل النص المفرغ يدوياً وتصحيح أخطاء التعرف على الصوت"}
+                                    title={t.editTranscriptTitle}
                                   >
                                     <Edit3 className="w-3 h-3 text-indigo-600" />
-                                    <span>{t.editTranscriptBtn || "تعديل النص"}</span>
+                                    <span>{t.editTranscriptBtn}</span>
                                   </button>
 
                                   {rec.transcription && rec.transcription.trim() && !rec.transcription.includes('جاري') && !rec.transcription.includes('انقر على زر') && (
@@ -7635,10 +7635,10 @@ export default function App() {
                                           ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                                           : 'bg-white/90 hover:bg-white text-[#8C661D] border border-black/10'
                                       }`}
-                                      title={rec.isAppendedToContent ? (t.transcriptionAppendedTooltip || 'تمت إضافة هذا التفريغ إلى نص اليومية') : (t.appendToDiaryTextTooltip || 'نسخ النص المفرغ وإضافته مباشرة لمضمون اليومية')}
+                                      title={rec.isAppendedToContent ? (t.transcriptionAppendedTooltip) : (t.appendToDiaryTextTooltip)}
                                     >
                                       <span>{rec.isAppendedToContent ? '✓' : '✍️'}</span>
-                                      <span>{rec.isAppendedToContent ? (t.transcriptionAppended || 'تمت الإضافة') : (t.appendToDiaryText || 'إضافة للنص')}</span>
+                                      <span>{rec.isAppendedToContent ? (t.transcriptionAppended) : (t.appendToDiaryText)}</span>
                                     </button>
                                   )}
                                 </div>
@@ -7648,16 +7648,16 @@ export default function App() {
                               {transcribingAudioId === rec.id ? (
                                 <div className="py-2.5 text-center text-xs text-amber-900 font-bold animate-pulse flex items-center justify-center gap-2">
                                   <RefreshCw className="w-4 h-4 animate-spin text-amber-700" />
-                                  <span>{t.transcribingAnalyzingToneStatus || 'جاري تحليل المشاعر من نبرة الصوت وتفريغ الكلام بالذكاء الاصطناعي...'}</span>
+                                  <span>{t.transcribingAnalyzingToneStatus}</span>
                                 </div>
                               ) : editingTranscriptId === rec.id ? (
                                 <div className="space-y-2 bg-white/90 p-3 rounded-xl border border-indigo-200 shadow-sm animate-fadeIn">
                                   <div className="flex items-center justify-between text-[11px] font-bold text-[#3A3A3A]">
                                     <span className="flex items-center gap-1.5 text-indigo-900">
                                       <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
-                                      <span>{t.editTranscriptManualHeader || 'تعديل النص المفرغ يدويّاً:'}</span>
+                                      <span>{t.editTranscriptManualHeader}</span>
                                     </span>
-                                    <span className="text-[10px] text-gray-500 font-medium">{t.editTranscriptManualHint || 'يمكنك كتابة أو تصحيح النص المفرغ هنا'}</span>
+                                    <span className="text-[10px] text-gray-500 font-medium">{t.editTranscriptManualHint}</span>
                                   </div>
                                   <textarea
                                     value={editingTranscriptText}
@@ -7674,7 +7674,7 @@ export default function App() {
                                       onClick={() => setEditingTranscriptId(null)}
                                       className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[11px] font-bold cursor-pointer transition-colors"
                                     >
-                                      {t.cancelBtn || 'إلغاء'}
+                                      {t.cancelBtn}
                                     </button>
                                     <button
                                       type="button"
@@ -7685,7 +7685,7 @@ export default function App() {
                                       className="px-3.5 py-1 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-lg text-[11px] font-bold cursor-pointer transition-all shadow-xs flex items-center gap-1"
                                     >
                                       <span>💾</span>
-                                      <span>{t.saveEditBtn || 'حفظ التعديل'}</span>
+                                      <span>{t.saveEditBtn}</span>
                                     </button>
                                   </div>
                                 </div>
@@ -7698,34 +7698,34 @@ export default function App() {
                                       setEditingTranscriptText(existing);
                                     }}
                                     className={`relative group rounded-xl p-2.5 transition-all cursor-pointer hover:bg-black/5 border border-dashed border-black/10 hover:border-indigo-300 ${emoStyle.textColor}`}
-                                    title={t.clickToEditTranscriptTooltip || "انقر هنا لتعديل النص المفرغ يدويًا"}
+                                    title={t.clickToEditTranscriptTooltip}
                                   >
                                     <p className="whitespace-pre-wrap leading-relaxed text-xs">
-                                      {rec.transcription || (t.clickToTypeOrTranscribeHint || 'انقر هنا لكتابة أو تعديل النص المفرغ يدويّاً، أو انقر (تحليل النبرة والتفريغ) للتفريغ التلقائي.')}
+                                      {rec.transcription || (t.clickToTypeOrTranscribeHint)}
                                     </p>
                                     <span className="opacity-80 group-hover:opacity-100 transition-opacity absolute top-1.5 left-1.5 text-[10px] font-bold bg-white/95 text-[#3A3A3A] px-2 py-0.5 rounded-md border border-gray-200 shadow-2xs flex items-center gap-1">
                                       <Edit3 className="w-2.5 h-2.5 text-indigo-600" />
-                                      <span>{t.edit || 'تعديل'}</span>
+                                      <span>{t.edit}</span>
                                     </span>
                                   </div>
 
                                   {/* SER Vocal Tone Details */}
                                   {rec.speechEmotion?.vocalToneDetails && (
                                     <div className="text-[10px] pt-1.5 border-t border-black/10 flex items-start gap-1.5 font-bold opacity-90">
-                                      <span className="shrink-0">{t.vocalToneSerNotice || '🎧 ملاحظة نبرة الصوت (SER):'}</span>
+                                      <span className="shrink-0">{t.vocalToneSerNotice}</span>
                                       <span className="leading-normal">{rec.speechEmotion.vocalToneDetails}</span>
                                     </div>
                                   )}
 
                                   {/* Quick Mood Color Palette Override Selector */}
                                   <div className="pt-2 border-t border-black/5 flex items-center justify-between flex-wrap gap-1 text-[10px] font-bold">
-                                    <span className="opacity-75">{t.changeTextBgByMoodTone || 'تعديل لون خلفية النص حسب نبرة المشاعر:'}</span>
+                                    <span className="opacity-75">{t.changeTextBgByMoodTone}</span>
                                     <div className="flex items-center gap-1 flex-wrap">
                                       <button
                                         type="button"
                                         onClick={() => handleSetSpeechEmotion(rec.id, 'قلق', 'amber')}
                                         className="px-1.5 py-0.5 bg-amber-200/90 hover:bg-amber-300 text-amber-950 border border-amber-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightAmber || "تلوين خلفية النص بصبغة القلق والتوتر (Amber)"}
+                                        title={t.moodHighlightAmber}
                                       >
                                         😰 قلق
                                       </button>
@@ -7733,7 +7733,7 @@ export default function App() {
                                         type="button"
                                         onClick={() => handleSetSpeechEmotion(rec.id, 'فرح', 'emerald')}
                                         className="px-1.5 py-0.5 bg-emerald-200/90 hover:bg-emerald-300 text-emerald-950 border border-emerald-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightEmerald || "تلوين خلفية النص بصبغة الفرح والسعادة (Emerald)"}
+                                        title={t.moodHighlightEmerald}
                                       >
                                         🎉 فرح
                                       </button>
@@ -7741,7 +7741,7 @@ export default function App() {
                                         type="button"
                                         onClick={() => handleSetSpeechEmotion(rec.id, 'حزن', 'blue')}
                                         className="px-1.5 py-0.5 bg-blue-200/90 hover:bg-blue-300 text-blue-950 border border-blue-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightBlue || "تلوين خلفية النص بصبغة الحزن والهدوء (Blue)"}
+                                        title={t.moodHighlightBlue}
                                       >
                                         😔 حزن
                                       </button>
@@ -7749,7 +7749,7 @@ export default function App() {
                                         type="button"
                                         onClick={() => handleSetSpeechEmotion(rec.id, 'غضب', 'red')}
                                         className="px-1.5 py-0.5 bg-red-200/90 hover:bg-red-300 text-red-950 border border-red-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightRed || "تلوين خلفية النص بصبغة الغضب والانفعال (Red)"}
+                                        title={t.moodHighlightRed}
                                       >
                                         😡 غضب
                                       </button>
@@ -7757,7 +7757,7 @@ export default function App() {
                                         type="button"
                                         onClick={() => handleSetSpeechEmotion(rec.id, 'هدوء', 'teal')}
                                         className="px-1.5 py-0.5 bg-teal-200/90 hover:bg-teal-300 text-teal-950 border border-teal-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightTeal || "تلوين خلفية النص بصبغة الهدوء والاطمئنان (Teal)"}
+                                        title={t.moodHighlightTeal}
                                       >
                                         🧘 هدوء
                                       </button>
@@ -7796,7 +7796,7 @@ export default function App() {
                       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                         <h3 className="text-base font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                           <span>✨</span>
-                          <span>{t.moreFeaturesBtn || t.moreFeatures || 'مزيد من الميزات'}</span>
+                          <span>{t.moreFeaturesBtn || t.moreFeatures}</span>
                         </h3>
                         <button
                           type="button"
@@ -7821,7 +7821,7 @@ export default function App() {
                           <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                             🖌️
                           </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.drawing || t.sketchIcon || 'رسم'}</span>
+                          <span className="text-xs font-bold text-[#3A3A3A]">{t.drawing || t.sketchIcon}</span>
                         </button>
 
                         {/* 2. أضف صورة (Add Image) */}
@@ -7832,7 +7832,7 @@ export default function App() {
                           <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
                             🖼️
                           </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.addImageIcon || 'أضف صورة'}</span>
+                          <span className="text-xs font-bold text-[#3A3A3A]">{t.addImageIcon}</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -7969,22 +7969,22 @@ export default function App() {
 
                       {/* Font Formatting Icons Toolbar */}
                       <div className="flex items-center justify-around p-2.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]">
-                        <button type="button" onClick={() => insertFormatting('- ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarBulletList || "قائمة"}>
+                        <button type="button" onClick={() => insertFormatting('- ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarBulletList}>
                           •≡
                         </button>
-                        <button type="button" onClick={() => insertFormatting('1. ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarNumberedList || "قائمة مرقمة"}>
+                        <button type="button" onClick={() => insertFormatting('1. ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarNumberedList}>
                           1≡
                         </button>
-                        <button type="button" onClick={() => insertFormatting('<u>', '</u>')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold underline text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarUnderline || "تحته خط"}>
+                        <button type="button" onClick={() => insertFormatting('<u>', '</u>')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold underline text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarUnderline}>
                           U
                         </button>
-                        <button type="button" onClick={() => insertFormatting('~~', '~~')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold line-through text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarStrikethrough || "يتوسطه خط"}>
+                        <button type="button" onClick={() => insertFormatting('~~', '~~')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold line-through text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarStrikethrough}>
                           S
                         </button>
-                        <button type="button" onClick={() => insertFormatting('*', '*')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl italic font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.formatItalic || "مائل"}>
+                        <button type="button" onClick={() => insertFormatting('*', '*')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl italic font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.formatItalic}>
                           I
                         </button>
-                        <button type="button" onClick={() => insertFormatting('**', '**')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-black text-sm text-[#3A3A3A] cursor-pointer" title={t.formatBold || "عريض"}>
+                        <button type="button" onClick={() => insertFormatting('**', '**')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-black text-sm text-[#3A3A3A] cursor-pointer" title={t.formatBold}>
                           B
                         </button>
                       </div>
@@ -8011,15 +8011,15 @@ export default function App() {
                         <span className="text-xs font-extrabold text-[#5A5A40] block">{t.chooseFontStyle}</span>
                         <div className="grid grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
                           {[
-                            { id: 'font-sans', name: t.fontPreviewNotes || 'Notes', style: 'font-sans' },
-                            { id: 'font-serif', name: t.fontPreviewNotes || 'Notes', style: 'font-serif italic' },
-                            { id: 'font-mono', name: t.fontPreviewNotes || 'Notes', style: 'font-mono' },
-                            { id: 'font-bold', name: t.fontPreviewNotes || 'Notes', style: 'font-sans font-black' },
-                            { id: 'font-cairo', name: t.fontPreviewNotes || 'Notes', style: 'font-serif font-bold' },
-                            { id: 'font-uppercase', name: t.fontPreviewNotesUpper || 'NOTES', style: 'uppercase font-black' },
-                            { id: 'font-normal', name: t.fontPreviewNotes || 'Notes', style: 'font-sans font-medium' },
-                            { id: 'font-light', name: t.fontPreviewNotes || 'Notes', style: 'font-sans font-light' },
-                            { id: 'font-tracking', name: t.fontPreviewNotesSpaced || 'N o t e s', style: 'tracking-widest' },
+                            { id: 'font-sans', name: t.fontPreviewNotes, style: 'font-sans' },
+                            { id: 'font-serif', name: t.fontPreviewNotes, style: 'font-serif italic' },
+                            { id: 'font-mono', name: t.fontPreviewNotes, style: 'font-mono' },
+                            { id: 'font-bold', name: t.fontPreviewNotes, style: 'font-sans font-black' },
+                            { id: 'font-cairo', name: t.fontPreviewNotes, style: 'font-serif font-bold' },
+                            { id: 'font-uppercase', name: t.fontPreviewNotesUpper, style: 'uppercase font-black' },
+                            { id: 'font-normal', name: t.fontPreviewNotes, style: 'font-sans font-medium' },
+                            { id: 'font-light', name: t.fontPreviewNotes, style: 'font-sans font-light' },
+                            { id: 'font-tracking', name: t.fontPreviewNotesSpaced, style: 'tracking-widest' },
                           ].map((f) => (
                             <button
                               key={f.id}
@@ -8437,7 +8437,7 @@ export default function App() {
                        }, 50);
                      }}
                      className="p-3 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-[#5A5A40] shadow-3xs hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0 flex items-center justify-center"
-                     title={t.searchDiariesAndThoughts || "البحث في اليوميات والخواطر"}
+                     title={t.searchDiariesAndThoughts}
                    >
                      <Search className="w-4 h-4 text-[#8B9D83]" />
                    </button>
@@ -8921,7 +8921,7 @@ export default function App() {
                 }`}
               >
                 <span>🎓</span>
-                <span>{t.therapySessionAndReportTab || "Therapy Session & Report"}</span>
+                <span>{t.therapySessionAndReportTab}</span>
               </button>
               <button
                 onClick={() => setAnalyticsSubTab('charts')}
@@ -8932,7 +8932,7 @@ export default function App() {
                 }`}
               >
                 <span>📊</span>
-                <span>{t.chartsAndProgressTrackingTab || "Charts & Progress Tracking"}</span>
+                <span>{t.chartsAndProgressTrackingTab}</span>
               </button>
               <button
                 onClick={() => setAnalyticsSubTab('pros_cons')}
@@ -8943,7 +8943,7 @@ export default function App() {
                 }`}
               >
                 <span>⚖️</span>
-                <span>{t.prosAndConsSubTab || "Pros & Cons Log"}</span>
+                <span>{t.prosAndConsSubTab}</span>
               </button>
             </div>
 
@@ -8983,10 +8983,10 @@ export default function App() {
                 <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-2">
                   <h3 className="font-extrabold text-[#3A3A3A] text-sm flex items-center space-x-2 space-x-reverse">
                     <span className="text-lg">📊</span>
-                    <span>{t.progressBoardTitle || 'Progress and Behavioral Patterns Board'}</span>
+                    <span>{t.progressBoardTitle}</span>
                   </h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    {t.progressBoardDesc || 'These insights are automatically generated from your entries to monitor behavioral correlations and assist you.'}
+                    {t.progressBoardDesc}
                   </p>
                 </div>
 
@@ -9000,21 +9000,21 @@ export default function App() {
                   
                   {/* Chart 1: Sleep trend vs Sports trend */}
                   <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-                    <span className="block text-xs font-bold text-[#5A5A40]">💤 {t.sleepSportsCorrelation || 'Correlation between Sports and Sleep hours:'}</span>
+                    <span className="block text-xs font-bold text-[#5A5A40]">💤 {t.sleepSportsCorrelation}</span>
                     <div className="h-60">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={diaries.map(d => ({
                           name: d.createdAt.split('T')[0].substring(5),
-                          [t.sleepChartLabel || 'Sleep']: d.sleepHours || 0,
-                          [t.sportsChartLabel || 'Sports']: d.sportsDuration || 0
+                          [t.sleepChartLabel]: d.sleepHours || 0,
+                          [t.sportsChartLabel]: d.sportsDuration || 0
                         })).reverse()}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#E2DCC8" />
                           <XAxis dataKey="name" stroke="#5A5A40" style={{ fontSize: '10px' }} />
                           <YAxis stroke="#5A5A40" style={{ fontSize: '10px' }} />
                           <ChartTooltip />
                           <Legend wrapperStyle={{ fontSize: '11px' }} />
-                          <Line type="monotone" dataKey={t.sleepChartLabel || 'Sleep'} stroke="#8B9D83" strokeWidth={2.5} name={t.sleepHoursLabel || 'Sleep Hours'} />
-                          <Line type="monotone" dataKey={t.sportsChartLabel || 'Sports'} stroke="#D4A373" strokeWidth={2.5} name={t.sportsMinutesLabel || 'Sports Minutes'} />
+                          <Line type="monotone" dataKey={t.sleepChartLabel} stroke="#8B9D83" strokeWidth={2.5} name={t.sleepHoursLabel} />
+                          <Line type="monotone" dataKey={t.sportsChartLabel} stroke="#D4A373" strokeWidth={2.5} name={t.sportsMinutesLabel} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -9022,7 +9022,7 @@ export default function App() {
 
                   {/* Chart 2: Mood counts distribution bar chart */}
                   <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-                    <span className="block text-xs font-bold text-[#5A5A40]">🧠 {t.recordedMoodsDistribution || 'Distribution of Recorded Moods:'}</span>
+                    <span className="block text-xs font-bold text-[#5A5A40]">🧠 {t.recordedMoodsDistribution}</span>
                     <div className="h-60">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={Object.entries(
@@ -9035,7 +9035,7 @@ export default function App() {
                           <XAxis dataKey="mood" stroke="#5A5A40" style={{ fontSize: '11px' }} />
                           <YAxis stroke="#5A5A40" style={{ fontSize: '10px' }} />
                           <ChartTooltip />
-                          <Bar dataKey="frequency" fill="#8B9D83" radius={[6, 6, 0, 0]} name={t.frequencyChartLabel || 'Frequency'}>
+                          <Bar dataKey="frequency" fill="#8B9D83" radius={[6, 6, 0, 0]} name={t.frequencyChartLabel}>
                             {/* Dynamic cell coloring for beautiful look */}
                             {diaries.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#8B9D83' : '#D4A373'} />
@@ -9050,9 +9050,9 @@ export default function App() {
 
                 {/* Insight Statement box */}
                 <div className="bg-[#F0EDE4] border border-[#E2DCC8] p-5 rounded-3xl space-y-2">
-                  <h4 className="font-bold text-[#5A5A40] text-xs">💡 {t.aiBehavioralInsightTitle || 'AI Behavioral Improvement Insight:'}</h4>
+                  <h4 className="font-bold text-[#5A5A40] text-xs">💡 {t.aiBehavioralInsightTitle}</h4>
                   <p className="text-xs text-[#3A3A3A] leading-relaxed font-normal">
-                    {t.aiBehavioralInsightDesc || 'The data reveals interesting patterns between your physical activity, sleep, and mood stabilization.'}
+                    {t.aiBehavioralInsightDesc}
                   </p>
                 </div>
               </div>
@@ -10335,7 +10335,7 @@ export default function App() {
                 </div>
                 <div>
                   <h1 className="text-xl font-black text-[#8B9D83] tracking-wide">{t.hayatAi}</h1>
-                  <p className="text-[10px] text-gray-400 font-bold mt-0.5">{t.diaryVentingSafeLog || "سجل المذكرات والفضفضة النفسية الآمن"}</p>
+                  <p className="text-[10px] text-gray-400 font-bold mt-0.5">{t.diaryVentingSafeLog}</p>
                 </div>
               </div>
               <div className="text-left">
@@ -10358,7 +10358,7 @@ export default function App() {
                   </span>
                 </div>
                 <div>
-                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.emotionalDepthSelfImportance || "العمق والأهمية الذاتية:"}</span>
+                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.emotionalDepthSelfImportance}</span>
                   <span className="text-xs text-[#D4A373] font-black flex items-center">
                     {'★'.repeat(editingDiary.importance)}
                     {'☆'.repeat(5 - editingDiary.importance)}
@@ -10366,7 +10366,7 @@ export default function App() {
                   </span>
                 </div>
                 <div>
-                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.loggedMoodStatus || "الحالة المزاجية المسجلة:"}</span>
+                  <span className="block text-[10px] text-gray-400 font-bold mb-1">{t.loggedMoodStatus}</span>
                   <div className="flex flex-wrap gap-1 mt-0.5">
                     {editingDiary.moods.length > 0 ? (
                       editingDiary.moods.map((m, i) => (
@@ -10375,7 +10375,7 @@ export default function App() {
                         </span>
                       ))
                     ) : (
-                      <span className="text-[10px] text-gray-400 italic">{t.noMoodSpecified || "لم يتم تحديد مزاج"}</span>
+                      <span className="text-[10px] text-gray-400 italic">{t.noMoodSpecified}</span>
                     )}
                   </div>
                 </div>
@@ -10400,7 +10400,7 @@ export default function App() {
                 <div className="bg-[#F4F6F4]/50 border border-gray-100 rounded-2xl p-6 space-y-3">
                   <h3 className="text-xs font-black text-[#5A5A40] flex items-center">
                     <span className="ml-1.5">📋</span>
-                    <span>{t.linkedTasksForDay || "قائمة المهام المرتبطة باليوم:"}</span>
+                    <span>{t.linkedTasksForDay}</span>
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {editingDiary.tasks.map((task) => (
@@ -10426,10 +10426,10 @@ export default function App() {
                 <div className="border border-gray-200 rounded-2xl p-6 space-y-3 bg-white shadow-3xs">
                   <h3 className="text-xs font-black text-[#5A5A40] flex items-center">
                     <span className="ml-1.5">🎨</span>
-                    <span>{t.attachedSketchDrawing || "الرسم التعبيري المصاحب:"}</span>
+                    <span>{t.attachedSketchDrawing}</span>
                   </h3>
                   <div className="w-full h-48 bg-[#F9F7F2] rounded-xl flex items-center justify-center overflow-hidden border border-gray-100">
-                    <img src={editingDiary.drawing} className="max-w-full max-h-full object-contain" alt={t.associatedDrawingAlt || "رسم مرفق"} referrerPolicy="no-referrer" />
+                    <img src={editingDiary.drawing} className="max-w-full max-h-full object-contain" alt={t.associatedDrawingAlt} referrerPolicy="no-referrer" />
                   </div>
                 </div>
               )}
@@ -10439,7 +10439,7 @@ export default function App() {
                 <div className="space-y-4">
                   <h3 className="text-xs font-black text-[#5A5A40] flex items-center">
                     <span className="ml-1.5">⏱️</span>
-                    <span>{t.subsequentEditsLog || "سجل الإضافات والتعديلات اللاحقة:"}</span>
+                    <span>{t.subsequentEditsLog}</span>
                   </h3>
                   <div className="space-y-3">
                     {editingDiary.edits.map((edit) => (
@@ -10466,9 +10466,9 @@ export default function App() {
               <div className="text-[9px] text-gray-400 font-bold flex items-center space-x-1.5 space-x-reverse mt-2">
                 <span>{t.hayatAiApp}</span>
                 <span>•</span>
-                <span>{t.safePersonalExportNotice || "تصدير آمن للمعلومات الشخصية"}</span>
+                <span>{t.safePersonalExportNotice}</span>
                 <span>•</span>
-                <span>{t.allUserRightsReservedBadge || "جميع الحقوق محفوظة للمستخدم 🔐"}</span>
+                <span>{t.allUserRightsReservedBadge}</span>
               </div>
             </div>
 
@@ -10486,8 +10486,8 @@ export default function App() {
               <div className="flex items-center space-x-2 space-x-reverse">
                 <span className="text-xl">🧠</span>
                 <div>
-                  <h4 className="font-extrabold text-sm text-[#3A3A3A]">{t.cbtModalMainTitle || "تمرين تفكيك وإعادة هيكلة الأفكار (CBT)"}</h4>
-                  <p className="text-[9px] text-gray-400 font-bold">{(t.cbtStepCounterText || "الخطوة {step} من 5").replace("{step}", String(cbtStep))}</p>
+                  <h4 className="font-extrabold text-sm text-[#3A3A3A]">{t.cbtModalMainTitle}</h4>
+                  <p className="text-[9px] text-gray-400 font-bold">{(t.cbtStepCounterText).replace("{step}", String(cbtStep))}</p>
                 </div>
               </div>
               <button
@@ -10505,13 +10505,13 @@ export default function App() {
             {cbtStep === 1 && (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepTriggerLabel || "🚩 ما هو الموقف أو الحدث المحفز لتوترك وقلقك؟"}</label>
-                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepTriggerDesc || "صف الموقف بواقعية دون أحكام مسبقة (مثال: تأخر الرد على رسالتي البريدية، أو اقتراب موعد تسليم المشروع البرمجي)."}</p>
+                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepTriggerLabel}</label>
+                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepTriggerDesc}</p>
                 </div>
                 <textarea
                   value={cbtTriggerEvent}
                   onChange={(e) => setCbtTriggerEvent(e.target.value)}
-                  placeholder={t.cbtStep1Placeholder || "اكتب هنا ما حدث بالتفصيل وبشكل موضوعي..."}
+                  placeholder={t.cbtStep1Placeholder}
                   className="w-full h-24 bg-[#F9F7F2]/50 hover:bg-[#F0EDE4]/40 focus:bg-white border border-[#E2DCC8] rounded-2xl p-3 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
                 />
                 <div className="flex justify-end">
@@ -10530,13 +10530,13 @@ export default function App() {
             {cbtStep === 2 && (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepThoughtLabel || "💭 ما هي الفكرة السلبية التلقائية التي خطرت ببالك فوراً؟"}</label>
-                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepThoughtDesc || "الأفكار التلقائية هي الوساوس والسيناريوهات الكارثية التي تهاجم ذهنك (مثال: سيفشل مشروعي وسوف يطردونني، أو بالتأكيد هم يكرهونني ويتجنبونني)."}</p>
+                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepThoughtLabel}</label>
+                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepThoughtDesc}</p>
                 </div>
                 <textarea
                   value={cbtNegativeThoughts}
                   onChange={(e) => setCbtNegativeThoughts(e.target.value)}
-                  placeholder={t.cbtStep2Placeholder || "اكتب الفكرة التلقائية التي تدور في ذهنك حالياً بكل صراحة..."}
+                  placeholder={t.cbtStep2Placeholder}
                   className="w-full h-24 bg-red-50/10 hover:bg-red-50/20 focus:bg-white border border-red-200/50 rounded-2xl p-3 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-red-300"
                 />
                 <div className="flex justify-between">
@@ -10561,8 +10561,8 @@ export default function App() {
             {cbtStep === 3 && (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepDistortionLabel || "🔍 حدد نوع التشويه الفكري أو الفخ المعرفي المصاحب لفكرتك السلبية:"}</label>
-                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepDistortionDesc || "العقليات القلقة تقع دوماً في أخطاء تفكير شائعة؛ اختر الخطأ الذي تجده في فكرتك التلقائية (أو دعه فارغاً ليقوم المستشار بتحديده تلقائياً):"}</p>
+                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepDistortionLabel}</label>
+                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepDistortionDesc}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-1">
                   {[
@@ -10607,15 +10607,15 @@ export default function App() {
             {cbtStep === 4 && (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepAnxietyLabel || "📊 ما هي شدة قلقك وضيقك حالياً قبل تطبيق التمرين؟ (1 - 10)"}</label>
-                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepAnxietyDesc || "سجل درجة التوتر الحالي حتى نتمكن من رصد نسبة الانخفاض والارتياح العصبي والذهني بعد التمرين."}</p>
+                  <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepAnxietyLabel}</label>
+                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepAnxietyDesc}</p>
                 </div>
                 
                 <div className="flex flex-col items-center py-4 bg-[#F9F7F2]/50 border border-[#E2DCC8]/50 rounded-2xl space-y-2">
                   <span className="font-mono text-2xl text-red-600 font-extrabold">{cbtEmotionBefore} / 10</span>
                   <span className="text-xs text-gray-400 font-bold">
-                    {cbtEmotionBefore <= 3 ? (t.cbtAnxietyMild || 'قلق خفيف ومسيطر عليه 👍') :
-                     cbtEmotionBefore <= 7 ? (t.cbtAnxietyModerate || 'توتر وتفكير مفرط مستهلك للطاقة ⚠️') : (t.cbtAnxietySevere || 'هلع وضيق عارم وعطلة كاملة 🚨')}
+                    {cbtEmotionBefore <= 3 ? (t.cbtAnxietyMild) :
+                     cbtEmotionBefore <= 7 ? (t.cbtAnxietyModerate) : (t.cbtAnxietySevere)}
                   </span>
                   
                   <div className="w-full px-8 pt-3">
@@ -10656,20 +10656,20 @@ export default function App() {
             {cbtStep === 5 && (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="block text-xs font-extrabold text-emerald-700">{t.cbtStepAlternativeLabel || "✨ البديل الفكري العقلاني المتزن المقترح:"}</label>
-                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepAlternativeDesc || "قّم بصياغة فكرة عقلانية متزنة وموضوعية تحارب الفكرة السلبية، أو استخدم اقتراح المستشار الذكي AI وتعديله يدوياً:"}</p>
+                  <label className="block text-xs font-extrabold text-emerald-700">{t.cbtStepAlternativeLabel}</label>
+                  <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepAlternativeDesc}</p>
                 </div>
 
                 {cbtLoading ? (
                   <div className="flex flex-col items-center justify-center p-6 border border-[#E2DCC8] rounded-2xl bg-[#F9F7F2]/40 space-y-2">
                     <RefreshCw className="w-6 h-6 text-[#8B9D83] animate-spin" />
-                    <span className="text-[10px] text-gray-400 font-bold">{t.cbtAiEngineWorkingStatus || "جاري تشغيل محرك العلاج المعرفي بالذكاء الاصطناعي وصياغة فكرتك المتزنة..."}</span>
+                    <span className="text-[10px] text-gray-400 font-bold">{t.cbtAiEngineWorkingStatus}</span>
                   </div>
                 ) : (
                   <textarea
                     value={cbtRationalAlternative}
                     onChange={(e) => setCbtRationalAlternative(e.target.value)}
-                    placeholder={t.cbtStep5Placeholder || "اكتب البديل العقلاني المتزن هنا..."}
+                    placeholder={t.cbtStep5Placeholder}
                     className="w-full h-28 bg-emerald-50/10 hover:bg-emerald-50/20 focus:bg-white border border-emerald-200/50 rounded-2xl p-3 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-emerald-400 font-medium font-sans"
                   />
                 )}
@@ -10682,11 +10682,11 @@ export default function App() {
                     className="flex items-center space-x-1 space-x-reverse text-[10px] font-black text-[#8B9D83] hover:text-[#5A5A40] disabled:text-gray-300 cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>{t.cbtGenerateAgainAiBtn || "توليد بالذكاء الاصطناعي مجدداً (AI)"}</span>
+                    <span>{t.cbtGenerateAgainAiBtn}</span>
                   </button>
 
                   <div className="flex items-center space-x-2 space-x-reverse">
-                    <span className="text-[10px] text-gray-400 font-bold">{t.cbtPostAnxietyLevelLabel || "شدة التوتر بعد التمرين:"}</span>
+                    <span className="text-[10px] text-gray-400 font-bold">{t.cbtPostAnxietyLevelLabel}</span>
                     <select
                       value={cbtEmotionAfter}
                       onChange={(e) => setCbtEmotionAfter(Number(e.target.value))}
@@ -10877,7 +10877,7 @@ export default function App() {
           setBookFormTags(['تنمية ذاتية']);
           setBookFormCustomTag('');
           setShowAddBookForm(false);
-          alert('تم {t.saveBookBtn || "حفظ الكتاب"} في مكتبتك الشاملة بنجاح! 📖✨');
+          alert('تم {t.saveBookBtn} في مكتبتك الشاملة بنجاح! 📖✨');
         };
 
         const handleDeleteBook = (id: string) => {
@@ -10903,7 +10903,7 @@ export default function App() {
                     <h2 className="text-sm sm:text-lg font-extrabold flex items-center">
                       <span>{t('calendarModalTitle')}</span>
                     </h2>
-                    <p className="text-[9px] sm:text-[10px] text-[#E2DCC8]">{t.calendarModalSubtitle || "تصفح اليوميات والكتب المقروءة والتقارير النفسية المتكاملة"}</p>
+                    <p className="text-[9px] sm:text-[10px] text-[#E2DCC8]">{t.calendarModalSubtitle}</p>
                   </div>
                 </div>
                 <button 
@@ -10958,7 +10958,7 @@ export default function App() {
                       : 'text-gray-500 hover:text-[#5A5A40]'
                   }`}
                 >
-                  <span>{t.wisdomAndReports || "الحكمة والتقارير 🧠"}</span>
+                  <span>{t.wisdomAndReports}</span>
                 </button>
               </div>
 
@@ -10967,7 +10967,7 @@ export default function App() {
                 
                 {/* LEFT COLUMN: Clean Calendar Widget */}
                 <div className="w-full md:w-[280px] shrink-0 border-b md:border-b-0 md:border-l border-[#E2DCC8]/40 p-3 sm:p-4 bg-[#F9F7F2]/40 flex flex-col justify-start space-y-3 sm:space-y-4 overflow-y-auto max-h-[380px] md:max-h-none">
-                  <div className="text-[10px] sm:text-[11px] font-black text-gray-400">{t.fullCalendarAndHistory || "التقويم الكامل والبحث التاريخي"}</div>
+                  <div className="text-[10px] sm:text-[11px] font-black text-gray-400">{t.fullCalendarAndHistory}</div>
 
                   <div className="bg-white border border-[#E2DCC8]/60 rounded-2xl p-3.5 space-y-3.5 shadow-3xs">
                     {/* Month Picker Navigation */}
@@ -11045,7 +11045,7 @@ export default function App() {
                   </div>
 
                   <div className="bg-white border border-[#E2DCC8]/50 rounded-2xl p-3 space-y-1 shadow-3xs">
-                    <span className="block text-[10px] text-gray-400 font-bold">{t.currentlySelectedDate || 'Currently Selected Date:'}</span>
+                    <span className="block text-[10px] text-gray-400 font-bold">{t.currentlySelectedDate}</span>
                     <span className="text-xs font-black text-[#5A5A40] block leading-tight">
                       {formattedDateLabel}
                     </span>
@@ -11055,11 +11055,11 @@ export default function App() {
                   <div className="bg-white border border-gray-100 rounded-2xl p-3 space-y-2 text-[10px] font-bold text-gray-500 shadow-3xs">
                     <div className="flex items-center space-x-1.5 space-x-reverse">
                       <span className="w-2 h-2 rounded-full bg-[#8B9D83]" />
-                      <span>{t.diaryRecordedLegend || 'Diary or Note Recorded 🟢'}</span>
+                      <span>{t.diaryRecordedLegend}</span>
                     </div>
                     <div className="flex items-center space-x-1.5 space-x-reverse">
                       <span className="w-2 h-2 rounded-full bg-[#D4A373]" />
-                      <span>{t.bookReadLegend || 'Book added to library 📚'}</span>
+                      <span>{t.bookReadLegend}</span>
                     </div>
                   </div>
                 </div>
@@ -11074,10 +11074,10 @@ export default function App() {
                         <div className="flex items-center justify-between border-b border-[#E2DCC8]/50 pb-3">
                           <h3 className="text-base font-black text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                             <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">☀️</span>
-                            <span>{t.whatHappenedOn || 'What happened on:'} {selectedCalendarDate}</span>
+                            <span>{t.whatHappenedOn} {selectedCalendarDate}</span>
                           </h3>
                           <span className="text-xs font-bold text-[#8B9D83] bg-[#8B9D83]/10 px-3 py-1 rounded-full">
-                            {hasDiaryOnSelectedDay ? (t.diaryRecordedLegend || 'Diary Recorded') : (t.quietEmptyDay || 'Quiet/Empty Day')}
+                            {hasDiaryOnSelectedDay ? (t.diaryRecordedLegend) : (t.quietEmptyDay)}
                           </span>
                         </div>
 
@@ -11086,13 +11086,13 @@ export default function App() {
                             {/* Left: Content Card */}
                             <div className="bg-[#F9F7F2]/40 border border-[#E2DCC8]/60 rounded-2xl p-4 space-y-3">
                               <div>
-                                <span className="text-[10px] font-bold text-gray-400">{t.diaryTitleLabel || 'Diary Title 📓'}</span>
-                                <h4 className="text-sm font-black text-[#3A3A3A] mt-0.5">{dayEntry.title || (t.untitledDiary || 'Untitled')}</h4>
+                                <span className="text-[10px] font-bold text-gray-400">{t.diaryTitleLabel}</span>
+                                <h4 className="text-sm font-black text-[#3A3A3A] mt-0.5">{dayEntry.title || (t.untitledDiary)}</h4>
                               </div>
                               <div>
-                                <span className="text-[10px] font-bold text-gray-400">{t.diaryContentLabel || 'Content ✍️'}</span>
+                                <span className="text-[10px] font-bold text-gray-400">{t.diaryContentLabel}</span>
                                 <p className="text-xs text-gray-600 leading-relaxed max-h-[160px] overflow-y-auto mt-1 whitespace-pre-wrap">
-                                  {cleanDiaryText(dayEntry.content) || (t.emptyDiaryText || 'Empty diary with no text content.')}
+                                  {cleanDiaryText(dayEntry.content) || (t.emptyDiaryText)}
                                 </p>
                               </div>
                               <div className="flex flex-wrap gap-1 pt-2 border-t border-[#E2DCC8]/30">
@@ -11107,50 +11107,50 @@ export default function App() {
                             {/* Right: Health & Behavior KPI Stats */}
                             <div className="bg-[#F9F7F2]/40 border border-[#E2DCC8]/60 rounded-2xl p-4 space-y-3 flex flex-col justify-between">
                               <h4 className="text-xs font-black text-[#5A5A40] border-b border-[#E2DCC8]/30 pb-1.5 flex items-center justify-between">
-                                <span>{t.healthMetricsAndCommitment || "الالتزام والقياسات النفسية والصحية 📊"}</span>
-                                <span className="text-[10px] font-extrabold text-[#D4A373]">{t.todayIndicatorsBadge || "مؤشرات اليوم"}</span>
+                                <span>{t.healthMetricsAndCommitment}</span>
+                                <span className="text-[10px] font-extrabold text-[#D4A373]">{t.todayIndicatorsBadge}</span>
                               </h4>
                               
                               <div className="space-y-2.5 flex-1 justify-center flex flex-col">
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                                  <span className="flex items-center gap-1">{t.medicationDoseCommitment || "💊 جرعة العلاج والالتزام:"}</span>
+                                  <span className="flex items-center gap-1">{t.medicationDoseCommitment}</span>
                                   <span className="font-extrabold text-[#3A3A3A]">
                                     {dayEntry.medications && dayEntry.medications.length > 0 ? (
-                                      <span className="text-emerald-600">{t.adherenceCompleted || "تم الالتزام"} ({dayEntry.medications.filter(m => m.taken).length}/{dayEntry.medications.length})</span>
+                                      <span className="text-emerald-600">{t.adherenceCompleted} ({dayEntry.medications.filter(m => m.taken).length}/{dayEntry.medications.length})</span>
                                     ) : (
-                                      <span className="text-gray-400 italic">{t.noSupplementsRecorded || "لم تسجل مكملات"}</span>
+                                      <span className="text-gray-400 italic">{t.noSupplementsRecorded}</span>
                                     )}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                                  <span className="flex items-center gap-1">{t.physicalActivitySport || "🏃 النشاط والرياضة البدنية:"}</span>
+                                  <span className="flex items-center gap-1">{t.physicalActivitySport}</span>
                                   <span className="font-extrabold text-[#3A3A3A]">
                                     {dayEntry.sportsDuration && dayEntry.sportsDuration > 0 ? (
                                       <span className="text-[#8B9D83]">
-                                        {dayEntry.sportsDuration} {t.practiceMinutes || "دقيقة ممارسة"} {dayEntry.sportsType ? `(${dayEntry.sportsType})` : ""}
+                                        {dayEntry.sportsDuration} {t.practiceMinutes} {dayEntry.sportsType ? `(${dayEntry.sportsType})` : ""}
                                       </span>
                                     ) : (
-                                      <span className="text-gray-400 italic">{t.noWorkoutsRecorded || "لا توجد تمارين"}</span>
+                                      <span className="text-gray-400 italic">{t.noWorkoutsRecorded}</span>
                                     )}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                                  <span className="flex items-center gap-1">{t.sleepQualityAndHours || "💤 جودة وساعات النوم:"}</span>
+                                  <span className="flex items-center gap-1">{t.sleepQualityAndHours}</span>
                                   <span className="font-extrabold text-[#3A3A3A]">
                                     {dayEntry.sleepHours ? (
-                                      <span>{dayEntry.sleepHours} {t.hoursLabel || "ساعات"}</span>
+                                      <span>{dayEntry.sleepHours} {t.hoursLabel}</span>
                                     ) : (
-                                      <span className="text-gray-400 italic">{t.notRecorded || "غير مسجل"}</span>
+                                      <span className="text-gray-400 italic">{t.notRecorded}</span>
                                     )}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                                  <span className="flex items-center gap-1">{t.bodyHydrationLevel || "🥤 نسبة ترطيب الجسم (الماء):"}</span>
+                                  <span className="flex items-center gap-1">{t.bodyHydrationLevel}</span>
                                   <span className="font-extrabold text-[#3A3A3A]">
                                     {dayEntry.waterCups ? (
-                                      <span className="text-blue-600 font-black">{dayEntry.waterCups} {t.cupsLabel || "أكواب 🥤"}</span>
+                                      <span className="text-blue-600 font-black">{dayEntry.waterCups} {t.cupsLabel}</span>
                                     ) : (
-                                      <span className="text-gray-400 italic">{t.zeroCups || "0 كوب"}</span>
+                                      <span className="text-gray-400 italic">{t.zeroCups}</span>
                                     )}
                                   </span>
                                 </div>
@@ -11158,8 +11158,8 @@ export default function App() {
 
                               {dayBooks.length > 0 && (
                                 <div className="mt-2 pt-2 border-t border-[#E2DCC8]/30 flex items-center justify-between text-[11px] font-black text-[#D4A373]">
-                                  <span>{t.readingsAddedToday || "📚 قراءات مضافة في هذا اليوم:"}</span>
-                                  <span>{dayBooks.length} {t.booksCountSuffix || "كتب"}</span>
+                                  <span>{t.readingsAddedToday}</span>
+                                  <span>{dayBooks.length} {t.booksCountSuffix}</span>
                                 </div>
                               )}
                             </div>
@@ -11168,7 +11168,7 @@ export default function App() {
                           <div className="bg-[#F9F7F2]/20 border border-dashed border-[#E2DCC8] rounded-3xl p-10 text-center space-y-4 my-8">
                             <Calendar className="w-12 h-12 text-gray-300 mx-auto" />
                             <div className="space-y-1">
-                              <h4 className="text-sm font-black text-[#5A5A40]">{t.noDiariesRecordedForDay || "لا توجد يوميات أو مذكرات مسجلة لهذا اليوم"}</h4>
+                              <h4 className="text-sm font-black text-[#5A5A40]">{t.noDiariesRecordedForDay}</h4>
                               <p className="text-xs text-gray-400">تاريخ {selectedCalendarDate} يخلو حالياً من التوثيقات والمذكرات النفسية.</p>
                             </div>
                             <button
@@ -11180,14 +11180,14 @@ export default function App() {
                               }}
                               className="px-5 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-2"
                             >
-                              <span>{t.recordNewDiaryForDay || "+ تدوين مذكرات جديدة لليوم"}</span>
+                              <span>{t.recordNewDiaryForDay}</span>
                             </button>
                           </div>
                         )}
                       </div>
 
                       <div className="text-[10px] text-gray-400 text-center leading-relaxed border-t border-gray-100 pt-3">
-                        <span>{t.calendarBottomTip || "💡 يمكنك اختيار أي يوم من التقويم باليسار لتظهر لك تفاصيل المزاج، النوم، الرياضة والعلاج فوراً وبكل سرية."}</span>
+                        <span>{t.calendarBottomTip}</span>
                       </div>
                     </div>
                   )}
@@ -11200,14 +11200,14 @@ export default function App() {
                         <form onSubmit={handleSaveBook} className="space-y-3.5 flex-1">
                           <div className="flex items-center justify-between border-b border-gray-100 pb-2">
                             <h3 className="text-sm font-black text-[#5A5A40] flex items-center space-x-2 space-x-reverse">
-                              <span>{t.addNewBookTitle || "إضافة كتاب جديد للمكتبة 📖✨"}</span>
+                              <span>{t.addNewBookTitle}</span>
                             </h3>
                             <button
                               type="button"
                               onClick={() => setShowAddBookForm(false)}
                               className="text-xs font-bold text-gray-400 hover:text-gray-600 cursor-pointer"
                             >
-                              {t.cancelEditing || "إلغاء التعديل"}
+                              {t.cancelEditing}
                             </button>
                           </div>
 
@@ -11215,28 +11215,28 @@ export default function App() {
                             {/* Column 1: Info */}
                             <div className="space-y-3">
                               <div>
-                                <label className="block text-[11px] font-black text-gray-500 mb-1">{t.bookTitleLabel || "عنوان الكتاب أو الرواية *"}</label>
+                                <label className="block text-[11px] font-black text-gray-500 mb-1">{t.bookTitleLabel}</label>
                                 <input
                                   type="text"
                                   required
                                   value={bookFormTitle}
                                   onChange={(e) => setBookFormTitle(e.target.value)}
-                                  placeholder={t.bookTitlePlaceholder || "مثال: العلاج النفسي الذاتي، رواية السلام"}
+                                  placeholder={t.bookTitlePlaceholder}
                                   className="w-full bg-[#F9F7F2]/50 border border-[#E2DCC8] rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#8B9D83] text-[#3A3A3A] font-bold"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-black text-gray-500 mb-1">{t.bookNotesAndQuotes || "ملاحظات واقتباسات أو مؤلف الكتاب"}</label>
+                                <label className="block text-[11px] font-black text-gray-500 mb-1">{t.bookNotesAndQuotes}</label>
                                 <textarea
                                   value={bookFormNotes}
                                   onChange={(e) => setBookFormNotes(e.target.value)}
-                                  placeholder={t.bookNotesPlaceholder || "أضف مراجعة قصيرة، مؤلف الكتاب، أو اقتباس ملهماً شعرت به..."}
+                                  placeholder={t.bookNotesPlaceholder}
                                   rows={4}
                                   className="w-full bg-[#F9F7F2]/50 border border-[#E2DCC8] rounded-xl p-3 text-xs focus:outline-none focus:ring-1 focus:ring-[#8B9D83] text-[#3A3A3A] font-bold leading-relaxed resize-none"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-black text-gray-500 mb-1">{t.personalRatingLabel || "تقييمك الشخصي للكتاب:"}</label>
+                                <label className="block text-[11px] font-black text-gray-500 mb-1">{t.personalRatingLabel}</label>
                                 <div className="flex items-center space-x-1.5 space-x-reverse">
                                   {[1, 2, 3, 4, 5].map((star) => (
                                     <button
@@ -11248,15 +11248,15 @@ export default function App() {
                                       {star <= bookFormRating ? '★' : '☆'}
                                     </button>
                                   ))}
-                                  <span className="text-[10px] text-gray-400 font-bold mr-2">({bookFormRating}/5 {t.starsOutOfFive || "نجوم"})</span>
+                                  <span className="text-[10px] text-gray-400 font-bold mr-2">({bookFormRating}/5 {t.starsOutOfFive})</span>
                                 </div>
                               </div>
 
                               {/* Book Categorization Tags */}
                               <div>
-                                <label className="block text-[11px] font-black text-[#5A5A40] mb-1.5">{t.bookCategoriesAndTags || "تصنيفات وتقسيمات الكتاب (Tags) 🏷️"}</label>
+                                <label className="block text-[11px] font-black text-[#5A5A40] mb-1.5">{t.bookCategoriesAndTags}</label>
                                 <div className="flex flex-wrap gap-1.5 mb-2">
-                                  {[(t.tagSelfHelp || 'Self-help'), (t.tagNovels || 'Novels'), (t.tagPsychology || 'Psychology'), (t.tagMentalHealth || 'Mental Health'), (t.tagPhilosophy || 'Philosophy'), (t.tagHistory || 'History'), (t.tagLiterature || 'Literature'), (t.tagScience || 'Science'), (t.tagBiographies || 'Biographies')].map((presetTag) => {
+                                  {[(t.tagSelfHelp), (t.tagNovels), (t.tagPsychology), (t.tagMentalHealth), (t.tagPhilosophy), (t.tagHistory), (t.tagLiterature), (t.tagScience), (t.tagBiographies)].map((presetTag) => {
                                     const isSelected = bookFormTags.includes(presetTag);
                                     return (
                                       <button
@@ -11296,7 +11296,7 @@ export default function App() {
                                         }
                                       }
                                     }}
-                                    placeholder={t.addCustomCategoryPlaceholder || "أضف تصنيفاً خاصاً..."}
+                                    placeholder={t.addCustomCategoryPlaceholder}
                                     className="flex-1 bg-[#F9F7F2]/50 border border-[#E2DCC8] rounded-lg px-2.5 py-1 text-[10px] font-bold text-[#3A3A3A] focus:outline-none focus:ring-1 focus:ring-[#8B9D83]"
                                   />
                                   <button
@@ -11309,14 +11309,14 @@ export default function App() {
                                     }}
                                     className="px-3 py-1 bg-[#5A5A40] text-white text-[10px] font-bold rounded-lg hover:bg-[#3D3D2A] transition-colors cursor-pointer"
                                   >
-                                    {t.addBtn || "+ إضافة"}
+                                    {t.addBtn}
                                   </button>
                                 </div>
 
                                 {/* Selected Tags list */}
                                 {bookFormTags.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-2">
-                                    <span className="text-[10px] font-bold text-gray-400 self-center">{t.selectedCategoriesLabel || "المحددة:"}</span>
+                                    <span className="text-[10px] font-bold text-gray-400 self-center">{t.selectedCategoriesLabel}</span>
                                     {bookFormTags.map(tag => (
                                       <span
                                         key={tag}
@@ -11339,21 +11339,21 @@ export default function App() {
 
                             {/* Column 2: Attachments & Simulation */}
                             <div className="space-y-3 bg-[#F9F7F2]/35 border border-[#E2DCC8]/40 rounded-2xl p-4">
-                              <span className="block text-xs font-black text-[#5A5A40] border-b border-[#E2DCC8]/30 pb-1 mb-2">{t.bookAttachmentsHeader || "الملحقات الكاملة للكتاب (PDF، صوت، رسم، إلخ) : 📎"}</span>
+                              <span className="block text-xs font-black text-[#5A5A40] border-b border-[#E2DCC8]/30 pb-1 mb-2">{t.bookAttachmentsHeader}</span>
                               
                               <div>
-                                <label className="block text-[10px] font-black text-gray-500 mb-1">{t.pdfFilePathLabel || "مسار ملف PDF (أو اسم المرجع الملحق)"}</label>
+                                <label className="block text-[10px] font-black text-gray-500 mb-1">{t.pdfFilePathLabel}</label>
                                 <input
                                   type="text"
                                   value={bookFormPdf}
                                   onChange={(e) => setBookFormPdf(e.target.value)}
-                                  placeholder={t.pdfFilePathPlaceholder || "مثال: كتاب_العلاج_المعرفي_الكامل.pdf"}
+                                  placeholder={t.pdfFilePathPlaceholder}
                                   className="w-full bg-white border border-[#E2DCC8] rounded-lg px-2.5 py-1.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-[#8B9D83] text-[#3A3A3A] font-bold"
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-[10px] font-black text-gray-500 mb-1">{t.referenceWebLink || "رابط مرجعي للموقع أو الكتاب الإلكتروني"}</label>
+                                <label className="block text-[10px] font-black text-gray-500 mb-1">{t.referenceWebLink}</label>
                                 <input
                                   type="text"
                                   value={bookFormLink}
@@ -11375,7 +11375,7 @@ export default function App() {
                                       : 'bg-white border-[#E2DCC8] hover:bg-gray-50 text-[#3A3A3A]'
                                   }`}
                                 >
-                                  <span>🎙️ {bookFormAudio ? (t.attachedAudioYes || "صوت مرفق ✓") : (t.addAudioBtn || "أضف صوت")}</span>
+                                  <span>🎙️ {bookFormAudio ? (t.attachedAudioYes) : (t.addAudioBtn)}</span>
                                 </button>
                                 <button
                                   type="button"
@@ -11388,12 +11388,12 @@ export default function App() {
                                       : 'bg-white border-[#E2DCC8] hover:bg-gray-50 text-[#3A3A3A]'
                                   }`}
                                 >
-                                  <span>📹 {bookFormVideo ? (t.attachedVideoYes || "فيديو مرفق ✓") : (t.addVideoBtn || "أضف فيديو")}</span>
+                                  <span>📹 {bookFormVideo ? (t.attachedVideoYes) : (t.addVideoBtn)}</span>
                                 </button>
                               </div>
 
                               <div className="flex items-center justify-between border-t border-gray-200/50 pt-2.5 mt-2.5">
-                                <span className="text-[10px] font-black text-[#5A5A40]">{t.sketchMindMap || "رسم مخطط ذهني أو انطباع للرواية يدوياً: 🎨"}</span>
+                                <span className="text-[10px] font-black text-[#5A5A40]">{t.sketchMindMap}</span>
                                 <button
                                   type="button"
                                   onClick={() => setBookFormHasMindMap(!bookFormHasMindMap)}
@@ -11415,7 +11415,7 @@ export default function App() {
                               onClick={() => setShowAddBookForm(false)}
                               className="px-4 py-2 border border-gray-200 hover:bg-gray-50 text-xs font-bold rounded-xl transition-all cursor-pointer text-gray-500"
                             >
-                              {t.cancelAndSaveLater || "إلغاء وحفظ لاحقاً"}
+                              {t.cancelAndSaveLater}
                             </button>
                             <button
                               type="submit"
@@ -11436,13 +11436,13 @@ export default function App() {
                                 className="text-xs font-black text-[#8B9D83] hover:text-[#5A5A40] flex items-center gap-1.5 cursor-pointer"
                               >
                                 <ChevronRight className={`w-4 h-4 ${isRtl ? '' : 'rotate-180'}`} />
-                                <span>{t.backToBooksList || 'العودة لقائمة الكتب'}</span>
+                                <span>{t.backToBooksList}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteBook(selectedBookDetail.id)}
                                 className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
-                                title={t.delete || "حذف"}
+                                title={t.delete}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -11451,7 +11451,7 @@ export default function App() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-3">
                                 <div>
-                                  <span className="text-[10px] font-bold text-gray-400">{t.bookNameAndRating || "اسم الكتاب والتقييم 📚"}</span>
+                                  <span className="text-[10px] font-bold text-gray-400">{t.bookNameAndRating}</span>
                                   <h4 className="text-base font-black text-[#3A3A3A] mt-0.5">{selectedBookDetail.title}</h4>
                                   <div className="flex items-center text-amber-500 text-sm mt-1">
                                     {'★'.repeat(selectedBookDetail.rating)}
@@ -11460,15 +11460,15 @@ export default function App() {
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-[10px] font-bold text-gray-400">{t.notesSummaryAndQuotes || "ملاحظات، تلخيص واقتباسات 📝"}</span>
+                                  <span className="text-[10px] font-bold text-gray-400">{t.notesSummaryAndQuotes}</span>
                                   <p className="text-xs text-gray-600 leading-relaxed max-h-[160px] overflow-y-auto mt-1 whitespace-pre-wrap bg-[#F9F7F2]/45 border border-[#E2DCC8]/50 p-3.5 rounded-2xl font-medium">
-                                    {selectedBookDetail.notes || (t.noDetailedNotesRecorded || 'لا توجد ملاحظات تفصيلية مسجلة.')}
+                                    {selectedBookDetail.notes || (t.noDetailedNotesRecorded)}
                                   </p>
                                 </div>
 
                                 {selectedBookDetail.tags && selectedBookDetail.tags.length > 0 && (
                                   <div className="bg-teal-50/50 border border-teal-100/80 rounded-xl p-2.5 mt-2">
-                                    <span className="text-[10px] font-black text-teal-800 block mb-1">{t.bookCategoriesAndTagsList || "🏷️ تصنيفات الكتاب والوسوم:"}</span>
+                                    <span className="text-[10px] font-black text-teal-800 block mb-1">{t.bookCategoriesAndTagsList}</span>
                                     <div className="flex flex-wrap gap-1.5">
                                       {selectedBookDetail.tags.map(tag => (
                                         <button
@@ -11479,7 +11479,7 @@ export default function App() {
                                             setSelectedBookDetail(null);
                                           }}
                                           className="px-2.5 py-1 bg-white hover:bg-teal-100 text-teal-800 border border-teal-200 text-[10px] font-extrabold rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-3xs"
-                                          title={t.filterLibraryByTag || "تصفية المكتبة بهذا التصنيف"}
+                                          title={t.filterLibraryByTag}
                                         >
                                           <span>🏷️</span>
                                           <span>{tag}</span>
@@ -11491,7 +11491,7 @@ export default function App() {
                               </div>
 
                               <div className="bg-[#F9F7F2]/30 border border-[#E2DCC8]/50 rounded-2xl p-4 space-y-3 flex flex-col justify-start">
-                                <span className="block text-xs font-black text-[#5A5A40] border-b border-gray-100 pb-1">{t.interactiveAttachmentsSimulation || "المحاكاة التفاعلية للملحقات: 📎"}</span>
+                                <span className="block text-xs font-black text-[#5A5A40] border-b border-gray-100 pb-1">{t.interactiveAttachmentsSimulation}</span>
                                 
                                 {selectedBookDetail.pdfPath && (
                                   <button
@@ -11499,8 +11499,8 @@ export default function App() {
                                     onClick={() => alert(`📖 محاكاة فتح مستند PDF:\nاسم المستند: ${selectedBookDetail.pdfPath}\nتنبيه: جاري تحميل وقراءة الفصول والملخص الشامل بنجاح وسرية تامة...`)}
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>📂</span> <span>{t.openPdfAndBook || "فتح ملف PDF والكتاب"}</span></span>
-                                    <span className="text-[10px] text-[#8B9D83]">{t.readyToRead || "جاهز للقراءة 📖"}</span>
+                                    <span className="flex items-center gap-2"><span>📂</span> <span>{t.openPdfAndBook}</span></span>
+                                    <span className="text-[10px] text-[#8B9D83]">{t.readyToRead}</span>
                                   </button>
                                 )}
 
@@ -11511,7 +11511,7 @@ export default function App() {
                                     rel="noreferrer"
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>🔗</span> <span>{t.bookReferenceLink || "Book Reference Website Link"}</span></span>
+                                    <span className="flex items-center gap-2"><span>🔗</span> <span>{t.bookReferenceLink}</span></span>
                                     <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
                                   </a>
                                 )}
@@ -11522,7 +11522,7 @@ export default function App() {
                                     onClick={() => alert(`🎙️ جاري تفعيل مشغل الملخص الصوتي للكتاب...\nالملف: ${selectedBookDetail.audioAttachment}\nاستمع للمراجعة الصوتية القصيرة بنجاح.`)}
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>🎙️</span> <span>{t.listenAudioSummary || "Listen to Audio Summary"}</span></span>
+                                    <span className="flex items-center gap-2"><span>🎙️</span> <span>{t.listenAudioSummary}</span></span>
                                     <Music className="w-3.5 h-3.5 text-[#8B9D83]" />
                                   </button>
                                 )}
@@ -11533,22 +11533,22 @@ export default function App() {
                                     onClick={() => alert(`📹 تشغيل المراجعة المرئية السريعة:\nالملف: ${selectedBookDetail.videoAttachment}\nالعرض ناجح ومحمي وسريع الاستجابة.`)}
                                     className="w-full text-right p-2.5 bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-xl flex items-center justify-between transition-all text-xs font-bold text-gray-700 cursor-pointer shadow-3xs"
                                   >
-                                    <span className="flex items-center gap-2"><span>📹</span> <span>{t.playAttachedVideo || "Play Attached Video"}</span></span>
-                                    <span className="text-[10px] text-[#D4A373]">{t.videoClipBadge || "Video Clip 📹"}</span>
+                                    <span className="flex items-center gap-2"><span>📹</span> <span>{t.playAttachedVideo}</span></span>
+                                    <span className="text-[10px] text-[#D4A373]">{t.videoClipBadge}</span>
                                   </button>
                                 )}
 
                                 {selectedBookDetail.hasMindMap && (
                                   <div className="border border-dashed border-[#E2DCC8] rounded-xl p-3 bg-white space-y-2">
-                                    <span className="block text-[10px] font-black text-gray-400">{t.mindmapTitle || "Mind Map 🎨:"}</span>
+                                    <span className="block text-[10px] font-black text-gray-400">{t.mindmapTitle}</span>
                                     <div className="flex flex-col items-center justify-center p-2 bg-[#F9F7F2] rounded-lg border border-[#E2DCC8]/40 space-y-1.5">
                                       <div className="text-[11px] font-black text-[#5A5A40] bg-white border border-[#E2DCC8] px-2.5 py-0.5 rounded-full shadow-3xs">
                                         {selectedBookDetail.title.slice(0, 18)}...
                                       </div>
                                       <div className="w-0.5 h-3 bg-[#8B9D83]/60" />
                                       <div className="flex justify-center gap-2 w-full">
-                                        <span className="text-[9px] font-bold bg-white border border-gray-100 px-1.5 py-0.5 rounded-lg text-gray-500 shadow-3xs">{t.mindmapPillar1 || "المحور الأول"}</span>
-                                        <span className="text-[9px] font-bold bg-white border border-gray-100 px-1.5 py-0.5 rounded-lg text-gray-500 shadow-3xs">{t.mindmapPillar2 || "المحور الثاني"}</span>
+                                        <span className="text-[9px] font-bold bg-white border border-gray-100 px-1.5 py-0.5 rounded-lg text-gray-500 shadow-3xs">{t.mindmapPillar1}</span>
+                                        <span className="text-[9px] font-bold bg-white border border-gray-100 px-1.5 py-0.5 rounded-lg text-gray-500 shadow-3xs">{t.mindmapPillar2}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -11558,7 +11558,7 @@ export default function App() {
                           </div>
 
                           <div className="text-[10px] text-gray-400 text-center leading-relaxed border-t border-gray-100 pt-3">
-                            <span>{t.attachmentsInteractiveTip || "💡 هذه الملحقات مدمجة وتفاعلية لمساعدتك على قراءة مراجعك وتلخيصها يدوياً أو صوتياً وبناء أرشيفك الثقافي."}</span>
+                            <span>{t.attachmentsInteractiveTip}</span>
                           </div>
                         </div>
                       ) : (
@@ -11600,16 +11600,16 @@ export default function App() {
                                   <div>
                                     <h3 className="text-base font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                                       <span className="p-1.5 bg-[#8B9D83]/10 text-[#8B9D83] rounded-xl">📚</span>
-                                      <span>{t.myComprehensiveLibrary || "My Comprehensive Library"}</span>
+                                      <span>{t.myComprehensiveLibrary}</span>
                                     </h3>
-                                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">{t.browseAndFilterBooksDesc || "تصفح وتصفية جميع المراجع والكتب والروايات المضافة بذكاء ميسر"}</p>
+                                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">{t.browseAndFilterBooksDesc}</p>
                                   </div>
                                   <button
                                     type="button"
                                     onClick={() => setShowAddBookForm(true)}
                                     className="px-4 py-2 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] hover:opacity-95 text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-sm active:scale-97 shrink-0"
                                   >
-                                    {t.addNewBookMaterial || "+ Add New Reading Material"}
+                                    {t.addNewBookMaterial}
                                   </button>
                                 </div>
 
@@ -11621,7 +11621,7 @@ export default function App() {
                                       type="text"
                                       value={bookSearchQuery}
                                       onChange={(e) => setBookSearchQuery(e.target.value)}
-                                      placeholder={t.searchLibraryPlaceholder || "Search book by title, category, or tags..."}
+                                      placeholder={t.searchLibraryPlaceholder}
                                       className="w-full bg-white border border-[#E2DCC8] rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#8B9D83] text-[#3A3A3A] font-bold"
                                     />
                                     <span className="absolute left-3.5 top-2.5 text-gray-400 text-xs">🔍</span>
@@ -11640,7 +11640,7 @@ export default function App() {
                                   <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-0.5">
                                     {/* Attachment Filter */}
                                     <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto py-0.5">
-                                      <span className="text-[10px] text-gray-400 font-black shrink-0">{t.attachmentsFilterPrefix || 'Attachments:'}</span>
+                                      <span className="text-[10px] text-gray-400 font-black shrink-0">{t.attachmentsFilterPrefix}</span>
                                       {[
                                         { id: 'all', label: 'الكل' },
                                         { id: 'pdf', label: 'PDF 📂' },
@@ -11665,13 +11665,13 @@ export default function App() {
 
                                     {/* Rating Filter */}
                                     <div className="flex items-center space-x-1.5 space-x-reverse">
-                                      <span className="text-[10px] text-gray-400 font-black">{t.minRatingFilter || "Minimum Rating:"}</span>
+                                      <span className="text-[10px] text-gray-400 font-black">{t.minRatingFilter}</span>
                                       <select
                                         value={bookRatingFilter}
                                         onChange={(e) => setBookRatingFilter(Number(e.target.value))}
                                         className="bg-white border border-[#E2DCC8] rounded-lg px-2 py-1 text-[10px] font-black text-[#5A5A40] focus:outline-none"
                                       >
-                                        <option value={0}>{t.showAllOption || "Show All ⭐"}</option>
+                                        <option value={0}>{t.showAllOption}</option>
                                         <option value={5}>⭐⭐⭐⭐⭐ (5)</option>
                                         <option value={4}>⭐⭐⭐⭐+ (4)</option>
                                         <option value={3}>⭐⭐⭐+ (3)</option>
@@ -11684,7 +11684,7 @@ export default function App() {
                                     <div className="flex items-center justify-between">
                                       <span className="text-[10px] font-black text-[#5A5A40] flex items-center gap-1">
                                         <span>🏷️</span>
-                                        <span>{t.quickTagFilterBar || "Quick filter by category:"}</span>
+                                        <span>{t.quickTagFilterBar}</span>
                                       </span>
                                       {selectedBookTagFilter !== 'all' && (
                                         <button
@@ -11692,26 +11692,26 @@ export default function App() {
                                           onClick={() => setSelectedBookTagFilter('all')}
                                           className="text-[10px] text-teal-700 hover:underline font-extrabold cursor-pointer"
                                         >
-                                          {t.clearCategoryFilter || "Clear Filter (Show All) ✕"}
+                                          {t.clearCategoryFilter}
                                         </button>
                                       )}
                                     </div>
 
                                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
                                       {[
-                                        t.allCategoryFilter || 'All',
-                                        t.tagSelfHelp || 'Self-help',
-                                        t.tagNovels || 'Novels',
-                                        t.tagPsychology || 'Psychology',
-                                        t.tagMentalHealth || 'Mental Health',
-                                        t.tagPhilosophy || 'Philosophy',
-                                        t.tagHistory || 'History',
-                                        t.tagLiterature || 'Literature',
-                                        t.tagScience || 'Science',
-                                        t.tagBiographies || 'Biographies',
+                                        t.allCategoryFilter,
+                                        t.tagSelfHelp,
+                                        t.tagNovels,
+                                        t.tagPsychology,
+                                        t.tagMentalHealth,
+                                        t.tagPhilosophy,
+                                        t.tagHistory,
+                                        t.tagLiterature,
+                                        t.tagScience,
+                                        t.tagBiographies,
                                         ...Array.from(new Set(books.flatMap(b => b.tags || [])))
                                       ].filter((v, i, a) => a.indexOf(v) === i).map(tag => {
-                                        const isAll = tag === (t.allCategoryFilter || 'All');
+                                        const isAll = tag === (t.allCategoryFilter);
                                         const count = isAll
                                           ? books.length
                                           : books.filter(b => (b.tags || []).includes(tag)).length;
@@ -11750,8 +11750,8 @@ export default function App() {
                                   <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F9F7F2]/20 border border-dashed border-[#E2DCC8] rounded-3xl my-2">
                                     <span className="text-3xl animate-bounce">📭</span>
                                     <div className="space-y-1 mt-2">
-                                      <h4 className="text-xs font-black text-[#5A5A40]">{t.noBooksMatchingFilter || "لم يتم العثور على أي مراجع مطابقة للبحث أو التصنيف المحدد"}</h4>
-                                      <p className="text-[10px] text-gray-400">{t.noBooksSubHint || "Please adjust your filter options or add a new book."}</p>
+                                      <h4 className="text-xs font-black text-[#5A5A40]">{t.noBooksMatchingFilter}</h4>
+                                      <p className="text-[10px] text-gray-400">{t.noBooksSubHint}</p>
                                     </div>
                                   </div>
                                 ) : (
@@ -11773,7 +11773,7 @@ export default function App() {
                                           <div className="absolute inset-y-0 right-0 w-1.5 bg-black/15 border-l border-white/5" />
 
                                           <div className="space-y-1 relative z-10">
-                                            <span className="block text-[8px] tracking-widest uppercase opacity-75 font-black text-center">{t.iqraArchiveBadge || "أرشيف اقرأ"}</span>
+                                            <span className="block text-[8px] tracking-widest uppercase opacity-75 font-black text-center">{t.iqraArchiveBadge}</span>
                                             <h5 className="text-[10px] font-black text-center leading-tight line-clamp-3 mt-1 text-shadow-sm font-sans">
                                               {book.title}
                                             </h5>
@@ -11794,12 +11794,12 @@ export default function App() {
                                                 {book.title}
                                               </h4>
                                               <span className="text-[8px] text-gray-400 font-extrabold whitespace-nowrap bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded-md">
-                                                {book.createdAt ? book.createdAt.split('T')[0] : (t.previousDateBadge || 'سابق')}
+                                                {book.createdAt ? book.createdAt.split('T')[0] : (t.previousDateBadge)}
                                               </span>
                                             </div>
                                             
                                             <p className="text-[10.5px] text-gray-500 line-clamp-2 leading-relaxed">
-                                              {book.notes || (t.noNotesOrQuotesForBook || 'لا توجد ملاحظات أو اقتباسات مدونة لهذه المادة القرائية.')}
+                                              {book.notes || (t.noNotesOrQuotesForBook)}
                                             </p>
 
                                             {/* Tag Chips on Book Card */}
@@ -11813,7 +11813,7 @@ export default function App() {
                                                        setSelectedBookTagFilter(tag);
                                                     }}
                                                     className="text-[9px] font-black bg-teal-50 text-teal-800 border border-teal-200/80 px-1.5 py-0.2 rounded-md hover:bg-teal-100 transition-colors"
-                                                    title={t.filterByThisTag || "تصفية حسب هذا التصنيف"}
+                                                    title={t.filterByThisTag}
                                                   >
                                                      🏷️ {tag}
                                                   </span>
@@ -11828,16 +11828,16 @@ export default function App() {
                                               <span className="text-[9px] font-black bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-lg border border-emerald-100">PDF 📂</span>
                                             )}
                                             {book.referenceLink && (
-                                              <span className="text-[9px] font-black bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-lg border border-blue-100">{t.badgeRefLink || "مرجع 🔗"}</span>
+                                              <span className="text-[9px] font-black bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-lg border border-blue-100">{t.badgeRefLink}</span>
                                             )}
                                             {book.audioAttachment && (
-                                              <span className="text-[9px] font-black bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded-lg border border-purple-100">{t.badgeAudio || "صوت 🎙️"}</span>
+                                              <span className="text-[9px] font-black bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded-lg border border-purple-100">{t.badgeAudio}</span>
                                             )}
                                             {book.videoAttachment && (
-                                              <span className="text-[9px] font-black bg-amber-50 text-[#D4A373] px-1.5 py-0.5 rounded-lg border border-amber-100">{t.badgeVideo || "مرئي 📹"}</span>
+                                              <span className="text-[9px] font-black bg-amber-50 text-[#D4A373] px-1.5 py-0.5 rounded-lg border border-amber-100">{t.badgeVideo}</span>
                                             )}
                                             {book.hasMindMap && (
-                                              <span className="text-[9px] font-black bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded-lg border border-rose-100">{t.badgeMindmap || "مخطط 🎨"}</span>
+                                              <span className="text-[9px] font-black bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded-lg border border-rose-100">{t.badgeMindmap}</span>
                                             )}
                                           </div>
                                         </div>
@@ -11849,7 +11849,7 @@ export default function App() {
 
                               {/* Footer guide statement */}
                               <div className="text-[10px] text-gray-400 text-center leading-relaxed border-t border-gray-100 pt-3">
-                                <span>{t.bookCoverClickTip || "💡 اضغط على غلاف أي كتاب لاستعراض محتوياته الكاملة وملاحظاتك المترابطة أو تشغيل المراجعات المرئية والصوتية له."}</span>
+                                <span>{t.bookCoverClickTip}</span>
                               </div>
                             </div>
                           );
@@ -11865,7 +11865,7 @@ export default function App() {
                         <div className="flex items-center justify-between border-b border-[#E2DCC8]/50 pb-3">
                           <h3 className="text-base font-black text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
                             <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">🧠</span>
-                            <span>{t.analyticalReportsWisdom || "Analytical Reports & Wisdom 🧠"}</span>
+                            <span>{t.analyticalReportsWisdom}</span>
                           </h3>
                           <button
                             type="button"
@@ -11875,7 +11875,7 @@ export default function App() {
                             }}
                             className="px-3.5 py-1.5 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] text-white text-xs font-black rounded-xl cursor-pointer transition-all hover:opacity-90 shadow-3xs"
                           >
-                            {t.generateWeeklyMoodReport || "Generate Weekly Behavioral & Mood Report"}
+                            {t.generateWeeklyMoodReport}
                           </button>
                         </div>
 
@@ -11883,8 +11883,8 @@ export default function App() {
                           {/* Compliance KPIs card */}
                           <div className="bg-[#F9F7F2]/40 border border-[#E2DCC8]/60 rounded-2xl p-4 space-y-3">
                             <h4 className="text-xs font-black text-[#5A5A40] border-b border-[#E2DCC8]/30 pb-1 flex items-center justify-between">
-                              <span>{t.habitCommitmentRateLabel || "Behavioral Habits Commitment Level 🏃‍♂️"}</span>
-                              <span className="text-[10px] font-extrabold text-[#8B9D83]">{t.thisWeekBadge || "This Week"}</span>
+                              <span>{t.habitCommitmentRateLabel}</span>
+                              <span className="text-[10px] font-extrabold text-[#8B9D83]">{t.thisWeekBadge}</span>
                             </h4>
                             <div className="space-y-2.5">
                               {habits.slice(0, 3).map((habit) => {
@@ -11912,43 +11912,43 @@ export default function App() {
                           {/* Dynamic Custom AI Wisdom Card */}
                           <div className="bg-[#F9F7F2]/45 border border-[#E2DCC8]/60 p-4 rounded-2xl flex flex-col justify-between">
                             <div className="space-y-2">
-                              <span className="block text-[10px] font-black text-gray-400">{t.aiSmartAdvisorRecommendationTitle || "AI Smart Clinical Advisor Recommendation 🧘:"}</span>
+                              <span className="block text-[10px] font-black text-gray-400">{t.aiSmartAdvisorRecommendationTitle}</span>
                               <p className="text-xs text-gray-700 leading-relaxed font-bold">
                                 "إن توازن جودة القراءة مع ممارسة تمارين التنفس هو ركيزة أساسية لخفض مستويات الكورتيزول وتصفية العقل. ننصحك بقراءة ٢٠ دقيقة من كتاب العلاج السلوكي المفضل لديك قبل النوم وتجنب الشاشات."
                               </p>
                             </div>
                             <div className="text-[10px] text-gray-400 italic text-left border-t border-gray-100/80 pt-2.5 mt-2.5">
-                              {t.aiAdvisorSignature || "— مستشارك النفسي الصديق"}
+                              {t.aiAdvisorSignature}
                             </div>
                           </div>
                         </div>
 
                         {/* Additional insights list */}
                         <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3 shadow-3xs">
-                          <h4 className="text-xs font-black text-[#5A5A40]">{t.readingHabitRecommendations || "توصيات لتحسين جودة القراءة والصحة النفسية 🧘:"}</h4>
+                          <h4 className="text-xs font-black text-[#5A5A40]">{t.readingHabitRecommendations}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] text-gray-600 font-semibold leading-relaxed">
                             <div className="flex items-start gap-1.5">
                               <span className="text-emerald-500">✔</span>
-                              <span>{t.readingRecommendation1 || "ممارسة رياضة التنفس والوعي الذهني لمدة ١٠ دقائق يومياً قبل كتابة المذكرات لتخفيف التوتر."}</span>
+                              <span>{t.readingRecommendation1}</span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <span className="text-emerald-500">✔</span>
-                              <span>{t.readingRecommendation2 || "تخصيص ٢٠ دقيقة للقراءة من المكتبة الشاملة قبل النوم لتهدئة الدماغ واستبدال الهواتف الزرقاء."}</span>
+                              <span>{t.readingRecommendation2}</span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <span className="text-emerald-500">✔</span>
-                              <span>{t.readingRecommendation3 || "ربط المهام الصعبة بمكافأة ممتعة كقراءة فصل جديد من روايتك المفضلة لتشجيع العقل على الإنجاز."}</span>
+                              <span>{t.readingRecommendation3}</span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <span className="text-emerald-500">✔</span>
-                              <span>{t.readingRecommendation4 || "مراجعة المخططات الذهنية للكتب وقائمة الاقتباسات بشكل دوري لترسيخ المعارف والسلوكيات الإيجابية."}</span>
+                              <span>{t.readingRecommendation4}</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       <div className="text-[10px] text-gray-400 text-center leading-relaxed border-t border-gray-100 pt-3">
-                        <span>{t.exportTherapyReportTip || "💡 يمكنك تصدير تقرير علاجي مفصل وجاهز للطباعة والتسليم لطبيبك المعالج عن طريق النقر على الزر بالزاوية العلوية."}</span>
+                        <span>{t.exportTherapyReportTip}</span>
                       </div>
                     </div>
                   )}
@@ -11996,10 +11996,10 @@ export default function App() {
       <div 
         onClick={() => setSettings(prev => ({ ...prev, isAppLocked: true }))}
         className="fixed end-0 top-[35%] w-3.5 h-16 bg-gradient-to-l from-[#222] to-[#444] rounded-s-lg hover:from-[#333] hover:to-[#555] border border-gray-600 border-e-0 shadow-xl cursor-pointer transition-all hover:w-4 z-[9999] flex items-center justify-center group"
-        title={t.hardwarePowerBtnTooltip || 'Hardware Power Button to lock the app 🔌'}
+        title={t.hardwarePowerBtnTooltip}
       >
         <span className="opacity-0 group-hover:opacity-100 absolute end-6 bg-black/85 text-white text-[10px] font-extrabold py-1 px-2 rounded-lg whitespace-nowrap transition-opacity pointer-events-none shadow-md">
-          {t.lockScreenTooltip || 'Lock Screen 🔌'}
+          {t.lockScreenTooltip}
         </span>
       </div>
 
@@ -12048,7 +12048,7 @@ export default function App() {
                     ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]' 
                     : 'bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8]'
                 }`}>
-                  {viewArchivedDiary.diaryType === 'thought' ? (t.archivedThoughtBadge || '✍️ Archived Thought') : (t.archivedDiaryBadge || '📓 Archived Diary')}
+                  {viewArchivedDiary.diaryType === 'thought' ? (t.archivedThoughtBadge) : (t.archivedDiaryBadge)}
                 </span>
                 <span className="text-xs font-bold text-gray-400">
                   📅 {viewArchivedDiary.createdAt.split('T')[0]}
@@ -12065,12 +12065,12 @@ export default function App() {
 
             {/* Title */}
             <h3 className="text-lg font-extrabold text-[#3A3A3A]">
-              {viewArchivedDiary.title || (t.untitledEntry || 'Untitled Note')}
+              {viewArchivedDiary.title || (t.untitledEntry)}
             </h3>
 
             {/* Content */}
             <div className="bg-[#F9F7F2] border border-[#E2DCC8]/60 p-4 rounded-2xl text-xs leading-relaxed text-[#3A3A3A] whitespace-pre-wrap font-medium">
-              {cleanDiaryText(viewArchivedDiary.content) || (t.noTextWritten || 'No written text (attachments only).')}
+              {cleanDiaryText(viewArchivedDiary.content) || (t.noTextWritten)}
             </div>
 
             {/* Moods & Tags */}
@@ -12092,7 +12092,7 @@ export default function App() {
             {/* Attachments if any */}
             {(viewArchivedDiary.images.length > 0 || ((viewArchivedDiary as any).recordings || []).length > 0) && (
               <div className="space-y-3 pt-2 border-t border-[#E2DCC8]/40">
-                <span className="text-xs font-bold text-[#5A5A40] block">{t.attachmentsAndAudioLabel || 'Attachments & Audio:'}</span>
+                <span className="text-xs font-bold text-[#5A5A40] block">{t.attachmentsAndAudioLabel}</span>
                 {viewArchivedDiary.images.map((img, idx) => (
                   <img key={idx} src={img} alt="مرفق" className="max-h-48 rounded-xl border border-gray-200 object-cover" />
                 ))}
@@ -12113,14 +12113,14 @@ export default function App() {
                 className="px-4 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>{t.restoreToMainDiariesBtn || 'Restore to Main Diaries'}</span>
+                <span>{t.restoreToMainDiariesBtn}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setViewArchivedDiary(null)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
               >
-                {t.closePreviewBtn || 'Close Preview'}
+                {t.closePreviewBtn}
               </button>
             </div>
           </div>
@@ -12149,7 +12149,7 @@ export default function App() {
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-[#D4A373]" />
-                <span>{t.lockScreenNotificationTitle || "Pinned Lock Screen Notification"}</span>
+                <span>{t.lockScreenNotificationTitle}</span>
               </h3>
               <button
                 type="button"
@@ -12164,17 +12164,17 @@ export default function App() {
               <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl font-bold text-amber-950 flex items-start gap-2.5">
                 <span className="text-xl">📱</span>
                 <div>
-                  <span className="font-extrabold block text-sm">{t.pinShortcutsPowerDesc || "Quick shortcuts accessible right from lock screen:"}</span>
-                  <span>{t.lockScreenPermanentDesc || "عند تمكين الخيار، يُثبّت التطبيق إشعاراً دائماً يحوي كافة الاختصارات (كتابة، تسجيل، مستشار، مزاجي) على شاشة القفل الخارجية."}</span>
+                  <span className="font-extrabold block text-sm">{t.pinShortcutsPowerDesc}</span>
+                  <span>{t.lockScreenPermanentDesc}</span>
                 </div>
               </div>
 
               <div className="space-y-2 pt-1">
-                <h4 className="font-black text-gray-900 text-xs">{t.setupStepsHeading || "خطوات الضبط لضمان ظهوره بشكل ممتاز:"}</h4>
+                <h4 className="font-black text-gray-900 text-xs">{t.setupStepsHeading}</h4>
                 <ol className="list-decimal list-inside space-y-1.5 text-gray-600 pr-1">
-                  <li><strong>{t.setupStep1Title || "السماح بالإشعارات:"}</strong> {t.setupStep1Desc || "وافق على إذن الإشعارات عندما يطلبه المتصفح."}</li>
-                  <li><strong>{t.setupStep2Title || "تثبيت التطبيق PWA:"}</strong> {t.setupStep2Desc || "اضغط على خيار \"إضافة إلى الشاشة الرئيسية\" في متصفحك ليصبح تطبيقاً ثابتاً بالنظام."}</li>
-                  <li><strong>{t.setupStep3Title || "إعدادات شاشة القفل بالهاتف:"}</strong> {t.setupStep3Desc || "تأكد من إظهار محتوى الإشعارات على شاشة قفل جهازك."}</li>
+                  <li><strong>{t.setupStep1Title}</strong> {t.setupStep1Desc}</li>
+                  <li><strong>{t.setupStep2Title}</strong> {t.setupStep2Desc}</li>
+                  <li><strong>{t.setupStep3Title}</strong> {t.setupStep3Desc}</li>
                 </ol>
               </div>
             </div>
@@ -12189,7 +12189,7 @@ export default function App() {
                 className="w-full py-3 bg-[#4E685B] hover:bg-[#3F5449] text-white rounded-2xl font-extrabold text-xs transition-all shadow-md cursor-pointer text-center flex items-center justify-center gap-2 active:scale-95"
               >
                 <BellRing className="w-4 h-4 text-amber-300 animate-bounce" />
-                <span>{t.pinLockScreenNowBtn || "Pin Notification to Lock Screen 📌"}</span>
+                <span>{t.pinLockScreenNowBtn}</span>
               </button>
             </div>
           </div>

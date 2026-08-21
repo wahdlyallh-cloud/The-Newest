@@ -60,10 +60,10 @@ export default function PredictiveHealthInsightsModal({
     try {
       // Simulate/Run predictive AI analysis
       await new Promise(resolve => setTimeout(resolve, 1200));
-      const summaryTitle = t.predictiveSummaryTitle || '🔮 Predictive Analysis Summary:';
-      const anxietyLabel = t.predictiveAnxietyLabel || '• **Anxiety Risk:**';
-      const sleepForecastLabel = t.predictiveSleepLabel || '• **Sleep Forecast:**';
-      const preventiveLabel = t.predictivePreventiveLabel || '• **Preventive Guidance:**';
+      const summaryTitle = t.predictiveSummaryTitle;
+      const anxietyLabel = t.predictiveAnxietyLabel;
+      const sleepForecastLabel = t.predictiveSleepLabel;
+      const preventiveLabel = t.predictivePreventiveLabel;
       const anxietyDetail = t.predictiveAnxietyDetail
         ? t.predictiveAnxietyDetail.replace('{percent}', String(anxietyRiskPercent))
         : `Low-to-Moderate (${anxietyRiskPercent}%). Stress triggers identified.`;

@@ -27,7 +27,7 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
   };
 
   const handleEmailClick = () => {
-    const subject = t.emailSubjectFeedback || 'Feedback - Hayat AI App';
+    const subject = t.emailSubjectFeedback;
     window.location.href = `mailto:${emailAddress}?subject=${encodeURIComponent(subject)}`;
   };
 
@@ -41,7 +41,7 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
             <span className="p-2 bg-[#4E685B] text-white rounded-xl shadow-3xs">
               <Mail className="w-5 h-5" />
             </span>
-            <span>{t.contactDeveloperTitle || 'Contact Developer 📬'}</span>
+            <span>{t.contactDeveloperTitle}</span>
           </h4>
           <button 
             type="button"
@@ -59,7 +59,7 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
           <div className="bg-[#FEFBF3] border-2 border-[#D4A373]/40 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-2.5">
             <div className="flex items-center gap-2 text-[#4E685B] font-black text-xs sm:text-sm">
               <Heart className="w-4 h-4 text-[#D4A373] fill-[#D4A373]" />
-              <span>{t.developerMessageLabel || 'Message from Hayat AI developer:'}</span>
+              <span>{t.developerMessageLabel}</span>
             </div>
             <p className="text-xs sm:text-[13px] text-gray-800 font-bold leading-relaxed text-justify">
               أنا مجرد شخص يستخدم الذكاء الاصطناعي لمساعدتي في تحسين جودة حياتي لذلك صنعت هذا التطبيق المتواضع ونشرته ليساعد أي شخص لديه رغبة في تطوير وفهم ذاته وتحسين حياته للأفضل. لو لديك أي تعديل أو استفسار أو نقد بناء أو أي شيء يمكن يساعدنا في الوصول لوجهتنا وهي السلام النفسي وعيش حياة ذات جودة عالية وتحقيق ما نرغب فيه يمكنك مراسلتي من هنا. وشكرًا
@@ -106,7 +106,7 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
               className="flex-2 py-3 bg-[#4E685B] hover:bg-[#3F5449] text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs hover:shadow-md"
             >
               <Mail className="w-4 h-4" />
-              <span>{t.sendDirectEmailBtn || 'Send Email ✉️'}</span>
+              <span>{t.sendDirectEmailBtn}</span>
             </button>
           </div>
         </div>

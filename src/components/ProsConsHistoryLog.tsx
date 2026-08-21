@@ -133,25 +133,25 @@ export default function ProsConsHistoryLog({
 
     const content = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><meta charset='utf-8'><title>${t.comprehensiveProsConsHistoryTitle || 'Comprehensive Pros & Cons History'}</title></head>
+      <head><meta charset='utf-8'><title>${t.comprehensiveProsConsHistoryTitle}</title></head>
       <body style="font-family: Arial, sans-serif; direction: rtl; text-align: right; padding: 25px;">
-        <h1 style="color: #2B3E50; text-align: center;">⚖️ ${t.comprehensiveProsConsLogAllDays || 'Comprehensive Pros & Cons Log for All Days'}</h1>
+        <h1 style="color: #2B3E50; text-align: center;">⚖️ ${t.comprehensiveProsConsLogAllDays}</h1>
         <p style="text-align: center; color: #5A5A40;">إجمالي الأيام المسجلة: ${totalDaysTracked} | نسبة الإيجابية العامة: ${positivityRatio}%</p>
         <hr/>
         ${records.map(r => `
           <div style="margin-bottom: 30px; border: 1px solid #E2DCC8; padding: 15px; border-radius: 10px;">
             <h2 style="color: #3B5066;">📅 ${r.displayDate} (${r.dayKey})</h2>
             
-            <h3 style="color: #2D5A27;">${t.aiGeneratedPros || '🧠 Positives (AI):'}</h3>
+            <h3 style="color: #2D5A27;">${t.aiGeneratedPros}</h3>
             <ul>${(r.aiPositives || []).map(p => `<li>${p}</li>`).join('')}</ul>
 
-            <h3 style="color: #902923;">${t.aiGeneratedCons || '🧠 Negatives (AI):'}</h3>
+            <h3 style="color: #902923;">${t.aiGeneratedCons}</h3>
             <ul>${(r.aiNegatives || []).map(n => `<li>${n}</li>`).join('')}</ul>
 
-            <h3 style="color: #2D5A27;">${t.manualPros || '✍️ Manual Positives:'}</h3>
+            <h3 style="color: #2D5A27;">${t.manualPros}</h3>
             <ul>${(r.userPositives || []).map(p => `<li>${p}</li>`).join('')}</ul>
 
-            <h3 style="color: #902923;">${t.manualCons || '✍️ Manual Negatives:'}</h3>
+            <h3 style="color: #902923;">${t.manualCons}</h3>
             <ul>${(r.userNegatives || []).map(n => `<li>${n}</li>`).join('')}</ul>
           </div>
         `).join('')}
@@ -182,14 +182,14 @@ export default function ProsConsHistoryLog({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-xl font-black text-white">
-                {t.dailyProsConsLogHeader || '⚖️ Daily Pros & Cons Log'}
+                {t.dailyProsConsLogHeader}
               </h3>
               <span className="bg-[#8B9D83] text-white text-[10px] font-black px-2.5 py-0.5 rounded-full border border-white/20">
-                {t.fullHistoryArchiveBadge || 'Full History Archive 🧠'}
+                {t.fullHistoryArchiveBadge}
               </span>
             </div>
             <p className="text-xs text-[#E2DCC8] font-medium mt-1 leading-relaxed max-w-xl">
-              {t.prosConsArchiveDescription || 'Chronological archive documenting strengths, opportunities, positives, and challenges logged automatically by AI or manually over time.'}
+              {t.prosConsArchiveDescription}
             </p>
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function ProsConsHistoryLog({
           className="relative z-10 px-5 py-3 bg-gradient-to-r from-[#FEFAE0] to-[#E2DCC8] hover:from-white hover:to-[#FEFAE0] text-[#2B3E50] rounded-2xl font-black text-xs shadow-md transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer shrink-0 hover:scale-102 border border-white/40"
         >
           <FileText className="w-4 h-4 text-[#8B9D83]" />
-          <span>{t.exportFullLogBtn || 'Export Full Log (Word / PDF) 📄'}</span>
+          <span>{t.exportFullLogBtn}</span>
         </button>
 
       </div>
@@ -209,31 +209,31 @@ export default function ProsConsHistoryLog({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white border border-[#E2DCC8] rounded-2xl p-4 shadow-3xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-gray-500">{t.totalDaysTrackedLabel || 'Total Days Tracked'}</p>
-            <p className="text-xl font-black text-[#2B3E50] mt-0.5">{totalDaysTracked} {t.daysUnit || 'days'}</p>
+            <p className="text-[11px] font-extrabold text-gray-500">{t.totalDaysTrackedLabel}</p>
+            <p className="text-xl font-black text-[#2B3E50] mt-0.5">{totalDaysTracked} {t.daysUnit}</p>
           </div>
           <Calendar className="w-6 h-6 text-[#8B9D83] opacity-80" />
         </div>
 
         <div className="bg-[#F2F7F2] border border-[#C2DCBE] rounded-2xl p-4 shadow-3xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-emerald-800">{t.totalPositivesLoggedLabel || 'Total Positives Logged'}</p>
-            <p className="text-xl font-black text-emerald-900 mt-0.5">{totalGlobalPositives} {t.itemsUnit || 'items'}</p>
+            <p className="text-[11px] font-extrabold text-emerald-800">{t.totalPositivesLoggedLabel}</p>
+            <p className="text-xl font-black text-emerald-900 mt-0.5">{totalGlobalPositives} {t.itemsUnit}</p>
           </div>
           <CheckCircle2 className="w-6 h-6 text-emerald-600 opacity-80" />
         </div>
 
         <div className="bg-[#FDF3F2] border border-[#F5C6C3] rounded-2xl p-4 shadow-3xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-rose-800">{t.totalChallengesNegativesLabel || 'Total Challenges & Negatives'}</p>
-            <p className="text-xl font-black text-rose-900 mt-0.5">{totalGlobalNegatives} {t.itemsUnit || 'items'}</p>
+            <p className="text-[11px] font-extrabold text-rose-800">{t.totalChallengesNegativesLabel}</p>
+            <p className="text-xl font-black text-rose-900 mt-0.5">{totalGlobalNegatives} {t.itemsUnit}</p>
           </div>
           <XCircle className="w-6 h-6 text-rose-600 opacity-80" />
         </div>
 
         <div className="bg-white border border-[#E2DCC8] rounded-2xl p-4 shadow-3xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-gray-500">{t.positiveBalanceRatioLabel || 'Positive Balance Ratio'}</p>
+            <p className="text-[11px] font-extrabold text-gray-500">{t.positiveBalanceRatioLabel}</p>
             <p className="text-xl font-black text-[#5A5A40] mt-0.5">{positivityRatio}%</p>
           </div>
           <Brain className="w-6 h-6 text-[#5A5A40] opacity-80" />
@@ -249,7 +249,7 @@ export default function ProsConsHistoryLog({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t.searchProsConsPlaceholder || 'Search by day key, date, or keywords...'}
+            placeholder={t.searchProsConsPlaceholder}
             className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl pe-9 ps-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#8B9D83]"
           />
           <Search className="w-4 h-4 text-gray-400 absolute end-3 top-2.5" />
@@ -265,7 +265,7 @@ export default function ProsConsHistoryLog({
                 : 'bg-[#FAF8F5] text-gray-600 border border-[#E2DCC8]'
             }`}
           >
-            {t.filterAll || 'All'} ({records.length})
+            {t.filterAll} ({records.length})
           </button>
 
           <button
@@ -276,7 +276,7 @@ export default function ProsConsHistoryLog({
                 : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
             }`}
           >
-            {t.filterMostlyPositive || 'Mostly Positive 🟢'}
+            {t.filterMostlyPositive}
           </button>
 
           <button
@@ -287,7 +287,7 @@ export default function ProsConsHistoryLog({
                 : 'bg-rose-50 text-rose-800 border border-rose-200'
             }`}
           >
-            {t.filterHigherChallenges || 'Higher Challenges 🔴'}
+            {t.filterHigherChallenges}
           </button>
         </div>
 
@@ -297,9 +297,9 @@ export default function ProsConsHistoryLog({
       {filteredRecords.length === 0 ? (
         <div className="bg-white border-2 border-dashed border-[#E2DCC8] rounded-3xl p-10 text-center space-y-3">
           <Scale className="w-12 h-12 text-[#8B9D83] mx-auto opacity-50" />
-          <h4 className="text-base font-black text-[#2B3E50]">{t.noMatchingRecordsFound || 'No matching records found'}</h4>
+          <h4 className="text-base font-black text-[#2B3E50]">{t.noMatchingRecordsFound}</h4>
           <p className="text-xs text-gray-500 max-w-md mx-auto">
-            {t.goToJournalForProsConsPrompt || 'Go to the Journal tab and click the ⚖️ Pros & Cons icon next to any date to generate its report.'}
+            {t.goToJournalForProsConsPrompt}
           </p>
         </div>
       ) : (
@@ -325,7 +325,7 @@ export default function ProsConsHistoryLog({
                         {entry.displayDate}
                       </h4>
                       <p className="text-[10px] text-gray-400 font-bold">
-                        {t.loggedDateLabel || 'Logged Date:'} {entry.dayKey}
+                        {t.loggedDateLabel} {entry.dayKey}
                       </p>
                     </div>
                   </div>
@@ -337,13 +337,13 @@ export default function ProsConsHistoryLog({
                       className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition-all shadow-3xs"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
-                      <span>{t.editDetailsBtn || 'Edit Details'}</span>
+                      <span>{t.editDetailsBtn}</span>
                     </button>
 
                     <button
                       onClick={() => handleDeleteRecord(entry.dayKey)}
                       className="p-1.5 text-gray-400 hover:text-red-500 rounded-xl hover:bg-rose-50 transition-all cursor-pointer"
-                      title={t.deleteRecordTooltip || 'Delete Record'}
+                      title={t.deleteRecordTooltip}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -358,7 +358,7 @@ export default function ProsConsHistoryLog({
                     <div className="flex items-center justify-between border-b border-[#C2DCBE] pb-1.5">
                       <span className="text-xs font-black text-[#2D5A27] flex items-center gap-1.5">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>{t.positivesLabel || 'Positives'} ({t.totalPrefix || 'total '}{allPositives.length}):</span>
+                        <span>{t.positivesLabel} ({t.totalPrefix}{allPositives.length}):</span>
                       </span>
                     </div>
 
@@ -376,7 +376,7 @@ export default function ProsConsHistoryLog({
                         </li>
                       ))}
                       {allPositives.length === 0 && (
-                        <li className="text-xs text-gray-400 italic">{t.noPositivesLoggedToday || 'No positives logged for this day.'}</li>
+                        <li className="text-xs text-gray-400 italic">{t.noPositivesLoggedToday}</li>
                       )}
                     </ul>
                   </div>
@@ -386,7 +386,7 @@ export default function ProsConsHistoryLog({
                     <div className="flex items-center justify-between border-b border-[#F5C6C3] pb-1.5">
                       <span className="text-xs font-black text-[#902923] flex items-center gap-1.5">
                         <XCircle className="w-4 h-4 text-rose-600" />
-                        <span>{t.challengesAndNegativesLabel || 'Challenges & Negatives'} ({t.totalPrefix || 'total '}{allNegatives.length}):</span>
+                        <span>{t.challengesAndNegativesLabel} ({t.totalPrefix}{allNegatives.length}):</span>
                       </span>
                     </div>
 
@@ -404,7 +404,7 @@ export default function ProsConsHistoryLog({
                         </li>
                       ))}
                       {allNegatives.length === 0 && (
-                        <li className="text-xs text-gray-400 italic">{t.noNegativesLoggedToday || 'No challenges logged for this day.'}</li>
+                        <li className="text-xs text-gray-400 italic">{t.noNegativesLoggedToday}</li>
                       )}
                     </ul>
                   </div>

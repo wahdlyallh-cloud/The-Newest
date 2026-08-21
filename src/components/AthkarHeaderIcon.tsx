@@ -73,7 +73,7 @@ export default function AthkarHeaderIcon({
           whileTap={{ scale: 0.95 }}
           onClick={onOpenFullAthkar}
           className="relative group flex items-center justify-center p-2 rounded-2xl bg-gradient-to-b from-zinc-900/90 via-emerald-950/80 to-zinc-950 border border-amber-500/40 hover:border-amber-400 shadow-lg shadow-amber-500/10 cursor-pointer transition-all duration-300"
-          title={t.muslimAthkarFullScreenTitle || "أذكار المسلم - فتح الشاشة الكاملة المباشرة"}
+          title={t.muslimAthkarFullScreenTitle}
         >
           {/* Pulsing Golden Beam */}
           <div className="absolute inset-0 rounded-2xl bg-amber-400/10 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-300 pointer-events-none" />
@@ -121,7 +121,7 @@ export default function AthkarHeaderIcon({
         <button
           onClick={() => setIsOpenMenu(!isOpenMenu)}
           className="p-1 rounded-lg text-amber-400/70 hover:text-amber-300 hover:bg-amber-500/10 transition-colors cursor-pointer"
-          title={t.athkarModalTitle || "Remembrance & Tranquility"}
+          title={t.athkarModalTitle}
         >
           <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpenMenu ? 'rotate-180' : ''}`} />
         </button>
@@ -151,8 +151,8 @@ export default function AthkarHeaderIcon({
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-amber-200">{t.athkarModalTitle || "Daily Remembrance"}</h4>
-                    <p className="text-[10px] text-zinc-400">{t.dailyDhikrProgress || "Daily Progress"}</p>
+                    <h4 className="text-xs font-bold text-amber-200">{t.athkarModalTitle}</h4>
+                    <p className="text-[10px] text-zinc-400">{t.dailyDhikrProgress}</p>
                   </div>
                 </div>
                 <span className="text-xs font-mono font-bold text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
@@ -163,7 +163,7 @@ export default function AthkarHeaderIcon({
               {/* Progress Bar */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] text-zinc-300">
-                  <span>{t.dailyCompletionRatio || "Daily Completion"}</span>
+                  <span>{t.dailyCompletionRatio}</span>
                   <span className="font-mono text-amber-300">{progressPercent}/100%</span>
                 </div>
                 <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-amber-500/20">
@@ -185,7 +185,7 @@ export default function AthkarHeaderIcon({
                 >
                   <span className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                    <span>{t.fullScreenView || 'Full Screen View'}</span>
+                    <span>{t.fullScreenView}</span>
                   </span>
                   <span className="text-amber-400 font-mono text-[10px]">←</span>
                 </button>
@@ -199,9 +199,9 @@ export default function AthkarHeaderIcon({
                 >
                   <span className="flex items-center gap-2">
                     <Lock className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-                    <span>{t.integratedLockScreenMode || 'Integrated Lock Screen Mode'}</span>
+                    <span>{t.integratedLockScreenMode}</span>
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">{t.interactiveMode || 'Interactive'}</span>
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">{t.interactiveMode}</span>
                 </button>
               </div>
 
