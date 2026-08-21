@@ -12,14 +12,14 @@ interface HabitFormModalProps {
 }
 
 const COLOR_PALETTE = [
-  { id: 'blue', hex: '#3B82F6', label: 'Blue' },
-  { id: 'emerald', hex: '#10B981', label: 'Emerald' },
-  { id: 'indigo', hex: '#6366F1', label: 'Indigo' },
-  { id: 'amber', hex: '#F59E0B', label: 'Amber' },
-  { id: 'rose', hex: '#F43F5E', label: 'Rose' },
-  { id: 'teal', hex: '#14B8A6', label: 'Teal' },
-  { id: 'purple', hex: '#A855F7', label: 'Purple' },
-  { id: 'slate', hex: '#64748B', label: 'Slate' }
+  { id: 'blue', hex: '#3B82F6', label: 'colorBlue' },
+  { id: 'emerald', hex: '#10B981', label: 'colorEmerald' },
+  { id: 'indigo', hex: '#6366F1', label: 'colorIndigo' },
+  { id: 'amber', hex: '#F59E0B', label: 'colorAmber' },
+  { id: 'rose', hex: '#F43F5E', label: 'colorRose' },
+  { id: 'teal', hex: '#14B8A6', label: 'colorTeal' },
+  { id: 'purple', hex: '#A855F7', label: 'colorPurple' },
+  { id: 'slate', hex: '#64748B', label: 'colorSlate' }
 ];
 
 const HABIT_ICONS = [
@@ -219,7 +219,7 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
                             color === c.hex ? 'scale-125 ring-2 ring-blue-500' : 'opacity-80 hover:opacity-100'
                           }`}
                           style={{ backgroundColor: c.hex }}
-                          title={c.label}
+                          title={t[c.label] || c.label}
                         />
                       ))}
                     </div>

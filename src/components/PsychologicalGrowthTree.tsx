@@ -148,7 +148,7 @@ export default function PsychologicalGrowthTree({
             type="button"
             onClick={() => setShowInfoModal(true)}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-2xl text-emerald-200 transition-colors cursor-pointer"
-            title="How it works"
+            title={t.howItWorksTooltip || "كيف يعمل"}
           >
             <Info className="w-4 h-4" />
           </button>

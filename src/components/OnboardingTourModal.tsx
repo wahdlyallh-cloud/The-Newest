@@ -163,17 +163,17 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
           <div className="flex items-center justify-between text-xs font-bold text-[#6B4E71]">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>{'Live Voice Journaling'}</span>
+              <span>{t.liveVoiceJournaling || "يوميات صوتية مباشرة"}</span>
             </span>
             <span className="text-[10px] font-extrabold bg-purple-100 text-purple-900 px-2 py-0.5 rounded-full">
-              {'Continuous Recording'}
+              {t.continuousRecording || "تسجيل مستمر"}
             </span>
           </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-extrabold text-[#2B3E50]">
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {'Speak'}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {'Pause'}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {'Continue'}</div>
-            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {'Save'}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">1. {t.speakAction || "تحدث"}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">2. {t.pauseAction || "إيقاف مؤقت"}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">3. {t.continueAction || "متابعة"}</div>
+            <div className="bg-white/90 p-1.5 rounded-xl border border-purple-100">4. {t.saveAction || "حفظ"}</div>
           </div>
         </div>
       ),
@@ -386,7 +386,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
               type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100 cursor-pointer"
-              aria-label={'Close guide'}
+              aria-label={t.closeGuideAction || "إغلاق الدليل"}
             >
               <X className="w-4 h-4" />
             </button>

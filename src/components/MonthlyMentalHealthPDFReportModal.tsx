@@ -1096,7 +1096,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 title="Word Document (.doc)"
               >
                 <FileCode className="w-3.5 h-3.5 text-blue-600" />
-                <span className="hidden md:inline">Word</span>
+                <span className="hidden md:inline">{t.wordExport || "Word"}</span>
               </button>
 
               <button
@@ -1243,9 +1243,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
               </div>
 
               <div className="bg-[#FAF8F5] border border-[#E2DCC8] p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2">
-                <h4 className="font-bold text-xs text-[#5A5A40]">"Daily Habits Commitment:"</h4>
+                <h4 className="font-bold text-xs text-[#5A5A40]">{t.dailyHabitsCommitmentTitle || "Daily Habits Commitment:"}</h4>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600 font-medium">"Completion Rate:"</span>
+                  <span className="text-xs text-gray-600 font-medium">{t.completionRateTitle || "Completion Rate:"}</span>
                   <span className="text-sm font-black text-[#8B9D83]">{stats.habitRate}%</span>
                 </div>
                 <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -1262,7 +1262,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                 <div>
                   <h3 className="font-black text-xs sm:text-sm text-[#5A5A40] flex items-center gap-2">
                     <ArrowRightLeft className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                    <span>"Therapy Session Review & Monitoring (Pre & Post Session)"</span>
+                    <span>{t.therapySessionReviewTitle || "Therapy Session Review & Monitoring (Pre & Post Session)"}</span>
                   </h3>
                   <p className="text-[11px] text-gray-500 mt-0.5">
                     "System connecting pre-session prep with therapist responses and mood balance"
@@ -1271,7 +1271,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
                 {/* Live Mood Delta Comparison Badge */}
                 <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-[#E2DCC8] shadow-3xs text-xs font-bold shrink-0">
-                  <span className="text-gray-500">"Recovery:"</span>
+                  <span className="text-gray-500">{t.recoveryTitle || "Recovery:"}</span>
                   <span className={`font-black ${postSessionMood - preSessionMood >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
                     {postSessionMood - preSessionMood >= 0 ? `+${postSessionMood - preSessionMood}% 📈` : `${postSessionMood - preSessionMood}% 📉`}
                   </span>
@@ -1289,8 +1289,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         <Stethoscope className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-extrabold text-xs text-[#2B3E50] truncate">"Pre-Session Prep"</h4>
-                        <span className="text-[10px] text-gray-500 truncate block">"Notes & questions"</span>
+                        <h4 className="font-extrabold text-xs text-[#2B3E50] truncate">{t.preSessionPrepTitle || "Pre-Session Prep"}</h4>
+                        <span className="text-[10px] text-gray-500 truncate block">{t.notesAndQuestionsTitle || "Notes & questions"}</span>
                       </div>
                     </div>
                     <span className="text-xs font-black text-[#5A5A40] bg-white px-2 py-0.5 rounded-lg border border-[#E2DCC8] shrink-0">
@@ -1303,7 +1303,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     <div className="flex items-center justify-between text-xs font-bold text-[#5A5A40]">
                       <span className="flex items-center gap-1">
                         <Smile className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                        <span>"Pre-session mood:"</span>
+                        <span>{t.preSessionMoodLabel2 || "Pre-session mood:"}</span>
                       </span>
                       <span className="text-xs font-black text-[#8B9D83] bg-white px-2 py-0.5 rounded-md border border-[#E2DCC8]">
                         {preSessionMood}% {preSessionMoodLabel}
@@ -1355,7 +1355,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     <textarea
                       value={patientNotes}
                       onChange={(e) => setPatientNotes(e.target.value)}
-                      placeholder="Write questions or thoughts..."
+                      placeholder={t.writeQuestionsThoughtsPlaceholder || "Write questions or thoughts..."}
                       rows={3}
                       className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed break-words"
                     />
@@ -1370,8 +1370,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         <UserCheck className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-extrabold text-xs text-[#2D5A27] truncate">"Post-Session Feedback"</h4>
-                        <span className="text-[10px] text-gray-500 truncate block">"Advice & Homework"</span>
+                        <h4 className="font-extrabold text-xs text-[#2D5A27] truncate">{t.postSessionFeedbackTitle || "Post-Session Feedback"}</h4>
+                        <span className="text-[10px] text-gray-500 truncate block">{t.adviceHomeworkTitle || "Advice & Homework"}</span>
                       </div>
                     </div>
                     <span className="text-xs font-black text-[#2D5A27] bg-white px-2 py-0.5 rounded-lg border border-[#C2DCBE] shrink-0">
@@ -1383,7 +1383,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="flex items-center justify-between bg-[#F7F9F6] p-2 rounded-xl border border-[#C2DCBE] gap-2 flex-wrap">
                     <label className="text-xs font-bold text-[#2D5A27] flex items-center gap-1 shrink-0">
                       <Clock className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                      <span>"Session Time:"</span>
+                      <span>{t.sessionTimeLabel || "Session Time:"}</span>
                     </label>
                     <input
                       type="datetime-local"
@@ -1397,12 +1397,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
                       <MessageSquare className="w-3.5 h-3.5 text-[#8B9D83] shrink-0" />
-                      <span>"Therapist Feedback:"</span>
+                      <span>{t.therapistFeedbackTitle2 || "Therapist Feedback:"}</span>
                     </label>
                     <textarea
                       value={therapistFeedback}
                       onChange={(e) => setTherapistFeedback(e.target.value)}
-                      placeholder="Record therapist answers discussed in session..."
+                      placeholder={t.recordTherapistAnswersPlaceholder || "Record therapist answers discussed in session..."}
                       rows={2}
                       className="w-full bg-[#F9FBF8] border border-[#C2DCBE] rounded-xl p-2 text-xs text-[#3A3A3A] focus:outline-none focus:ring-2 focus:ring-[#8B9D83] leading-relaxed break-words"
                     />
@@ -1412,7 +1412,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1.5 bg-[#F4F8F3] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
                       <ListTodo className="w-3.5 h-3.5 text-[#5A5A40] shrink-0" />
-                      <span>"Therapist Homework:"</span>
+                      <span>{t.therapistHomeworkTitle || "Therapist Homework:"}</span>
                     </label>
 
                     <div className="space-y-1">
@@ -1439,7 +1439,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         value={homeworkInput}
                         onChange={(e) => setHomeworkInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddHomework())}
-                        placeholder="Add homework..."
+                        placeholder={t.addHomeworkPlaceholder || "Add homework..."}
                         className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none min-w-0"
                       />
                       <button
@@ -1458,7 +1458,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                     <div className="flex items-center justify-between text-xs font-bold text-[#2D5A27]">
                       <span className="flex items-center gap-1">
                         <Smile className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>"Post-session mood:"</span>
+                        <span>{t.postSessionMoodLabel2 || "Post-session mood:"}</span>
                       </span>
                       <span className="text-xs font-black text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-[#C2DCBE]">
                         {postSessionMood}% {postSessionMoodLabel}
@@ -1502,7 +1502,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                   <div className="space-y-1.5 bg-[#F9FBF8] p-2.5 rounded-xl border border-[#C2DCBE]">
                     <label className="block text-xs font-extrabold text-[#2D5A27] flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                      <span>"Session Summary Points:"</span>
+                      <span>{t.sessionSummaryPointsTitle || "Session Summary Points:"}</span>
                     </label>
 
                     <div className="space-y-1">
@@ -1529,7 +1529,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                         value={summaryInput}
                         onChange={(e) => setSummaryInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSummaryBullet())}
-                        placeholder="Add takeaway point..."
+                        placeholder={t.addTakeawayPointPlaceholder || "Add takeaway point..."}
                         className="flex-1 bg-white border border-[#C2DCBE] rounded-lg px-2.5 py-1 text-xs text-gray-800 focus:outline-none min-w-0"
                       />
                       <button
@@ -1549,13 +1549,13 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
             {/* Footer & Doctor Verification Signature Area */}
             <div className="border-t border-[#E2DCC8] pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-[11px] text-gray-500 gap-3">
               <div>
-                <p className="font-bold text-[#5A5A40]">"Therapist / Doctor Signature & Notes:"</p>
+                <p className="font-bold text-[#5A5A40]">{t.therapistSignatureTitle || "Therapist / Doctor Signature & Notes:"}</p>
                 <div className="w-44 sm:w-48 h-8 border-b border-dashed border-gray-400 mt-1"></div>
               </div>
 
               <div className="text-right sm:text-left space-y-0.5">
-                <p className="font-extrabold text-[#5A5A40]">Hayat AI Medical & Behavioral Report</p>
-                <p className="text-[10px] text-gray-400">"Encrypted automated report from Hayat AI system"</p>
+                <p className="font-extrabold text-[#5A5A40]">{t.hayatAiMedicalReport || "Hayat AI Medical & Behavioral Report"}</p>
+                <p className="text-[10px] text-gray-400">{t.encryptedAutomatedReport || "Encrypted automated report from Hayat AI system"}</p>
               </div>
             </div>
 
@@ -1673,12 +1673,12 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                       </div>
 
                       <div className="text-xs text-gray-600 space-y-1">
-                        <p><strong className="text-[#5A5A40]">"Covered Period:"</strong> {rep.periodLabel} ({rep.startDateStr} ⬅️ {rep.endDateStr})</p>
+                        <p><strong className="text-[#5A5A40]">{t.coveredPeriodTitle || "Covered Period:"}</strong> {rep.periodLabel} ({rep.startDateStr} ⬅️ {rep.endDateStr})</p>
                         {rep.patientNotes && (
-                          <p className="truncate"><strong className="text-[#5A5A40]">"Pre-session Notes:"</strong> {rep.patientNotes}</p>
+                          <p className="truncate"><strong className="text-[#5A5A40]">{t.preSessionNotesTitle || "Pre-session Notes:"}</strong> {rep.patientNotes}</p>
                         )}
                         {rep.therapistFeedback && (
-                          <p className="truncate"><strong className="text-[#2D5A27]">"Therapist Feedback:"</strong> {rep.therapistFeedback}</p>
+                          <p className="truncate"><strong className="text-[#2D5A27]">{t.therapistFeedbackTitle2 || "Therapist Feedback:"}</strong> {rep.therapistFeedback}</p>
                         )}
                       </div>
 
@@ -1689,14 +1689,14 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
                           className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
-                          <span>"View Report 📖"</span>
+                          <span>{t.viewReportBtn || "عرض التقرير 📄"}</span>
                         </button>
                         <button
                           onClick={() => deleteSavedReport(rep.id)}
                           className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer border border-red-200"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          <span>"Delete"</span>
+                          <span>{t.deleteBtnText || "Delete"}</span>
                         </button>
                       </div>
                     </div>

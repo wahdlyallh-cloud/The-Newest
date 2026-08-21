@@ -5,10 +5,10 @@ if (typeof window !== 'undefined') {
     const root = document.getElementById('root');
     if (root) {
       root.innerHTML = `<div style="padding:24px;color:#991B1B;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:16px;margin:20px;font-family:sans-serif;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1);">
-        <h2 style="margin-top:0;font-size:18px;font-weight:800;">Application Runtime Error 🛡️</h2>
-        <p style="font-size:13px;color:#7F1D1D;">An unhandled boot error occurred. Detailed diagnostic stack trace:</p>
+        <h2 style="margin-top:0;font-size:18px;font-weight:800;">{t?.appRuntimeError || "خطأ في وقت التشغيل 🚨🚨"}</h2>
+        <p style="font-size:13px;color:#7F1D1D;">{t?.unhandledBootError || "حدث خطأ غير متوقع عند بدء التشغيل. تفاصيل الخطأ:"}</p>
         <pre style="background:#FFF;padding:12px;border-radius:8px;font-size:11px;overflow:auto;max-height:300px;border:1px solid #FECACA;white-space:pre-wrap;">${event.error?.stack || event.message}</pre>
-        <button onclick="window.location.reload()" style="margin-top:12px;padding:8px 16px;background:#DC2626;color:#FFF;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Reload Page 🔄</button>
+        <button onclick="window.location.reload()" style="margin-top:12px;padding:8px 16px;background:#DC2626;color:#FFF;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">{t?.reloadPageBtn || "إعادة تحميل الصفحة 🔄"}</button>
       </div>`;
     }
   });
@@ -18,10 +18,10 @@ if (typeof window !== 'undefined') {
     const root = document.getElementById('root');
     if (root) {
       root.innerHTML = `<div style="padding:24px;color:#991B1B;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:16px;margin:20px;font-family:sans-serif;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1);">
-        <h2 style="margin-top:0;font-size:18px;font-weight:800;">Unhandled Promise Rejection 🛡️</h2>
-        <p style="font-size:13px;color:#7F1D1D;">An asynchronous promise error occurred during startup:</p>
+        <h2 style="margin-top:0;font-size:18px;font-weight:800;">{t?.unhandledPromiseRejection || "خطأ في العمليات غير المتزامنة 🚨🚨"}</h2>
+        <p style="font-size:13px;color:#7F1D1D;">{t?.asyncPromiseError || "حدث خطأ غير متزامن أثناء بدء التشغيل:"}</p>
         <pre style="background:#FFF;padding:12px;border-radius:8px;font-size:11px;overflow:auto;max-height:300px;border:1px solid #FECACA;white-space:pre-wrap;">${event.reason?.stack || event.reason}</pre>
-        <button onclick="window.location.reload()" style="margin-top:12px;padding:8px 16px;background:#DC2626;color:#FFF;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Reload Page 🔄</button>
+        <button onclick="window.location.reload()" style="margin-top:12px;padding:8px 16px;background:#DC2626;color:#FFF;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">{t?.reloadPageBtn || "إعادة تحميل الصفحة 🔄"}</button>
       </div>`;
     }
   });

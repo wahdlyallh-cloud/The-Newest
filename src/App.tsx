@@ -6742,11 +6742,11 @@ export default function App() {
 
                     {showColorPalette && (
                       <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-[#E2DCC8]">
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title="Orange" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title="Green" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title="Blue" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title="Red" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title="Purple" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title={t.colorOrange || "برتقالي"} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title={t.colorGreen || "أخضر"} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title={t.colorBlue || "أزرق"} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title={t.colorRed || "أحمر"} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title={t.colorPurple || "أرجواني"} />
                       </div>
                     )}
                   </div>
@@ -6864,12 +6864,12 @@ export default function App() {
                         </button>
                         {showBgColorPicker && (
                           <div className="absolute right-0 sm:right-auto left-auto sm:left-0 bottom-full mb-2 flex flex-wrap items-center gap-2 p-2.5 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl z-50 animate-fadeIn max-w-[92vw] sm:max-w-none">
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Default" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Warm Yellow" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Sky Blue" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Soft Green" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Lavender" />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title="Pink" />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgDefault || "الافتراضي"} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgWarmYellow || "أصفر دافئ"} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSkyBlue || "أزرق سماوي"} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSoftGreen || "أخضر ناعم"} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgLavender || "لافندر"} />
+                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgPink || "وردي"} />
                           </div>
                         )}
                       </div>
@@ -8011,15 +8011,15 @@ export default function App() {
                         <span className="text-xs font-extrabold text-[#5A5A40] block">{t.chooseFontStyle}</span>
                         <div className="grid grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
                           {[
-                            { id: 'font-sans', name: 'Notes', style: 'font-sans' },
-                            { id: 'font-serif', name: 'Notes', style: 'font-serif italic' },
-                            { id: 'font-mono', name: 'Notes', style: 'font-mono' },
-                            { id: 'font-bold', name: 'Notes', style: 'font-sans font-black' },
-                            { id: 'font-cairo', name: 'Notes', style: 'font-serif font-bold' },
-                            { id: 'font-uppercase', name: 'NOTES', style: 'uppercase font-black' },
-                            { id: 'font-normal', name: 'Notes', style: 'font-sans font-medium' },
-                            { id: 'font-light', name: 'Notes', style: 'font-sans font-light' },
-                            { id: 'font-tracking', name: 'N o t e s', style: 'tracking-widest' },
+                            { id: 'font-sans', name: t.fontPreviewNotes || 'Notes', style: 'font-sans' },
+                            { id: 'font-serif', name: t.fontPreviewNotes || 'Notes', style: 'font-serif italic' },
+                            { id: 'font-mono', name: t.fontPreviewNotes || 'Notes', style: 'font-mono' },
+                            { id: 'font-bold', name: t.fontPreviewNotes || 'Notes', style: 'font-sans font-black' },
+                            { id: 'font-cairo', name: t.fontPreviewNotes || 'Notes', style: 'font-serif font-bold' },
+                            { id: 'font-uppercase', name: t.fontPreviewNotesUpper || 'NOTES', style: 'uppercase font-black' },
+                            { id: 'font-normal', name: t.fontPreviewNotes || 'Notes', style: 'font-sans font-medium' },
+                            { id: 'font-light', name: t.fontPreviewNotes || 'Notes', style: 'font-sans font-light' },
+                            { id: 'font-tracking', name: t.fontPreviewNotesSpaced || 'N o t e s', style: 'tracking-widest' },
                           ].map((f) => (
                             <button
                               key={f.id}
@@ -10429,7 +10429,7 @@ export default function App() {
                     <span>{t.attachedSketchDrawing || "الرسم التعبيري المصاحب:"}</span>
                   </h3>
                   <div className="w-full h-48 bg-[#F9F7F2] rounded-xl flex items-center justify-center overflow-hidden border border-gray-100">
-                    <img src={editingDiary.drawing} className="max-w-full max-h-full object-contain" alt="associated drawing" referrerPolicy="no-referrer" />
+                    <img src={editingDiary.drawing} className="max-w-full max-h-full object-contain" alt={t.associatedDrawingAlt || "رسم مرفق"} referrerPolicy="no-referrer" />
                   </div>
                 </div>
               )}

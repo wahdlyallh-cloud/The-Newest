@@ -110,7 +110,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
   const calculateBalanceScore = () => {
     let score = 0;
     let counts = 0;
-    
+
     if (sleepProgress > 0) { score += sleepProgress; counts++; }
     if (sportsProgress > 0) { score += sportsProgress; counts++; }
     if (medTotalCount > 0) { score += (medTakenCount / medTotalCount) * 100; counts++; }
@@ -124,7 +124,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
 
   return (
     <div className="space-y-6 font-sans" dir={langInfo.dir}>
-      
+
       {/* 📊 Interactive Dashboard Header Gauges */}
       <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -146,7 +146,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
           <>
             {/* Balance Score Gauge & Quick Metrics Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-              
+
               {/* Day Quality Indicator (Circular Gauge feel) */}
               <div className="bg-[#F9F7F2]/60 border border-[#E2DCC8]/50 rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div className="flex items-center justify-between">
@@ -159,8 +159,8 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                 </div>
                 <div className="space-y-1.5">
                   <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div 
-                      className="bg-[#8B9D83] h-2 rounded-full transition-all duration-1000" 
+                    <div
+                      className="bg-[#8B9D83] h-2 rounded-full transition-all duration-1000"
                       style={{ width: `${balanceScore}%` }}
                     ></div>
                   </div>
@@ -172,7 +172,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
 
               {/* Grid of details progress */}
               <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-                
+
                 {/* Sleep Metrics */}
                 <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
@@ -254,7 +254,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
           <div className="relative border-e-2 border-[#E2DCC8] pe-6 me-3 space-y-8">
             {events.map((ev) => (
               <div key={ev.id} className="relative">
-                
+
                 {/* Visual Circle Icon on Timeline Axis */}
                 <div className="absolute -end-[33px] top-1 bg-white border-2 border-[#E2DCC8] p-1.5 rounded-full shadow-xs z-10 transition-colors">
                   {ev.icon === 'moon' && <Moon className="w-3.5 h-3.5 text-blue-500" />}
@@ -266,7 +266,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
 
                 {/* Event Content card */}
                 <div className="bg-[#F9F7F2] hover:bg-[#F0EDE4]/40 border border-[#E2DCC8]/60 p-5 rounded-2xl space-y-3 transition-colors">
-                  
+
                   {/* Header: Title & exact clock time */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-1.5 border-b border-[#E2DCC8]/40">
                     <h5 className="text-xs font-extrabold text-[#3A3A3A] flex items-center space-x-1.5 space-x-reverse">
@@ -283,7 +283,7 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                   {/* 📷 Premium Visual Attachments inside the Timeline (If Note event has drawings/audio/photos) */}
                   {ev.type === 'note' && diaryToday && (
                     <div className="space-y-3 pt-2">
-                      
+
                       {/* Attached Photos */}
                       {diaryToday.images && diaryToday.images.length > 0 && (
                         <div className="space-y-1.5">
@@ -293,12 +293,12 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                           </span>
                           <div className="grid grid-cols-3 gap-2">
                             {diaryToday.images.map((img, index) => (
-                              <img 
-                                key={index} 
-                                src={img} 
-                                alt="Captured memory" 
+                              <img
+                                key={index}
+                                src={img}
+                                alt={t.capturedMemoryAlt || "ذكرى ملتقطة"}
                                 referrerPolicy="no-referrer"
-                                className="w-full h-16 object-cover rounded-xl border border-[#E2DCC8] shadow-2xs hover:scale-105 transition-transform" 
+                                className="w-full h-16 object-cover rounded-xl border border-[#E2DCC8] shadow-2xs hover:scale-105 transition-transform"
                               />
                             ))}
                           </div>
@@ -313,11 +313,11 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
                             <span>{t.drawingCanvasAttachmentLabel || 'Drawing Canvas Sketch:'}</span>
                           </span>
                           <div className="max-w-xs bg-white p-1 rounded-xl border border-[#E2DCC8]/60 shadow-2xs">
-                            <img 
-                              src={diaryToday.drawing} 
-                              alt="Mind sketch" 
+                            <img
+                              src={diaryToday.drawing}
+                              alt={t.mindSketchAlt || "رسم ذهني"}
                               referrerPolicy="no-referrer"
-                              className="max-h-24 object-contain rounded-lg" 
+                              className="max-h-24 object-contain rounded-lg"
                             />
                           </div>
                         </div>
