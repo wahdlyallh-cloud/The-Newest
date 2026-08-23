@@ -1122,9 +1122,11 @@ export async function retrieveRelevantKnowledge(
         }
         // 3. Blob in IndexedDB
         else if (ent.mediaPayload.attachmentId) {
-          try {
-            const blob = await getAttachmentBlob(ent.mediaPayload.attachmentId);
-            if (blob && blob.size <= 4 * 1024 * 1024) { // Safe inline threshold
+            try {
+              const blob = await getAttachmentBlob(ent.mediaPayload.attachmentId);
+              // Increased inline payload limit to 19MB for Gemini limits
+              if (blob && blob.size <= 19 * 1024 * 1024) {
+ // Safe inline threshold
               const base64 = await new Promise<string>((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => {

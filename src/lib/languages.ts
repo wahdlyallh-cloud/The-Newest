@@ -2888,6 +2888,17 @@ export const AR_DICT: Record<string, any> = {
   chooseEntryTypeLabel: "اختر نوع الإدخال:",
   chatYouLabel: "أنت:",
   chatAdvisorLabel: "مستشار Hayat AI:",
+  imageViewerCloseBtn: 'إغلاق',
+  mediaUnsupportedFormat: 'تنسيق الملف غير مدعوم',
+  previewMediaBtn: 'معاينة الوسائط',
+  deleteMediaBtn: 'حذف',
+  videoPlayBtn: 'تشغيل',
+  videoPauseBtn: 'إيقاف مؤقت',
+  savingStatus: 'جاري الحفظ...',
+  savedStatus: 'تم الحفظ',
+  previousMediaBtn: 'السابق',
+  nextMediaBtn: 'التالي',
+  audioPlaybackError: 'تعذر تشغيل الصوت',
 };
 
 export const EN_DICT: Record<string, any> = {
@@ -5379,6 +5390,17 @@ export const EN_DICT: Record<string, any> = {
   anotherMemoryBtn: "Another Memory 🎰",
   chooseEntryTypeLabel: "Choose Entry Type:",
   chatYouLabel: "You:",
+  imageViewerCloseBtn: 'Close',
+  mediaUnsupportedFormat: 'Unsupported file format',
+  previewMediaBtn: 'Preview Media',
+  deleteMediaBtn: 'Delete',
+  videoPlayBtn: 'Play',
+  videoPauseBtn: 'Pause',
+  savingStatus: 'Saving...',
+  savedStatus: 'Saved',
+  previousMediaBtn: 'Previous',
+  nextMediaBtn: 'Next',
+  audioPlaybackError: 'Audio playback failed',
   chatAdvisorLabel: "Hayat AI Advisor:",};
 
 export const FR_DICT: Record<string, any> = {
@@ -7870,6 +7892,17 @@ export const FR_DICT: Record<string, any> = {
   anotherMemoryBtn: "Autre souvenir 🎰",
   chooseEntryTypeLabel: "Choisir le type d'entrée :",
   chatYouLabel: "Vous :",
+  imageViewerCloseBtn: 'Fermer',
+  mediaUnsupportedFormat: 'Format non pris en charge',
+  previewMediaBtn: 'Aperçu du média',
+  deleteMediaBtn: 'Supprimer',
+  videoPlayBtn: 'Lire',
+  videoPauseBtn: 'Pause',
+  savingStatus: 'Enregistrement...',
+  savedStatus: 'Enregistré',
+  previousMediaBtn: 'Précédent',
+  nextMediaBtn: 'Suivant',
+  audioPlaybackError: 'Échec audio',
   chatAdvisorLabel: "Conseiller Hayat AI :",};
 
 export const DE_DICT: Record<string, any> = {
@@ -10361,6 +10394,17 @@ export const DE_DICT: Record<string, any> = {
   chooseEntryTypeLabel: "Eintragstyp wählen:",
   chatYouLabel: "Sie:",
   chatAdvisorLabel: "Hayat AI Berater:",
+  imageViewerCloseBtn: 'Schließen',
+  mediaUnsupportedFormat: 'Nicht unterstütztes Format',
+  previewMediaBtn: 'Medienvorschau',
+  deleteMediaBtn: 'Löschen',
+  videoPlayBtn: 'Abspielen',
+  videoPauseBtn: 'Pause',
+  savingStatus: 'Speichern...',
+  savedStatus: 'Gespeichert',
+  previousMediaBtn: 'Zurück',
+  nextMediaBtn: 'Weiter',
+  audioPlaybackError: 'Audiofehler',
 };
 
 export const ES_DICT: Record<string, any> = {
@@ -12852,6 +12896,17 @@ export const ES_DICT: Record<string, any> = {
   anotherMemoryBtn: "Otro Recuerdo 🎰",
   chooseEntryTypeLabel: "Elige tipo de entrada:",
   chatYouLabel: "Tú:",
+  imageViewerCloseBtn: 'Cerrar',
+  mediaUnsupportedFormat: 'Formato no compatible',
+  previewMediaBtn: 'Vista previa',
+  deleteMediaBtn: 'Eliminar',
+  videoPlayBtn: 'Reproducir',
+  videoPauseBtn: 'Pausar',
+  savingStatus: 'Guardando...',
+  savedStatus: 'Guardado',
+  previousMediaBtn: 'Anterior',
+  nextMediaBtn: 'Siguiente',
+  audioPlaybackError: 'Error de audio',
   chatAdvisorLabel: "Asesor Hayat AI:",};
 
 export const IT_DICT: Record<string, any> = {
@@ -15343,6 +15398,17 @@ export const IT_DICT: Record<string, any> = {
   anotherMemoryBtn: "Altro Ricordo 🎰",
   chooseEntryTypeLabel: "Scegli tipo di voce:",
   chatYouLabel: "Tu:",
+  imageViewerCloseBtn: 'Chiudi',
+  mediaUnsupportedFormat: 'Formato non supportato',
+  previewMediaBtn: 'Anteprima media',
+  deleteMediaBtn: 'Elimina',
+  videoPlayBtn: 'Riproduci',
+  videoPauseBtn: 'Pausa',
+  savingStatus: 'Salvataggio...',
+  savedStatus: 'Salvato',
+  previousMediaBtn: 'Precedente',
+  nextMediaBtn: 'Successivo',
+  audioPlaybackError: 'Errore audio',
   chatAdvisorLabel: "Consulente Hayat AI:",};
 
 export const TR_DICT: Record<string, any> = {
@@ -17834,6 +17900,17 @@ export const TR_DICT: Record<string, any> = {
   chooseEntryTypeLabel: "Giriş Türünü Seç:",
   chatYouLabel: "Sen:",
   chatAdvisorLabel: "Hayat AI Danışmanı:",
+  imageViewerCloseBtn: 'Kapat',
+  mediaUnsupportedFormat: 'Desteklenmeyen biçim',
+  previewMediaBtn: 'Medyayı Önizle',
+  deleteMediaBtn: 'Sil',
+  videoPlayBtn: 'Oynat',
+  videoPauseBtn: 'Duraklat',
+  savingStatus: 'Kaydediliyor...',
+  savedStatus: 'Kaydedildi',
+  previousMediaBtn: 'Önceki',
+  nextMediaBtn: 'Sonraki',
+  audioPlaybackError: 'Ses hatası',
 };
 
 export const PT_DICT: Record<string, any> = {
@@ -20325,6 +20402,17 @@ export const PT_DICT: Record<string, any> = {
   anotherMemoryBtn: "Outra Memória 🎰",
   chooseEntryTypeLabel: "Escolher tipo de entrada:",
   chatYouLabel: "Você:",
+  imageViewerCloseBtn: 'Fechar',
+  mediaUnsupportedFormat: 'Formato não suportado',
+  previewMediaBtn: 'Pré-visualizar Mídia',
+  deleteMediaBtn: 'Excluir',
+  videoPlayBtn: 'Reproduzir',
+  videoPauseBtn: 'Pausar',
+  savingStatus: 'Salvando...',
+  savedStatus: 'Salvo',
+  previousMediaBtn: 'Anterior',
+  nextMediaBtn: 'Próximo',
+  audioPlaybackError: 'Erro de áudio',
   chatAdvisorLabel: "Consultor Hayat AI:",};
 
 export const RU_DICT: Record<string, any> = {
@@ -22816,6 +22904,17 @@ export const RU_DICT: Record<string, any> = {
   anotherMemoryBtn: "Другое воспоминание 🎰",
   chooseEntryTypeLabel: "Выберите тип записи:",
   chatYouLabel: "Вы:",
+  imageViewerCloseBtn: 'Закрыть',
+  mediaUnsupportedFormat: 'Неподдерживаемый формат',
+  previewMediaBtn: 'Предпросмотр',
+  deleteMediaBtn: 'Удалить',
+  videoPlayBtn: 'Воспроизвести',
+  videoPauseBtn: 'Пауза',
+  savingStatus: 'Сохранение...',
+  savedStatus: 'Сохранено',
+  previousMediaBtn: 'Назад',
+  nextMediaBtn: 'Вперед',
+  audioPlaybackError: 'Ошибка аудио',
   chatAdvisorLabel: "Консультант Hayat AI:",};
 
 export const JA_DICT: Record<string, any> = {
@@ -25307,6 +25406,17 @@ export const JA_DICT: Record<string, any> = {
   chooseEntryTypeLabel: "エントリタイプを選択:",
   chatYouLabel: "あなた:",
   chatAdvisorLabel: "Hayat AI アドバイザー:",
+  imageViewerCloseBtn: '閉じる',
+  mediaUnsupportedFormat: 'サポートされていない形式',
+  previewMediaBtn: 'メディアのプレビュー',
+  deleteMediaBtn: '削除',
+  videoPlayBtn: '再生',
+  videoPauseBtn: '一時停止',
+  savingStatus: '保存中...',
+  savedStatus: '保存完了',
+  previousMediaBtn: '前へ',
+  nextMediaBtn: '次へ',
+  audioPlaybackError: '音声エラー',
 };
 
 export const ZH_DICT: Record<string, any> = {
@@ -27798,6 +27908,17 @@ export const ZH_DICT: Record<string, any> = {
   anotherMemoryBtn: "另一个记忆 🎰",
   chooseEntryTypeLabel: "选择条目类型:",
   chatYouLabel: "你:",
+  imageViewerCloseBtn: '关闭',
+  mediaUnsupportedFormat: '不支持的格式',
+  previewMediaBtn: '预览媒体',
+  deleteMediaBtn: '删除',
+  videoPlayBtn: '播放',
+  videoPauseBtn: '暂停',
+  savingStatus: '保存中...',
+  savedStatus: '已保存',
+  previousMediaBtn: '上一个',
+  nextMediaBtn: '下一个',
+  audioPlaybackError: '音频错误',
   chatAdvisorLabel: "Hayat AI 顾问:",};
 
 export const HI_DICT: Record<string, any> = {
@@ -30289,6 +30410,17 @@ export const HI_DICT: Record<string, any> = {
   anotherMemoryBtn: "एक और याद 🎰",
   chooseEntryTypeLabel: "प्रविष्टि प्रकार चुनें:",
   chatYouLabel: "आप:",
+  imageViewerCloseBtn: 'बंद करें',
+  mediaUnsupportedFormat: 'असमर्थित प्रारूप',
+  previewMediaBtn: 'मीडिया पूर्वावलोकन',
+  deleteMediaBtn: 'हटाएं',
+  videoPlayBtn: 'चलाएं',
+  videoPauseBtn: 'रोकें',
+  savingStatus: 'सहेजा जा रहा है...',
+  savedStatus: 'सहेजा गया',
+  previousMediaBtn: 'पिछला',
+  nextMediaBtn: 'अगला',
+  audioPlaybackError: 'ऑडियो त्रुटि',
   chatAdvisorLabel: "Hayat AI सलाहकार:",};
 
 export const BASELINE_DICTIONARIES: Record<string, Record<string, any>> = {

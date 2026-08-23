@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { 
+import {
   Plus, Search, Calendar, Heart, BookOpen, Brain, Scale,
-  Settings as SettingsIcon, Sparkles, LogOut, CheckSquare, 
-  Trash2, Edit3, Trash, Star, Image, Paperclip, Mic, MicOff, 
+  Settings as SettingsIcon, Sparkles, LogOut, CheckSquare,
+  Trash2, Edit3, Trash, Star, Image, Paperclip, Mic, MicOff,
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
   User, Printer, ChevronRight, ArrowRight, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
@@ -42,12 +42,12 @@ import WeeklyHabitsMoodChart from './components/WeeklyHabitsMoodChart';
 import SleepMoodCorrelationChart from './components/SleepMoodCorrelationChart';
 import SmartRemindersModal from './components/SmartRemindersModal';
 import { AuthModal } from './components/AuthModal';
-import { 
-  saveAttachmentBlob, 
-  getAttachmentBlob, 
-  getAttachmentObjectUrl, 
-  deleteAttachmentBlob, 
-  cleanOrphanAttachments 
+import {
+  saveAttachmentBlob,
+  getAttachmentBlob,
+  getAttachmentObjectUrl,
+  deleteAttachmentBlob,
+  cleanOrphanAttachments
 } from './lib/attachmentStore';
 import DailyProsConsModal from './components/DailyProsConsModal';
 import ProsConsHistoryLog from './components/ProsConsHistoryLog';
@@ -109,8 +109,8 @@ export function getTagLabel(tag?: string, t?: any): string {
 
 
 // Recharts components for gorgeous analytics
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip as ChartTooltip, Legend, ResponsiveContainer,
   BarChart, Bar, Cell, PieChart, Pie
 } from 'recharts';
@@ -232,33 +232,33 @@ const DEFAULT_SETTINGS: AppSettings = {
     autoBackup: 'daily'
   },
   reminders: [
-    { 
-      id: 'rem-1', 
-      title: 'منبه كتابة الخواطر واليوميات ✍️', 
-      time: '21:00', 
-      active: true, 
+    {
+      id: 'rem-1',
+      title: 'منبه كتابة الخواطر واليوميات ✍️',
+      time: '21:00',
+      active: true,
       type: 'diary',
       frequency: 'daily',
       selectedDays: [0, 1, 2, 3, 4, 5, 6],
       motivationalNote: 'تدوين خواطرك يفرغ طاقة التوتر ويمنحك السكينة والوضوح الذهني. ✨',
       categoryIcon: '✍️'
     },
-    { 
-      id: 'rem-2', 
-      title: 'تنبيه العناية بالذات وشرب الماء 💧', 
-      time: '08:00', 
-      active: true, 
+    {
+      id: 'rem-2',
+      title: 'تنبيه العناية بالذات وشرب الماء 💧',
+      time: '08:00',
+      active: true,
       type: 'habit',
       frequency: 'daily',
       selectedDays: [0, 1, 2, 3, 4, 5, 6],
       motivationalNote: 'بداية يوم جديدة مليئة بالنشاط! اعتَنِ بجسدك ونفسك أولاً. 💖',
       categoryIcon: '💧'
     },
-    { 
-      id: 'rem-3', 
-      title: 'جلسة الاسترخاء الذهني والتأمل 🧘‍♂️', 
-      time: '17:30', 
-      active: true, 
+    {
+      id: 'rem-3',
+      title: 'جلسة الاسترخاء الذهني والتأمل 🧘‍♂️',
+      time: '17:30',
+      active: true,
       type: 'meditation',
       frequency: 'custom_days',
       selectedDays: [0, 2, 4],
@@ -1314,6 +1314,7 @@ export default function App() {
   }, [settings]);
 
   // --- Active Diary Editing State ---
+  const [previewMedia, setPreviewMedia] = useState<{ type: 'image' | 'video' | 'audio' | 'pdf', url: string } | null>(null);
   const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(() => {
     const saved = localStorage.getItem('yawmiyati_draft_editing_diary');
     if (saved) {
@@ -1396,6 +1397,7 @@ export default function App() {
       window.removeEventListener('pagehide', handleAutoLock);
     };
   }, [settings.appPinCode, settings.isAppLocked]);
+
 
   useEffect(() => {
     try {
@@ -1585,7 +1587,7 @@ export default function App() {
       syncTime: new Date().toISOString()
     };
     try {
-      
+
       const token = authToken || localStorage.getItem('yawmiyati_auth_token');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) {
@@ -1769,20 +1771,20 @@ export default function App() {
     const checkReminder = () => {
       const isEnabled = localStorage.getItem('yawmiyati_gratitude_reminder_enabled') !== 'false';
       const reminderTime = localStorage.getItem('yawmiyati_gratitude_reminder_time') || '21:00';
-      
+
       if (!isEnabled) return;
-      
+
       const now = new Date();
       const currentHour = String(now.getHours()).padStart(2, '0');
       const currentMinute = String(now.getMinutes()).padStart(2, '0');
       const currentTimeStr = `${currentHour}:${currentMinute}`;
-      
+
       if (currentTimeStr === reminderTime && lastFiredGratitudeMinuteRef.current !== currentTimeStr) {
         lastFiredGratitudeMinuteRef.current = currentTimeStr;
         setActiveGratitudeReminderNotification(true);
       }
     };
-    
+
     checkReminder();
     const interval = setInterval(checkReminder, 15000);
     return () => clearInterval(interval);
@@ -2171,7 +2173,7 @@ export default function App() {
       editingDiaryId: editingDiary?.id || null,
       diaryTypeFilter
     };
-    
+
     // Batch nav history update with active tab update for instant single-frame rendering
     setNavHistory(history => [...history.slice(-15), currentState]);
     setActiveTab(newTab);
@@ -2226,46 +2228,71 @@ export default function App() {
   }, [currentUser]);
 
   // Debounced Save active editing states to localStorage (400ms debounce to eliminate main-thread lag during typing/navigation)
+  // --- True Autosave Effect (LATEST DATA WINS) ---
   const draftSaveTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
+    if (!editingDiary) {
+      try {
+        localStorage.removeItem('yawmiyati_draft_editing_diary');
+      } catch (e) {}
+      return;
+    }
+
     if (draftSaveTimeoutRef.current) {
       clearTimeout(draftSaveTimeoutRef.current);
     }
 
     draftSaveTimeoutRef.current = setTimeout(() => {
-      if (editingDiary) {
-        try {
-          const safeDraft = {
-            ...editingDiary,
-            videos: (editingDiary.videos || []).map(v => (v && v.length > 5000000) ? '#' : v),
-            images: (editingDiary.images || []).map(img => (img && img.length > 3000000) ? '' : img).filter(Boolean),
-            audioRecordings: (editingDiary.audioRecordings || []).map(r => ({
-              ...r,
-              dataUrl: (r.dataUrl && r.dataUrl.length > 5000000) ? '#' : r.dataUrl
-            })),
-            files: (editingDiary.files || []).map(f => ({
-              ...f,
-              dataUrl: (f.dataUrl && f.dataUrl.length > 5000000) ? '#' : f.dataUrl
-            }))
-          };
-          localStorage.setItem('yawmiyati_draft_editing_diary', JSON.stringify(safeDraft));
-        } catch (e) {
-          console.warn('Failed to save draft diary to localStorage:', e);
-        }
-      } else {
-        try {
-          localStorage.removeItem('yawmiyati_draft_editing_diary');
-        } catch (e) {}
+      // 1. Save draft to local storage as safety backup
+      try {
+        const safeDraft = {
+          ...editingDiary,
+          audioRecordings: (editingDiary.audioRecordings || []).map(r => ({ ...r, dataUrl: (r.dataUrl && r.dataUrl.length > 5000000) ? '#' : r.dataUrl })),
+          images: (editingDiary.images || []).map(img => (img && img.length > 3000000) ? '' : img).filter(Boolean),
+          files: (editingDiary.files || []).map(f => ({ ...f, dataUrl: (f.dataUrl && f.dataUrl.length > 5000000) ? '#' : f.dataUrl })),
+          videos: (editingDiary.videos || []).map(v => (v && v.length > 5000000) ? '#' : v).filter(Boolean)
+        };
+        localStorage.setItem('yawmiyati_draft_editing_diary', JSON.stringify(safeDraft));
+      } catch (e) {}
+
+      // 2. Commit to main diaries array if not completely empty
+      const hasContent = (editingDiary.content && editingDiary.content.trim() !== '') ||
+                         (editingDiary.images && editingDiary.images.length > 0) ||
+                         (editingDiary.videos && editingDiary.videos.length > 0) ||
+                         (editingDiary.files && editingDiary.files.length > 0) ||
+                         editingDiary.drawing;
+
+      if (hasContent) {
+        setDiaries(prev => {
+          const idx = prev.findIndex(d => d.id === editingDiary.id);
+          if (idx !== -1) {
+            // Check if there is an actual change to avoid unnecessary re-renders
+            if (JSON.stringify(prev[idx]) !== JSON.stringify(editingDiary)) {
+              const next = [...prev];
+              next[idx] = editingDiary;
+              // Synchronous persist for safety
+              try { localStorage.setItem('yawmiyati_diaries', JSON.stringify(next)); } catch(e) {}
+              return next;
+            }
+            return prev;
+          } else {
+            // New entry: promote from draft to real entry
+            setIsNewEntry(false);
+            const next = [editingDiary, ...prev];
+            try { localStorage.setItem('yawmiyati_diaries', JSON.stringify(next)); } catch(e) {}
+            return next;
+          }
+        });
       }
-    }, 400);
+    }, 1000);
 
     return () => {
       if (draftSaveTimeoutRef.current) {
         clearTimeout(draftSaveTimeoutRef.current);
       }
     };
-  }, [editingDiary]);
+  }, [editingDiary, isNewEntry]);
 
   useEffect(() => {
     localStorage.setItem('yawmiyati_draft_is_new_entry', String(isNewEntry));
@@ -2725,10 +2752,10 @@ export default function App() {
     if (undoStack.length > 0) {
       const currentHtml = editorRef.current?.innerHTML || editingDiary?.content || '';
       const prevHtml = undoStack[undoStack.length - 1];
-      
+
       setRedoStack(r => [...r, currentHtml]);
       setUndoStack(u => u.slice(0, -1));
-      
+
       if (editorRef.current) editorRef.current.innerHTML = prevHtml;
       setEditingDiary(prev => prev ? { ...prev, content: prevHtml } : null);
       lastRecordedHtmlRef.current = prevHtml;
@@ -2748,10 +2775,10 @@ export default function App() {
     if (redoStack.length > 0) {
       const currentHtml = editorRef.current?.innerHTML || editingDiary?.content || '';
       const nextHtml = redoStack[redoStack.length - 1];
-      
+
       setUndoStack(u => [...u, currentHtml]);
       setRedoStack(r => r.slice(0, -1));
-      
+
       if (editorRef.current) editorRef.current.innerHTML = nextHtml;
       setEditingDiary(prev => prev ? { ...prev, content: nextHtml } : null);
       lastRecordedHtmlRef.current = nextHtml;
@@ -2969,7 +2996,7 @@ export default function App() {
 
     // Call server API to perform intelligent AI mood analysis if possible!
     let updatedEntry = { ...editingDiary };
-    
+
     // Add edit addition if provided
     if (newEditAddition.trim()) {
       const additionDate = new Date();
@@ -2995,7 +3022,7 @@ export default function App() {
     try {
       const response = await fetch('/api/gemini/analyze-mood', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'x-gemini-key': settings.userApiKey || ''
         },
@@ -3031,12 +3058,12 @@ export default function App() {
     try {
       // Small pause to let React cycle and fonts load completely
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       const element = document.getElementById('diary-to-pdf');
       if (!element) {
         throw new Error('PDF template element not found');
       }
-      
+
       // Convert HTML element to high-DPI canvas
       const canvas = await html2canvas(element, {
         scale: 2, // 2x zoom for ultra-sharp print resolution
@@ -3070,25 +3097,25 @@ export default function App() {
           });
         }
       });
-      
+
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      
+
       // A4 dimensions in pt are 595.28 x 841.89
       const pdf = new jsPDF('p', 'pt', 'a4');
       const pdfWidth = 595.28;
       const pdfHeight = 841.89;
-      
+
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       const pageHeight = (canvas.width / pdfWidth) * pdfHeight;
-      
+
       let heightLeft = imgHeight;
       let position = 0;
-      
+
       // Add first page
       pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, (imgHeight * pdfWidth) / imgWidth);
       heightLeft -= pageHeight;
-      
+
       // Loop to add subsequent pages if content overflows the A4 height
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
@@ -3096,7 +3123,7 @@ export default function App() {
         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, (imgHeight * pdfWidth) / imgWidth);
         heightLeft -= pageHeight;
       }
-      
+
       // Clean filename
       const safeTitle = (editingDiary.title || 'diary').trim().slice(0, 30).replace(/[^a-zA-Z0-9آ-ي\s]/g, '');
       const dateStr = new Date(editingDiary.createdAt).toISOString().split('T')[0];
@@ -3146,10 +3173,10 @@ export default function App() {
     setDiaries(prev => prev.map(d => d.id === id ? { ...d, isArchived: willBeArchived } : d));
 
     const noteTitle = target.title ? `"${target.title}"` : (target.diaryType === 'thought' ? 'الخاطرة' : 'المذكرة');
-    
+
     setArchiveToast({
-      message: willBeArchived 
-        ? `تم أرشفة ${noteTitle} بنجاح 📥 ويمكنك العثور عليها في أرشيف الإعدادات` 
+      message: willBeArchived
+        ? `تم أرشفة ${noteTitle} بنجاح 📥 ويمكنك العثور عليها في أرشيف الإعدادات`
         : `تم استرجاع ${noteTitle} من الأرشيف بنجاح 📤`,
       diaryId: id,
       action: willBeArchived ? 'archived' : 'unarchived'
@@ -3157,36 +3184,41 @@ export default function App() {
   };
 
   // --- Image File Uploader (Gallery & Camera Photos via IndexedDB) ---
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file && editingDiary) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0 && editingDiary) {
+      const newImages = [];
+      const newFiles = [];
       try {
-        const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
-        const imageUrl = URL.createObjectURL(file);
+        for (const file of files) {
+          const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
+          const imageUrl = URL.createObjectURL(file);
 
-        const newFileAttachment: FileAttachment = {
-          id: `file-img-${Date.now()}`,
-          name: file.name || 'صورة مرفقة.png',
-          size: `${(file.size / 1024).toFixed(1)} KB`,
-          type: file.type || 'image/png',
-          dataUrl: imageUrl,
-          attachmentId
-        };
+          newImages.push(imageUrl);
+          newFiles.push({
+            id: `file-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            name: file.name || 'صورة مرفقة',
+            size: `${(file.size / 1024).toFixed(1)} KB`,
+            type: file.type || 'image/png',
+            dataUrl: imageUrl,
+            attachmentId
+          });
+        }
 
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            images: [...(prev.images || []), imageUrl],
-            files: [...(prev.files || []), newFileAttachment]
+            images: [...(prev.images || []), ...newImages],
+            files: [...(prev.files || []), ...newFiles]
           };
           saveDraftSynchronously(updated);
           return updated;
         });
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        alert('حدث خطأ أثناء حفظ الصورة. تأكد من وجود مساحة كافية.');
       } finally {
         resetFilePickerGuard();
       }
@@ -3200,8 +3232,8 @@ export default function App() {
   const processSelectedFileAttachment = async (file: File): Promise<FileAttachment> => {
     markFilePickerActive();
     try {
-      const fileSizeFormatted = file.size > 1048576 
-        ? `${(file.size / 1048576).toFixed(1)} MB` 
+      const fileSizeFormatted = file.size > 1048576
+        ? `${(file.size / 1048576).toFixed(1)} MB`
         : `${(file.size / 1024).toFixed(1)} KB`;
       const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       const attachmentId = `att-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
@@ -3232,22 +3264,26 @@ export default function App() {
   // --- Universal Document / File Uploader ---
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file && editingDiary) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0 && editingDiary) {
+      const newFiles = [];
       try {
-        const newFile = await processSelectedFileAttachment(file);
+        for (const file of files) {
+          const newFile = await processSelectedFileAttachment(file);
+          newFiles.push(newFile);
+        }
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            files: [...(prev.files || []), newFile]
+            files: [...(prev.files || []), ...newFiles]
           };
           saveDraftSynchronously(updated);
           return updated;
         });
         setActiveInputSection('none');
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        console.error(err);
       } finally {
         resetFilePickerGuard();
       }
@@ -3260,41 +3296,41 @@ export default function App() {
   // --- Video File Uploader (Gallery & Camera Videos via IndexedDB) ---
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file && editingDiary) {
-      if (file.size > 200 * 1024 * 1024) {
-        alert('حجم هذا الفيديو كبير جداً (أكثر من 200 ميجابايت). يرجى اختيار فيديو أصغر أو إضافة رابط فيديو مباشر.');
-        resetFilePickerGuard();
-        e.target.value = '';
-        return;
-      }
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0 && editingDiary) {
+      const newVideos = [];
+      const newFiles = [];
       try {
-        const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
-        const videoBlobUrl = URL.createObjectURL(file);
+        for (const file of files) {
+          if (file.size > 200 * 1024 * 1024) continue;
+          const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
+          const videoBlobUrl = URL.createObjectURL(file);
 
-        const newFileAttachment: FileAttachment = {
-          id: `file-vid-${Date.now()}`,
-          name: file.name || 'مقطع فيديو.mp4',
-          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-          type: file.type || 'video/mp4',
-          dataUrl: videoBlobUrl,
-          attachmentId
-        };
+          newVideos.push(videoBlobUrl);
+          newFiles.push({
+            id: `file-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            name: file.name || 'Video',
+            size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+            type: file.type || 'video/mp4',
+            dataUrl: videoBlobUrl,
+            attachmentId
+          });
+        }
 
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            videos: [...(prev.videos || []), videoBlobUrl],
-            files: [...(prev.files || []), newFileAttachment]
+            videos: [...(prev.videos || []), ...newVideos],
+            files: [...(prev.files || []), ...newFiles]
           };
           saveDraftSynchronously(updated);
           return updated;
         });
         setActiveInputSection('none');
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        console.error(err);
       } finally {
         resetFilePickerGuard();
       }
@@ -3343,150 +3379,166 @@ export default function App() {
   // --- Global File Upload Handlers (for direct Dashboard access) ---
   const handleGlobalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newImages = [];
+      const newFiles = [];
       try {
-        const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
-        const imageUrl = URL.createObjectURL(file);
+        for (const file of files) {
+          const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
+          const imageUrl = URL.createObjectURL(file);
+          newImages.push(imageUrl);
+          newFiles.push({
+            id: `file-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            name: file.name || 'Image',
+            size: `${(file.size / 1024).toFixed(1)} KB`,
+            type: file.type || 'image/png',
+            dataUrl: imageUrl,
+            attachmentId
+          });
+        }
         const diary = getOrCreateDiaryForUpload();
-
-        const newFileAttachment: FileAttachment = {
-          id: `file-img-${Date.now()}`,
-          name: file.name || 'صورة مرفقة.png',
-          size: `${(file.size / 1024).toFixed(1)} KB`,
-          type: file.type || 'image/png',
-          dataUrl: imageUrl,
-          attachmentId
-        };
-
-        setDiaries(prev => prev.map(d => d.id === diary.id ? {
-          ...d,
-          images: [...(d.images || []), imageUrl],
-          files: [...(d.files || []), newFileAttachment]
-        } : d));
-        setEditingDiary(prev => prev && prev.id === diary.id ? {
-          ...prev,
-          images: [...(prev.images || []), imageUrl],
-          files: [...(prev.files || []), newFileAttachment]
-        } : {
+        const fullEntry = {
           ...diary,
-          images: [...(diary.images || []), imageUrl],
-          files: [...(diary.files || []), newFileAttachment]
-        });
+          images: [...(diary.images || []), ...newImages],
+          files: [...(diary.files || []), ...newFiles]
+        };
+        setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
+        setEditingDiary(fullEntry);
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        console.error(err);
       } finally {
         resetFilePickerGuard();
       }
-      e.target.value = '';
     } else {
       resetFilePickerGuard();
     }
+    e.target.value = '';
   };
 
   const handleGlobalVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 200 * 1024 * 1024) {
-        alert('حجم هذا الفيديو كبير جداً (أكثر من 200 ميجابايت). يرجى اختيار فيديو أصغر أو إضافة رابط فيديو مباشر.');
-        resetFilePickerGuard();
-        e.target.value = '';
-        return;
-      }
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newVideos = [];
+      const newFiles = [];
       try {
-        const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
-        const videoBlobUrl = URL.createObjectURL(file);
-        const diary = getOrCreateDiaryForUpload();
-
-        const newFileAttachment: FileAttachment = {
-          id: `file-vid-${Date.now()}`,
-          name: file.name || 'مقطع فيديو.mp4',
-          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-          type: file.type || 'video/mp4',
-          dataUrl: videoBlobUrl,
-          attachmentId
-        };
-
-        setDiaries(prev => prev.map(d => d.id === diary.id ? {
-          ...d,
-          videos: [...(d.videos || []), videoBlobUrl],
-          files: [...(d.files || []), newFileAttachment]
-        } : d));
-        setEditingDiary(prev => prev && prev.id === diary.id ? {
-          ...prev,
-          videos: [...(prev.videos || []), videoBlobUrl],
-          files: [...(prev.files || []), newFileAttachment]
-        } : {
-          ...diary,
-          videos: [...(diary.videos || []), videoBlobUrl],
-          files: [...(diary.files || []), newFileAttachment]
-        });
-        setIsNewEntry(false);
-        setActiveTab('diaries');
+        for (const file of files) {
+          if (file.size > 200 * 1024 * 1024) continue;
+          const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
+          const videoBlobUrl = URL.createObjectURL(file);
+          newVideos.push(videoBlobUrl);
+          newFiles.push({
+            id: `file-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            name: file.name || 'Video',
+            size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+            type: file.type || 'video/mp4',
+            dataUrl: videoBlobUrl,
+            attachmentId
+          });
+        }
+        if (newVideos.length > 0) {
+          const diary = getOrCreateDiaryForUpload();
+          const fullEntry = {
+            ...diary,
+            videos: [...(diary.videos || []), ...newVideos],
+            files: [...(diary.files || []), ...newFiles]
+          };
+          setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
+          setEditingDiary(fullEntry);
+          setIsNewEntry(false);
+          setActiveTab('diaries');
+        }
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        console.error(err);
       } finally {
         resetFilePickerGuard();
       }
-      e.target.value = '';
     } else {
       resetFilePickerGuard();
     }
+    e.target.value = '';
   };
 
   const handleGlobalAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newRecordings = [];
+      const newFiles = [];
       try {
-        const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
-        const audioUrl = URL.createObjectURL(file);
-
-        processAudioRecordingOrFile({
-          dataUrl: audioUrl,
-          blobUrl: audioUrl,
-          mimeType: file.type || 'audio/mp3',
-          fileName: file.name || 'تسجيل صوتي مرفق.mp3',
-          duration: Math.round(file.size / 16000) || 10,
-          attachmentId
-        });
+        for (const file of files) {
+          const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
+          const audioUrl = URL.createObjectURL(file);
+          newRecordings.push({
+            id: `audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            dataUrl: audioUrl,
+            timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+            duration: 0,
+            attachmentId
+          });
+          newFiles.push({
+            id: `file-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            name: file.name || 'Audio',
+            size: `${(file.size / 1024).toFixed(1)} KB`,
+            type: file.type || 'audio/mp3',
+            dataUrl: audioUrl,
+            attachmentId
+          });
+        }
+        const diary = getOrCreateDiaryForUpload();
+        const fullEntry = {
+          ...diary,
+          audioRecordings: [...(diary.audioRecordings || []), ...newRecordings],
+          files: [...(diary.files || []), ...newFiles]
+        };
+        setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
+        setEditingDiary(fullEntry);
+        setIsNewEntry(false);
+        setActiveTab('diaries');
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        console.error(err);
       } finally {
         resetFilePickerGuard();
       }
-      e.target.value = '';
     } else {
       resetFilePickerGuard();
     }
+    e.target.value = '';
   };
 
   const handleGlobalDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
       try {
-        const newFile = await processSelectedFileAttachment(file);
+        const newFiles = [];
+        for (const file of files) {
+          newFiles.push(await processSelectedFileAttachment(file));
+        }
         const diary = getOrCreateDiaryForUpload();
-        setDiaries(prev => prev.map(d => d.id === diary.id ? { ...d, files: [...(d.files || []), newFile] } : d));
-        setEditingDiary(prev => prev && prev.id === diary.id ? { ...prev, files: [...(prev.files || []), newFile] } : { ...diary, files: [...(diary.files || []), newFile] });
+        const fullEntry = {
+          ...diary,
+          files: [...(diary.files || []), ...newFiles]
+        };
+        setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
+        setEditingDiary(fullEntry);
         setIsNewEntry(false);
         setActiveTab('diaries');
       } catch (err) {
-        alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+        console.error(err);
       } finally {
         resetFilePickerGuard();
       }
-      e.target.value = '';
     } else {
       resetFilePickerGuard();
     }
+    e.target.value = '';
   };
 
   // --- Web Link / URL Adder ---
@@ -3723,8 +3775,8 @@ export default function App() {
   }) => {
     const newRecId = `rec-${Date.now()}`;
     const attachmentId = inputAttachmentId || `att-rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const validDataUrl = (dataUrl && dataUrl !== '#' && dataUrl.length > 5) 
-      ? dataUrl 
+    const validDataUrl = (dataUrl && dataUrl !== '#' && dataUrl.length > 5)
+      ? dataUrl
       : (blobUrl && blobUrl !== '#' ? blobUrl : '#');
 
     // Save audio binary blob to IndexedDB for persistent reload
@@ -3770,7 +3822,7 @@ export default function App() {
 
       const data = await res.json();
       let finalTranscript = '';
-      
+
       if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية') && !data.transcription.includes('مفقود')) {
         finalTranscript = data.transcription;
       } else if (cleanLiveSpeech) {
@@ -3931,81 +3983,81 @@ export default function App() {
   // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري ---
   const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const file = e.target.files?.[0];
-    if (!file) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) {
       resetFilePickerGuard();
       return;
     }
 
     setAudioUploadLoading(true);
-    const newRecId = `rec-${Date.now()}`;
 
     try {
-      const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-      await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
-      const audioUrl = URL.createObjectURL(file);
+      for (const file of files) {
+        const newRecId = `rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
+        const audioUrl = URL.createObjectURL(file);
 
-      // Create and attach AudioRecording with initial processing state
-      const newRec: AudioRecording = {
-        id: newRecId,
-        name: file.name || 'ملف صوتي مرفق.mp3',
-        dataUrl: audioUrl,
-        blobUrl: audioUrl,
-        duration: Math.round(file.size / 16000) || 15,
-        transcription: '⏳ جاري تفريغ التسجيل بالذكاء الاصطناعي بدقة عالية...',
-        attachmentId
-      };
-
-      addAudioToDiaryAtomic(newRec);
-      setTranscribingAudioId(newRecId);
-      setActiveInputSection('none');
-
-      // Convert audio file to Base64
-      const base64Audio = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') resolve(reader.result);
-          else reject(new Error('Failed to read audio file'));
+        const newRec: AudioRecording = {
+          id: newRecId,
+          name: file.name || t.audioLink || 'Audio',
+          dataUrl: audioUrl,
+          blobUrl: audioUrl,
+          duration: Math.round(file.size / 16000) || 15,
+          transcription: '...',
+          attachmentId
         };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
 
-      // Send to existing secure API pipeline
-      const res = await fetch('/api/gemini/transcribe-audio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-gemini-key': settings.userApiKey || ''
-        },
-        body: JSON.stringify({
-          audioData: base64Audio,
-          mimeType: (file.type || 'audio/mp3').split(';')[0].trim(),
-          fileName: file.name
-        })
-      });
+        addAudioToDiaryAtomic(newRec);
+        setTranscribingAudioId(newRecId);
 
-      const data = await res.json();
-      if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية') && !data.transcription.includes('مفقود')) {
-        const finalTrans = data.transcription.trim();
-        updateAudioTranscriptionAtomic(newRecId, finalTrans, data.speechEmotion);
-
-        // Cleanly append transcription into diary editor content without overwriting
-        setEditingDiary(prev => {
-          if (!prev) return null;
-          const separator = prev.content && prev.content.trim() ? '\n\n' : '';
-          const updatedContent = `${prev.content || ''}${separator}🎙️ [تفريغ المرفق الصوتي - ${file.name}]:\n${finalTrans}`;
-          setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent } : d));
-          return { ...prev, content: updatedContent };
+        const base64Audio = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') resolve(reader.result);
+            else reject(new Error('Failed to read audio file'));
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
-      } else {
-        const errMsg = t.aiTranscriptionUnavailable;
-        updateAudioTranscriptionAtomic(newRecId, errMsg);
+
+        try {
+          const res = await fetch('/api/gemini/transcribe-audio', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-gemini-key': settings.userApiKey || ''
+            },
+            body: JSON.stringify({
+              audioData: base64Audio,
+              mimeType: (file.type || 'audio/mp3').split(';')[0].trim(),
+              fileName: file.name
+            })
+          });
+
+          const data = await res.json();
+          if (data.success && data.transcription && !data.transcription.includes('لا يمكن تحديد') && !data.transcription.includes('فارغ')) {
+            const finalTrans = data.transcription.trim();
+            updateAudioTranscriptionAtomic(newRecId, finalTrans, data.speechEmotion);
+
+            setEditingDiary(prev => {
+              if (!prev) return null;
+              const separator = prev.content && prev.content.trim() ? '\n\n' : '';
+              const updatedContent = `${prev.content || ''}${separator}🎙️ [${t.audioTranscription || 'Transcription'} - ${file.name}]:\n${finalTrans}`;
+              setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent } : d));
+              return { ...prev, content: updatedContent };
+            });
+          } else {
+            updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable);
+          }
+        } catch (err) {
+          updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable);
+        }
       }
-    } catch (err: any) {
-      console.error('Audio upload & transcribe error:', err);
-      updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable);
+    } catch (err) {
+      console.error('Audio upload error:', err);
     } finally {
+      setActiveInputSection('none');
       setAudioUploadLoading(false);
       setTranscribingAudioId(null);
       resetFilePickerGuard();
@@ -4282,7 +4334,7 @@ export default function App() {
       if (editingDiary.files && editingDiary.files.length > 0) attachments.push(`${editingDiary.files.length} ملفات`);
       if (editingDiary.drawing) attachments.push(`تخطيط رسومي`);
 
-      const audioTranscriptions = (editingDiary.audioRecordings || []).map(a => 
+      const audioTranscriptions = (editingDiary.audioRecordings || []).map(a =>
         `🎙️ [تسجيل ${a.name}]: ${a.transcription || 'لا يوجد تفريغ'}`
       );
 
@@ -4373,9 +4425,9 @@ export default function App() {
   const handleExportBackup = () => {
     const dataStr = JSON.stringify({ diaries, settings });
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+
     const exportFileDefaultName = `HayatAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -4385,7 +4437,7 @@ export default function App() {
   const handleExportCsvBackup = () => {
     let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; // UTF-8 BOM
     csvContent += 'ID,Date,Title,Content,Moods,Sleep Hours,Sports Minutes\n';
-    
+
     (diaries || []).forEach(d => {
       const safeTitle = `"${(d.title || '').replace(/"/g, '""')}"`;
       const safeContent = `"${(d.content || '').replace(/"/g, '""')}"`;
@@ -4442,10 +4494,10 @@ export default function App() {
       setEmailBackupStatus(t.invalidEmailError);
       return;
     }
-    
+
     setIsSendingEmailBackup(true);
     setEmailBackupStatus(t.sendingEmailBackup);
-    
+
     try {
       const payload = {
         email: backupEmail,
@@ -4495,20 +4547,20 @@ export default function App() {
     return diaries.filter(d => {
       if (!d) return false;
       if (d.isArchived || d.isTrash) return false;
-      
+
       const titleStr = typeof d.title === 'string' ? d.title : '';
       const contentStr = typeof d.content === 'string' ? d.content : '';
       const tagsArr = Array.isArray(d.tags) ? d.tags : [];
-      
-      const matchesSearch = !q || 
-                            titleStr.toLowerCase().includes(q) || 
+
+      const matchesSearch = !q ||
+                            titleStr.toLowerCase().includes(q) ||
                             contentStr.toLowerCase().includes(q) ||
                             tagsArr.some(tagItem => typeof tagItem === 'string' && tagItem.toLowerCase().includes(q));
-                            
+
       const matchesTag = selectedTagFilter ? tagsArr.includes(selectedTagFilter) : true;
       const isFav = d.isFavorite === true || (d.isFavorite === undefined && (d.importance || 0) >= 4);
       const matchesFavorites = (showFavoritesOnly || diaryTypeFilter === 'favorites') ? isFav : true;
-      
+
       const effectiveType = d.diaryType || 'diary';
       const matchesType = (diaryTypeFilter === 'all' || diaryTypeFilter === 'favorites')
         ? true
@@ -4522,7 +4574,7 @@ export default function App() {
   const memoizedGroupedDiaries = useMemo(() => {
     const groups: { [dayKey: string]: { dayEntries: DiaryEntry[]; formattedDayLabel: string } } = {};
     if (!Array.isArray(filteredDiariesList)) return { sortedDays: [], groups: {} };
-    
+
     const validEntries = filteredDiariesList.filter(e => e && e.createdAt);
     const sorted = [...validEntries].sort((a, b) => {
       const timeA = new Date(a.createdAt).getTime() || 0;
@@ -4789,11 +4841,11 @@ export default function App() {
   // --- PIN Unlock Screen Trigger ---
   if (settings.isAppLocked) {
     return (
-      <PINLock 
-        correctPin={settings.appPinCode || '1234'} 
+      <PINLock
+        correctPin={settings.appPinCode || '1234'}
         biometricCredentialId={settings.biometricCredentialId}
         appLanguage={settings?.appLanguage || 'ar'}
-        onUnlocked={() => setSettings(prev => ({ ...prev, isAppLocked: false }))} 
+        onUnlocked={() => setSettings(prev => ({ ...prev, isAppLocked: false }))}
         onQuickAction={(actionType) => {
           setSettings(prev => ({ ...prev, isAppLocked: false }));
           setTimeout(() => {
@@ -4805,15 +4857,15 @@ export default function App() {
   }
 
   return (
-    <div 
-      className={`min-h-screen w-full overflow-x-hidden ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`} 
+    <div
+      className={`min-h-screen w-full overflow-x-hidden ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
       dir={isRtl ? 'rtl' : 'ltr'}
       style={{
         fontFamily: getFontCss(settings.appFont),
         lineHeight: getLineHeightCss(settings.appLineHeight)
       }}
     >
-      
+
       {/* 🔔 Floating Habit Reminder Notification */}
       {activeHabitReminder && (
         <div className="fixed top-20 right-4 left-4 md:right-auto md:left-4 md:w-96 bg-white border-2 border-[#D4A373] text-[#3A3A3A] p-4 rounded-3xl shadow-2xl z-50 flex items-start space-x-3 space-x-reverse animate-bounce border-dashed">
@@ -4829,7 +4881,7 @@ export default function App() {
               {t.habitReminderAlertPrompt} <strong className="text-[#3A3A3A]">"{activeHabitReminder.name}"</strong>.
             </p>
             <div className="flex space-x-2 space-x-reverse pt-2">
-              <button 
+              <button
                 onClick={() => {
                   toggleHabitCompletion(activeHabitReminder.id, selectedDate);
                   setActiveHabitReminder(null);
@@ -4838,7 +4890,7 @@ export default function App() {
               >
                 {t.habitCompletedButton}
               </button>
-              <button 
+              <button
                 onClick={() => setActiveHabitReminder(null)}
                 className="px-3 py-1 bg-gray-100 text-gray-500 rounded-lg text-[10px] cursor-pointer hover:bg-gray-200 transition-colors"
               >
@@ -4864,7 +4916,7 @@ export default function App() {
               {t.gratitudeSmartReminderPrompt}
             </p>
             <div className="flex space-x-2 space-x-reverse pt-2.5">
-              <button 
+              <button
                 onClick={() => {
                   setActiveTab('diaries');
                   setActiveDiariesSubTab('gratitude');
@@ -4874,7 +4926,7 @@ export default function App() {
               >
                 {t.openGratitudeJournalNow}
               </button>
-              <button 
+              <button
                 onClick={() => setActiveGratitudeReminderNotification(false)}
                 className="px-3 py-1.5 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-xl text-[10px] cursor-pointer transition-colors"
               >
@@ -4894,14 +4946,14 @@ export default function App() {
                 <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">🎯</span>
                 <span>{t.addNewHabit}</span>
               </h3>
-              <button 
+              <button
                 onClick={() => setShowAddHabitModal(false)}
                 className="text-gray-400 hover:text-gray-600 font-bold p-1 cursor-pointer"
               >
                 ✕
               </button>
             </div>
-            
+
             <form onSubmit={handleCreateHabit} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.habitName}</label>
@@ -4909,8 +4961,8 @@ export default function App() {
                   <div className="w-10 h-10 rounded-2xl bg-[#F9F7F2] border border-[#E2DCC8] flex items-center justify-center text-lg shrink-0 shadow-2xs font-bold text-[#3A3A3A]">
                     {newHabitIcon}
                   </div>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={newHabitName}
                     onChange={e => setNewHabitName(e.target.value)}
                     placeholder={t.habitNamePlaceholder}
@@ -4935,8 +4987,8 @@ export default function App() {
                       type="button"
                       onClick={() => setNewHabitIcon(ic)}
                       className={`w-8 h-8 rounded-xl text-base flex items-center justify-center transition-all cursor-pointer ${
-                        newHabitIcon === ic 
-                          ? 'bg-[#8B9D83] text-white shadow-xs scale-110 ring-2 ring-[#8B9D83]/40' 
+                        newHabitIcon === ic
+                          ? 'bg-[#8B9D83] text-white shadow-xs scale-110 ring-2 ring-[#8B9D83]/40'
                           : 'bg-[#F9F7F2] hover:bg-[#F0EDE4] text-gray-700 border border-[#E2DCC8]/40'
                       }`}
                     >
@@ -4961,8 +5013,8 @@ export default function App() {
                       type="button"
                       onClick={() => setNewHabitCategory(cat.id as any)}
                       className={`p-2 rounded-xl border text-center text-xs font-semibold transition-all cursor-pointer ${
-                        newHabitCategory === cat.id 
-                          ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-xs' 
+                        newHabitCategory === cat.id
+                          ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-xs'
                           : 'bg-[#F9F7F2] border-[#E2DCC8]/60 text-gray-700 hover:bg-[#F0EDE4]'
                       }`}
                     >
@@ -4975,8 +5027,8 @@ export default function App() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-[#5A5A40] tracking-wider block">{t.reminderTime}</label>
-                  <input 
-                    type="time" 
+                  <input
+                    type="time"
                     value={newHabitReminderTime}
                     onChange={e => setNewHabitReminderTime(e.target.value)}
                     className="w-full bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl px-3 py-2 text-xs text-[#3A3A3A] focus:outline-none"
@@ -4984,7 +5036,7 @@ export default function App() {
                 </div>
                 <div className="space-y-1 flex flex-col justify-end">
                   <label className="flex items-center space-x-2 space-x-reverse cursor-pointer py-2">
-                    <input 
+                    <input
                       type="checkbox"
                       checked={newHabitReminderEnabled}
                       onChange={e => setNewHabitReminderEnabled(e.target.checked)}
@@ -4996,13 +5048,13 @@ export default function App() {
               </div>
 
               <div className="flex space-x-2 space-x-reverse pt-2">
-                <button 
+                <button
                   type="submit"
                   className="flex-grow py-2.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-2xl text-xs font-bold transition-colors cursor-pointer"
                 >
                   حفظ وتفعيل التتبع 🚀
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowAddHabitModal(false)}
                   className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
@@ -5038,12 +5090,12 @@ export default function App() {
       )}
 
       {/* 🚀 Header bar with branding & Responsive Navigation Toolbar */}
-      <header 
+      <header
         className={`sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs transition-all duration-300 transform ${
-          isHeaderCollapsedOnMobile 
-            ? 'max-sm:-translate-y-full max-sm:max-h-0 max-sm:opacity-0 max-sm:overflow-hidden max-sm:pointer-events-none' 
+          isHeaderCollapsedOnMobile
+            ? 'max-sm:-translate-y-full max-sm:max-h-0 max-sm:opacity-0 max-sm:overflow-hidden max-sm:pointer-events-none'
             : 'max-sm:translate-y-0 max-sm:max-h-[500px] max-sm:opacity-100'
-        }`} 
+        }`}
         dir={isRtl ? 'rtl' : 'ltr'}
         onTouchStart={() => {
           if (!isHeaderCollapsedOnMobile) {
@@ -5086,7 +5138,7 @@ export default function App() {
 
           {/* 🎯 Zones 2 & 3: Navigation Action Bar & Utility Controls */}
           <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end w-full md:w-auto">
-            
+
             {/* 1. 📿 Direct Athkar Button (أذكار) */}
             <button
               type="button"
@@ -5405,12 +5457,44 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className={`max-w-4xl mx-auto px-4 pb-28 md:pb-12 space-y-6 transition-all ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
-        
+
         {/* Offline & Cloud Background Sync Status Banner */}
         <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
 
         {/* Mock Android Notification Widget at the top of the Home Dashboard for simulation */}
-        {activeTab === 'dashboard' && (
+
+      {/* --- MEDIA PREVIEW MODAL --- */}
+      {previewMedia && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4" onClick={() => setPreviewMedia(null)}>
+          <button
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-all z-50 cursor-pointer"
+            onClick={() => setPreviewMedia(null)}
+            title={t.imageViewerCloseBtn}
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div className="max-w-6xl max-h-screen flex items-center justify-center w-full h-full relative" onClick={e => e.stopPropagation()}>
+            {previewMedia.type === 'image' && (
+              <img src={previewMedia.url} className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" alt="Preview" />
+            )}
+            {previewMedia.type === 'video' && (
+              <video src={previewMedia.url} controls autoPlay className="max-w-full max-h-[90vh] rounded-xl shadow-2xl" />
+            )}
+            {previewMedia.type === 'audio' && (
+              <div className="bg-white p-6 rounded-2xl flex flex-col items-center gap-4 min-w-[300px]">
+                <Music className="w-12 h-12 text-[#8B9D83]" />
+                <audio src={previewMedia.url} controls autoPlay className="w-full" />
+              </div>
+            )}
+            {previewMedia.type === 'pdf' && (
+              <iframe src={previewMedia.url} className="w-[90vw] h-[90vh] max-w-4xl bg-white rounded-xl shadow-2xl" title="PDF Preview" />
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'dashboard' && (
           <div className={isHeaderCollapsedOnMobile ? 'pt-2' : ''}>
             <StaticNotification onAction={handleQuickAction} appLanguage={settings?.appLanguage || 'ar'} />
           </div>
@@ -5419,7 +5503,7 @@ export default function App() {
         {/* --- TAB VIEW 1: DASHBOARD (HOME) --- */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            
+
             {/* Pro Feature Action Buttons Banner */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
@@ -5473,9 +5557,9 @@ export default function App() {
                 <ChevronRight className={`w-3.5 h-3.5 text-cyan-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
               </button>
             </div>
-            
+
             {/* 📅 التقويم الكامل واستعراض الأيام */}
-            <div 
+            <div
               onClick={() => setShowCalendarModal(true)}
               className="bg-[#EBF2EA] border-2 border-dashed border-[#8B9D83]/60 hover:bg-[#E0EBE0] rounded-3xl p-4 mb-6 flex items-center justify-between cursor-pointer transition-all shadow-xs group"
             >
@@ -5543,7 +5627,7 @@ export default function App() {
                 <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">⚡</span>
                 <span>{t.directUploadTitle}</span>
               </h3>
-              
+
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 items-center align-middle gap-3">
                 {/* 1. كتابة يومية */}
                 <button
@@ -5646,27 +5730,27 @@ export default function App() {
             {/* 🎯 Streak Tracker (سلسلة الالتزام) */}
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                
+
                 {/* Left Side: Fire Icon & Main Numbers */}
                 <div className="flex items-center space-x-4 space-x-reverse">
                   {/* Animated Flame container */}
                   <motion.div
-                    animate={{ 
+                    animate={{
                       scale: [1, 1.15, 1],
                       filter: [
-                        "drop-shadow(0px 0px 4px rgba(212,163,115,0.2))", 
-                        "drop-shadow(0px 0px 12px rgba(212,163,115,0.7))", 
+                        "drop-shadow(0px 0px 4px rgba(212,163,115,0.2))",
+                        "drop-shadow(0px 0px 12px rgba(212,163,115,0.7))",
                         "drop-shadow(0px 0px 4px rgba(212,163,115,0.2))"
                       ]
                     }}
-                    transition={{ 
-                      duration: 2, 
+                    transition={{
+                      duration: 2,
                       repeat: Infinity,
-                      ease: "easeInOut" 
+                      ease: "easeInOut"
                     }}
                     className={`p-3.5 rounded-2xl flex items-center justify-center shrink-0 ${
-                      streakInfo.currentStreak > 0 
-                        ? 'bg-[#FAEDCD] text-[#D4A373]' 
+                      streakInfo.currentStreak > 0
+                        ? 'bg-[#FAEDCD] text-[#D4A373]'
                         : 'bg-gray-100 text-gray-400'
                     }`}
                   >
@@ -5722,11 +5806,11 @@ export default function App() {
                     // Check if diaries has an entry on this day
                     const isLoggedOnDay = diaries.some(d => d.createdAt.split('T')[0] === day.isoString);
                     return (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className={`px-2.5 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[42px] border ${
-                          isLoggedOnDay 
-                            ? 'bg-[#8B9D83]/10 border-[#8B9D83]/30 text-[#8B9D83]' 
+                          isLoggedOnDay
+                            ? 'bg-[#8B9D83]/10 border-[#8B9D83]/30 text-[#8B9D83]'
                             : 'bg-[#F9F7F2]/50 border-[#E2DCC8]/40 text-gray-400'
                         }`}
                       >
@@ -5808,7 +5892,7 @@ export default function App() {
 
             {/* 🎯 Interactive Rapid Mood, Water & Symptoms Tracker Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              
+
               {/* Column 1: Fast Mood Slider with visual feedback */}
               <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
                 <div className="space-y-1">
@@ -5884,22 +5968,22 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                  
+
                   {/* Water bottle visualization */}
                   <div className="sm:col-span-4 flex flex-col items-center justify-center">
                     <div className="w-16 h-32 border-3 border-[#89CFF0]/80 rounded-2xl relative overflow-hidden bg-white shadow-inner flex flex-col justify-end">
                       {/* Caps represent fluid level */}
-                      <motion.div 
+                      <motion.div
                         className="bg-gradient-to-t from-[#89CFF0] to-[#A0E0FF] w-full"
-                        animate={{ 
-                          height: `${((activeDiaryForSelectedDate?.waterCups || 0) / 8) * 100}%` 
+                        animate={{
+                          height: `${((activeDiaryForSelectedDate?.waterCups || 0) / 8) * 100}%`
                         }}
                         transition={{ type: 'spring', damping: 15 }}
                       >
                         {/* Wave animation effect */}
                         <div className="w-full h-2 bg-[#89CFF0] rounded-full opacity-60 animate-pulse" />
                       </motion.div>
-                      
+
                       {/* Percent text overlay */}
                       <span className="absolute inset-0 flex items-center justify-center font-mono font-extrabold text-xs text-[#5A5A40] drop-shadow-xs">
                         {Math.round(((activeDiaryForSelectedDate?.waterCups || 0) / 8) * 100)}%
@@ -5925,8 +6009,8 @@ export default function App() {
                               }
                             }}
                             className={`p-2 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                              isDrunk 
-                                ? 'bg-[#89CFF0]/20 border-[#89CFF0] text-[#3399FF] scale-105 shadow-2xs' 
+                              isDrunk
+                                ? 'bg-[#89CFF0]/20 border-[#89CFF0] text-[#3399FF] scale-105 shadow-2xs'
                                 : 'bg-[#F9F7F2]/50 border-[#E2DCC8]/60 hover:border-[#89CFF0] text-gray-300 hover:text-[#89CFF0]/60'
                             }`}
                             title={t('waterCupLabel', { number: idx + 1 }) || `Cup ${idx + 1}`}
@@ -6019,8 +6103,8 @@ export default function App() {
                 <button
                   onClick={() => setIsBreathingActive(!isBreathingActive)}
                   className={`px-4 py-1.5 rounded-xl text-xs font-extrabold shadow-2xs cursor-pointer transition-all ${
-                    isBreathingActive 
-                      ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+                    isBreathingActive
+                      ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
                       : 'bg-[#8B9D83] hover:bg-[#5A5A40] text-white'
                   }`}
                 >
@@ -6030,7 +6114,7 @@ export default function App() {
 
               {isBreathingActive && (
                 <div className="flex flex-col items-center justify-center py-6 bg-[#F9F7F2]/40 border border-[#E2DCC8]/50 rounded-2xl space-y-6 relative overflow-hidden">
-                  
+
                   {/* Large Pulse animation circle */}
                   <div className="relative w-40 h-40 flex items-center justify-center">
                     <motion.div
@@ -6040,7 +6124,7 @@ export default function App() {
                         breathingPhase === 'exhale' ? 'bg-blue-400/20' : 'bg-purple-400/20'
                       }`}
                       animate={{
-                        scale: 
+                        scale:
                           breathingPhase === 'inhale' ? [1, 1.4] :
                           breathingPhase === 'hold1' ? 1.4 :
                           breathingPhase === 'exhale' ? [1.4, 1] : 1
@@ -6206,11 +6290,11 @@ export default function App() {
                     const catInfo = HABIT_CATEGORIES[habit.category] || HABIT_CATEGORIES.custom;
 
                     return (
-                      <div 
+                      <div
                         key={habit.id}
                         className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
-                          isCompleted 
-                            ? 'bg-emerald-50/40 border-emerald-200 shadow-xs' 
+                          isCompleted
+                            ? 'bg-emerald-50/40 border-emerald-200 shadow-xs'
                             : 'bg-[#F9F7F2]/30 border-[#E2DCC8]/50 hover:border-[#8B9D83]/60'
                         }`}
                       >
@@ -6219,8 +6303,8 @@ export default function App() {
                           <button
                             onClick={() => toggleHabitCompletion(habit.id, selectedDate)}
                             className={`w-6.5 h-6.5 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                              isCompleted 
-                                ? 'bg-[#8B9D83] text-white scale-105 shadow-xs' 
+                              isCompleted
+                                ? 'bg-[#8B9D83] text-white scale-105 shadow-xs'
                                 : 'border border-[#E2DCC8] hover:border-[#8B9D83] text-transparent hover:bg-white'
                             }`}
                           >
@@ -6309,8 +6393,8 @@ export default function App() {
                     key={p.id}
                     onClick={() => setHabitPeriod(p.id as any)}
                     className={`p-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                      habitPeriod === p.id 
-                        ? 'bg-[#8B9D83] text-white border-[#8B9D83]' 
+                      habitPeriod === p.id
+                        ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
                         : 'bg-[#F9F7F2]/60 hover:bg-[#F0EDE4] text-[#5A5A40] border-[#E2DCC8]/60'
                     }`}
                   >
@@ -6324,7 +6408,7 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]/60">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-[#5A5A40]">{t.startDateLabel}</label>
-                    <input 
+                    <input
                       type="date"
                       value={habitCustomStart}
                       onChange={e => setHabitCustomStart(e.target.value)}
@@ -6333,7 +6417,7 @@ export default function App() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-[#5A5A40]">{t.endDateLabel}</label>
-                    <input 
+                    <input
                       type="date"
                       value={habitCustomEnd}
                       onChange={e => setHabitCustomEnd(e.target.value)}
@@ -6400,11 +6484,11 @@ export default function App() {
         {/* --- TAB VIEW 2: DIARIES JOURNAL (DIARY WRITING) --- */}
         {activeTab === 'diaries' && (
           <div className="space-y-6">
-            
+
             {/* Editor Container if editing or creating a diary */}
             {editingDiary ? (
               <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6 w-full max-w-full overflow-hidden">
-                
+
                 {/* Editor Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-[#E2DCC8]/55 flex-wrap gap-2">
                   <h3 className="font-bold text-[#3A3A3A] text-base">
@@ -6463,10 +6547,10 @@ export default function App() {
                           onClick={() => setEditingDiary(prev => prev ? { ...prev, importance: stars } : null)}
                           className="focus:outline-none cursor-pointer"
                         >
-                          <Star 
+                          <Star
                             className={`w-6 h-6 transition-transform hover:scale-110 ${
                               stars <= editingDiary.importance ? 'text-[#D4A373] fill-[#D4A373]' : 'text-gray-300'
-                            }`} 
+                            }`}
                           />
                         </button>
                       ))}
@@ -6552,8 +6636,8 @@ export default function App() {
                             });
                           }}
                           className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
-                            isSelected 
-                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] scale-105 font-semibold' 
+                            isSelected
+                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] scale-105 font-semibold'
                               : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4]'
                           }`}
                         >
@@ -6574,8 +6658,8 @@ export default function App() {
                       {editingDiary.aiMoodAnalysis.map((analysis, idx) => {
                         const scoreColor = analysis.percentage >= 60 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : analysis.percentage >= 30 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-purple-50 text-purple-700 border-purple-100';
                         return (
-                          <div 
-                            key={idx} 
+                          <div
+                            key={idx}
                             className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 rounded-xl text-xs font-extrabold border shadow-3xs ${scoreColor}`}
                           >
                             <span>{analysis.mood}</span>
@@ -6793,26 +6877,32 @@ export default function App() {
                       <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
                         <span>📎</span>
                         <span className="hidden sm:inline">{t.attachFileTitle}</span>
-                        <input
-                          type="file"
-                          accept="*/*"
-                          onChange={async (e) => {
-                            markFilePickerActive();
-                            const file = e.target.files?.[0];
-                            if (file && editingDiary) {
-                              const newFile = await processSelectedFileAttachment(file);
-                              setEditingDiary(prev => {
-                                if (!prev) return null;
-                                const updated = {
-                                  ...prev,
-                                  files: [...(prev.files || []), newFile]
-                                };
-                                saveDraftSynchronously(updated);
-                                return updated;
-                              });
-                            }
-                            e.target.value = '';
-                          }}
+                        <input type="file" multiple
+                          accept="*/*" onChange={async (e) => {
+                              markFilePickerActive();
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 0 && editingDiary) {
+                                try {
+                                  const newFiles = [];
+                                  for (const file of files) {
+                                    newFiles.push(await processSelectedFileAttachment(file));
+                                  }
+                                  setEditingDiary(prev => {
+                                    if (!prev) return null;
+                                    const updated = {
+                                      ...prev,
+                                      files: [...(prev.files || []), ...newFiles]
+                                    };
+                                    saveDraftSynchronously(updated);
+                                    return updated;
+                                  });
+                                } catch (err) {
+                                  console.error(err);
+                                }
+                              }
+                              resetFilePickerGuard();
+                              e.target.value = '';
+                            }}
                           className="hidden"
                         />
                       </label>
@@ -6843,10 +6933,8 @@ export default function App() {
                       <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.photoTitle}>
                         <span>🖼️</span>
                         <span className="hidden sm:inline">{t.photoTitle}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
+                        <input type="file" multiple
+                          accept="image/*" onChange={handleImageUpload}
                           className="hidden"
                         />
                       </label>
@@ -7070,15 +7158,24 @@ export default function App() {
                     <div className="flex flex-wrap gap-3">
                       {editingDiary.images.map((img, idx) => (
                         <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group">
-                          <img src={img} className="w-full h-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => setEditingDiary(prev => prev ? { ...prev, images: prev.images.filter((_, i) => i !== idx) } : null)}
-                            className="absolute inset-0 bg-red-700/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs cursor-pointer"
-                          >
-                            حذف
-                          </button>
-                        </div>
+                            <img
+                              src={img}
+                              className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                              onClick={() => setPreviewMedia({ type: 'image', url: img })}
+                              alt={t.attachedImage || 'Image'}
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingDiary(prev => prev ? { ...prev, images: prev.images.filter((_, i) => i !== idx) } : null);
+                              }}
+                              className="absolute top-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                              title={t.deleteMediaBtn || 'Delete'}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                       ))}
 
                       {editingDiary.drawing && (
@@ -7173,7 +7270,7 @@ export default function App() {
                                 <span className="text-[10px] text-gray-400">{t.fileSize}: {file.size}</span>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center space-x-2 space-x-reverse shrink-0">
                               {file.dataUrl && (
                                 <a
@@ -7221,9 +7318,9 @@ export default function App() {
                         <div key={idx} className="p-3 bg-blue-50/30 border border-blue-200/50 rounded-xl flex items-center justify-between text-xs">
                           <div className="flex items-center space-x-2 space-x-reverse min-w-0">
                             <span className="text-blue-500 font-bold">🌐</span>
-                            <a 
-                              href={link} 
-                              target="_blank" 
+                            <a
+                              href={link}
+                              target="_blank"
                               referrerPolicy="no-referrer"
                               className="text-blue-700 hover:underline truncate font-medium"
                             >
@@ -7249,15 +7346,13 @@ export default function App() {
                 <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <span className="text-xs font-bold text-[#5A5A40]">{t.addMediaAttachments}</span>
                   <div className="flex flex-wrap gap-2">
-                    
+
                     {/* Audio File Upload button */}
                     <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title={t.chooseAudioFileTooltip}>
                       <span>🎵</span>
                       <span>{t.addAudioFile}</span>
-                      <input
-                        type="file"
-                        accept="*/*"
-                        onChange={handleAudioFileUpload}
+                      <input type="file" multiple
+                        accept="*/*" onChange={handleAudioFileUpload}
                         className="hidden"
                       />
                     </label>
@@ -7290,8 +7385,8 @@ export default function App() {
                       type="button"
                       onClick={handleToggleRecording}
                       className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 border rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-xs ${
-                        isRecording 
-                          ? 'bg-red-500 text-white border-red-500 animate-pulse' 
+                        isRecording
+                          ? 'bg-red-500 text-white border-red-500 animate-pulse'
                           : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
                       }`}
                     >
@@ -7441,10 +7536,8 @@ export default function App() {
                             <span className="text-[11px] font-bold text-gray-500">{t.option1LocalVideo}</span>
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>{t.chooseVideoFromDevice}</span>
-                              <input
-                                type="file"
-                                accept="*/*"
-                                onChange={handleVideoUpload}
+                              <input type="file" multiple
+                                accept="*/*" onChange={handleVideoUpload}
                                 className="hidden"
                               />
                             </label>
@@ -7483,10 +7576,8 @@ export default function App() {
                             <span className="text-[11px] font-bold text-gray-500">{t.option1LocalFile}</span>
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>{t.chooseFileFromDevice}</span>
-                              <input
-                                type="file"
-                                accept="*/*"
-                                onChange={handlePdfUpload}
+                              <input type="file" multiple
+                                accept="*/*" onChange={handlePdfUpload}
                                 className="hidden"
                               />
                             </label>
@@ -7560,7 +7651,7 @@ export default function App() {
                                   <span className="text-[10px] text-gray-500">{t.durationLabel}: {rec.duration}s</span>
                                 </div>
                               </div>
-                              
+
                               <button
                                 type="button"
                                 onClick={() => {
@@ -7833,10 +7924,8 @@ export default function App() {
                             🖼️
                           </div>
                           <span className="text-xs font-bold text-[#3A3A3A]">{t.addImageIcon}</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
+                          <input type="file" multiple
+                            accept="image/*" onChange={(e) => {
                               handleImageUpload(e);
                               setShowMoreFeaturesSheet(false);
                             }}
@@ -7868,26 +7957,27 @@ export default function App() {
                             📎
                           </div>
                           <span className="text-xs font-bold text-[#3A3A3A]">{t.attachFileIcon}</span>
-                          <input
-                            type="file"
-                            accept="*/*"
-                            onChange={async (e) => {
+                          <input type="file" multiple
+                            accept="*/*" onChange={async (e) => {
                               markFilePickerActive();
-                              const file = e.target.files?.[0];
-                              if (file && editingDiary) {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 0 && editingDiary) {
                                 try {
-                                  const newFile = await processSelectedFileAttachment(file);
+                                  const newFiles = [];
+                                  for (const file of files) {
+                                    newFiles.push(await processSelectedFileAttachment(file));
+                                  }
                                   setEditingDiary(prev => {
                                     if (!prev) return null;
                                     const updated = {
                                       ...prev,
-                                      files: [...(prev.files || []), newFile]
+                                      files: [...(prev.files || []), ...newFiles]
                                     };
                                     saveDraftSynchronously(updated);
                                     return updated;
                                   });
                                 } catch (err) {
-                                  alert('حدث خطأ أثناء قراءة الملف، يرجى المحاولة مرة أخرى');
+                                  console.error(err);
                                 }
                               }
                               e.target.value = '';
@@ -8361,7 +8451,7 @@ export default function App() {
                         </>
                       )}
                     </button>
-                    
+
                     <button
                       type="button"
                       onClick={handleSaveDiary}
@@ -8375,7 +8465,7 @@ export default function App() {
               </div>
             ) : (
               <div className="space-y-6">
-                
+
 
 
                  {/* Diaries & Gratitude Sub-Tab Swapper with Quick Search trigger */}
@@ -8445,7 +8535,7 @@ export default function App() {
 
                 {activeDiariesSubTab === 'journal' ? (
                   <div className="space-y-4">
-                    
+
                     {/* Horizontal Scrollable Filter Bar (All Types + Favorites) */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E2DCC8]/40 scrollbar-none w-full max-w-full">
                       {/* All Button */}
@@ -8496,7 +8586,7 @@ export default function App() {
                         <span className="whitespace-nowrap">{t.favoritesLabel}</span>
                       </button>
                     </div>
-                    
+
                     {/* Search Bar - Enhanced floating input with instant clear button */}
                     <div className="relative w-full">
                       <Search className="absolute right-4 top-3.5 w-4 h-4 text-[#8B9D83]" />
@@ -8618,7 +8708,7 @@ export default function App() {
                         const dayData = groups[dayKey] || { dayEntries: [], formattedDayLabel: dayKey };
                         const dayEntries = dayData.dayEntries;
                         const formattedDayLabel = dayData.formattedDayLabel;
-                        
+
                         return (
                           <div key={dayKey} className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-5">
                             {/* Large parent Day header */}
@@ -8653,7 +8743,7 @@ export default function App() {
                               {dayEntries.map((diary) => {
                                 // Format the precise entry time safely
                                 const preciseTime = formatTime(diary.createdAt, settings?.appLanguage || 'ar');
-                                
+
                                 return (
                                   <div
                                     key={diary.id}
@@ -8695,11 +8785,11 @@ export default function App() {
                                         {/* Importance Rating Stars */}
                                         <div className="flex items-center space-x-0.5 space-x-reverse shrink-0">
                                           {[1, 2, 3, 4, 5].map((s) => (
-                                            <Star 
-                                              key={s} 
+                                            <Star
+                                              key={s}
                                               className={`w-3.5 h-3.5 ${
                                                 s <= diary.importance ? 'text-[#D4A373] fill-[#D4A373]' : 'text-gray-200'
-                                              }`} 
+                                              }`}
                                             />
                                           ))}
                                         </div>
@@ -8761,7 +8851,7 @@ export default function App() {
                                           {diary.title || t.subNoteDefaultTitle}
                                         </h4>
                                       </div>
-                                      
+
                                       {/* Content Snippet */}
                                       <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
                                         {cleanDiaryText(diary.content) || <em className="text-gray-400 font-light text-[11px]">{t.audioDrawingsOnly}</em>}
@@ -8797,13 +8887,13 @@ export default function App() {
                                             {m}
                                           </span>
                                         ))}
-                                        
+
                                         {/* AI Mood percentages */}
                                         {diary.aiMoodAnalysis && diary.aiMoodAnalysis.length > 0 && (
                                           <div className="flex flex-wrap gap-1 max-w-full overflow-hidden">
                                             {diary.aiMoodAnalysis.slice(0, 2).map((analysis, idx) => (
-                                              <span 
-                                                key={idx} 
+                                              <span
+                                                key={idx}
                                                 className="bg-purple-50 text-purple-700 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg font-black border border-purple-100 shadow-3xs flex items-center space-x-1 space-x-reverse max-w-full overflow-hidden"
                                                 title={t.aiMoodAnalysisTitle}
                                               >
@@ -8868,10 +8958,10 @@ export default function App() {
                     toggleHabitCompletion={toggleHabitCompletion}
                     setHabits={setHabits}
                     habitSettings={settings.habitSettings}
-                    onUpdateHabitSettings={(newSettings) => 
-                      setSettings(prev => ({ 
-                        ...prev, 
-                        habitSettings: { ...(prev.habitSettings || {}), ...newSettings } as any 
+                    onUpdateHabitSettings={(newSettings) =>
+                      setSettings(prev => ({
+                        ...prev,
+                        habitSettings: { ...(prev.habitSettings || {}), ...newSettings } as any
                       }))
                     }
                     onImportData={(importedHabits, importedDiaries) => {
@@ -8909,7 +8999,7 @@ export default function App() {
         {/* --- TAB VIEW 4: MOOD & PROGRESS ANALYTICS (CHARTS) --- */}
         {activeTab === 'analytics' && (
           <div className="space-y-6">
-            
+
             {/* Analytics & Therapy Sub-Tab Swapper */}
             <div className="flex bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 max-w-xl mx-auto sm:mx-0 shadow-3xs flex-wrap gap-1" id="analytics-subtab-selector">
               <button
@@ -8997,7 +9087,7 @@ export default function App() {
                 <WeeklyHabitsMoodChart habits={habits} diaries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
+
                   {/* Chart 1: Sleep trend vs Sports trend */}
                   <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
                     <span className="block text-xs font-bold text-[#5A5A40]">💤 {t.sleepSportsCorrelation}</span>
@@ -9064,7 +9154,7 @@ export default function App() {
         {/* --- TAB VIEW 5: SETTINGS & BACKUP (إعدادات والنسخ الاحتياطي) --- */}
         {activeTab === 'settings' && (
           <div className="bg-[#FAF8F5]/90 rounded-3xl p-1 md:p-6 space-y-8 max-w-2xl mx-auto font-sans" dir={isRtl ? "rtl" : "ltr"}>
-            
+
             {/* Header Banner */}
             <div className="text-center py-5">
               <div className="inline-flex items-center justify-center w-14 h-14 bg-[#8B9D83]/10 text-[#4E685B] rounded-[20px] mb-3 border border-[#8B9D83]/20 shadow-3xs">
@@ -9077,7 +9167,7 @@ export default function App() {
             <div className="space-y-4">
 
               {/* CARD 1: API KEY */}
-              <div 
+              <div
                 onClick={() => setShowGeminiKeyModal(true)}
                 className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between cursor-pointer hover:bg-[#8B9D83]/5 transition-all hover:border-[#8B9D83]/40 group"
               >
@@ -9106,7 +9196,7 @@ export default function App() {
                     <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">{t.floatingBallSub}</p>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={() => setSettings(prev => ({ ...prev, floatingBallEnabled: !prev.floatingBallEnabled }))}
                   className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none flex items-center cursor-pointer ${
@@ -9118,7 +9208,7 @@ export default function App() {
               </div>
 
               {/* CARD 3: USER ACCOUNT & LOGIN */}
-              <div 
+              <div
                 onClick={() => setIsAuthModalOpen(true)}
                 className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between cursor-pointer hover:bg-teal-50/50 transition-all hover:border-teal-300 group"
               >
@@ -9140,8 +9230,8 @@ export default function App() {
                       )}
                     </div>
                     <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">
-                      {currentUser 
-                        ? (t('userEmailSynced', { email: currentUser.email }) || `Logged in: ${currentUser.email}`) 
+                      {currentUser
+                        ? (t('userEmailSynced', { email: currentUser.email }) || `Logged in: ${currentUser.email}`)
                         : t.guestUserDesc}
                     </p>
                   </div>
@@ -9150,7 +9240,7 @@ export default function App() {
               </div>
 
               {/* CARD 4: BACKUP AND SYNC */}
-              <div 
+              <div
                 onClick={() => setShowBackupSyncModal(true)}
                 className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between cursor-pointer hover:bg-[#8B9D83]/5 transition-all hover:border-[#8B9D83]/40 group"
               >
@@ -9169,7 +9259,7 @@ export default function App() {
               {/* CARD 4: APP LOCK */}
               <div className="bg-white border border-[#E2DCC8] rounded-[24px] overflow-hidden shadow-3xs transition-all">
                 <div className="p-5 flex items-center justify-between hover:bg-[#FAF8F5]/40 transition-colors">
-                  <div 
+                  <div
                     onClick={() => setExpandedSettingsCard(expandedSettingsCard === 'pin' ? null : 'pin')}
                     className="flex items-center gap-4 cursor-pointer flex-grow"
                   >
@@ -9181,7 +9271,7 @@ export default function App() {
                       <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">{t.appLockSub}</p>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => setSettings(prev => ({ ...prev, isAppLocked: !prev.isAppLocked }))}
                     className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none flex items-center cursor-pointer ${
@@ -9219,7 +9309,7 @@ export default function App() {
               </div>
 
               {/* CARD 5: FAVORITES DIRECT LINKS */}
-              <div 
+              <div
                 onClick={() => {
                   setActiveTab('diaries');
                   setShowFavoritesOnly(true);
@@ -9240,7 +9330,7 @@ export default function App() {
 
               {/* CARD 6: REMINDERS & ALARMS */}
               <div className="bg-white border border-[#E2DCC8] rounded-[24px] overflow-hidden shadow-3xs transition-all">
-                <div 
+                <div
                   onClick={() => setExpandedSettingsCard(expandedSettingsCard === 'reminders' ? null : 'reminders')}
                   className="p-5 flex items-center justify-between cursor-pointer hover:bg-[#FAF8F5]/40 transition-colors"
                 >
@@ -9274,7 +9364,7 @@ export default function App() {
                                 <span className="text-[10px] text-gray-400 font-mono font-bold">{rem.time}</span>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-3">
                               {/* Toggle Alarm */}
                               <button
@@ -9315,7 +9405,7 @@ export default function App() {
                     {/* Add Custom Alarm Form */}
                     <div className="bg-[#8B9D83]/5 border border-[#8B9D83]/15 p-4 rounded-xl space-y-3">
                       <span className="text-xs font-black text-[#5A5A40] block">⚡ {t.addNewAlarmTitle}</span>
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
@@ -9361,7 +9451,7 @@ export default function App() {
 
               {/* CARD 7: DIARY ARCHIVE */}
               <div className="bg-white border border-[#E2DCC8] rounded-[24px] overflow-hidden shadow-3xs transition-all">
-                <div 
+                <div
                   onClick={() => setExpandedSettingsCard(expandedSettingsCard === 'archive' ? null : 'archive')}
                   className="p-5 flex items-center justify-between cursor-pointer hover:bg-[#FAF8F5]/40 transition-colors"
                 >
@@ -9392,8 +9482,8 @@ export default function App() {
                         />
                         <Search className="w-4 h-4 text-gray-400 absolute right-3 rtl:right-3 ltr:left-3 top-2.5" />
                         {archivedSearchQuery && (
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => setArchivedSearchQuery('')}
                             className="absolute left-3 rtl:left-3 ltr:right-3 top-2 text-xs text-gray-400 hover:text-gray-600 font-bold"
                           >
@@ -9485,7 +9575,7 @@ export default function App() {
                       return (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {archivedList.map(diary => (
-                            <div 
+                            <div
                               key={diary.id}
                               className="bg-white border border-[#E2DCC8] hover:border-[#8B9D83] rounded-2xl p-4 transition-all shadow-3xs hover:shadow-xs space-y-3 flex flex-col justify-between"
                             >
@@ -9493,8 +9583,8 @@ export default function App() {
                                 {/* Top Badge & Date */}
                                 <div className="flex items-center justify-between">
                                   <span className={`text-[10px] px-2.5 py-0.5 rounded-lg font-black ${
-                                    diary.diaryType === 'thought' 
-                                      ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]' 
+                                    diary.diaryType === 'thought'
+                                      ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]'
                                       : 'bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8]'
                                   }`}>
                                     {diary.diaryType === 'thought' ? t.thoughtBadgeShort : t.diaryBadgeShort}
@@ -9558,7 +9648,7 @@ export default function App() {
 
               {/* CARD 8: TRASH CAN */}
               <div className="bg-white border border-[#E2DCC8] rounded-[24px] overflow-hidden shadow-3xs transition-all">
-                <div 
+                <div
                   onClick={() => setExpandedSettingsCard(expandedSettingsCard === 'trash' ? null : 'trash')}
                   className="p-5 flex items-center justify-between cursor-pointer hover:bg-[#FAF8F5]/40 transition-colors"
                 >
@@ -9601,7 +9691,7 @@ export default function App() {
                                 <span className="text-xs font-black text-[#2B3E50] block truncate">{diary.title || t.untitledNote}</span>
                                 <span className="text-[10px] text-gray-400 font-bold">{diary.createdAt.split('T')[0]}</span>
                               </div>
-                              
+
                               <div className="flex items-center gap-2 shrink-0">
                                 <button
                                   onClick={() => handleRestoreDiary(diary.id)}
@@ -9638,7 +9728,7 @@ export default function App() {
                     <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">{t.darkModeSub}</p>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={() => setSettings(prev => ({ ...prev, isDarkMode: !prev.isDarkMode }))}
                   className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none flex items-center cursor-pointer ${
@@ -9650,7 +9740,7 @@ export default function App() {
               </div>
 
               {/* CARD FOR SMART REMINDERS */}
-              <div 
+              <div
                 onClick={() => setShowSmartRemindersModal(true)}
                 className="bg-[#EEF1EB] border border-[#DCE4D8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between cursor-pointer hover:bg-[#E2E9DF] transition-all group"
               >
@@ -9688,7 +9778,7 @@ export default function App() {
                       <p className="text-[10px] text-gray-500 mt-1 font-bold leading-normal">{t.notificationsSub}</p>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => setSettings(prev => ({ ...prev, notificationsEnabled: !prev.notificationsEnabled }))}
                     className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none flex items-center cursor-pointer ${
@@ -9846,7 +9936,7 @@ export default function App() {
               </div>
 
               {/* CARD 11: APP LANGUAGES */}
-              <div 
+              <div
                 onClick={() => setShowLanguagesModal(true)}
                 className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between cursor-pointer hover:bg-[#8B9D83]/5 transition-all hover:border-[#8B9D83]/40 group"
               >
@@ -9878,7 +9968,7 @@ export default function App() {
               />
 
               {/* CARD 13: RATE US */}
-              <div 
+              <div
                 onClick={() => {
                   setRatingSuccess(false);
                   setRatingFeedback('');
@@ -9900,7 +9990,7 @@ export default function App() {
               </div>
 
               {/* CARD 13: CONTACT OWNER */}
-              <div 
+              <div
                 onClick={() => setShowContactModal(true)}
                 className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between cursor-pointer hover:bg-[#8B9D83]/5 transition-all hover:border-[#8B9D83]/40 group"
               >
@@ -9933,8 +10023,8 @@ export default function App() {
 
       {/* Floating radial assistant ball for quick navigation */}
       {settings.floatingBallEnabled && (
-        <FloatingBall 
-          onAction={handleQuickAction} 
+        <FloatingBall
+          onAction={handleQuickAction}
           isCollapsed={isBottomNavCollapsedOnMobile}
           appLanguage={settings?.appLanguage || 'ar'}
         />
@@ -9968,7 +10058,7 @@ export default function App() {
       )}
 
       {/* Persistent Bottom Tab Navigation Bar with Lucide icons (Auto-collapses on mobile after 3s of inactivity) */}
-      <nav 
+      <nav
         className={`fixed bottom-0 inset-x-0 bg-[#F9F7F2] border-t border-[#E2DCC8] py-2 z-[35] shadow-xs font-sans transition-all duration-300 transform ${
           isBottomNavCollapsedOnMobile
             ? 'max-sm:translate-y-full max-sm:opacity-0 max-sm:pointer-events-none'
@@ -9984,7 +10074,7 @@ export default function App() {
         }}
       >
         <div className="max-w-md mx-auto px-1.5 sm:px-6 grid grid-cols-5 gap-0.5 text-center font-bold">
-          
+
           {/* Tab 1: Dashboard */}
           <button
             onClick={() => {
@@ -10318,10 +10408,10 @@ export default function App() {
       {/* Hidden PDF template for export - beautifully styled like a real physical A4 page */}
       {editingDiary && (
         <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -100 }}>
-          <div 
-            id="diary-to-pdf" 
+          <div
+            id="diary-to-pdf"
             className="w-[794px] bg-white text-[#2C3E50] p-12 font-sans flex flex-col justify-between"
-            style={{ 
+            style={{
               direction: 'rtl',
               minHeight: '1123px', // A4 aspect ratio height at 794px width
               fontFamily: '"Cairo", "Inter", sans-serif'
@@ -10348,7 +10438,7 @@ export default function App() {
 
             {/* Main Document Body */}
             <div className="flex-1 space-y-6">
-              
+
               {/* Note Metadata Block */}
               <div className="bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl p-6 grid grid-cols-3 gap-4">
                 <div>
@@ -10406,8 +10496,8 @@ export default function App() {
                     {editingDiary.tasks.map((task) => (
                       <div key={task.id} className="flex items-center space-x-2 space-x-reverse text-xs text-[#3A3A3A]">
                         <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ${
-                          task.completed 
-                            ? 'bg-[#8B9D83] border-[#8B9D83] text-white' 
+                          task.completed
+                            ? 'bg-[#8B9D83] border-[#8B9D83] text-white'
                             : 'bg-white border-gray-300 text-transparent'
                         }`}>
                           ✓
@@ -10480,7 +10570,7 @@ export default function App() {
       {showAddCbtModal && (
         <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto" dir={langInfo.dir}>
           <div className="bg-white border border-[#E2DCC8] rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-fade-in text-start">
-            
+
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E2DCC8]/60">
               <div className="flex items-center space-x-2 space-x-reverse">
@@ -10610,14 +10700,14 @@ export default function App() {
                   <label className="block text-xs font-extrabold text-[#5A5A40]">{t.cbtStepAnxietyLabel}</label>
                   <p className="text-[10px] text-gray-400 font-medium">{t.cbtStepAnxietyDesc}</p>
                 </div>
-                
+
                 <div className="flex flex-col items-center py-4 bg-[#F9F7F2]/50 border border-[#E2DCC8]/50 rounded-2xl space-y-2">
                   <span className="font-mono text-2xl text-red-600 font-extrabold">{cbtEmotionBefore} / 10</span>
                   <span className="text-xs text-gray-400 font-bold">
                     {cbtEmotionBefore <= 3 ? (t.cbtAnxietyMild) :
                      cbtEmotionBefore <= 7 ? (t.cbtAnxietyModerate) : (t.cbtAnxietySevere)}
                   </span>
-                  
+
                   <div className="w-full px-8 pt-3">
                     <input
                       type="range"
@@ -10863,7 +10953,7 @@ export default function App() {
             createdAt: selectedCalendarDate + 'T12:00:00.000Z' // Associate with selected calendar day
           };
           setBooks(prev => [newBook, ...prev]);
-          
+
           // Reset form states
           setBookFormTitle('');
           setBookFormNotes('');
@@ -10892,7 +10982,7 @@ export default function App() {
         return (
           <div className="fixed inset-0 bg-black/55 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-50 transition-all font-sans" dir={langInfo.dir}>
             <div className="bg-white border border-[#E2DCC8] rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[92vh] md:h-[680px] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              
+
               {/* Header */}
               <div className="p-3.5 sm:p-5 bg-gradient-to-r from-[#5A5A40] to-[#8B9D83] text-white flex items-center justify-between shrink-0">
                 <div className="flex items-center space-x-2 sm:space-x-3 space-x-reverse">
@@ -10906,7 +10996,7 @@ export default function App() {
                     <p className="text-[9px] sm:text-[10px] text-[#E2DCC8]">{t.calendarModalSubtitle}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     setShowCalendarModal(false);
@@ -10928,8 +11018,8 @@ export default function App() {
                     setSelectedBookDetail(null);
                   }}
                   className={`flex-1 py-2 sm:py-3 px-2 text-[10px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center space-x-1 sm:space-x-2 space-x-reverse cursor-pointer whitespace-nowrap ${
-                    calendarSubTab === 'calendar' 
-                      ? 'bg-white text-[#5A5A40] shadow-xs border border-[#E2DCC8]/55' 
+                    calendarSubTab === 'calendar'
+                      ? 'bg-white text-[#5A5A40] shadow-xs border border-[#E2DCC8]/55'
                       : 'text-gray-500 hover:text-[#5A5A40]'
                   }`}
                 >
@@ -10939,8 +11029,8 @@ export default function App() {
                   type="button"
                   onClick={() => setCalendarSubTab('library')}
                   className={`flex-1 py-2 sm:py-3 px-2 text-[10px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center space-x-1 sm:space-x-2 space-x-reverse cursor-pointer whitespace-nowrap ${
-                    calendarSubTab === 'library' 
-                      ? 'bg-white text-[#5A5A40] shadow-xs border border-[#E2DCC8]/55' 
+                    calendarSubTab === 'library'
+                      ? 'bg-white text-[#5A5A40] shadow-xs border border-[#E2DCC8]/55'
                       : 'text-gray-500 hover:text-[#5A5A40]'
                   }`}
                 >
@@ -10953,8 +11043,8 @@ export default function App() {
                     setSelectedBookDetail(null);
                   }}
                   className={`flex-1 py-2 sm:py-3 px-2 text-[10px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center space-x-1 sm:space-x-2 space-x-reverse cursor-pointer whitespace-nowrap ${
-                    calendarSubTab === 'reports' 
-                      ? 'bg-white text-[#5A5A40] shadow-xs border border-[#E2DCC8]/55' 
+                    calendarSubTab === 'reports'
+                      ? 'bg-white text-[#5A5A40] shadow-xs border border-[#E2DCC8]/55'
                       : 'text-gray-500 hover:text-[#5A5A40]'
                   }`}
                 >
@@ -10964,7 +11054,7 @@ export default function App() {
 
               {/* Main Workspace split into Left (DatePicker) and Right (Details) */}
               <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden min-h-0">
-                
+
                 {/* LEFT COLUMN: Clean Calendar Widget */}
                 <div className="w-full md:w-[280px] shrink-0 border-b md:border-b-0 md:border-l border-[#E2DCC8]/40 p-3 sm:p-4 bg-[#F9F7F2]/40 flex flex-col justify-start space-y-3 sm:space-y-4 overflow-y-auto max-h-[380px] md:max-h-none">
                   <div className="text-[10px] sm:text-[11px] font-black text-gray-400">{t.fullCalendarAndHistory}</div>
@@ -10972,7 +11062,7 @@ export default function App() {
                   <div className="bg-white border border-[#E2DCC8]/60 rounded-2xl p-3.5 space-y-3.5 shadow-3xs">
                     {/* Month Picker Navigation */}
                     <div className="flex items-center justify-between">
-                      <button 
+                      <button
                         type="button"
                         onClick={handlePrevMonth}
                         className="p-1 hover:bg-[#F0EDE4] border border-[#E2DCC8]/50 rounded-lg text-xs font-extrabold cursor-pointer transition-colors text-gray-600"
@@ -10982,7 +11072,7 @@ export default function App() {
                       <span className="text-xs font-black text-[#5A5A40]">
                         {currentMonthName} {year}
                       </span>
-                      <button 
+                      <button
                         type="button"
                         onClick={handleNextMonth}
                         className="p-1 hover:bg-[#F0EDE4] border border-[#E2DCC8]/50 rounded-lg text-xs font-extrabold cursor-pointer transition-colors text-gray-600"
@@ -11008,7 +11098,7 @@ export default function App() {
                         const isoString = dayDate.toISOString().split('T')[0];
                         const isSelected = selectedCalendarDate === isoString;
                         const isToday = new Date().toISOString().split('T')[0] === isoString;
-                        
+
                         const hasDiary = diaries.some(d => d.createdAt.split('T')[0] === isoString && !d.isTrash);
                         const hasBook = books.some(b => b.createdAt.split('T')[0] === isoString);
 
@@ -11066,7 +11156,7 @@ export default function App() {
 
                 {/* RIGHT COLUMN: Interactive Workspaces */}
                 <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto bg-white flex flex-col justify-between min-h-[350px] md:min-h-0">
-                  
+
                   {/* TAB 1: CALENDAR VIEW & DAY ACTIVITIES */}
                   {calendarSubTab === 'calendar' && (
                     <div className="space-y-5 flex-1 flex flex-col justify-between">
@@ -11110,7 +11200,7 @@ export default function App() {
                                 <span>{t.healthMetricsAndCommitment}</span>
                                 <span className="text-[10px] font-extrabold text-[#D4A373]">{t.todayIndicatorsBadge}</span>
                               </h4>
-                              
+
                               <div className="space-y-2.5 flex-1 justify-center flex flex-col">
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-600">
                                   <span className="flex items-center gap-1">{t.medicationDoseCommitment}</span>
@@ -11340,7 +11430,7 @@ export default function App() {
                             {/* Column 2: Attachments & Simulation */}
                             <div className="space-y-3 bg-[#F9F7F2]/35 border border-[#E2DCC8]/40 rounded-2xl p-4">
                               <span className="block text-xs font-black text-[#5A5A40] border-b border-[#E2DCC8]/30 pb-1 mb-2">{t.bookAttachmentsHeader}</span>
-                              
+
                               <div>
                                 <label className="block text-[10px] font-black text-gray-500 mb-1">{t.pdfFilePathLabel}</label>
                                 <input
@@ -11370,8 +11460,8 @@ export default function App() {
                                     setBookFormAudio(bookFormAudio ? '' : 'سجل_ملخص_كتابي_رائع.mp3');
                                   }}
                                   className={`py-1.5 text-[10px] font-black rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                                    bookFormAudio 
-                                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800' 
+                                    bookFormAudio
+                                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
                                       : 'bg-white border-[#E2DCC8] hover:bg-gray-50 text-[#3A3A3A]'
                                   }`}
                                 >
@@ -11383,8 +11473,8 @@ export default function App() {
                                     setBookFormVideo(bookFormVideo ? '' : 'فيديو_شرح_مهم.mp4');
                                   }}
                                   className={`py-1.5 text-[10px] font-black rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                                    bookFormVideo 
-                                      ? 'bg-blue-50 border-blue-300 text-blue-800' 
+                                    bookFormVideo
+                                      ? 'bg-blue-50 border-blue-300 text-blue-800'
                                       : 'bg-white border-[#E2DCC8] hover:bg-gray-50 text-[#3A3A3A]'
                                   }`}
                                 >
@@ -11492,7 +11582,7 @@ export default function App() {
 
                               <div className="bg-[#F9F7F2]/30 border border-[#E2DCC8]/50 rounded-2xl p-4 space-y-3 flex flex-col justify-start">
                                 <span className="block text-xs font-black text-[#5A5A40] border-b border-gray-100 pb-1">{t.interactiveAttachmentsSimulation}</span>
-                                
+
                                 {selectedBookDetail.pdfPath && (
                                   <button
                                     type="button"
@@ -11594,7 +11684,7 @@ export default function App() {
                           return (
                             <div className="space-y-4 flex-1 flex flex-col justify-between overflow-hidden">
                               <div className="space-y-4 flex-1 flex flex-col overflow-hidden">
-                                
+
                                 {/* Top bar: Title & Add Book Button */}
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
                                   <div>
@@ -11715,7 +11805,7 @@ export default function App() {
                                         const count = isAll
                                           ? books.length
                                           : books.filter(b => (b.tags || []).includes(tag)).length;
-                                        
+
                                         if (!isAll && count === 0) return null; // Hide empty tag chips
 
                                         const isSelected = isAll ? selectedBookTagFilter === 'all' : selectedBookTagFilter === tag;
@@ -11797,7 +11887,7 @@ export default function App() {
                                                 {book.createdAt ? book.createdAt.split('T')[0] : (t.previousDateBadge)}
                                               </span>
                                             </div>
-                                            
+
                                             <p className="text-[10.5px] text-gray-500 line-clamp-2 leading-relaxed">
                                               {book.notes || (t.noNotesOrQuotesForBook)}
                                             </p>
@@ -11898,8 +11988,8 @@ export default function App() {
                                       <span>{ratio}% ({completedDays}/{totalDays})</span>
                                     </div>
                                     <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                                      <div 
-                                        className="h-full bg-[#8B9D83] rounded-full transition-all duration-500" 
+                                      <div
+                                        className="h-full bg-[#8B9D83] rounded-full transition-all duration-500"
                                         style={{ width: `${ratio}%` }}
                                       />
                                     </div>
@@ -11963,37 +12053,37 @@ export default function App() {
       })()}
 
       {/* Global Hidden Input File Elements for Dashboard Quick Actions */}
-      <input 
-        type="file" 
-        id="global-image-uploader" 
-        accept="*/*" 
-        className="hidden" 
-        onChange={handleGlobalImageUpload} 
+      <input
+        type="file"
+        id="global-image-uploader"
+        accept="*/*"
+        className="hidden"
+        onChange={handleGlobalImageUpload}
       />
-      <input 
-        type="file" 
-        id="global-video-uploader" 
-        accept="*/*" 
-        className="hidden" 
-        onChange={handleGlobalVideoUpload} 
+      <input
+        type="file"
+        id="global-video-uploader"
+        accept="*/*"
+        className="hidden"
+        onChange={handleGlobalVideoUpload}
       />
-      <input 
-        type="file" 
-        id="global-audio-uploader" 
-        accept="*/*" 
-        className="hidden" 
-        onChange={handleGlobalAudioUpload} 
+      <input
+        type="file"
+        id="global-audio-uploader"
+        accept="*/*"
+        className="hidden"
+        onChange={handleGlobalAudioUpload}
       />
-      <input 
-        type="file" 
-        id="global-document-uploader" 
-        accept="*/*" 
-        className="hidden" 
-        onChange={handleGlobalDocumentUpload} 
+      <input
+        type="file"
+        id="global-document-uploader"
+        accept="*/*"
+        className="hidden"
+        onChange={handleGlobalDocumentUpload}
       />
 
       {/* Simulated Hardware Power Button protruding from the right edge */}
-      <div 
+      <div
         onClick={() => setSettings(prev => ({ ...prev, isAppLocked: true }))}
         className="fixed end-0 top-[35%] w-3.5 h-16 bg-gradient-to-l from-[#222] to-[#444] rounded-s-lg hover:from-[#333] hover:to-[#555] border border-gray-600 border-e-0 shadow-xl cursor-pointer transition-all hover:w-4 z-[9999] flex items-center justify-center group"
         title={t.hardwarePowerBtnTooltip}
@@ -12044,8 +12134,8 @@ export default function App() {
             <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-3">
               <div className="flex items-center space-x-2 space-x-reverse">
                 <span className={`text-xs px-2.5 py-1 rounded-xl font-black ${
-                  viewArchivedDiary.diaryType === 'thought' 
-                    ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]' 
+                  viewArchivedDiary.diaryType === 'thought'
+                    ? 'bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4]'
                     : 'bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8]'
                 }`}>
                   {viewArchivedDiary.diaryType === 'thought' ? (t.archivedThoughtBadge) : (t.archivedDiaryBadge)}
