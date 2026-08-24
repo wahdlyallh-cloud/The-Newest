@@ -74,11 +74,14 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
+  const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-3.7-flash'];
   let lastErrorMsg = '';
 
-  for (const currentKey of candidateKeys) {
-    for (const model of modelsToTry) {
+  for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
+    const currentKey = candidateKeys[keyIdx];
+
+    for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
+      const model = modelsToTry[modelIdx];
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentKey.trim()}`;
 
       const userParts = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
@@ -102,12 +105,19 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         requestBody.generationConfig = { responseMimeType: 'application/json' };
       }
 
+      const controller = new AbortController();
+      const timeoutTimer = setTimeout(() => controller.abort(), 18000);
+      const reqStart = Date.now();
+
       try {
         const res = await originalFetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
         });
+        clearTimeout(timeoutTimer);
+        const elapsed = Date.now() - reqStart;
 
         const responseText = await res.text();
 
@@ -119,6 +129,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
             const candidateText = candidate?.content?.parts?.[0]?.text;
             if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
               recordKeySuccess(currentKey);
+              console.log(`[REST] Success with Model: ${model} | Key #${keyIdx + 1} | Time: ${elapsed}ms`);
               return candidateText;
             }
           }
@@ -130,22 +141,22 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
         lastErrorMsg = errMessage;
 
         const errType = classifyGeminiError(res.status, errMessage);
+        console.warn(`[REST] Model: ${model} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
 
         if (errType === 'quota_exhausted' || errType === 'invalid_key') {
           rotateToNextKey(currentKey, errType);
-          console.warn(`[KeyPool] Key failed (${errType}), rotating to next pool key...`);
-          break; // break inner model loop to try next candidate key in pool
+          break; // break model loop to try next candidate key in pool
         }
 
         if (res.status === 404 || res.status === 503 || res.status === 529 || errMessage.includes('high demand') || errMessage.includes('not found')) {
-          console.warn(`[fetchInterceptor] Model "${model}" temporary overload/not found, trying next model…`);
-          continue;
+          continue; // try next model in loop with same key
         }
-
-        console.warn(`[fetchInterceptor] Model "${model}" failed: ${errMessage}`);
       } catch (e: any) {
-        lastErrorMsg = e.message || String(e);
-        console.warn(`[fetchInterceptor] Model "${model}" exception: ${lastErrorMsg}`);
+        clearTimeout(timeoutTimer);
+        const elapsed = Date.now() - reqStart;
+        const isAbort = e?.name === 'AbortError';
+        lastErrorMsg = isAbort ? 'انتهت مهلة استجابة النموذج (Timeout)' : (e.message || String(e));
+        console.warn(`[REST] Model: ${model} | Key #${keyIdx + 1} | Exception: ${lastErrorMsg} | Time: ${elapsed}ms`);
       }
     }
   }
@@ -927,11 +938,21 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (base64Data || fileUri) {
-        const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
+        const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-3.7-flash'];
         let lastError = "";
+        const globalDeadline = Date.now() + 60000; // 60s Global Timeout
 
-        for (const currentKey of candidateKeys) {
-          for (const modName of modelsToTry) {
+        keyLoop: for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
+          const currentKey = candidateKeys[keyIdx];
+
+          for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
+            if (Date.now() >= globalDeadline) {
+              console.warn('[AudioTranscription] Global timeout (60s) reached, halting attempts.');
+              lastError = "GLOBAL_TIMEOUT";
+              break keyLoop;
+            }
+
+            const modName = modelsToTry[modelIdx];
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modName}:generateContent?key=${currentKey.trim()}`;
             const promptText = `You are an expert audio transcription specialist and speech emotion recognition analyst.
 Listen to the attached audio recording and do the following:
@@ -978,12 +999,19 @@ Return pure JSON only in the following format:
               generationConfig: { responseMimeType: "application/json" }
             };
 
+            const controller = new AbortController();
+            const timeoutTimer = setTimeout(() => controller.abort(), 15000);
+            const reqStart = Date.now();
+
             try {
               const res = await originalFetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reqBody)
+                body: JSON.stringify(reqBody),
+                signal: controller.signal
               });
+              clearTimeout(timeoutTimer);
+              const elapsed = Date.now() - reqStart;
 
               if (res.ok) {
                 const responseText = await res.text();
@@ -991,6 +1019,7 @@ Return pure JSON only in the following format:
                   throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
                 }
                 recordKeySuccess(currentKey);
+                console.log(`[AudioTranscription] Success with Model: ${modName} | Key #${keyIdx + 1} | Time: ${elapsed}ms`);
                 const resJson = JSON.parse(responseText);
                 const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
                 const parsed = JSON.parse(rawText.trim());
@@ -1010,16 +1039,33 @@ Return pure JSON only in the following format:
                 const errJson = await res.json().catch(() => ({}));
                 lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
                 const errType = classifyGeminiError(res.status, lastError);
+                console.warn(`[AudioTranscription] Model: ${modName} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
+
                 if (errType === 'quota_exhausted' || errType === 'invalid_key') {
                   rotateToNextKey(currentKey, errType);
-                  console.warn(`[KeyPool] Audio transcribe key failed (${errType}), rotating to next pool key...`);
                   break; // break model loop to try next candidate key
+                }
+
+                if (res.status === 404 || res.status === 503 || res.status === 529 || lastError.includes('high demand') || lastError.includes('not found')) {
+                  continue; // try next model with same key
                 }
               }
             } catch (modelErr: any) {
-              lastError = modelErr?.message || `خطأ في الاتصال بالنموذج ${modName}`;
+              clearTimeout(timeoutTimer);
+              const elapsed = Date.now() - reqStart;
+              const isAbort = modelErr?.name === 'AbortError';
+              lastError = isAbort ? 'انتهت مهلة استجابة النموذج (Timeout)' : (modelErr?.message || `خطأ في الاتصال بالنموذج ${modName}`);
+              console.warn(`[AudioTranscription] Model: ${modName} | Key #${keyIdx + 1} | Exception: ${lastError} | Time: ${elapsed}ms`);
             }
           }
+        }
+
+        if (lastError === "GLOBAL_TIMEOUT") {
+          return createErrorResponse(
+            reqLang === 'ar'
+              ? "استغرقت معالجة التسجيل الصوتي وقتاً أطول من المتوقع، يرجى المحاولة مرة أخرى أو اختيار تسجيل أصغر."
+              : "Audio processing took longer than expected. Please try again shortly."
+          );
         }
 
         if (lastError.toLowerCase().includes('high demand') || lastError.toLowerCase().includes('overloaded') || lastError.includes('503') || lastError.includes('529')) {
