@@ -5,14 +5,14 @@ import {
 } from 'lucide-react';
 import { DiaryEntry, AppLanguage, FileAttachment, AudioRecording } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
-import { getAttachmentObjectUrl } from '../lib/attachmentStore';
+import { getAttachmentObjectUrl, getAttachmentBlob } from '../lib/attachmentStore';
 
 interface AttachmentsPageProps {
   isOpen: boolean;
   onClose: () => void;
   diary: DiaryEntry | null;
   appLanguage: AppLanguage;
-  onPreviewMedia: (media: { type: 'image' | 'video' | 'audio' | 'pdf'; url: string }) => void;
+  onPreviewMedia: (media: { type: 'image' | 'video' | 'audio' | 'pdf'; url: string; name?: string }) => void;
   onOpenDrawing?: () => void;
   onDeleteImage?: (index: number) => void;
   onDeleteVideo?: (index: number) => void;
@@ -54,13 +54,23 @@ export default function AttachmentsPage({
     const type = (file.type || '').toLowerCase();
 
     if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
-      onPreviewMedia({ type: 'image', url });
+      onPreviewMedia({ type: 'image', url, name: file.name });
     } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
-      onPreviewMedia({ type: 'video', url });
+      onPreviewMedia({ type: 'video', url, name: file.name });
     } else if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name)) {
-      onPreviewMedia({ type: 'audio', url });
+      onPreviewMedia({ type: 'audio', url, name: file.name });
     } else if (type.includes('pdf') || name.endsWith('.pdf')) {
-      onPreviewMedia({ type: 'pdf', url });
+      let pdfBlobUrl = url;
+      if (file.attachmentId) {
+        const rawBlob = await getAttachmentBlob(file.attachmentId);
+        if (rawBlob && rawBlob.size > 0) {
+          const validPdfBlob = rawBlob.type === 'application/pdf'
+            ? rawBlob
+            : new Blob([rawBlob], { type: 'application/pdf' });
+          pdfBlobUrl = URL.createObjectURL(validPdfBlob);
+        }
+      }
+      onPreviewMedia({ type: 'pdf', url: pdfBlobUrl, name: file.name || 'document.pdf' });
     } else {
       const link = document.createElement('a');
       link.href = url;

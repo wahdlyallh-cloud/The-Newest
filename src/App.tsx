@@ -9,7 +9,7 @@ import {
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
   User, Printer, ChevronRight, ArrowRight, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
-  MoreVertical, MoreHorizontal, Folder
+  MoreVertical, MoreHorizontal, Folder, FileText
 } from 'lucide-react';
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
 import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from './lib/journalTypes';
@@ -1317,7 +1317,7 @@ export default function App() {
   }, [settings]);
 
   // --- Active Diary Editing State ---
-  const [previewMedia, setPreviewMedia] = useState<{ type: 'image' | 'video' | 'audio' | 'pdf', url: string } | null>(null);
+  const [previewMedia, setPreviewMedia] = useState<{ type: 'image' | 'video' | 'audio' | 'pdf', url: string, name?: string } | null>(null);
   const [showExportDiaryModal, setShowExportDiaryModal] = useState<boolean>(false);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
@@ -3326,13 +3326,23 @@ export default function App() {
     const type = (file.type || '').toLowerCase();
 
     if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
-      setPreviewMedia({ type: 'image', url });
+      setPreviewMedia({ type: 'image', url, name: file.name });
     } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
-      setPreviewMedia({ type: 'video', url });
+      setPreviewMedia({ type: 'video', url, name: file.name });
     } else if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name)) {
-      setPreviewMedia({ type: 'audio', url });
+      setPreviewMedia({ type: 'audio', url, name: file.name });
     } else if (type.includes('pdf') || name.endsWith('.pdf')) {
-      setPreviewMedia({ type: 'pdf', url });
+      let pdfBlobUrl = url;
+      if (file.attachmentId) {
+        const rawBlob = await getAttachmentBlob(file.attachmentId);
+        if (rawBlob && rawBlob.size > 0) {
+          const validPdfBlob = rawBlob.type === 'application/pdf'
+            ? rawBlob
+            : new Blob([rawBlob], { type: 'application/pdf' });
+          pdfBlobUrl = URL.createObjectURL(validPdfBlob);
+        }
+      }
+      setPreviewMedia({ type: 'pdf', url: pdfBlobUrl, name: file.name || 'document.pdf' });
     } else {
       // General document: create safe trigger to open/download in browser
       const link = document.createElement('a');
@@ -5746,7 +5756,75 @@ export default function App() {
               </div>
             )}
             {previewMedia.type === 'pdf' && (
-              <iframe src={previewMedia.url} className="w-[90vw] h-[90vh] max-w-4xl bg-white rounded-xl shadow-2xl" title="PDF Preview" />
+              <div className="w-[95vw] sm:w-[90vw] h-[88vh] max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-[#E2DCC8]" dir={langInfo.dir}>
+                {/* PDF Header Toolbar */}
+                <div className="p-3 sm:p-4 bg-[#F9F7F2] border-b border-[#E2DCC8] flex items-center justify-between gap-2 shrink-0">
+                  <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
+                    <div className="p-2 bg-red-100 text-red-700 rounded-xl shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-black text-xs sm:text-sm text-[#3A3A3A] truncate">
+                        {previewMedia.name || (settings?.appLanguage === 'ar' ? 'مستند PDF' : 'PDF Document')}
+                      </h4>
+                      <span className="text-[10px] text-gray-500 font-medium">
+                        {settings?.appLanguage === 'ar' ? 'معاينة المستند' : 'Document Preview'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 space-x-reverse shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => window.open(previewMedia.url, '_blank')}
+                      className="px-3 py-1.5 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all"
+                      title={settings?.appLanguage === 'ar' ? 'فتح في عارض خارجي / المتصفح' : 'Open in System / Browser Viewer'}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">{settings?.appLanguage === 'ar' ? 'فتح في عارض خارجي' : 'Open Externally'}</span>
+                    </button>
+
+                    <a
+                      href={previewMedia.url}
+                      download={previewMedia.name || 'document.pdf'}
+                      className="p-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl cursor-pointer transition-all shadow-3xs"
+                      title={settings?.appLanguage === 'ar' ? 'تحميل' : 'Download'}
+                    >
+                      <Download className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* PDF Viewer Area with Mobile Friendly Fallback */}
+                <div className="flex-1 w-full h-full relative bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <object
+                    data={previewMedia.url}
+                    type="application/pdf"
+                    className="w-full h-full border-0"
+                  >
+                    <iframe
+                      src={previewMedia.url}
+                      className="w-full h-full border-0"
+                      title="PDF Preview"
+                    />
+                  </object>
+
+                  {/* Mobile Quick Action Overlay */}
+                  <div className="absolute bottom-4 left-4 right-4 sm:hidden bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-[#E2DCC8] shadow-lg flex items-center justify-between gap-2 z-20">
+                    <span className="text-[11px] font-bold text-[#5A5A40] truncate">
+                      {settings?.appLanguage === 'ar' ? 'قراءة المستند بوضوح:' : 'Read document:'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => window.open(previewMedia.url, '_blank')}
+                      className="px-3 py-1.5 bg-[#D4A373] hover:bg-[#B58554] text-white font-black text-xs rounded-xl shadow-xs cursor-pointer flex items-center gap-1 shrink-0"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>{settings?.appLanguage === 'ar' ? 'عرض المستند 📄' : 'View Document 📄'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -109,7 +109,12 @@ export const getAttachmentBlob = async (attachmentId: string): Promise<Blob | nu
       req.onsuccess = () => {
         const record = req.result as StoredAttachmentRecord | undefined;
         if (record && record.blob) {
-          resolve(record.blob);
+          const mime = record.mimeType || record.blob.type;
+          if (mime && record.blob.type !== mime) {
+            resolve(new Blob([record.blob], { type: mime }));
+          } else {
+            resolve(record.blob);
+          }
         } else {
           resolve(null);
         }
