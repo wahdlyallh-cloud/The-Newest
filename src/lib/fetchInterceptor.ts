@@ -977,45 +977,56 @@ Return pure JSON only in the following format:
             generationConfig: { responseMimeType: "application/json" }
           };
 
-          const res = await originalFetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reqBody)
-          });
-
-          if (res.ok) {
-            const responseText = await res.text();
-            if (!responseText || !responseText.trim()) {
-              throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
-            }
-            recordKeySuccess(key);
-            const resJson = JSON.parse(responseText);
-            const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-            const parsed = JSON.parse(rawText.trim());
-            return createSuccessResponse({
-              success: true,
-              transcription: parsed.transcription || (reqLang === 'ar' ? "تم تفريغ الصوت بنجاح." : "Audio transcribed successfully."),
-              speechEmotion: {
-                emotion: parsed.emotion || (reqLang === 'ar' ? "طبيعي" : "Normal"),
-                intensityScore: parsed.intensityScore || 70,
-                intensityLabel: parsed.intensityLabel || (reqLang === 'ar' ? "متوسطة" : "Medium"),
-                vocalToneDetails: parsed.vocalToneDetails || (reqLang === 'ar' ? "نبرة صوت هادئة ومستقرة" : "Calm and stable vocal tone"),
-                recommendedColor: parsed.recommendedColor || "teal"
-              },
-              source: "gemini"
+          try {
+            const res = await originalFetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(reqBody)
             });
-          } else {
-            const errJson = await res.json().catch(() => ({}));
-            lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
-            const errType = classifyGeminiError(res.status, lastError);
-            if (errType === 'quota_exhausted' || errType === 'invalid_key') {
-              const rotation = rotateToNextKey(key, errType);
-              if (rotation.hasNextKey && rotation.newKey) {
-                key = rotation.newKey;
+
+            if (res.ok) {
+              const responseText = await res.text();
+              if (!responseText || !responseText.trim()) {
+                throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
+              }
+              recordKeySuccess(key);
+              const resJson = JSON.parse(responseText);
+              const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+              const parsed = JSON.parse(rawText.trim());
+              return createSuccessResponse({
+                success: true,
+                transcription: parsed.transcription || (reqLang === 'ar' ? "تم تفريغ الصوت بنجاح." : "Audio transcribed successfully."),
+                speechEmotion: {
+                  emotion: parsed.emotion || (reqLang === 'ar' ? "طبيعي" : "Normal"),
+                  intensityScore: parsed.intensityScore || 70,
+                  intensityLabel: parsed.intensityLabel || (reqLang === 'ar' ? "متوسطة" : "Medium"),
+                  vocalToneDetails: parsed.vocalToneDetails || (reqLang === 'ar' ? "نبرة صوت هادئة ومستقرة" : "Calm and stable vocal tone"),
+                  recommendedColor: parsed.recommendedColor || "teal"
+                },
+                source: "gemini"
+              });
+            } else {
+              const errJson = await res.json().catch(() => ({}));
+              lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
+              const errType = classifyGeminiError(res.status, lastError);
+              if (errType === 'quota_exhausted' || errType === 'invalid_key') {
+                const rotation = rotateToNextKey(key, errType);
+                if (rotation.hasNextKey && rotation.newKey) {
+                  key = rotation.newKey;
+                }
               }
             }
+          } catch (modelErr: any) {
+            lastError = modelErr?.message || `خطأ في الاتصال بالنموذج ${modName}`;
           }
         }
+
+        if (lastError.toLowerCase().includes('high demand') || lastError.toLowerCase().includes('overloaded') || lastError.includes('503') || lastError.includes('529')) {
+          lastError = reqLang === 'ar'
+            ? "يشهد خادم الذكاء الاصطناعي ضغطاً مؤقتاً حالياً، يرجى إعادة المحاولة بعد قليل."
+            : "The AI service is experiencing temporary high demand. Please try again shortly.";
+        }
+
         return createErrorResponse(lastError || "فشل تفريغ الصوت عبر طرازات Gemini.");
       }
     } catch (err: any) {
