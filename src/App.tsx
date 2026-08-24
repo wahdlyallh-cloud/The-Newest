@@ -4023,6 +4023,42 @@ export default function App() {
     }
   };
 
+  // --- Helper to accurately detect standard audio MIME types ---
+  const detectAudioMimeType = (filename?: string, providedType?: string): string => {
+    const ext = (filename || '').split('.').pop()?.toLowerCase();
+    if (ext === 'mp3') return 'audio/mp3';
+    if (ext === 'm4a' || ext === 'aac') return 'audio/mp4';
+    if (ext === 'wav') return 'audio/wav';
+    if (ext === 'ogg' || ext === 'oga') return 'audio/ogg';
+    if (ext === 'flac') return 'audio/flac';
+    if (ext === 'webm') return 'audio/webm';
+    if (ext === '3gp' || ext === 'amr') return 'audio/3gpp';
+    if (providedType && providedType.startsWith('audio/')) {
+      const clean = providedType.split(';')[0].trim().toLowerCase();
+      if (clean.includes('mpeg') || clean.includes('mp3')) return 'audio/mp3';
+      if (clean.includes('mp4') || clean.includes('m4a') || clean.includes('aac')) return 'audio/mp4';
+      if (clean.includes('wav')) return 'audio/wav';
+      if (clean.includes('ogg')) return 'audio/ogg';
+      if (clean.includes('flac')) return 'audio/flac';
+      if (clean.includes('webm')) return 'audio/webm';
+      return clean;
+    }
+    return 'audio/mp3';
+  };
+
+  // --- Helper to reliably read any Blob/File to Base64 data URL ---
+  const readBlobAsDataUrl = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') resolve(reader.result);
+        else reject(new Error('Failed to convert audio Blob to Data URL'));
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   // --- Helper to ensure audio Payload is converted from blob: URL to Base64 ---
   const convertAudioTargetToBase64 = async (audioPayload: string): Promise<string> => {
     if (!audioPayload || audioPayload === '#') return '';
@@ -4031,18 +4067,7 @@ export default function App() {
       try {
         const res = await fetch(audioPayload);
         const blob = await res.blob();
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              resolve(reader.result);
-            } else {
-              reject(new Error('Failed to convert Blob URL to Base64 Data URL'));
-            }
-          };
-          reader.onerror = (e) => reject(e);
-          reader.readAsDataURL(blob);
-        });
+        return readBlobAsDataUrl(blob);
       } catch (err) {
         console.error('[AudioBase64] Exception fetching blob URL:', err);
         return '';
@@ -4059,7 +4084,7 @@ export default function App() {
     if (rec.attachmentId) {
       try {
         const storedBlob = await getAttachmentBlob(rec.attachmentId);
-        if (storedBlob) {
+        if (storedBlob && storedBlob.size > 0) {
           audioBlob = storedBlob;
           if (!rawAudio || rawAudio === '#' || rawAudio.startsWith('blob:')) {
             rawAudio = URL.createObjectURL(storedBlob);
@@ -4071,7 +4096,7 @@ export default function App() {
     }
 
     if (!rawAudio && !audioBlob) {
-      alert(t.noValidAudioTranscription);
+      alert(t.noValidAudioTranscription || (settings?.appLanguage === 'ar' ? 'الملف الصوتي غير متوفر في الذاكرة.' : 'Audio file not found in storage.'));
       return;
     }
 
@@ -4091,27 +4116,23 @@ export default function App() {
               byteNumbers[i] = byteChars.charCodeAt(i);
             }
             const byteArray = new Uint8Array(byteNumbers);
-            audioBlob = new Blob([byteArray], { type: rec.mimeType || 'audio/webm' });
+            audioBlob = new Blob([byteArray], { type: rec.mimeType || 'audio/mp3' });
           }
         }
       }
 
-      if (audioBlob && audioBlob.size > 22 * 1024 * 1024) {
-        updateAudioTranscriptionAtomic(rec.id, t.transcriptionFailedSize || 'عذراً، الملف كبير جداً لمعالجته دفعة واحدة.');
+      if (!audioBlob || audioBlob.size === 0) {
+        updateAudioTranscriptionAtomic(rec.id, settings?.appLanguage === 'ar' ? 'الملف الصوتي فارغ أو تعذر قراءته.' : 'Audio file is empty or could not be read.');
         return;
       }
 
-      let payloadBody: any = {};
-      const INLINE_LIMIT = 2 * 1024 * 1024; // 2MB threshold
-
-      if (audioBlob && audioBlob.size > INLINE_LIMIT) {
-        const audioFile = new File([audioBlob], rec.name || 'audio_recording.webm', { type: rec.mimeType || 'audio/webm' });
-        const { fileUri } = await uploadToGeminiFilesAPI(audioFile);
-        payloadBody = { fileUri, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name, appLanguage: settings?.appLanguage || 'ar' };
-      } else {
-        const audioPayload = await convertAudioTargetToBase64(rawAudio);
-        payloadBody = { audioData: audioPayload, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name, appLanguage: settings?.appLanguage || 'ar' };
+      if (audioBlob.size > 22 * 1024 * 1024) {
+        updateAudioTranscriptionAtomic(rec.id, t.transcriptionFailedSize || (settings?.appLanguage === 'ar' ? 'حجم الملف كبير جداً (الحد الأقصى 20 ميجابايت).' : 'Audio file exceeds the maximum 20MB limit.'));
+        return;
       }
+
+      const mimeType = detectAudioMimeType(rec.name, audioBlob.type || rec.mimeType);
+      const audioData = await readBlobAsDataUrl(audioBlob);
 
       const res = await fetch('/api/gemini/transcribe-audio', {
         method: 'POST',
@@ -4120,20 +4141,25 @@ export default function App() {
           'x-gemini-key': settings.userApiKey || '',
           'x-app-language': settings.appLanguage || 'ar'
         },
-        body: JSON.stringify(payloadBody)
+        body: JSON.stringify({
+          audioData,
+          mimeType,
+          fileName: rec.name,
+          appLanguage: settings?.appLanguage || 'ar'
+        })
       });
+
       const data = await res.json();
       if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية')) {
         updateAudioTranscriptionAtomic(rec.id, data.transcription, data.speechEmotion);
       } else {
-        const errMsg = data.error?.includes('حجم') || data.error?.includes('large')
-          ? (t.transcriptionFailedSize || 'عذراً، حجم الملف كبير جداً.')
-          : (t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
-        updateAudioTranscriptionAtomic(rec.id, errMsg);
+        const errorMsg = data.error || data.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe this audio file.'));
+        updateAudioTranscriptionAtomic(rec.id, errorMsg);
       }
     } catch (err: any) {
       console.warn('Transcribe error:', err);
-      updateAudioTranscriptionAtomic(rec.id, t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
+      const errorMsg = err?.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe this audio file.'));
+      updateAudioTranscriptionAtomic(rec.id, errorMsg);
     } finally {
       setTranscribingAudioId(null);
     }
@@ -4183,9 +4209,10 @@ export default function App() {
 
     try {
       for (const file of files) {
+        const detectedMime = detectAudioMimeType(file.name, file.type);
         const newRecId = `rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
         const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-        await saveAttachmentBlob(attachmentId, file, file.type || 'audio/mp3');
+        await saveAttachmentBlob(attachmentId, file, detectedMime);
         const audioUrl = URL.createObjectURL(file);
 
         const newRec: AudioRecording = {
@@ -4195,26 +4222,19 @@ export default function App() {
           blobUrl: audioUrl,
           duration: Math.round(file.size / 16000) || 15,
           transcription: '⏳ جاري التفريغ بالذكاء الاصطناعي...',
-          attachmentId
+          attachmentId,
+          mimeType: detectedMime
         };
 
         addAudioToDiaryAtomic(newRec);
         setTranscribingAudioId(newRecId);
 
         if (file.size > 22 * 1024 * 1024) {
-          updateAudioTranscriptionAtomic(newRecId, t.transcriptionFailedSize || 'عذراً، الملف كبير جداً لمعالجته دفعة واحدة.');
+          updateAudioTranscriptionAtomic(newRecId, t.transcriptionFailedSize || (settings?.appLanguage === 'ar' ? 'حجم الملف كبير جداً (الحد الأقصى 20 ميجابايت).' : 'File is too large.'));
           continue;
         }
 
-        const base64Audio = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') resolve(reader.result);
-            else reject(new Error('Failed to read audio file'));
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        const base64Audio = await readBlobAsDataUrl(file);
 
         try {
           const res = await fetch('/api/gemini/transcribe-audio', {
@@ -4226,9 +4246,9 @@ export default function App() {
             },
             body: JSON.stringify({
               audioData: base64Audio,
-              mimeType: (file.type || 'audio/mp3').split(';')[0].trim(),
+              mimeType: detectedMime,
               fileName: file.name,
-              appLanguage: settings.appLanguage || 'ar'
+              appLanguage: settings?.appLanguage || 'ar'
             })
           });
 
@@ -4237,13 +4257,12 @@ export default function App() {
             const finalTrans = data.transcription.trim();
             updateAudioTranscriptionAtomic(newRecId, finalTrans, data.speechEmotion);
           } else {
-            const errMsg = data.error?.includes('حجم') || data.error?.includes('large')
-              ? (t.transcriptionFailedSize || 'عذراً، حجم الملف كبير جداً.')
-              : (t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
-            updateAudioTranscriptionAtomic(newRecId, errMsg);
+            const errorMsg = data.error || data.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe audio.'));
+            updateAudioTranscriptionAtomic(newRecId, errorMsg);
           }
-        } catch (err) {
-          updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
+        } catch (err: any) {
+          const errorMsg = err?.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe audio.'));
+          updateAudioTranscriptionAtomic(newRecId, errorMsg);
         }
       }
     } catch (err) {

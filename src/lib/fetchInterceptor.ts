@@ -899,7 +899,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
   // Backup & Sync endpoints client-side simulation
   if (url.includes('/api/gemini/transcribe-audio')) {
     const { audioData, mimeType: providedMime, fileUri } = requestBody;
-    let mimeType = providedMime || "audio/webm";
+    let mimeType = providedMime || "audio/mp3";
     let base64Data = audioData || "";
 
     if (audioData && typeof audioData === 'string' && audioData.startsWith("data:")) {
@@ -914,7 +914,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
     }
 
     try {
-      let key = keyToUse || (window as any).__GEMINI_KEY__ || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
+      let key = keyToUse || getActiveApiKeyFromSettings() || (window as any).__GEMINI_KEY__ || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
       if (!key) {
         try {
           const saved = localStorage.getItem('yawmiyati_settings');
@@ -927,7 +927,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (key && (base64Data || fileUri)) {
-        const modelsToTry = ['gemini-3.7-flash'];
+        const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
         let lastError = "";
 
         for (const modName of modelsToTry) {
