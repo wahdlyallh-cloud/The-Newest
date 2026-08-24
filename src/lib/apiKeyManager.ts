@@ -91,6 +91,47 @@ export function getActiveApiKeyFromSettings(settings?: AppSettings): string {
 }
 
 /**
+ * Get all available enabled candidate keys ordered by active priority
+ */
+export function getCandidateApiKeys(initialKey?: string, settings?: AppSettings): string[] {
+  const keysSet = new Set<string>();
+  if (initialKey && initialKey.trim() !== '') {
+    keysSet.add(initialKey.trim());
+  }
+
+  if (!settings) {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) settings = JSON.parse(saved);
+    } catch (e) {}
+  }
+
+  if (settings) {
+    const migrated = migrateSettingsApiKeys(settings);
+    const pool = migrated.apiKeys || [];
+
+    if (migrated.activeKeyId) {
+      const activeEntry = pool.find(k => k.id === migrated.activeKeyId && k.isEnabled && k.status !== 'quota_exhausted' && k.status !== 'invalid');
+      if (activeEntry && activeEntry.key.trim() !== '') {
+        keysSet.add(activeEntry.key.trim());
+      }
+    }
+
+    const available = pool.filter(k => k.isEnabled && k.status !== 'quota_exhausted' && k.status !== 'invalid' && k.key.trim() !== '');
+    available.sort((a, b) => a.priority - b.priority);
+    for (const item of available) {
+      keysSet.add(item.key.trim());
+    }
+
+    if (settings.userApiKey && settings.userApiKey.trim() !== '') {
+      keysSet.add(settings.userApiKey.trim());
+    }
+  }
+
+  return Array.from(keysSet);
+}
+
+/**
  * Classify API Error to determine if Failover or Backoff is required
  */
 export type ClassifiedErrorType = 'quota_exhausted' | 'rate_limited' | 'invalid_key' | 'transient' | 'unknown';
@@ -98,18 +139,46 @@ export type ClassifiedErrorType = 'quota_exhausted' | 'rate_limited' | 'invalid_
 export function classifyGeminiError(status: number, message: string): ClassifiedErrorType {
   const msg = (message || '').toLowerCase();
 
-  if (status === 400 || msg.includes('api_key_invalid') || msg.includes('invalid_argument') || msg.includes('key not valid')) {
+  // 1. Invalid Key Identification (requires explicit key invalidity confirmation)
+  if (
+    msg.includes('api_key_invalid') ||
+    msg.includes('api key not valid') ||
+    msg.includes('key not valid') ||
+    msg.includes('api_key_service_blocked') ||
+    msg.includes('api_key_not_found') ||
+    msg.includes('permission_denied') ||
+    msg.includes('unregistered')
+  ) {
     return 'invalid_key';
   }
 
-  if (status === 429 || status === 403 || msg.includes('resource_exhausted') || msg.includes('quota exceeded') || msg.includes('rate limit')) {
-    if (msg.includes('quota') || msg.includes('limit exceeded') || status === 403) {
+  // 2. Quota / Rate Limit Identification
+  if (
+    status === 429 ||
+    status === 403 ||
+    msg.includes('resource_exhausted') ||
+    msg.includes('quota exceeded') ||
+    msg.includes('rate limit') ||
+    msg.includes('quota')
+  ) {
+    if (msg.includes('quota') || msg.includes('limit exceeded') || status === 403 || msg.includes('resource_exhausted')) {
       return 'quota_exhausted';
     }
     return 'rate_limited';
   }
 
-  if (status >= 500 || msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
+  // 3. Transient / High Demand Server-side Overload (does NOT blame or exhaust the key)
+  if (
+    status === 503 ||
+    status === 529 ||
+    status >= 500 ||
+    msg.includes('high demand') ||
+    msg.includes('overloaded') ||
+    msg.includes('network') ||
+    msg.includes('fetch') ||
+    msg.includes('timeout') ||
+    msg.includes('unavailable')
+  ) {
     return 'transient';
   }
 
@@ -189,6 +258,7 @@ export function recordKeySuccess(usedKeyStr: string): void {
       entry.requestsToday = (entry.requestsToday || 0) + 1;
       entry.successfulRequests = (entry.successfulRequests || 0) + 1;
       entry.lastUsedAt = new Date().toISOString();
+      migrated.activeKeyId = entry.id;
       migrated.apiKeys = pool;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
     }

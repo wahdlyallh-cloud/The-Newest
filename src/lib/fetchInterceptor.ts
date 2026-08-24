@@ -2,6 +2,7 @@ import { getAISystemLanguageContract, getAILanguageInstruction, getLocalizedAIFa
 import { t, getTranslation } from '../lib/languages';
 import {
   getActiveApiKeyFromSettings,
+  getCandidateApiKeys,
   rotateToNextKey,
   recordKeySuccess,
   classifyGeminiError
@@ -68,86 +69,92 @@ const originalFetch = window.fetch;
 
 // Helper to make a direct REST call to Google's official Gemini API
 async function generateWithGeminiREST(prompt: string, systemInstruction?: string, isJson?: boolean, userApiKey?: string, extraParts?: any[]) {
-  let keyToUse = userApiKey;
-  if (!keyToUse || keyToUse.trim() === '') {
-    keyToUse = getActiveApiKeyFromSettings();
-  }
-  if (!keyToUse || keyToUse.trim() === '') {
+  const candidateKeys = getCandidateApiKeys(userApiKey);
+  if (candidateKeys.length === 0) {
     throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
-  const modelsToTry = ['gemini-3.7-flash'];
+  const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
   let lastErrorMsg = '';
 
-  for (const model of modelsToTry) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyToUse.trim()}`;
+  for (const currentKey of candidateKeys) {
+    for (const model of modelsToTry) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${currentKey.trim()}`;
 
-    const userParts = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
-      ? [...extraParts, { text: prompt }]
-      : [{ text: prompt }];
+      const userParts = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
+        ? [...extraParts, { text: prompt }]
+        : [{ text: prompt }];
 
-    const requestBody: any = {
-      contents: [{ role: 'user', parts: userParts }],
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-      ]
-    };
+      const requestBody: any = {
+        contents: [{ role: 'user', parts: userParts }],
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+        ]
+      };
 
-    if (systemInstruction) {
-      requestBody.systemInstruction = { parts: [{ text: systemInstruction }] };
-    }
-    if (isJson) {
-      requestBody.generationConfig = { responseMimeType: 'application/json' };
-    }
+      if (systemInstruction) {
+        requestBody.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
+      if (isJson) {
+        requestBody.generationConfig = { responseMimeType: 'application/json' };
+      }
 
-    try {
-      const res = await originalFetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
+      try {
+        const res = await originalFetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
 
-      const responseText = await res.text();
+        const responseText = await res.text();
 
-      if (res.ok) {
-        if (!responseText || !responseText.trim()) throw new Error('AI_EMPTY_RESPONSE');
-        const resJson = JSON.parse(responseText);
-        const candidate = resJson.candidates?.[0];
-        if (candidate) {
-          const candidateText = candidate?.content?.parts?.[0]?.text;
-          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
-            recordKeySuccess(keyToUse);
-            return candidateText;
+        if (res.ok) {
+          if (!responseText || !responseText.trim()) throw new Error('AI_EMPTY_RESPONSE');
+          const resJson = JSON.parse(responseText);
+          const candidate = resJson.candidates?.[0];
+          if (candidate) {
+            const candidateText = candidate?.content?.parts?.[0]?.text;
+            if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
+              recordKeySuccess(currentKey);
+              return candidateText;
+            }
           }
         }
-      }
 
-      let errData: any = {};
-      try { errData = JSON.parse(responseText); } catch (_) {}
-      const errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
-
-      if (res.status === 429 || errMessage.includes('Quota') || errMessage.includes('RESOURCE_EXHAUSTED')) {
-        return '__AI_QUOTA_EXCEEDED__';
-      }
-      if (res.status === 400 || res.status === 403 || errMessage.includes('API key not valid') || errMessage.includes('API_KEY_INVALID')) {
-        return '__AI_CHECK_API_KEY__';
-      }
-      if (res.status === 404 || errMessage.includes('not found') || errMessage.includes('is not supported') || errMessage.includes('is not found')) {
-        console.warn(`[fetchInterceptor] Model "${model}" not available, trying next…`);
+        let errData: any = {};
+        try { errData = JSON.parse(responseText); } catch (_) {}
+        const errMessage = errData?.error?.message || `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
         lastErrorMsg = errMessage;
-        continue;
-      }
 
-      console.warn(`[fetchInterceptor] Model "${model}" failed: ${errMessage}`);
-      lastErrorMsg = errMessage;
-    } catch (e: any) {
-      lastErrorMsg = e.message || String(e);
-      console.warn(`[fetchInterceptor] Model "${model}" exception: ${lastErrorMsg}`);
-      if (lastErrorMsg.includes('يرجى') || lastErrorMsg.includes('لقد تجاوزت') || lastErrorMsg.includes('quota') || lastErrorMsg.includes('RESOURCE_EXHAUSTED')) throw new Error(lastErrorMsg);
+        const errType = classifyGeminiError(res.status, errMessage);
+
+        if (errType === 'quota_exhausted' || errType === 'invalid_key') {
+          rotateToNextKey(currentKey, errType);
+          console.warn(`[KeyPool] Key failed (${errType}), rotating to next pool key...`);
+          break; // break inner model loop to try next candidate key in pool
+        }
+
+        if (res.status === 404 || res.status === 503 || res.status === 529 || errMessage.includes('high demand') || errMessage.includes('not found')) {
+          console.warn(`[fetchInterceptor] Model "${model}" temporary overload/not found, trying next model…`);
+          continue;
+        }
+
+        console.warn(`[fetchInterceptor] Model "${model}" failed: ${errMessage}`);
+      } catch (e: any) {
+        lastErrorMsg = e.message || String(e);
+        console.warn(`[fetchInterceptor] Model "${model}" exception: ${lastErrorMsg}`);
+      }
     }
+  }
+
+  if (lastErrorMsg.includes('quota') || lastErrorMsg.includes('RESOURCE_EXHAUSTED')) {
+    return '__AI_QUOTA_EXCEEDED__';
+  }
+  if (lastErrorMsg.includes('API_KEY_INVALID') || lastErrorMsg.includes('API key not valid')) {
+    return '__AI_CHECK_API_KEY__';
   }
 
   throw new Error(lastErrorMsg || 'Could not connect to Gemini models.');
@@ -914,25 +921,19 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
     }
 
     try {
-      let key = keyToUse || getActiveApiKeyFromSettings() || (window as any).__GEMINI_KEY__ || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
-      if (!key) {
-        try {
-          const saved = localStorage.getItem('yawmiyati_settings');
-          if (saved) key = JSON.parse(saved)?.userApiKey || '';
-        } catch (e) {}
-      }
-
-      if (!key) {
+      const candidateKeys = getCandidateApiKeys(keyToUse);
+      if (candidateKeys.length === 0) {
         return createErrorResponse("يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق لتفريغ التسجيلات الصوتية بالذكاء الاصطناعي.");
       }
 
-      if (key && (base64Data || fileUri)) {
+      if (base64Data || fileUri) {
         const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
         let lastError = "";
 
-        for (const modName of modelsToTry) {
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modName}:generateContent?key=${key.trim()}`;
-          const promptText = `You are an expert audio transcription specialist and speech emotion recognition analyst.
+        for (const currentKey of candidateKeys) {
+          for (const modName of modelsToTry) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modName}:generateContent?key=${currentKey.trim()}`;
+            const promptText = `You are an expert audio transcription specialist and speech emotion recognition analyst.
 Listen to the attached audio recording and do the following:
 1. قم بتفريغ هذا التسجيل الصوتي بدقة عالية إلى نص عربي منظم، حافظ على جميع الكلمات والتفاصيل دون حذف أو اختصار، صحح الأخطاء الواضحة الناتجة عن التعرف الصوتي، وأضف علامات الترقيم المناسبة مع الحفاظ على المعنى الأصلي وعدم اختلاق أي كلام غير موجود في التسجيل.
 2. Analyze speech emotion and vocal tone accurately based on pitch, cadence, and expression.
@@ -952,72 +953,72 @@ Return pure JSON only in the following format:
   "recommendedColor": "teal"
 }`;
 
-          // Normalize and strip parameters (like ;codecs=opus) from MIME type
-          let reqMime = (mimeType || 'audio/webm').split(';')[0].trim().toLowerCase();
-          if (reqMime.includes("webm") || reqMime.includes("opus")) reqMime = "audio/webm";
-          else if (reqMime.includes("mp3") || reqMime.includes("mpeg")) reqMime = "audio/mp3";
-          else if (reqMime.includes("wav") || reqMime.includes("x-wav")) reqMime = "audio/wav";
-          else if (reqMime.includes("ogg")) reqMime = "audio/ogg";
-          else if (reqMime.includes("mp4") || reqMime.includes("m4a") || reqMime.includes("aac")) reqMime = "audio/mp4";
-          else if (reqMime.includes("flac")) reqMime = "audio/flac";
-          else if (reqMime.includes("3gp") || reqMime.includes("amr")) reqMime = "audio/3gpp";
-          else reqMime = "audio/webm";
+            // Normalize and strip parameters (like ;codecs=opus) from MIME type
+            let reqMime = (mimeType || 'audio/webm').split(';')[0].trim().toLowerCase();
+            if (reqMime.includes("webm") || reqMime.includes("opus")) reqMime = "audio/webm";
+            else if (reqMime.includes("mp3") || reqMime.includes("mpeg")) reqMime = "audio/mp3";
+            else if (reqMime.includes("wav") || reqMime.includes("x-wav")) reqMime = "audio/wav";
+            else if (reqMime.includes("ogg")) reqMime = "audio/ogg";
+            else if (reqMime.includes("mp4") || reqMime.includes("m4a") || reqMime.includes("aac")) reqMime = "audio/mp4";
+            else if (reqMime.includes("flac")) reqMime = "audio/flac";
+            else if (reqMime.includes("3gp") || reqMime.includes("amr")) reqMime = "audio/3gpp";
+            else reqMime = "audio/webm";
 
-          const audioPart = fileUri
-            ? { fileData: { mimeType: reqMime, fileUri: fileUri } }
-            : { inlineData: { mimeType: reqMime, data: base64Data } };
+            const audioPart = fileUri
+              ? { fileData: { mimeType: reqMime, fileUri: fileUri } }
+              : { inlineData: { mimeType: reqMime, data: base64Data } };
 
-          const reqBody = {
-            contents: [{
-              parts: [
-                audioPart,
-                { text: promptText }
-              ]
-            }],
-            generationConfig: { responseMimeType: "application/json" }
-          };
+            const reqBody = {
+              contents: [{
+                parts: [
+                  audioPart,
+                  { text: promptText }
+                ]
+              }],
+              generationConfig: { responseMimeType: "application/json" }
+            };
 
-          try {
-            const res = await originalFetch(apiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(reqBody)
-            });
-
-            if (res.ok) {
-              const responseText = await res.text();
-              if (!responseText || !responseText.trim()) {
-                throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
-              }
-              recordKeySuccess(key);
-              const resJson = JSON.parse(responseText);
-              const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-              const parsed = JSON.parse(rawText.trim());
-              return createSuccessResponse({
-                success: true,
-                transcription: parsed.transcription || (reqLang === 'ar' ? "تم تفريغ الصوت بنجاح." : "Audio transcribed successfully."),
-                speechEmotion: {
-                  emotion: parsed.emotion || (reqLang === 'ar' ? "طبيعي" : "Normal"),
-                  intensityScore: parsed.intensityScore || 70,
-                  intensityLabel: parsed.intensityLabel || (reqLang === 'ar' ? "متوسطة" : "Medium"),
-                  vocalToneDetails: parsed.vocalToneDetails || (reqLang === 'ar' ? "نبرة صوت هادئة ومستقرة" : "Calm and stable vocal tone"),
-                  recommendedColor: parsed.recommendedColor || "teal"
-                },
-                source: "gemini"
+            try {
+              const res = await originalFetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqBody)
               });
-            } else {
-              const errJson = await res.json().catch(() => ({}));
-              lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
-              const errType = classifyGeminiError(res.status, lastError);
-              if (errType === 'quota_exhausted' || errType === 'invalid_key') {
-                const rotation = rotateToNextKey(key, errType);
-                if (rotation.hasNextKey && rotation.newKey) {
-                  key = rotation.newKey;
+
+              if (res.ok) {
+                const responseText = await res.text();
+                if (!responseText || !responseText.trim()) {
+                  throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
+                }
+                recordKeySuccess(currentKey);
+                const resJson = JSON.parse(responseText);
+                const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+                const parsed = JSON.parse(rawText.trim());
+                return createSuccessResponse({
+                  success: true,
+                  transcription: parsed.transcription || (reqLang === 'ar' ? "تم تفريغ الصوت بنجاح." : "Audio transcribed successfully."),
+                  speechEmotion: {
+                    emotion: parsed.emotion || (reqLang === 'ar' ? "طبيعي" : "Normal"),
+                    intensityScore: parsed.intensityScore || 70,
+                    intensityLabel: parsed.intensityLabel || (reqLang === 'ar' ? "متوسطة" : "Medium"),
+                    vocalToneDetails: parsed.vocalToneDetails || (reqLang === 'ar' ? "نبرة صوت هادئة ومستقرة" : "Calm and stable vocal tone"),
+                    recommendedColor: parsed.recommendedColor || "teal"
+                  },
+                  source: "gemini"
+                });
+              } else {
+                const errJson = await res.json().catch(() => ({}));
+                lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
+                const errType = classifyGeminiError(res.status, lastError);
+                if (errType === 'quota_exhausted' || errType === 'invalid_key') {
+                  rotateToNextKey(currentKey, errType);
+                  console.warn(`[KeyPool] Audio transcribe key failed (${errType}), rotating to next pool key...`);
+                  break; // break model loop to try next candidate key
                 }
               }
+            } catch (modelErr: any) {
+              lastError = modelErr?.message || `خطأ في الاتصال بالنموذج ${modName}`;
             }
-          } catch (modelErr: any) {
-            lastError = modelErr?.message || `خطأ في الاتصال بالنموذج ${modName}`;
           }
         }
 
