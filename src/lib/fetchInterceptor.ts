@@ -74,7 +74,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-3.7-flash'];
+  const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
   let lastErrorMsg = '';
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
@@ -938,7 +938,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (base64Data || fileUri) {
-        const modelsToTry = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-3.7-flash'];
+        const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
         let lastError = "";
         const globalDeadline = Date.now() + 120000; // 120s Global Timeout
 
