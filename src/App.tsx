@@ -9,7 +9,7 @@ import {
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
   User, Printer, ChevronRight, ArrowRight, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
-  MoreVertical, MoreHorizontal
+  MoreVertical, MoreHorizontal, Folder
 } from 'lucide-react';
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
 import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from './lib/journalTypes';
@@ -60,6 +60,9 @@ import OfflineSyncBanner from './components/OfflineSyncBanner';
 import PredictiveHealthInsightsModal from './components/PredictiveHealthInsightsModal';
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
 import OnboardingTourModal from './components/OnboardingTourModal';
+import ExportDiaryModal from './components/ExportDiaryModal';
+import AttachmentsPage from './components/AttachmentsPage';
+import VoiceVentModal from './components/VoiceVentModal';
 import { SpeechRecognitionManager } from './lib/speechRecognition';
 import { formatDate, formatTime, formatDateTime, formatNumber } from './lib/formatters';
 
@@ -1315,6 +1318,11 @@ export default function App() {
 
   // --- Active Diary Editing State ---
   const [previewMedia, setPreviewMedia] = useState<{ type: 'image' | 'video' | 'audio' | 'pdf', url: string } | null>(null);
+  const [showExportDiaryModal, setShowExportDiaryModal] = useState<boolean>(false);
+  const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
+  const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
+  const [selectedChatIndices, setSelectedChatIndices] = useState<number[]>([]);
+  const [isChatSelectMode, setIsChatSelectMode] = useState<boolean>(false);
   const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(() => {
     const saved = localStorage.getItem('yawmiyati_draft_editing_diary');
     if (saved) {
@@ -2071,45 +2079,67 @@ export default function App() {
     }
   };
 
-  // --- Restore IndexedDB Attachment Blobs into ObjectURLs on Mount ---
+  // --- Restore IndexedDB Attachment Blobs into ObjectURLs on Mount & Diary Selection ---
   useEffect(() => {
+    let isCancelled = false;
     const restoreIndexedDBAttachments = async () => {
-      if (editingDiary) {
-        let hasChanges = false;
-        const restoredFiles = await Promise.all((editingDiary.files || []).map(async (f) => {
-          if (f.attachmentId && (!f.dataUrl || f.dataUrl === '#')) {
-            const objectUrl = await getAttachmentObjectUrl(f.attachmentId);
-            if (objectUrl) {
-              hasChanges = true;
-              return { ...f, dataUrl: objectUrl };
-            }
-          }
-          return f;
-        }));
+      if (!editingDiary) return;
+      let hasChanges = false;
 
-        const restoredAudio = await Promise.all((editingDiary.audioRecordings || []).map(async (r) => {
-          if (r.attachmentId && (!r.dataUrl || r.dataUrl === '#')) {
-            const objectUrl = await getAttachmentObjectUrl(r.attachmentId);
-            if (objectUrl) {
-              hasChanges = true;
-              return { ...r, dataUrl: objectUrl };
-            }
+      const restoredFiles = await Promise.all((editingDiary.files || []).map(async (f) => {
+        if (f.attachmentId && (!f.dataUrl || f.dataUrl === '#' || f.dataUrl.startsWith('blob:'))) {
+          const objectUrl = await getAttachmentObjectUrl(f.attachmentId);
+          if (objectUrl) {
+            hasChanges = true;
+            return { ...f, dataUrl: objectUrl };
           }
-          return r;
-        }));
-
-        if (hasChanges) {
-          setEditingDiary(prev => prev ? {
-            ...prev,
-            files: restoredFiles,
-            audioRecordings: restoredAudio
-          } : null);
         }
+        return f;
+      }));
+
+      const restoredAudio = await Promise.all((editingDiary.audioRecordings || []).map(async (r) => {
+        if (r.attachmentId && (!r.dataUrl || r.dataUrl === '#' || r.dataUrl.startsWith('blob:'))) {
+          const objectUrl = await getAttachmentObjectUrl(r.attachmentId);
+          if (objectUrl) {
+            hasChanges = true;
+            return { ...r, dataUrl: objectUrl, blobUrl: objectUrl };
+          }
+        }
+        return r;
+      }));
+
+      const restoredImages = [...(editingDiary.images || [])];
+      for (const f of restoredFiles) {
+        if (f.type.startsWith('image/') && f.dataUrl && f.dataUrl !== '#' && !restoredImages.includes(f.dataUrl)) {
+          restoredImages.push(f.dataUrl);
+          hasChanges = true;
+        }
+      }
+
+      const restoredVideos = [...(editingDiary.videos || [])];
+      for (const f of restoredFiles) {
+        if (f.type.startsWith('video/') && f.dataUrl && f.dataUrl !== '#' && !restoredVideos.includes(f.dataUrl)) {
+          restoredVideos.push(f.dataUrl);
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges && !isCancelled) {
+        setEditingDiary(prev => (prev && prev.id === editingDiary.id) ? {
+          ...prev,
+          files: restoredFiles,
+          audioRecordings: restoredAudio,
+          images: restoredImages,
+          videos: restoredVideos
+        } : prev);
       }
     };
 
     restoreIndexedDBAttachments();
-  }, []);
+    return () => {
+      isCancelled = true;
+    };
+  }, [editingDiary?.id]);
   const [isNewEntry, setIsNewEntry] = useState(() => {
     return localStorage.getItem('yawmiyati_draft_is_new_entry') === 'true';
   });
@@ -3916,22 +3946,29 @@ export default function App() {
         }
       }
 
+      if (audioBlob && audioBlob.size > 22 * 1024 * 1024) {
+        updateAudioTranscriptionAtomic(rec.id, t.transcriptionFailedSize || 'عذراً، الملف كبير جداً لمعالجته دفعة واحدة.');
+        return;
+      }
+
       let payloadBody: any = {};
       const INLINE_LIMIT = 2 * 1024 * 1024; // 2MB threshold
 
       if (audioBlob && audioBlob.size > INLINE_LIMIT) {
         const audioFile = new File([audioBlob], rec.name || 'audio_recording.webm', { type: rec.mimeType || 'audio/webm' });
         const { fileUri } = await uploadToGeminiFilesAPI(audioFile);
-        payloadBody = { fileUri, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name };
+        payloadBody = { fileUri, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name, appLanguage: settings?.appLanguage || 'ar' };
       } else {
         const audioPayload = await convertAudioTargetToBase64(rawAudio);
-        payloadBody = { audioData: audioPayload, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name };
+        payloadBody = { audioData: audioPayload, mimeType: rec.mimeType || 'audio/webm', fileName: rec.name, appLanguage: settings?.appLanguage || 'ar' };
       }
 
       const res = await fetch('/api/gemini/transcribe-audio', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-gemini-key': settings.userApiKey || '',
+          'x-app-language': settings.appLanguage || 'ar'
         },
         body: JSON.stringify(payloadBody)
       });
@@ -3939,11 +3976,14 @@ export default function App() {
       if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية')) {
         updateAudioTranscriptionAtomic(rec.id, data.transcription, data.speechEmotion);
       } else {
-        updateAudioTranscriptionAtomic(rec.id, 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.');
+        const errMsg = data.error?.includes('حجم') || data.error?.includes('large')
+          ? (t.transcriptionFailedSize || 'عذراً، حجم الملف كبير جداً.')
+          : (t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
+        updateAudioTranscriptionAtomic(rec.id, errMsg);
       }
     } catch (err: any) {
       console.warn('Transcribe error:', err);
-      updateAudioTranscriptionAtomic(rec.id, 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.');
+      updateAudioTranscriptionAtomic(rec.id, t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
     } finally {
       setTranscribingAudioId(null);
     }
@@ -3965,7 +4005,7 @@ export default function App() {
       }
 
       const separator = prev.content && prev.content.trim() ? '\n\n' : '';
-      const addition = `${separator}🎙️ [تفريغ صوتي]:\n${cleanText}`;
+      const addition = `${separator}🎙️ [تفريغ صوتي - ${rec.name}]:\n${cleanText}`;
       const updatedContent = (prev.content || '') + addition;
 
       const updatedAudioRecordings = (prev.audioRecordings || []).map(r => {
@@ -3980,7 +4020,7 @@ export default function App() {
     });
   };
 
-  // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري ---
+  // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري المستقل ---
   const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
     const files = Array.from(e.target.files || []);
@@ -4004,12 +4044,17 @@ export default function App() {
           dataUrl: audioUrl,
           blobUrl: audioUrl,
           duration: Math.round(file.size / 16000) || 15,
-          transcription: '...',
+          transcription: '⏳ جاري التفريغ بالذكاء الاصطناعي...',
           attachmentId
         };
 
         addAudioToDiaryAtomic(newRec);
         setTranscribingAudioId(newRecId);
+
+        if (file.size > 22 * 1024 * 1024) {
+          updateAudioTranscriptionAtomic(newRecId, t.transcriptionFailedSize || 'عذراً، الملف كبير جداً لمعالجته دفعة واحدة.');
+          continue;
+        }
 
         const base64Audio = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -4026,12 +4071,14 @@ export default function App() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-gemini-key': settings.userApiKey || ''
+              'x-gemini-key': settings.userApiKey || '',
+              'x-app-language': settings.appLanguage || 'ar'
             },
             body: JSON.stringify({
               audioData: base64Audio,
               mimeType: (file.type || 'audio/mp3').split(';')[0].trim(),
-              fileName: file.name
+              fileName: file.name,
+              appLanguage: settings.appLanguage || 'ar'
             })
           });
 
@@ -4039,19 +4086,14 @@ export default function App() {
           if (data.success && data.transcription && !data.transcription.includes('لا يمكن تحديد') && !data.transcription.includes('فارغ')) {
             const finalTrans = data.transcription.trim();
             updateAudioTranscriptionAtomic(newRecId, finalTrans, data.speechEmotion);
-
-            setEditingDiary(prev => {
-              if (!prev) return null;
-              const separator = prev.content && prev.content.trim() ? '\n\n' : '';
-              const updatedContent = `${prev.content || ''}${separator}🎙️ [${t.audioTranscription || 'Transcription'} - ${file.name}]:\n${finalTrans}`;
-              setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updatedContent } : d));
-              return { ...prev, content: updatedContent };
-            });
           } else {
-            updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable);
+            const errMsg = data.error?.includes('حجم') || data.error?.includes('large')
+              ? (t.transcriptionFailedSize || 'عذراً، حجم الملف كبير جداً.')
+              : (t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
+            updateAudioTranscriptionAtomic(newRecId, errMsg);
           }
         } catch (err) {
-          updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable);
+          updateAudioTranscriptionAtomic(newRecId, t.aiTranscriptionUnavailable || 'عذراً، تعذر التفريغ النصي تلقائياً.');
         }
       }
     } catch (err) {
@@ -4418,6 +4460,82 @@ export default function App() {
           chatBox.scrollTop = chatBox.scrollHeight;
         }
       }, 100);
+    }
+  };
+
+  // --- Copy Full Diary AI Chat to Clipboard ---
+  const handleCopyDiaryChat = () => {
+    if (!editingDiary?.chatLogs || editingDiary.chatLogs.length === 0) return;
+    const formatted = editingDiary.chatLogs.map(c => {
+      const sender = c.sender === 'user' ? (t.meLabel || 'User') : (t.aiPsychAdvisor || 'AI Advisor');
+      const time = formatDateTime(c.createdAt, settings?.appLanguage || 'ar');
+      return `[${sender} - ${time}]:\n${c.text}\n`;
+    }).join('\n-------------------\n\n');
+
+    navigator.clipboard.writeText(formatted).then(() => {
+      alert(t.chatCopiedSuccess || (settings?.appLanguage === 'ar' ? 'تم نسخ المحادثة بنجاح 📋' : 'Chat copied to clipboard!'));
+    }).catch(err => {
+      console.warn('Clipboard write failed:', err);
+    });
+  };
+
+  // --- Export Diary Chat as PDF ---
+  const handleExportDiaryChatPdf = async () => {
+    const chatEl = document.getElementById('diary-chat-log-box');
+    if (!chatEl || !editingDiary?.chatLogs || editingDiary.chatLogs.length === 0) return;
+    try {
+      const canvas = await html2canvas(chatEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#FFFFFF',
+        windowWidth: 800
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let heightLeft = pdfHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`HayatAI_Chat_${editingDiary.id.split('-')[1] || 'log'}.pdf`);
+    } catch (err) {
+      console.error('Export Chat PDF error:', err);
+    }
+  };
+
+  // --- Delete Selected Messages from Chat ---
+  const handleDeleteSelectedChatMessages = () => {
+    if (!editingDiary?.chatLogs || selectedChatIndices.length === 0) return;
+    setEditingDiary(prev => {
+      if (!prev) return null;
+      const nextLogs = (prev.chatLogs || []).filter((_, idx) => !selectedChatIndices.includes(idx));
+      setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, chatLogs: nextLogs } : d));
+      return { ...prev, chatLogs: nextLogs };
+    });
+    setSelectedChatIndices([]);
+    setIsChatSelectMode(false);
+  };
+
+  // --- Delete All Messages from Chat ---
+  const handleDeleteAllChatMessages = () => {
+    if (!editingDiary?.chatLogs || editingDiary.chatLogs.length === 0) return;
+    if (window.confirm(t.confirmDeleteAllChat || (settings?.appLanguage === 'ar' ? 'هل أنت متأكد من حذف جميع رسائل المحادثة؟ (لن يتأثر نص اليومية)' : 'Are you sure you want to delete all chat messages? (Diary content will not be affected)'))) {
+      setEditingDiary(prev => {
+        if (!prev) return null;
+        setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, chatLogs: [] } : d));
+        return { ...prev, chatLogs: [] };
+      });
+      setSelectedChatIndices([]);
+      setIsChatSelectMode(false);
     }
   };
 
@@ -7394,6 +7512,31 @@ export default function App() {
                       <span>{isRecording ? `${t.listening} (${recordingSeconds}s)` : (t.quickVoiceJournal)}</span>
                     </button>
 
+                    {/* Quick Voice Vent Modal button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowVoiceVentModal(true)}
+                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
+                      title={t.voiceQuickVent || (settings?.appLanguage === 'ar' ? 'فضفضة صوتية سريعة' : 'Voice Vent')}
+                    >
+                      <span>🎙️</span>
+                      <span>{t.voiceQuickVent || (settings?.appLanguage === 'ar' ? 'فضفضة سريعة' : 'Voice Vent')}</span>
+                    </button>
+
+                    {/* Attachments Page button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowAttachmentsPage(true)}
+                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
+                      title={t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'صفحة الملحقات' : 'Attachments')}
+                    >
+                      <span>📁</span>
+                      <span>{t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'الملحقات' : 'Attachments')}</span>
+                      <span className="text-[10px] bg-[#8B9D83] text-white px-1.5 py-0.2 rounded-full font-bold">
+                        {(editingDiary.images || []).length + (editingDiary.videos || []).length + (editingDiary.audioRecordings || []).length + (editingDiary.files || []).length + (editingDiary.drawing ? 1 : 0)}
+                      </span>
+                    </button>
+
                     {/* Audio Upload Loading Banner */}
                     {audioUploadLoading && (
                       <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold col-span-full animate-pulse shadow-sm" dir={langInfo.dir}>
@@ -7870,6 +8013,7 @@ export default function App() {
                     <div className="w-full max-w-2xl h-[450px]">
                       <DrawingCanvas
                         initialDataUrl={editingDiary.drawing}
+                        appLanguage={settings?.appLanguage || 'ar'}
                         onSave={(dataUrl) => {
                           setEditingDiary(prev => prev ? { ...prev, drawing: dataUrl } : null);
                           setShowSketchboard(false);
@@ -8277,54 +8421,160 @@ export default function App() {
                 )}
 
                 {/* 🧠 Flagship AI Assistant Panel - Real-time Psychological Chat */}
-                <div className="border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-3.5 sm:p-4 space-y-3 flex flex-col">
-                  <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-2.5">
+                <div className="border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-3.5 sm:p-5 space-y-3.5 flex flex-col shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between border-b border-[#E2DCC8]/60 pb-3 gap-2">
                     <div className="flex items-center space-x-2 space-x-reverse">
-                      <span className="p-1.5 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl text-sm">🧠</span>
-                      <span className="text-xs font-black text-[#5A5A40]">
-                        {t.aiChatSessionTitle}
-                      </span>
+                      <span className="p-2 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl text-base">🧠</span>
+                      <div>
+                        <span className="text-xs font-black text-[#5A5A40] block">
+                          {t.aiChatSessionTitle}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-medium">
+                          {(editingDiary.chatLogs || []).length} {t.messagesCount || (settings?.appLanguage === 'ar' ? 'رسائل' : 'messages')}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-[10px] bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full font-bold">{t.liveInteractionBadge}</span>
+
+                    {/* Chat Actions Toolbar */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={handleCopyDiaryChat}
+                        disabled={(editingDiary.chatLogs || []).length === 0}
+                        className="px-2.5 py-1 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 disabled:opacity-40 shadow-3xs"
+                        title={t.copyChatBtn || (settings?.appLanguage === 'ar' ? 'نسخ المحادثة' : 'Copy Chat')}
+                      >
+                        <Copy className="w-3 h-3 text-[#8B9D83]" />
+                        <span className="hidden sm:inline">{t.copyChatBtn || (settings?.appLanguage === 'ar' ? 'نسخ المحادثة' : 'Copy Chat')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleExportDiaryChatPdf}
+                        disabled={(editingDiary.chatLogs || []).length === 0}
+                        className="px-2.5 py-1 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 disabled:opacity-40 shadow-3xs"
+                        title={t.exportChatPdf || (settings?.appLanguage === 'ar' ? 'تصدير كـ PDF' : 'Export Chat PDF')}
+                      >
+                        <Download className="w-3 h-3 text-[#D4A373]" />
+                        <span className="hidden sm:inline">{t.exportChatPdf || (settings?.appLanguage === 'ar' ? 'تصدير PDF' : 'Export PDF')}</span>
+                      </button>
+
+                      {(editingDiary.chatLogs || []).length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsChatSelectMode(!isChatSelectMode);
+                            setSelectedChatIndices([]);
+                          }}
+                          className={`px-2.5 py-1 border rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-3xs ${
+                            isChatSelectMode
+                              ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
+                              : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
+                          }`}
+                        >
+                          <CheckSquare className="w-3 h-3" />
+                          <span>{isChatSelectMode ? (t.cancelBtn || 'إلغاء') : (t.selectMessages || (settings?.appLanguage === 'ar' ? 'تحديد' : 'Select'))}</span>
+                        </button>
+                      )}
+
+                      {isChatSelectMode && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (selectedChatIndices.length === (editingDiary.chatLogs || []).length) {
+                                setSelectedChatIndices([]);
+                              } else {
+                                setSelectedChatIndices((editingDiary.chatLogs || []).map((_, idx) => idx));
+                              }
+                            }}
+                            className="px-2 py-1 bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-[10px] font-bold cursor-pointer"
+                          >
+                            {selectedChatIndices.length === (editingDiary.chatLogs || []).length ? (settings?.appLanguage === 'ar' ? 'إلغاء الكل' : 'Deselect') : (t.selectAll || (settings?.appLanguage === 'ar' ? 'تحديد الكل' : 'Select All'))}
+                          </button>
+
+                          {selectedChatIndices.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleDeleteSelectedChatMessages}
+                              className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold cursor-pointer flex items-center gap-1 shadow-xs"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>{t.deleteSelected || (settings?.appLanguage === 'ar' ? `حذف المحدد (${selectedChatIndices.length})` : `Delete (${selectedChatIndices.length})`)}</span>
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={handleDeleteAllChatMessages}
+                            className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-[10px] font-bold cursor-pointer"
+                          >
+                            {t.deleteAll || (settings?.appLanguage === 'ar' ? 'حذف الكل' : 'Delete All')}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Chat Messages Log Box */}
-                  <div className="flex-1 min-h-[380px] max-h-[55vh] overflow-y-auto space-y-3 p-3.5 bg-white border border-[#E2DCC8]/80 rounded-2xl scroll-smooth" id="diary-chat-log-box">
+                  <div className="flex-1 min-h-[420px] max-h-[60vh] overflow-y-auto space-y-3.5 p-4 bg-white border border-[#E2DCC8]/80 rounded-2xl scroll-smooth shadow-inner" id="diary-chat-log-box">
                     {(editingDiary.chatLogs || []).length === 0 ? (
-                      <div className="text-center py-10 px-4 space-y-2.5">
-                        <span className="text-3xl block">💬</span>
+                      <div className="text-center py-12 px-4 space-y-2.5">
+                        <span className="text-4xl block">💬</span>
                         <p className="text-xs font-black text-[#5A5A40]">{t.welcomeSafeSpace}</p>
                         <p className="text-[11px] text-gray-500 leading-relaxed max-w-md mx-auto font-medium">
                           {t.safeSpaceDesc}
                         </p>
                       </div>
                     ) : (
-                      (editingDiary.chatLogs || []).map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={`flex flex-col max-w-[90%] sm:max-w-[85%] ${
-                            msg.sender === 'user' ? 'mr-auto items-start' : 'ml-auto items-end'
-                          }`}
-                        >
+                      (editingDiary.chatLogs || []).map((msg, idx) => {
+                        const isSelected = selectedChatIndices.includes(idx);
+                        return (
                           <div
-                            className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words whitespace-pre-wrap ${
-                              msg.sender === 'user'
-                                ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50'
-                                : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
+                            key={idx}
+                            onClick={() => {
+                              if (isChatSelectMode) {
+                                setSelectedChatIndices(prev =>
+                                  prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+                                );
+                              }
+                            }}
+                            className={`flex flex-col max-w-[92%] sm:max-w-[85%] transition-all ${
+                              msg.sender === 'user' ? 'mr-auto items-start' : 'ml-auto items-end'
+                            } ${isChatSelectMode ? 'cursor-pointer p-1 rounded-2xl' : ''} ${
+                              isSelected ? 'ring-2 ring-red-400 bg-red-50/40 rounded-2xl' : ''
                             }`}
                           >
-                            {msg.text}
+                            <div className="flex items-start gap-2 w-full">
+                              {isChatSelectMode && (
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => {}}
+                                  className="mt-2.5 rounded text-red-600 focus:ring-red-500 w-4 h-4 cursor-pointer"
+                                />
+                              )}
+                              <div
+                                className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words whitespace-pre-wrap flex-1 shadow-3xs ${
+                                  msg.sender === 'user'
+                                    ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50'
+                                    : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
+                                }`}
+                              >
+                                {msg.text}
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
+                              {msg.sender === 'user' ? (t.meLabel) : (t.aiPsychAdvisor)} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
+                            </span>
                           </div>
-                          <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
-                            {msg.sender === 'user' ? (t.meLabel) : (t.aiPsychAdvisor)} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
-                          </span>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
 
                     {/* Chat Loading Indicator */}
                     {diaryChatLoading && (
-                      <div className="flex items-center space-x-2 space-x-reverse ml-auto bg-[#EEF1EB] border border-[#DCE4D8] p-3 rounded-2xl rounded-tl-none text-xs text-[#4E685B] max-w-[85%] animate-pulse">
+                      <div className="flex items-center space-x-2 space-x-reverse ml-auto bg-[#EEF1EB] border border-[#DCE4D8] p-3 rounded-2xl rounded-tl-none text-xs text-[#4E685B] max-w-[85%] animate-pulse shadow-3xs">
                         <span className="w-2 h-2 bg-[#8B9D83] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-2 h-2 bg-[#8B9D83] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                         <span className="w-2 h-2 bg-[#8B9D83] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
@@ -8433,23 +8683,29 @@ export default function App() {
                       {t.cancelBtn}
                     </button>
 
+                    {/* Attachments Page trigger button */}
                     <button
                       type="button"
-                      disabled={isExportingPdf}
-                      onClick={handleExportPDF}
-                      className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                      onClick={() => setShowAttachmentsPage(true)}
+                      className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-xs font-bold shadow-3xs transition-all cursor-pointer"
+                      title={t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'الملحقات والوسائط' : 'Attachments')}
                     >
-                      {isExportingPdf ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>{t.exportingPdfProgress}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Printer className="w-4 h-4" />
-                          <span>{t.exportPdfBtn}</span>
-                        </>
-                      )}
+                      <Folder className="w-4 h-4 text-[#8B9D83]" />
+                      <span>{t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'الملحقات' : 'Attachments')}</span>
+                      <span className="text-[10px] bg-[#8B9D83] text-white px-1.5 py-0.2 rounded-full font-bold">
+                        {(editingDiary.images || []).length + (editingDiary.videos || []).length + (editingDiary.audioRecordings || []).length + (editingDiary.files || []).length + (editingDiary.drawing ? 1 : 0)}
+                      </span>
+                    </button>
+
+                    {/* Export as Single Image / PDF Modal trigger */}
+                    <button
+                      type="button"
+                      onClick={() => setShowExportDiaryModal(true)}
+                      className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      title={t.exportDiary || (settings?.appLanguage === 'ar' ? 'تصدير التدوينة (صورة / PDF)' : 'Export Diary')}
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>{t.exportDiary || (settings?.appLanguage === 'ar' ? 'تصدير التدوينة' : 'Export')}</span>
                     </button>
 
                     <button
@@ -10274,6 +10530,69 @@ export default function App() {
         }}
         appLanguage={settings?.appLanguage || 'ar'}
         apiKey={settings.userApiKey}
+      />
+
+      {/* 📤 Export Diary as Single Image / PDF Modal */}
+      <ExportDiaryModal
+        isOpen={showExportDiaryModal}
+        onClose={() => setShowExportDiaryModal(false)}
+        diary={editingDiary}
+        appLanguage={settings?.appLanguage || 'ar'}
+        userName={currentUser?.name || ''}
+      />
+
+      {/* 📁 Dedicated Diary Attachments Page Modal */}
+      <AttachmentsPage
+        isOpen={showAttachmentsPage}
+        onClose={() => setShowAttachmentsPage(false)}
+        diary={editingDiary}
+        appLanguage={settings?.appLanguage || 'ar'}
+        onPreviewMedia={setPreviewMedia}
+        onOpenDrawing={() => {
+          setShowAttachmentsPage(false);
+          setShowSketchboard(true);
+        }}
+        onDeleteImage={(idx) => {
+          setEditingDiary(prev => prev ? { ...prev, images: prev.images.filter((_, i) => i !== idx) } : null);
+        }}
+        onDeleteVideo={(idx) => {
+          setEditingDiary(prev => prev ? { ...prev, videos: prev.videos.filter((_, i) => i !== idx) } : null);
+        }}
+        onDeleteAudio={(recId) => {
+          setEditingDiary(prev => prev ? { ...prev, audioRecordings: prev.audioRecordings.filter(r => r.id !== recId) } : null);
+        }}
+        onDeleteFile={(fileId) => {
+          setEditingDiary(prev => {
+            if (!prev) return null;
+            const target = prev.files.find(f => f.id === fileId);
+            if (target?.attachmentId) {
+              deleteAttachmentBlob(target.attachmentId);
+            }
+            return { ...prev, files: prev.files.filter(f => f.id !== fileId) };
+          });
+        }}
+        onDeleteDrawing={() => {
+          setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null);
+        }}
+      />
+
+      {/* 🎙️ Quick Continuous Voice Vent Modal */}
+      <VoiceVentModal
+        isOpen={showVoiceVentModal}
+        onClose={() => setShowVoiceVentModal(false)}
+        appLanguage={settings?.appLanguage || 'ar'}
+        onSaveAudioRecording={(rec) => {
+          addAudioToDiaryAtomic(rec);
+        }}
+        onAppendTextToContent={(text) => {
+          setEditingDiary(prev => {
+            if (!prev) return null;
+            const separator = prev.content && prev.content.trim() ? '\n\n' : '';
+            const updated = `${prev.content || ''}${separator}🎙️ [فضفضة صوتية]:\n${text}`;
+            setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updated } : d));
+            return { ...prev, content: updated };
+          });
+        }}
       />
 
       {/* 🧭 Interactive Onboarding Tour Modal */}

@@ -1,6 +1,8 @@
 import { generateGeminiContentDirect } from '../lib/gemini';
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark } from 'lucide-react';
+import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
@@ -1004,6 +1006,52 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   const activeMessages = activeAdvisorTab === 'diary' ? messages : generalMessages;
 
+  // --- Copy and Export Handlers for Smart Advisor Chat ---
+  const handleCopyAdvisorChat = () => {
+    if (activeMessages.length === 0) return;
+    const formatted = activeMessages.map(m => {
+      const sender = m.sender === 'user' ? (t.meLabel || 'User') : (activeAdvisorTab === 'general' ? 'Hayat AI' : (t.aiPsychAdvisor || 'Smart Advisor'));
+      const time = m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+      return `[${sender}${time ? ` - ${time}` : ''}]:\n${m.text}\n`;
+    }).join('\n-------------------\n\n');
+
+    navigator.clipboard.writeText(formatted).then(() => {
+      alert(t.chatCopiedSuccess || (appLanguage === 'ar' ? 'تم نسخ المحادثة بنجاح 📋' : 'Chat copied to clipboard!'));
+    }).catch(err => console.warn(err));
+  };
+
+  const handleExportAdvisorChatPdf = async () => {
+    const chatEl = document.getElementById('smart-advisor-chat-box');
+    if (!chatEl || activeMessages.length === 0) return;
+    try {
+      const canvas = await html2canvas(chatEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#FFFFFF',
+        windowWidth: 800
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let heightLeft = pdfHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`HayatAI_AdvisorChat_${Date.now()}.pdf`);
+    } catch (err) {
+      console.error('Export Chat PDF error:', err);
+    }
+  };
+
   return (
     <div className="bg-white border border-[#E2DCC8] rounded-3xl overflow-hidden shadow-sm h-[580px] sm:h-[620px] flex flex-col font-sans relative" dir={langInfo.dir}>
       
@@ -1125,7 +1173,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       )}
 
       {/* Chat Messages */}
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-[#F9F7F2]/50">
+      <div id="smart-advisor-chat-box" className="flex-grow overflow-y-auto p-4 space-y-4 bg-[#F9F7F2]/50">
         {activeMessages.map((msg) => (
           <div
             key={msg.id}
@@ -1453,8 +1501,26 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           </button>
 
           <button
+            onClick={handleCopyAdvisorChat}
+            disabled={activeMessages.length === 0}
+            className="p-2 sm:p-2.5 text-gray-400 hover:text-[#8B9D83] hover:bg-[#F0EDE4] rounded-xl transition-colors cursor-pointer shrink-0 disabled:opacity-40"
+            title={t.copyChatBtn || (appLanguage === 'ar' ? 'نسخ المحادثة' : 'Copy Chat')}
+          >
+            <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          <button
+            onClick={handleExportAdvisorChatPdf}
+            disabled={activeMessages.length === 0}
+            className="p-2 sm:p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0 disabled:opacity-40"
+            title={t.exportChatPdf || (appLanguage === 'ar' ? 'تصدير كـ PDF' : 'Export Chat PDF')}
+          >
+            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          <button
             onClick={handleClearHistory}
-            className="p-2 sm:p-2.5 text-gray-400 hover:text-[#D4A373] hover:bg-[#FAEDCD] rounded-xl transition-colors cursor-pointer shrink-0"
+            className="p-2 sm:p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer shrink-0"
             title={t.smartAdvisorClearChatTooltip}
           >
             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

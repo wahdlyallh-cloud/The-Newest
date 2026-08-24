@@ -30,6 +30,8 @@ export type KnowledgeSourceType =
   | 'pros_cons'
   | 'athkar_dhikr'
   | 'therapy_report'
+  | 'ai_conversation'
+  | 'web_reference'
   | 'custom_plugin';
 
 export type MemoryCategory =
@@ -477,6 +479,77 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
             sourceLabelAr: `${t.attachedImage} (${dateStr})`,
             sourceLabelEn: `${t.attachedImage} (${dateStr})`,
             rawRef: imgUrl
+          });
+        });
+      }
+
+      // 1.6 Extract Attached Videos
+      if (d.videos && Array.isArray(d.videos)) {
+        d.videos.forEach((vidUrl, idx) => {
+          const isFileVideo = vidUrl.startsWith('data:video/') || vidUrl.startsWith('blob:') || vidUrl.startsWith('http');
+          entities.push({
+            id: `video_${d.id}_${idx}`,
+            sourceType: 'video_attachment',
+            memoryCategory: 'media',
+            dateStr,
+            timestamp,
+            title: `${t.attachedVideos || 'فيديو مرفق'} - ${dateStr} #${idx + 1}`,
+            content: `${t.attachedVideos || 'فيديو مرفق'} (${dateStr}) مرتبط بيومية "${title}". "${cleanContent.substring(0, 150)}"`,
+            tags: [...(d.tags || []), 'video', 'media'],
+            moods: d.moods || [],
+            metrics: {},
+            mediaPayload: {
+              mimeType: 'video/mp4',
+              dataUrl: isFileVideo ? vidUrl : undefined,
+              previewUrl: isFileVideo ? vidUrl : undefined
+            },
+            relationshipKeys: [...relKeys, 'type:video', `parent:diary_${d.id}`],
+            sourceLabelAr: `${t.attachedVideos || 'فيديو مرفق'} (${dateStr})`,
+            sourceLabelEn: `Attached Video (${dateStr})`,
+            rawRef: vidUrl
+          });
+        });
+      }
+
+      // 1.7 Extract Diary AI Chat History
+      if (d.chatLogs && Array.isArray(d.chatLogs) && d.chatLogs.length > 0) {
+        const chatSnippet = d.chatLogs.map(c => `[${c.sender === 'user' ? (t.meLabel || 'User') : (t.aiPsychAdvisor || 'AI Advisor')}]: ${c.text}`).join('\n');
+        entities.push({
+          id: `chat_${d.id}`,
+          sourceType: 'ai_conversation',
+          memoryCategory: 'conversational',
+          dateStr,
+          timestamp,
+          title: `محادثة الذكاء الاصطناعي لـ "${title}" (${dateStr})`,
+          content: chatSnippet,
+          tags: [...(d.tags || []), 'chat', 'conversation', 'ai'],
+          moods: d.moods || [],
+          metrics: { messageCount: d.chatLogs.length },
+          relationshipKeys: [...relKeys, 'type:chat', `parent:diary_${d.id}`],
+          sourceLabelAr: `محادثة مرتبطة باليومية (${dateStr})`,
+          sourceLabelEn: `Diary Linked Chat (${dateStr})`,
+          rawRef: d.chatLogs
+        });
+      }
+
+      // 1.8 Extract Attached Web Links
+      if (d.links && Array.isArray(d.links) && d.links.length > 0) {
+        d.links.forEach((link, idx) => {
+          entities.push({
+            id: `link_${d.id}_${idx}`,
+            sourceType: 'web_reference',
+            memoryCategory: 'document',
+            dateStr,
+            timestamp,
+            title: `رابط ويب مرجعي: ${link}`,
+            content: `رابط ويب مرفق باليومية "${title}": ${link}`,
+            tags: [...(d.tags || []), 'link', 'reference'],
+            moods: d.moods || [],
+            metrics: {},
+            relationshipKeys: [...relKeys, 'type:link', `parent:diary_${d.id}`],
+            sourceLabelAr: `رابط مرجعي (${dateStr})`,
+            sourceLabelEn: `Web Reference (${dateStr})`,
+            rawRef: link
           });
         });
       }
