@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { DiaryEntry, AppLanguage, FileAttachment, AudioRecording } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
+import { getAttachmentObjectUrl } from '../lib/attachmentStore';
 
 interface AttachmentsPageProps {
   isOpen: boolean;
@@ -38,6 +39,51 @@ export default function AttachmentsPage({
   const isAr = appLanguage === 'ar';
 
   if (!isOpen || !diary) return null;
+
+  const handleOpenFile = async (file: FileAttachment) => {
+    let url = (file.dataUrl && file.dataUrl !== '#' && !file.dataUrl.startsWith('blob:null')) ? file.dataUrl : '';
+    if ((!url || url === '#') && file.attachmentId) {
+      const freshUrl = await getAttachmentObjectUrl(file.attachmentId);
+      if (freshUrl) {
+        url = freshUrl;
+      }
+    }
+    if (!url || url === '#') return;
+
+    const name = (file.name || '').toLowerCase();
+    const type = (file.type || '').toLowerCase();
+
+    if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+      onPreviewMedia({ type: 'image', url });
+    } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
+      onPreviewMedia({ type: 'video', url });
+    } else if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name)) {
+      onPreviewMedia({ type: 'audio', url });
+    } else if (type.includes('pdf') || name.endsWith('.pdf')) {
+      onPreviewMedia({ type: 'pdf', url });
+    } else {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name || 'download';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handlePlayAudio = async (rec: AudioRecording) => {
+    let url = (rec.dataUrl && rec.dataUrl !== '#' && !rec.dataUrl.startsWith('blob:null')) ? rec.dataUrl : '';
+    if ((!url || url === '#') && rec.attachmentId) {
+      const freshUrl = await getAttachmentObjectUrl(rec.attachmentId);
+      if (freshUrl) {
+        url = freshUrl;
+      }
+    }
+    if (url && url !== '#') {
+      onPreviewMedia({ type: 'audio', url });
+    }
+  };
 
   const imagesCount = (diary.images || []).length;
   const videosCount = (diary.videos || []).length;
@@ -182,16 +228,14 @@ export default function AttachmentsPage({
                           </div>
 
                           <div className="flex items-center gap-1.5">
-                            {rec.dataUrl && (
-                              <button
-                                type="button"
-                                onClick={() => onPreviewMedia({ type: 'audio', url: rec.dataUrl })}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10.5px] transition-all cursor-pointer flex items-center gap-1"
-                              >
-                                <Play className="w-3 h-3" />
-                                <span>{isAr ? 'تشغيل' : 'Play'}</span>
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => handlePlayAudio(rec)}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10.5px] transition-all cursor-pointer flex items-center gap-1"
+                            >
+                              <Play className="w-3 h-3" />
+                              <span>{isAr ? 'تشغيل' : 'Play'}</span>
+                            </button>
                             {onDeleteAudio && (
                               <button
                                 type="button"
@@ -289,16 +333,15 @@ export default function AttachmentsPage({
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0">
-                            {isPdf && file.dataUrl && (
-                              <button
-                                type="button"
-                                onClick={() => onPreviewMedia({ type: 'pdf', url: file.dataUrl })}
-                                className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1"
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>{isAr ? 'معاينة' : 'Preview'}</span>
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenFile(file)}
+                              className="px-2.5 py-1 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1 shadow-3xs"
+                              title={isAr ? 'معاينة / فتح' : 'Preview / Open'}
+                            >
+                              <Eye className="w-3 h-3" />
+                              <span>{isAr ? 'معاينة' : 'Preview'}</span>
+                            </button>
                             {file.dataUrl && (
                               <a
                                 href={file.dataUrl}

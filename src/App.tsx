@@ -2108,20 +2108,27 @@ export default function App() {
         return r;
       }));
 
-      const restoredImages = [...(editingDiary.images || [])];
-      for (const f of restoredFiles) {
-        if (f.type.startsWith('image/') && f.dataUrl && f.dataUrl !== '#' && !restoredImages.includes(f.dataUrl)) {
-          restoredImages.push(f.dataUrl);
-          hasChanges = true;
-        }
+      // Extract fresh live image and video URLs from restored files
+      const fileImageUrls = restoredFiles
+        .filter(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.name || ''))
+        .map(f => f.dataUrl)
+        .filter(Boolean) as string[];
+
+      const nonStaleImages = (editingDiary.images || []).filter(img => !img.startsWith('blob:'));
+      const restoredImages = Array.from(new Set([...nonStaleImages, ...fileImageUrls]));
+      if (restoredImages.length !== (editingDiary.images || []).length) {
+        hasChanges = true;
       }
 
-      const restoredVideos = [...(editingDiary.videos || [])];
-      for (const f of restoredFiles) {
-        if (f.type.startsWith('video/') && f.dataUrl && f.dataUrl !== '#' && !restoredVideos.includes(f.dataUrl)) {
-          restoredVideos.push(f.dataUrl);
-          hasChanges = true;
-        }
+      const fileVideoUrls = restoredFiles
+        .filter(f => (f.type || '').startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(f.name || ''))
+        .map(f => f.dataUrl)
+        .filter(Boolean) as string[];
+
+      const nonStaleVideos = (editingDiary.videos || []).filter(vid => !vid.startsWith('blob:'));
+      const restoredVideos = Array.from(new Set([...nonStaleVideos, ...fileVideoUrls]));
+      if (restoredVideos.length !== (editingDiary.videos || []).length) {
+        hasChanges = true;
       }
 
       if (hasChanges && !isCancelled) {
@@ -3291,22 +3298,155 @@ export default function App() {
     }
   };
 
+  // --- Dedicated Safe Open / Preview Handler for any File Attachment ---
+  const handleOpenAttachment = async (file: FileAttachment) => {
+    let url = (file.dataUrl && file.dataUrl !== '#' && !file.dataUrl.startsWith('blob:null')) ? file.dataUrl : '';
+
+    // If no live url or if it is stale, resolve fresh live Object URL directly from IndexedDB
+    if ((!url || url === '#') && file.attachmentId) {
+      const freshUrl = await getAttachmentObjectUrl(file.attachmentId);
+      if (freshUrl) {
+        url = freshUrl;
+        setEditingDiary(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            files: (prev.files || []).map(f => f.id === file.id ? { ...f, dataUrl: freshUrl } : f)
+          };
+        });
+      }
+    }
+
+    if (!url || url === '#') {
+      alert(t.noValidAudioTranscription || (settings?.appLanguage === 'ar' ? 'تعذر فتح المرفق، الملف غير متوفر في الذاكرة.' : 'Unable to open attachment. File not found in storage.'));
+      return;
+    }
+
+    const name = (file.name || '').toLowerCase();
+    const type = (file.type || '').toLowerCase();
+
+    if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+      setPreviewMedia({ type: 'image', url });
+    } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
+      setPreviewMedia({ type: 'video', url });
+    } else if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name)) {
+      setPreviewMedia({ type: 'audio', url });
+    } else if (type.includes('pdf') || name.endsWith('.pdf')) {
+      setPreviewMedia({ type: 'pdf', url });
+    } else {
+      // General document: create safe trigger to open/download in browser
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = file.name || 'download';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  // --- Dedicated Safe Delete Handler for File Attachment ---
+  const handleDeleteFileAttachment = (fileId: string) => {
+    setEditingDiary(prev => {
+      if (!prev) return null;
+      const target = (prev.files || []).find(f => f.id === fileId);
+      if (target?.attachmentId) {
+        deleteAttachmentBlob(target.attachmentId);
+      }
+      const updatedFiles = (prev.files || []).filter(f => f.id !== fileId);
+      const updatedImages = target?.dataUrl
+        ? (prev.images || []).filter(img => img !== target.dataUrl)
+        : prev.images;
+      const updatedVideos = target?.dataUrl
+        ? (prev.videos || []).filter(vid => vid !== target.dataUrl)
+        : prev.videos;
+
+      const updated = {
+        ...prev,
+        files: updatedFiles,
+        images: updatedImages,
+        videos: updatedVideos
+      };
+      saveDraftSynchronously(updated);
+      return updated;
+    });
+  };
+
+  // --- Dedicated Safe Delete Handler for Image ---
+  const handleDeleteDiaryImage = (index: number) => {
+    setEditingDiary(prev => {
+      if (!prev) return null;
+      const targetUrl = (prev.images || [])[index];
+      const targetFile = (prev.files || []).find(f => f.dataUrl === targetUrl);
+      if (targetFile?.attachmentId) {
+        deleteAttachmentBlob(targetFile.attachmentId);
+      }
+      const updatedImages = (prev.images || []).filter((_, i) => i !== index);
+      const updatedFiles = targetUrl
+        ? (prev.files || []).filter(f => f.dataUrl !== targetUrl)
+        : prev.files;
+
+      const updated = {
+        ...prev,
+        images: updatedImages,
+        files: updatedFiles
+      };
+      saveDraftSynchronously(updated);
+      return updated;
+    });
+  };
+
+  // --- Dedicated Safe Delete Handler for Video ---
+  const handleDeleteDiaryVideo = (index: number) => {
+    setEditingDiary(prev => {
+      if (!prev) return null;
+      const targetUrl = (prev.videos || [])[index];
+      const targetFile = (prev.files || []).find(f => f.dataUrl === targetUrl);
+      if (targetFile?.attachmentId) {
+        deleteAttachmentBlob(targetFile.attachmentId);
+      }
+      const updatedVideos = (prev.videos || []).filter((_, i) => i !== index);
+      const updatedFiles = targetUrl
+        ? (prev.files || []).filter(f => f.dataUrl !== targetUrl)
+        : prev.files;
+
+      const updated = {
+        ...prev,
+        videos: updatedVideos,
+        files: updatedFiles
+      };
+      saveDraftSynchronously(updated);
+      return updated;
+    });
+  };
+
   // --- Universal Document / File Uploader ---
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
     const files = Array.from(e.target.files || []);
     if (files.length > 0 && editingDiary) {
-      const newFiles = [];
+      const newFiles: FileAttachment[] = [];
+      const newImages: string[] = [];
+      const newVideos: string[] = [];
       try {
         for (const file of files) {
           const newFile = await processSelectedFileAttachment(file);
           newFiles.push(newFile);
+          const name = (newFile.name || '').toLowerCase();
+          const type = (newFile.type || '').toLowerCase();
+          if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+            if (newFile.dataUrl && newFile.dataUrl !== '#') newImages.push(newFile.dataUrl);
+          } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
+            if (newFile.dataUrl && newFile.dataUrl !== '#') newVideos.push(newFile.dataUrl);
+          }
         }
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            files: [...(prev.files || []), ...newFiles]
+            files: [...(prev.files || []), ...newFiles],
+            images: Array.from(new Set([...(prev.images || []), ...newImages])),
+            videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
           };
           saveDraftSynchronously(updated);
           return updated;
@@ -7001,15 +7141,27 @@ export default function App() {
                               const files = Array.from(e.target.files || []);
                               if (files.length > 0 && editingDiary) {
                                 try {
-                                  const newFiles = [];
+                                  const newFiles: FileAttachment[] = [];
+                                  const newImages: string[] = [];
+                                  const newVideos: string[] = [];
                                   for (const file of files) {
-                                    newFiles.push(await processSelectedFileAttachment(file));
+                                    const newFile = await processSelectedFileAttachment(file);
+                                    newFiles.push(newFile);
+                                    const name = (newFile.name || '').toLowerCase();
+                                    const type = (newFile.type || '').toLowerCase();
+                                    if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+                                      if (newFile.dataUrl && newFile.dataUrl !== '#') newImages.push(newFile.dataUrl);
+                                    } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
+                                      if (newFile.dataUrl && newFile.dataUrl !== '#') newVideos.push(newFile.dataUrl);
+                                    }
                                   }
                                   setEditingDiary(prev => {
                                     if (!prev) return null;
                                     const updated = {
                                       ...prev,
-                                      files: [...(prev.files || []), ...newFiles]
+                                      files: [...(prev.files || []), ...newFiles],
+                                      images: Array.from(new Set([...(prev.images || []), ...newImages])),
+                                      videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
                                     };
                                     saveDraftSynchronously(updated);
                                     return updated;
@@ -7275,7 +7427,7 @@ export default function App() {
                     <span className="block text-xs font-bold text-[#5A5A40]">{t.attachedImagesDrawings}</span>
                     <div className="flex flex-wrap gap-3">
                       {editingDiary.images.map((img, idx) => (
-                        <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group">
+                        <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-gray-50">
                             <img
                               src={img}
                               className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
@@ -7286,9 +7438,9 @@ export default function App() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setEditingDiary(prev => prev ? { ...prev, images: prev.images.filter((_, i) => i !== idx) } : null);
+                                handleDeleteDiaryImage(idx);
                               }}
-                              className="absolute top-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                              className="absolute top-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md z-10 cursor-pointer"
                               title={t.deleteMediaBtn || 'Delete'}
                             >
                               <X className="w-3.5 h-3.5" />
@@ -7298,12 +7450,12 @@ export default function App() {
 
                       {editingDiary.drawing && (
                         <div className="relative w-24 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white">
-                          <img src={editingDiary.drawing} className="w-full h-full object-contain" />
+                          <img src={editingDiary.drawing} className="w-full h-full object-contain cursor-pointer" onClick={() => setShowSketchboard(true)} />
                           <div className="absolute top-0 right-0 bg-[#8B9D83] text-white text-[8px] px-1.5 py-0.5 rounded-bl">{t.drawing}</div>
                           <button
                             type="button"
                             onClick={() => setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null)}
-                            className="absolute inset-0 bg-red-700/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs cursor-pointer"
+                            className="absolute inset-0 bg-red-700/80 text-white flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-xs cursor-pointer"
                           >
                             حذف الرسمة
                           </button>
@@ -7324,7 +7476,7 @@ export default function App() {
                       {editingDiary.videos.map((vid, idx) => (
                         <div key={idx} className="relative bg-[#F9F7F2] p-3 border border-[#E2DCC8] rounded-xl flex flex-col space-y-2">
                           {vid.startsWith('data:video/') || vid.startsWith('blob:') || vid.includes('mp4') || vid.startsWith('data:application/octet-stream') ? (
-                            <video src={vid} controls className="w-full h-32 rounded-lg bg-black object-cover" />
+                            <video src={vid} controls className="w-full h-32 rounded-lg bg-black object-cover cursor-pointer" onClick={() => setPreviewMedia({ type: 'video', url: vid })} />
                           ) : (
                             <div className="bg-white p-2.5 rounded-lg border border-[#E2DCC8]/60 text-xs text-[#5A5A40] truncate flex items-center space-x-2 space-x-reverse">
                               <span className="font-semibold shrink-0">{t.videoLink}</span>
@@ -7333,13 +7485,23 @@ export default function App() {
                               </a>
                             </div>
                           )}
-                          <button
-                            type="button"
-                            onClick={() => setEditingDiary(prev => prev ? { ...prev, videos: prev.videos.filter((_, i) => i !== idx) } : null)}
-                            className="text-xs text-red-600 hover:text-red-700 font-bold self-end cursor-pointer"
-                          >
-                            حذف الفيديو
-                          </button>
+                          <div className="flex items-center justify-between pt-1">
+                            <button
+                              type="button"
+                              onClick={() => setPreviewMedia({ type: 'video', url: vid })}
+                              className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1 shadow-3xs"
+                            >
+                              <Eye className="w-3 h-3" />
+                              <span>{settings?.appLanguage === 'ar' ? 'معاينة' : 'Preview'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteDiaryVideo(idx)}
+                              className="text-xs text-red-600 hover:text-red-700 font-bold cursor-pointer"
+                            >
+                              {settings?.appLanguage === 'ar' ? 'حذف الفيديو' : 'Delete'}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -7369,6 +7531,9 @@ export default function App() {
                         } else if (type.includes('pdf') || name.endsWith('.pdf')) {
                           badgeLabel = '📄 PDF';
                           badgeStyle = 'bg-red-100 text-red-700 border-red-200';
+                        } else if (type.includes('image') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+                          badgeLabel = '🖼️ صورة';
+                          badgeStyle = 'bg-amber-100 text-amber-700 border-amber-200';
                         } else if (type.includes('word') || /\.(doc|docx)$/i.test(name)) {
                           badgeLabel = '📝 DOC';
                           badgeStyle = 'bg-blue-100 text-blue-700 border-blue-200';
@@ -7378,43 +7543,49 @@ export default function App() {
                         }
 
                         return (
-                          <div key={file.id} className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl flex items-center justify-between text-xs">
-                            <div className="flex items-center space-x-2 space-x-reverse min-w-0">
+                          <div key={file.id} className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl flex items-center justify-between text-xs gap-2">
+                            <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
                               <div className={`px-2 py-1 border rounded-lg font-bold text-[10px] shrink-0 ${badgeStyle}`}>
                                 {badgeLabel}
                               </div>
-                              <div className="min-w-0">
-                                <span className="font-semibold block text-[#3A3A3A] truncate max-w-[180px] sm:max-w-xs">{file.name}</span>
+                              <div className="min-w-0 flex-1">
+                                <span className="font-semibold block text-[#3A3A3A] truncate max-w-[140px] sm:max-w-xs">{file.name}</span>
                                 <span className="text-[10px] text-gray-400">{t.fileSize}: {file.size}</span>
                               </div>
                             </div>
 
-                            <div className="flex items-center space-x-2 space-x-reverse shrink-0">
+                            <div className="flex items-center space-x-1.5 space-x-reverse shrink-0">
+                              {/* 👁️ Preview / Open Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenAttachment(file)}
+                                className="bg-[#2B3E50] hover:bg-[#1E2B38] text-white text-[10.5px] px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer shadow-3xs"
+                                title={settings?.appLanguage === 'ar' ? 'معاينة / فتح' : 'Preview / Open'}
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>{settings?.appLanguage === 'ar' ? 'معاينة' : 'Preview'}</span>
+                              </button>
+
+                              {/* ⬇️ Download Button */}
                               {file.dataUrl && (
                                 <a
                                   href={file.dataUrl}
                                   download={file.name}
-                                  className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold cursor-pointer"
+                                  className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-[10.5px] px-2 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer shadow-3xs"
+                                  title={settings?.appLanguage === 'ar' ? 'تحميل' : 'Download'}
                                 >
-                                  تحميل
+                                  <Download className="w-3 h-3" />
                                 </a>
                               )}
+
+                              {/* 🗑️ Delete Button */}
                               <button
                                 type="button"
-                                onClick={() => {
-                                  if (file.attachmentId) {
-                                    deleteAttachmentBlob(file.attachmentId);
-                                  }
-                                  setEditingDiary(prev => {
-                                    if (!prev) return null;
-                                    const updated = { ...prev, files: prev.files.filter(x => x.id !== file.id) };
-                                    saveDraftSynchronously(updated);
-                                    return updated;
-                                  });
-                                }}
-                                className="text-red-600 hover:text-red-700 font-bold px-2 cursor-pointer text-xs"
+                                onClick={() => handleDeleteFileAttachment(file.id)}
+                                className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg font-bold cursor-pointer transition-colors"
+                                title={settings?.appLanguage === 'ar' ? 'حذف المرفق' : 'Delete'}
                               >
-                                حذف
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
