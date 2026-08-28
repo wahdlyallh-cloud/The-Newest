@@ -3221,35 +3221,24 @@ export default function App() {
   };
 
   // --- Image File Uploader (Gallery & Camera Photos via IndexedDB) ---
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
     const files = Array.from(e.target.files || []);
     if (files.length > 0 && editingDiary) {
       const newImages = [];
-      const newFiles = [];
       try {
         for (const file of files) {
           const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
           const imageUrl = URL.createObjectURL(file);
-
           newImages.push(imageUrl);
-          newFiles.push({
-            id: `file-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            name: file.name || 'صورة مرفقة',
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            type: file.type || 'image/png',
-            dataUrl: imageUrl,
-            attachmentId
-          });
         }
 
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            images: [...(prev.images || []), ...newImages],
-            files: [...(prev.files || []), ...newFiles]
+            images: Array.from(new Set([...(prev.images || []), ...newImages]))
           };
           saveDraftSynchronously(updated);
           return updated;
@@ -3438,16 +3427,24 @@ export default function App() {
       const newFiles: FileAttachment[] = [];
       const newImages: string[] = [];
       const newVideos: string[] = [];
+      const audioFilesToTranscribe: File[] = [];
       try {
         for (const file of files) {
-          const newFile = await processSelectedFileAttachment(file);
-          newFiles.push(newFile);
-          const name = (newFile.name || '').toLowerCase();
-          const type = (newFile.type || '').toLowerCase();
-          if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
-            if (newFile.dataUrl && newFile.dataUrl !== '#') newImages.push(newFile.dataUrl);
+          const name = (file.name || '').toLowerCase();
+          const type = (file.type || '').toLowerCase();
+          if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac|webm)$/i.test(name)) {
+            audioFilesToTranscribe.push(file);
+          } else if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+            const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+            await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
+            newImages.push(URL.createObjectURL(file));
           } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
-            if (newFile.dataUrl && newFile.dataUrl !== '#') newVideos.push(newFile.dataUrl);
+            const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+            await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
+            newVideos.push(URL.createObjectURL(file));
+          } else {
+            const newFile = await processSelectedFileAttachment(file);
+            newFiles.push(newFile);
           }
         }
         setEditingDiary(prev => {
@@ -3461,6 +3458,9 @@ export default function App() {
           saveDraftSynchronously(updated);
           return updated;
         });
+        if (audioFilesToTranscribe.length > 0) {
+          await processAudioFilesBatch(audioFilesToTranscribe);
+        }
         setActiveInputSection('none');
       } catch (err) {
         console.error(err);
@@ -3479,31 +3479,20 @@ export default function App() {
     const files = Array.from(e.target.files || []);
     if (files.length > 0 && editingDiary) {
       const newVideos = [];
-      const newFiles = [];
       try {
         for (const file of files) {
           if (file.size > 200 * 1024 * 1024) continue;
           const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
           const videoBlobUrl = URL.createObjectURL(file);
-
           newVideos.push(videoBlobUrl);
-          newFiles.push({
-            id: `file-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            name: file.name || 'Video',
-            size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-            type: file.type || 'video/mp4',
-            dataUrl: videoBlobUrl,
-            attachmentId
-          });
         }
 
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            videos: [...(prev.videos || []), ...newVideos],
-            files: [...(prev.files || []), ...newFiles]
+            videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
           };
           saveDraftSynchronously(updated);
           return updated;
@@ -3562,27 +3551,17 @@ export default function App() {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const newImages = [];
-      const newFiles = [];
       try {
         for (const file of files) {
           const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
           const imageUrl = URL.createObjectURL(file);
           newImages.push(imageUrl);
-          newFiles.push({
-            id: `file-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            name: file.name || 'Image',
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            type: file.type || 'image/png',
-            dataUrl: imageUrl,
-            attachmentId
-          });
         }
         const diary = getOrCreateDiaryForUpload();
         const fullEntry = {
           ...diary,
-          images: [...(diary.images || []), ...newImages],
-          files: [...(diary.files || []), ...newFiles]
+          images: [...(diary.images || []), ...newImages]
         };
         setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
         setEditingDiary(fullEntry);
@@ -3604,7 +3583,6 @@ export default function App() {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const newVideos = [];
-      const newFiles = [];
       try {
         for (const file of files) {
           if (file.size > 200 * 1024 * 1024) continue;
@@ -3612,21 +3590,12 @@ export default function App() {
           await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
           const videoBlobUrl = URL.createObjectURL(file);
           newVideos.push(videoBlobUrl);
-          newFiles.push({
-            id: `file-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            name: file.name || 'Video',
-            size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-            type: file.type || 'video/mp4',
-            dataUrl: videoBlobUrl,
-            attachmentId
-          });
         }
         if (newVideos.length > 0) {
           const diary = getOrCreateDiaryForUpload();
           const fullEntry = {
             ...diary,
-            videos: [...(diary.videos || []), ...newVideos],
-            files: [...(diary.files || []), ...newFiles]
+            videos: [...(diary.videos || []), ...newVideos]
           };
           setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
           setEditingDiary(fullEntry);
@@ -3649,7 +3618,6 @@ export default function App() {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const newRecordings = [];
-      const newFiles = [];
       try {
         for (const file of files) {
           const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
@@ -3662,20 +3630,11 @@ export default function App() {
             duration: 0,
             attachmentId
           });
-          newFiles.push({
-            id: `file-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            name: file.name || 'Audio',
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            type: file.type || 'audio/mp3',
-            dataUrl: audioUrl,
-            attachmentId
-          });
         }
         const diary = getOrCreateDiaryForUpload();
         const fullEntry = {
           ...diary,
-          audioRecordings: [...(diary.audioRecordings || []), ...newRecordings],
-          files: [...(diary.files || []), ...newFiles]
+          audioRecordings: [...(diary.audioRecordings || []), ...newRecordings]
         };
         setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
         setEditingDiary(fullEntry);
@@ -4196,17 +4155,9 @@ export default function App() {
     });
   };
 
-  // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري المستقل ---
-  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    markFilePickerActive();
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) {
-      resetFilePickerGuard();
-      return;
-    }
-
+  // --- Batch Audio Processing & Automatic AI Transcription Helper ---
+  const processAudioFilesBatch = async (files: File[]) => {
     setAudioUploadLoading(true);
-
     try {
       for (const file of files) {
         const detectedMime = detectAudioMimeType(file.name, file.type);
@@ -4268,11 +4219,85 @@ export default function App() {
     } catch (err) {
       console.error('Audio upload error:', err);
     } finally {
-      setActiveInputSection('none');
       setAudioUploadLoading(false);
       setTranscribingAudioId(null);
+    }
+  };
+
+  // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري المستقل ---
+  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) {
+      resetFilePickerGuard();
+      return;
+    }
+
+    try {
+      await processAudioFilesBatch(files);
+    } finally {
+      setActiveInputSection('none');
       resetFilePickerGuard();
       e.target.value = '';
+    }
+  };
+
+  // --- Universal Generic File Attachment Handler (Multi-file, Auto-categorizing) ---
+  const handleGenericFileUpload = async (files: File[]) => {
+    if (!files || files.length === 0 || !editingDiary) return;
+    markFilePickerActive();
+    try {
+      const newFiles: FileAttachment[] = [];
+      const newImages: string[] = [];
+      const newVideos: string[] = [];
+      const audioFilesToTranscribe: File[] = [];
+
+      for (const file of files) {
+        const name = (file.name || '').toLowerCase();
+        const type = (file.type || '').toLowerCase();
+
+        if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|oga|flac|webm|opus|amr|3ga|wma|mid)$/i.test(name)) {
+          audioFilesToTranscribe.push(file);
+        } else if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg|ico|heic|heif|avif)$/i.test(name)) {
+          const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
+          const imageUrl = URL.createObjectURL(file);
+          newImages.push(imageUrl);
+        } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|m4v)$/i.test(name)) {
+          if (file.size <= 200 * 1024 * 1024) {
+            const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+            await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
+            const videoBlobUrl = URL.createObjectURL(file);
+            newVideos.push(videoBlobUrl);
+          }
+        } else {
+          // Documents / PDF / Generic files
+          const newFile = await processSelectedFileAttachment(file);
+          newFiles.push(newFile);
+        }
+      }
+
+      if (newFiles.length > 0 || newImages.length > 0 || newVideos.length > 0) {
+        setEditingDiary(prev => {
+          if (!prev) return null;
+          const updated = {
+            ...prev,
+            files: [...(prev.files || []), ...newFiles],
+            images: Array.from(new Set([...(prev.images || []), ...newImages])),
+            videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
+          };
+          saveDraftSynchronously(updated);
+          return updated;
+        });
+      }
+
+      if (audioFilesToTranscribe.length > 0) {
+        await processAudioFilesBatch(audioFilesToTranscribe);
+      }
+    } catch (err) {
+      console.error('Generic file upload error:', err);
+    } finally {
+      resetFilePickerGuard();
     }
   };
 
@@ -7228,85 +7253,18 @@ export default function App() {
                   {/* Attachment & Features Toolbar directly attached to textarea (Image 4 format) */}
                   <div className="bg-[#EAE5D9] border border-t-0 border-[#E2DCC8] rounded-b-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {/* Attach File (Paperclip) */}
-                      <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
-                        <span>📎</span>
-                        <span className="hidden sm:inline">{t.attachFileTitle}</span>
-                        <input type="file" multiple
-                          accept="*/*" onChange={async (e) => {
-                              markFilePickerActive();
-                              const files = Array.from(e.target.files || []);
-                              if (files.length > 0 && editingDiary) {
-                                try {
-                                  const newFiles: FileAttachment[] = [];
-                                  const newImages: string[] = [];
-                                  const newVideos: string[] = [];
-                                  for (const file of files) {
-                                    const newFile = await processSelectedFileAttachment(file);
-                                    newFiles.push(newFile);
-                                    const name = (newFile.name || '').toLowerCase();
-                                    const type = (newFile.type || '').toLowerCase();
-                                    if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
-                                      if (newFile.dataUrl && newFile.dataUrl !== '#') newImages.push(newFile.dataUrl);
-                                    } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
-                                      if (newFile.dataUrl && newFile.dataUrl !== '#') newVideos.push(newFile.dataUrl);
-                                    }
-                                  }
-                                  setEditingDiary(prev => {
-                                    if (!prev) return null;
-                                    const updated = {
-                                      ...prev,
-                                      files: [...(prev.files || []), ...newFiles],
-                                      images: Array.from(new Set([...(prev.images || []), ...newImages])),
-                                      videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
-                                    };
-                                    saveDraftSynchronously(updated);
-                                    return updated;
-                                  });
-                                } catch (err) {
-                                  console.error(err);
-                                }
-                              }
-                              resetFilePickerGuard();
-                              e.target.value = '';
-                            }}
-                          className="hidden"
-                        />
-                      </label>
-
-                      {/* Add Voice (Mic) */}
+                      {/* Font Effect Toggle (Aa) */}
                       <button
                         type="button"
-                        onClick={handleToggleRecording}
-                        className={`p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse ${isRecording ? 'text-red-600 bg-red-50 border-red-200' : 'text-[#5A5A40]'}`}
-                        title={t.addAudioTitle}
-                      >
-                        <span>🎙️</span>
-                        <span className="hidden sm:inline">{isRecording ? `${t.recordingProgress} (${recordingSeconds}s)` : t.addAudioTitle}</span>
-                      </button>
-
-                      {/* Draw / Sketch (Pencil) */}
-                      <button
-                        type="button"
-                        onClick={() => setShowSketchboard(true)}
+                        onClick={() => setShowFontDrawer(true)}
                         className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                        title={t.drawTitle}
+                        title={t.fontEffectTitle}
                       >
-                        <span>✏️</span>
-                        <span className="hidden sm:inline">{t.drawTitle}</span>
+                        <span className="font-serif">Aa</span>
+                        <span className="hidden sm:inline">{t.fontTitle}</span>
                       </button>
 
-                      {/* Add Image */}
-                      <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.photoTitle}>
-                        <span>🖼️</span>
-                        <span className="hidden sm:inline">{t.photoTitle}</span>
-                        <input type="file" multiple
-                          accept="image/*" onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-
-                      {/* Background Color Picker Palette */}
+                      {/* Background Color Picker Palette (🎨) */}
                       <div className="relative">
                         <button
                           type="button"
@@ -7329,16 +7287,34 @@ export default function App() {
                         )}
                       </div>
 
-                      {/* Font Effect Toggle */}
+                      {/* Draw / Sketch (✏️) */}
                       <button
                         type="button"
-                        onClick={() => setShowFontDrawer(true)}
+                        onClick={() => setShowSketchboard(true)}
                         className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                        title={t.fontEffectTitle}
+                        title={t.drawTitle}
                       >
-                        <span className="font-serif">Aa</span>
-                        <span className="hidden sm:inline">{t.fontTitle}</span>
+                        <span>✏️</span>
+                        <span className="hidden sm:inline">{t.drawTitle}</span>
                       </button>
+
+                      {/* Attach File (📎) */}
+                      <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
+                        <span>📎</span>
+                        <span className="hidden sm:inline">{t.attachFileTitle}</span>
+                        <input type="file" multiple
+                          accept="*/*" onChange={async (e) => {
+                            markFilePickerActive();
+                            const files = Array.from(e.target.files || []);
+                            if (files.length > 0) {
+                              await handleGenericFileUpload(files);
+                            }
+                            resetFilePickerGuard();
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                        />
+                      </label>
                     </div>
 
                     {/* Checklist Task Add Button (Matching Image 3 & 4) */}
@@ -7738,7 +7714,7 @@ export default function App() {
                       <span>🎵</span>
                       <span>{t.addAudioFile}</span>
                       <input type="file" multiple
-                        accept="*/*" onChange={handleAudioFileUpload}
+                        accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus,.3gp,.amr" onChange={handleAudioFileUpload}
                         className="hidden"
                       />
                     </label>
@@ -7750,7 +7726,8 @@ export default function App() {
                       <input
                         id="image-upload-trigger"
                         type="file"
-                        accept="*/*"
+                        multiple
+                        accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.avif"
                         onChange={handleImageUpload}
                         className="hidden"
                       />
@@ -7948,7 +7925,7 @@ export default function App() {
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>{t.chooseVideoFromDevice}</span>
                               <input type="file" multiple
-                                accept="*/*" onChange={handleVideoUpload}
+                                accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.3gp,.m4v" onChange={handleVideoUpload}
                                 className="hidden"
                               />
                             </label>
@@ -7988,7 +7965,7 @@ export default function App() {
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>{t.chooseFileFromDevice}</span>
                               <input type="file" multiple
-                                accept="*/*" onChange={handlePdfUpload}
+                                accept=".pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onChange={handlePdfUpload}
                                 className="hidden"
                               />
                             </label>
@@ -8337,7 +8314,7 @@ export default function App() {
                           </div>
                           <span className="text-xs font-bold text-[#3A3A3A]">{t.addImageIcon}</span>
                           <input type="file" multiple
-                            accept="image/*" onChange={(e) => {
+                            accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.avif" onChange={(e) => {
                               handleImageUpload(e);
                               setShowMoreFeaturesSheet(false);
                             }}
@@ -8373,24 +8350,8 @@ export default function App() {
                             accept="*/*" onChange={async (e) => {
                               markFilePickerActive();
                               const files = Array.from(e.target.files || []);
-                              if (files.length > 0 && editingDiary) {
-                                try {
-                                  const newFiles = [];
-                                  for (const file of files) {
-                                    newFiles.push(await processSelectedFileAttachment(file));
-                                  }
-                                  setEditingDiary(prev => {
-                                    if (!prev) return null;
-                                    const updated = {
-                                      ...prev,
-                                      files: [...(prev.files || []), ...newFiles]
-                                    };
-                                    saveDraftSynchronously(updated);
-                                    return updated;
-                                  });
-                                } catch (err) {
-                                  console.error(err);
-                                }
+                              if (files.length > 0) {
+                                await handleGenericFileUpload(files);
                               }
                               e.target.value = '';
                               setShowMoreFeaturesSheet(false);
@@ -12642,29 +12603,33 @@ export default function App() {
       {/* Global Hidden Input File Elements for Dashboard Quick Actions */}
       <input
         type="file"
+        multiple
         id="global-image-uploader"
-        accept="*/*"
+        accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.avif"
         className="hidden"
         onChange={handleGlobalImageUpload}
       />
       <input
         type="file"
+        multiple
         id="global-video-uploader"
-        accept="*/*"
+        accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.3gp,.m4v"
         className="hidden"
         onChange={handleGlobalVideoUpload}
       />
       <input
         type="file"
+        multiple
         id="global-audio-uploader"
-        accept="*/*"
+        accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus,.3gp,.amr"
         className="hidden"
         onChange={handleGlobalAudioUpload}
       />
       <input
         type="file"
+        multiple
         id="global-document-uploader"
-        accept="*/*"
+        accept=".pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,*/*"
         className="hidden"
         onChange={handleGlobalDocumentUpload}
       />
