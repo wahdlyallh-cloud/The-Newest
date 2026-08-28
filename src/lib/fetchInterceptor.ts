@@ -938,7 +938,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (base64Data || fileUri) {
-        const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
+        const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-2.5-flash'];
         let lastError = "";
         const globalDeadline = Date.now() + 150000; // 150s Global Timeout
 
