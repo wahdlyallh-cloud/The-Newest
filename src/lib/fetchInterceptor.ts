@@ -940,14 +940,14 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       if (base64Data || fileUri) {
         const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
         let lastError = "";
-        const globalDeadline = Date.now() + 120000; // 120s Global Timeout
+        const globalDeadline = Date.now() + 150000; // 150s Global Timeout
 
         keyLoop: for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
           const currentKey = candidateKeys[keyIdx];
 
           for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
             if (Date.now() >= globalDeadline) {
-              console.warn('[AudioTranscription] Global timeout (120s) reached, halting attempts.');
+              console.warn('[AudioTranscription] Global timeout (150s) reached, halting attempts.');
               lastError = "GLOBAL_TIMEOUT";
               break keyLoop;
             }
@@ -1000,7 +1000,7 @@ Return pure JSON only in the following format:
             };
 
             const controller = new AbortController();
-            const timeoutTimer = setTimeout(() => controller.abort(), 45000);
+            const timeoutTimer = setTimeout(() => controller.abort(), 70000);
             const reqStart = Date.now();
 
             try {
