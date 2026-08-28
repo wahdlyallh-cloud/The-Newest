@@ -4,12 +4,12 @@
 //  NEVER executes synchronously on app boot.
 // ============================================================
 
-export const AI_MODEL = 'gemini-3.7-flash';
+export const AI_MODEL = 'gemini-3.5-flash-lite';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
  * Returns the exact model identifier without any alias translation or mapping.
- * Strictly preserves 'gemini-3.7-flash' as the literal Model ID sent to Google API.
+ * Strictly preserves 'gemini-3.5-flash-lite' as the literal Model ID sent to Google API.
  */
 export function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return AI_MODEL;
@@ -365,7 +365,7 @@ export async function validateGeminiApiKey(
  * Calls the Gemini generateContent REST endpoint directly from the client.
  *
  * Model resolution strategy:
- *   gemini-3.7-flash (Direct Model ID)
+ *   gemini-3.5-flash-lite (Direct Model ID)
  *
  * Every request includes BLOCK_NONE safety settings.
  * All error messages returned to callers are in Arabic.

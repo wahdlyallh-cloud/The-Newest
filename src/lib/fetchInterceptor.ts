@@ -14,7 +14,7 @@ import {
 } from '../services/unifiedAIKnowledgeService';
 
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-3.7-flash';
+  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
   return modelName.trim().replace(/^models\//, '');
 }
 
@@ -74,7 +74,7 @@ async function generateWithGeminiREST(prompt: string, systemInstruction?: string
     throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-3.7-flash'];
+  const modelsToTry = ['gemini-3.5-flash-lite'];
   let lastErrorMsg = '';
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
@@ -938,7 +938,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       }
 
       if (base64Data || fileUri) {
-        const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-2.5-flash'];
+        const modelsToTry = ['gemini-3.5-flash-lite'];
         let lastError = "";
         const globalDeadline = Date.now() + 150000; // 150s Global Timeout
 

@@ -33,7 +33,7 @@
 
 - **الواجهة الأمامية (Frontend):** React 18, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Framer Motion, Recharts, jsPDF.
 - **الخلفية (Backend):** Node.js, Express.js (Full-stack architecture).
-- **الذكاء الاصطناعي (AI):** Google GenAI SDK (`@google/genai`) مع نموذج `gemini-2.5-flash`.
+- **الذكاء الاصطناعي (AI):** Google GenAI SDK (`@google/genai`) مع نموذج `gemini-3.5-flash-lite`.
 - **أداة البناء (Bundler):** Vite + esbuild.
 
 ---
