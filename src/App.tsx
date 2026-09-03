@@ -3827,18 +3827,25 @@ export default function App() {
     const targetDate = selectedDate || new Date().toISOString().split('T')[0];
     let targetDiaryId = editingDiary ? editingDiary.id : '';
 
+    setEditingDiary(prev => {
+      if (!prev) return null;
+      const updated = {
+        ...prev,
+        audioRecordings: [...(prev.audioRecordings || []), newRec]
+      };
+      saveDraftSynchronously(updated);
+      return updated;
+    });
+
     setDiaries(prev => {
       const existingIdx = prev.findIndex(d => targetDiaryId ? d.id === targetDiaryId : (d.createdAt.split('T')[0] === targetDate && !d.isTrash));
 
       if (existingIdx !== -1) {
-        const existing = prev[existingIdx];
-        const updated = {
-          ...existing,
-          audioRecordings: [...(existing.audioRecordings || []), newRec]
-        };
-        setEditingDiary(updated);
         const copy = [...prev];
-        copy[existingIdx] = updated;
+        copy[existingIdx] = {
+          ...copy[existingIdx],
+          audioRecordings: [...(copy[existingIdx].audioRecordings || []), newRec]
+        };
         return copy;
       } else {
         const todayStr = new Date().toISOString();
@@ -3865,7 +3872,7 @@ export default function App() {
           sportsDuration: 0,
           medications: []
         };
-        setEditingDiary(newDiary);
+        setEditingDiary(prev => prev || newDiary);
         return [newDiary, ...prev];
       }
     });
@@ -4250,14 +4257,32 @@ export default function App() {
       const newFiles: FileAttachment[] = [];
       const newImages: string[] = [];
       const newVideos: string[] = [];
-      const audioFilesToTranscribe: File[] = [];
+      const newAudioRecordings: AudioRecording[] = [];
+      const audioToTranscribe: { recId: string; file: File; mime: string }[] = [];
 
       for (const file of files) {
         const name = (file.name || '').toLowerCase();
         const type = (file.type || '').toLowerCase();
 
         if (type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|oga|flac|webm|opus|amr|3ga|wma|mid)$/i.test(name)) {
-          audioFilesToTranscribe.push(file);
+          const detectedMime = detectAudioMimeType(file.name, file.type);
+          const newRecId = `rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          const attachmentId = `att-audio-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, detectedMime);
+          const audioUrl = URL.createObjectURL(file);
+
+          const newRec: AudioRecording = {
+            id: newRecId,
+            name: file.name || t.audioLink || 'Audio',
+            dataUrl: audioUrl,
+            blobUrl: audioUrl,
+            duration: Math.round(file.size / 16000) || 15,
+            transcription: '⏳ جاري التفريغ بالذكاء الاصطناعي...',
+            attachmentId,
+            mimeType: detectedMime
+          };
+          newAudioRecordings.push(newRec);
+          audioToTranscribe.push({ recId: newRecId, file, mime: detectedMime });
         } else if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg|ico|heic|heif|avif)$/i.test(name)) {
           const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
@@ -4277,22 +4302,79 @@ export default function App() {
         }
       }
 
-      if (newFiles.length > 0 || newImages.length > 0 || newVideos.length > 0) {
+      // Single Atomic Update for all categories at once
+      if (newFiles.length > 0 || newImages.length > 0 || newVideos.length > 0 || newAudioRecordings.length > 0) {
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
             files: [...(prev.files || []), ...newFiles],
             images: Array.from(new Set([...(prev.images || []), ...newImages])),
-            videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
+            videos: Array.from(new Set([...(prev.videos || []), ...newVideos])),
+            audioRecordings: [...(prev.audioRecordings || []), ...newAudioRecordings]
           };
           saveDraftSynchronously(updated);
           return updated;
         });
+
+        setDiaries(prev => {
+          const targetDiaryId = editingDiary ? editingDiary.id : '';
+          const targetDate = selectedDate || new Date().toISOString().split('T')[0];
+          return prev.map(d => {
+            if (targetDiaryId ? d.id === targetDiaryId : (d.createdAt.split('T')[0] === targetDate && !d.isTrash)) {
+              return {
+                ...d,
+                files: [...(d.files || []), ...newFiles],
+                images: Array.from(new Set([...(d.images || []), ...newImages])),
+                videos: Array.from(new Set([...(d.videos || []), ...newVideos])),
+                audioRecordings: [...(d.audioRecordings || []), ...newAudioRecordings]
+              };
+            }
+            return d;
+          });
+        });
       }
 
-      if (audioFilesToTranscribe.length > 0) {
-        await processAudioFilesBatch(audioFilesToTranscribe);
+      // Trigger background transcription for any added audio files
+      if (audioToTranscribe.length > 0) {
+        setAudioUploadLoading(true);
+        for (const item of audioToTranscribe) {
+          setTranscribingAudioId(item.recId);
+          if (item.file.size > 22 * 1024 * 1024) {
+            updateAudioTranscriptionAtomic(item.recId, t.transcriptionFailedSize || (settings?.appLanguage === 'ar' ? 'حجم الملف كبير جداً (الحد الأقصى 20 ميجابايت).' : 'File is too large.'));
+            continue;
+          }
+          try {
+            const base64Audio = await readBlobAsDataUrl(item.file);
+            const res = await fetch('/api/gemini/transcribe-audio', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-gemini-key': settings.userApiKey || '',
+                'x-app-language': settings.appLanguage || 'ar'
+              },
+              body: JSON.stringify({
+                audioData: base64Audio,
+                mimeType: item.mime,
+                fileName: item.file.name,
+                appLanguage: settings?.appLanguage || 'ar'
+              })
+            });
+            const data = await res.json();
+            if (data.success && data.transcription && !data.transcription.includes('لا يمكن تحديد') && !data.transcription.includes('فارغ')) {
+              const finalTrans = data.transcription.trim();
+              updateAudioTranscriptionAtomic(item.recId, finalTrans, data.speechEmotion);
+            } else {
+              const errorMsg = data.error || data.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe audio.'));
+              updateAudioTranscriptionAtomic(item.recId, errorMsg);
+            }
+          } catch (err: any) {
+            const errorMsg = err?.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe audio.'));
+            updateAudioTranscriptionAtomic(item.recId, errorMsg);
+          }
+        }
+        setAudioUploadLoading(false);
+        setTranscribingAudioId(null);
       }
     } catch (err) {
       console.error('Generic file upload error:', err);
