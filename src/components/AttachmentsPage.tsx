@@ -95,6 +95,34 @@ export default function AttachmentsPage({
     }
   };
 
+  const handleOpenImage = async (imgUrl: string, index: number) => {
+    let url = (imgUrl && imgUrl !== '#' && !imgUrl.startsWith('blob:null')) ? imgUrl : '';
+    const attId = (diary.imageAttachmentIds || [])[index];
+    if ((!url || url === '#') && attId) {
+      const freshUrl = await getAttachmentObjectUrl(attId);
+      if (freshUrl) {
+        url = freshUrl;
+      }
+    }
+    if (url && url !== '#') {
+      onPreviewMedia({ type: 'image', url, name: isAr ? 'صورة مرفقة' : 'Image' });
+    }
+  };
+
+  const handleOpenVideo = async (vidUrl: string, index: number) => {
+    let url = (vidUrl && vidUrl !== '#' && !vidUrl.startsWith('blob:null')) ? vidUrl : '';
+    const attId = (diary.videoAttachmentIds || [])[index];
+    if ((!url || url === '#') && attId) {
+      const freshUrl = await getAttachmentObjectUrl(attId);
+      if (freshUrl) {
+        url = freshUrl;
+      }
+    }
+    if (url && url !== '#') {
+      onPreviewMedia({ type: 'video', url, name: isAr ? 'فيديو مرفق' : 'Video' });
+    }
+  };
+
   const imagesCount = (diary.images || []).length;
   const videosCount = (diary.videos || []).length;
   const audioCount = (diary.audioRecordings || []).length;
@@ -188,12 +216,24 @@ export default function AttachmentsPage({
                           src={img}
                           alt="Attachment"
                           className="w-full h-full object-cover cursor-pointer group-hover:scale-105 transition-transform"
-                          onClick={() => onPreviewMedia({ type: 'image', url: img })}
+                          onClick={() => handleOpenImage(img, idx)}
+                          onError={async (e) => {
+                            const attId = (diary.imageAttachmentIds || [])[idx];
+                            if (attId) {
+                              const fresh = await getAttachmentObjectUrl(attId);
+                              if (fresh) {
+                                (e.target as HTMLImageElement).src = fresh;
+                              }
+                            }
+                          }}
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           <button
                             type="button"
-                            onClick={() => onPreviewMedia({ type: 'image', url: img })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenImage(img, idx);
+                            }}
                             className="p-1.5 bg-white/90 hover:bg-white text-gray-800 rounded-xl transition-all shadow-sm cursor-pointer"
                             title={isAr ? 'عرض' : 'View'}
                           >
@@ -202,7 +242,10 @@ export default function AttachmentsPage({
                           {onDeleteImage && (
                             <button
                               type="button"
-                              onClick={() => onDeleteImage(idx)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteImage(idx);
+                              }}
                               className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-sm cursor-pointer"
                               title={isAr ? 'حذف' : 'Delete'}
                             >
@@ -249,7 +292,10 @@ export default function AttachmentsPage({
                             {onDeleteAudio && (
                               <button
                                 type="button"
-                                onClick={() => onDeleteAudio(rec.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteAudio(rec.id);
+                                }}
                                 className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                 title={isAr ? 'حذف' : 'Delete'}
                               >
@@ -286,7 +332,16 @@ export default function AttachmentsPage({
                             src={vid}
                             controls
                             className="w-full h-36 rounded-xl bg-black object-cover cursor-pointer"
-                            onClick={() => onPreviewMedia({ type: 'video', url: vid })}
+                            onClick={() => handleOpenVideo(vid, idx)}
+                            onError={async (e) => {
+                              const attId = (diary.videoAttachmentIds || [])[idx];
+                              if (attId) {
+                                const fresh = await getAttachmentObjectUrl(attId);
+                                if (fresh) {
+                                  (e.target as HTMLVideoElement).src = fresh;
+                                }
+                              }
+                            }}
                           />
                         ) : (
                           <div className="p-3 bg-white rounded-xl border border-[#E2DCC8]/60 text-xs truncate">
@@ -298,7 +353,7 @@ export default function AttachmentsPage({
                         <div className="flex items-center justify-between pt-1">
                           <button
                             type="button"
-                            onClick={() => onPreviewMedia({ type: 'video', url: vid })}
+                            onClick={() => handleOpenVideo(vid, idx)}
                             className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1"
                           >
                             <Eye className="w-3 h-3" />
@@ -307,7 +362,10 @@ export default function AttachmentsPage({
                           {onDeleteVideo && (
                             <button
                               type="button"
-                              onClick={() => onDeleteVideo(idx)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteVideo(idx);
+                              }}
                               className="text-xs text-red-600 hover:text-red-700 font-bold cursor-pointer"
                             >
                               {isAr ? 'حذف' : 'Delete'}
@@ -325,57 +383,56 @@ export default function AttachmentsPage({
                 <div className="space-y-3">
                   <h4 className="font-extrabold text-xs text-[#5A5A40] flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-red-600" />
-                    <span>{t.attachedFiles || (isAr ? 'الملفات ومستندات PDF' : 'Attached Files & PDFs')}</span>
+                    <span>{t.pdfCount || (isAr ? 'المستندات والملفات' : 'Documents & Files')}</span>
                   </h4>
-                  <div className="space-y-2">
-                    {diary.files.map((file) => {
-                      const isPdf = file.type.includes('pdf') || (file.name || '').endsWith('.pdf');
-                      return (
-                        <div key={file.id} className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl flex items-center justify-between text-xs">
-                          <div className="flex items-center space-x-2.5 space-x-reverse min-w-0">
-                            <div className={`p-2 rounded-xl font-bold ${isPdf ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
-                              <FileText className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="font-bold block text-[#3A3A3A] truncate max-w-[200px] sm:max-w-md">{file.name}</span>
-                              <span className="text-[10px] text-gray-500 font-medium">{t.fileSize || 'الحجم'}: {file.size}</span>
-                            </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {diary.files.map((file) => (
+                      <div key={file.id} className="p-3 bg-white border border-[#E2DCC8] rounded-2xl flex items-center justify-between gap-2 shadow-3xs">
+                        <div className="flex items-center space-x-2 space-x-reverse min-w-0">
+                          <div className="p-2 bg-red-50 text-red-700 rounded-xl shrink-0 font-black text-xs">
+                            📄
                           </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenFile(file)}
-                              className="px-2.5 py-1 bg-[#2B3E50] hover:bg-[#1E2B38] text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1 shadow-3xs"
-                              title={isAr ? 'معاينة / فتح' : 'Preview / Open'}
-                            >
-                              <Eye className="w-3 h-3" />
-                              <span>{isAr ? 'معاينة' : 'Preview'}</span>
-                            </button>
-                            {file.dataUrl && (
-                              <a
-                                href={file.dataUrl}
-                                download={file.name}
-                                className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1"
-                              >
-                                <Download className="w-3 h-3" />
-                                <span>{isAr ? 'تحميل' : 'Download'}</span>
-                              </a>
-                            )}
-                            {onDeleteFile && (
-                              <button
-                                type="button"
-                                onClick={() => onDeleteFile(file.id)}
-                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                title={isAr ? 'حذف' : 'Delete'}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                          <div className="min-w-0">
+                            <span className="font-bold text-xs text-[#3A3A3A] truncate block">{file.name}</span>
+                            <span className="text-[10px] text-gray-500 block">{file.size}</span>
                           </div>
                         </div>
-                      );
-                    })}
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenFile(file)}
+                            className="p-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-lg transition-colors cursor-pointer"
+                            title={isAr ? 'معاينة / فتح' : 'Open'}
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          {file.dataUrl && file.dataUrl !== '#' && (
+                            <a
+                              href={file.dataUrl}
+                              download={file.name}
+                              className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors cursor-pointer"
+                              title={isAr ? 'تحميل' : 'Download'}
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                          {onDeleteFile && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteFile(file.id);
+                              }}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              title={isAr ? 'حذف' : 'Delete'}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -393,6 +450,14 @@ export default function AttachmentsPage({
                       alt="Mindmap Drawing"
                       className="w-full max-h-48 object-contain rounded-xl border border-gray-100 bg-[#F9F7F2] cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={onOpenDrawing}
+                      onError={async (e) => {
+                        if (diary.drawingAttachmentId) {
+                          const fresh = await getAttachmentObjectUrl(diary.drawingAttachmentId);
+                          if (fresh) {
+                            (e.target as HTMLImageElement).src = fresh;
+                          }
+                        }
+                      }}
                     />
                     <div className="flex items-center justify-between pt-1">
                       <button
@@ -405,7 +470,10 @@ export default function AttachmentsPage({
                       {onDeleteDrawing && (
                         <button
                           type="button"
-                          onClick={onDeleteDrawing}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteDrawing();
+                          }}
                           className="text-xs text-red-600 hover:text-red-700 font-bold cursor-pointer"
                         >
                           {isAr ? 'حذف' : 'Delete'}

@@ -1333,6 +1333,9 @@ export default function App() {
     return null;
   });
 
+  const isSavingDiaryRef = useRef<boolean>(false);
+  const [isSavingDiary, setIsSavingDiary] = useState<boolean>(false);
+
   // --- Pure Event-Driven File Picker Guard & Synchronous Draft Persistence ---
   const isFilePickerActiveRef = useRef<boolean>(false);
 
@@ -1350,7 +1353,8 @@ export default function App() {
           files: (draft.files || []).map(f => ({
             ...f,
             dataUrl: (f.attachmentId || (f.dataUrl && f.dataUrl.length > 500000)) ? '#' : f.dataUrl
-          }))
+          })),
+          drawing: (draft.drawingAttachmentId || (draft.drawing && draft.drawing.length > 200000)) ? '#' : draft.drawing
         };
         localStorage.setItem('yawmiyati_draft_editing_diary', JSON.stringify(safeDraft));
       } catch (e) {
@@ -2108,37 +2112,76 @@ export default function App() {
         return r;
       }));
 
-      // Extract fresh live image and video URLs from restored files
-      const fileImageUrls = restoredFiles
+      // Rehydrate Images from imageAttachmentIds in IndexedDB + persistent non-blob images + legacy files
+      const imageAttIds = editingDiary.imageAttachmentIds || [];
+      const restoredFromImageIds = await Promise.all(imageAttIds.map(async (id) => {
+        return await getAttachmentObjectUrl(id);
+      }));
+      const validRestoredImageUrls = restoredFromImageIds.filter(Boolean) as string[];
+
+      const persistentImages = (editingDiary.images || []).filter(img => img && !img.startsWith('blob:'));
+
+      const legacyFileImageUrls = restoredFiles
         .filter(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.name || ''))
         .map(f => f.dataUrl)
         .filter(Boolean) as string[];
 
-      const nonStaleImages = (editingDiary.images || []).filter(img => !img.startsWith('blob:'));
-      const restoredImages = Array.from(new Set([...nonStaleImages, ...fileImageUrls]));
-      if (restoredImages.length !== (editingDiary.images || []).length) {
+      const restoredImages = Array.from(new Set([...persistentImages, ...validRestoredImageUrls, ...legacyFileImageUrls]));
+      if (restoredImages.length > 0 && JSON.stringify(restoredImages) !== JSON.stringify(editingDiary.images || [])) {
         hasChanges = true;
       }
 
-      const fileVideoUrls = restoredFiles
+      // Rehydrate Videos from videoAttachmentIds in IndexedDB + persistent non-blob videos + legacy files
+      const videoAttIds = editingDiary.videoAttachmentIds || [];
+      const restoredFromVideoIds = await Promise.all(videoAttIds.map(async (id) => {
+        return await getAttachmentObjectUrl(id);
+      }));
+      const validRestoredVideoUrls = restoredFromVideoIds.filter(Boolean) as string[];
+
+      const persistentVideos = (editingDiary.videos || []).filter(vid => vid && !vid.startsWith('blob:'));
+
+      const legacyFileVideoUrls = restoredFiles
         .filter(f => (f.type || '').startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(f.name || ''))
         .map(f => f.dataUrl)
         .filter(Boolean) as string[];
 
-      const nonStaleVideos = (editingDiary.videos || []).filter(vid => !vid.startsWith('blob:'));
-      const restoredVideos = Array.from(new Set([...nonStaleVideos, ...fileVideoUrls]));
-      if (restoredVideos.length !== (editingDiary.videos || []).length) {
+      const restoredVideos = Array.from(new Set([...persistentVideos, ...validRestoredVideoUrls, ...legacyFileVideoUrls]));
+      if (restoredVideos.length > 0 && JSON.stringify(restoredVideos) !== JSON.stringify(editingDiary.videos || [])) {
         hasChanges = true;
       }
 
+      // Rehydrate Drawing from drawingAttachmentId in IndexedDB if needed
+      let restoredDrawing = editingDiary.drawing;
+      if (editingDiary.drawingAttachmentId && (!editingDiary.drawing || editingDiary.drawing === '#' || editingDiary.drawing.startsWith('blob:null'))) {
+        const drawUrl = await getAttachmentObjectUrl(editingDiary.drawingAttachmentId);
+        if (drawUrl) {
+          restoredDrawing = drawUrl;
+          hasChanges = true;
+        }
+      }
+
       if (hasChanges && !isCancelled) {
+        const finalImages = restoredImages.length > 0 ? restoredImages : editingDiary.images;
+        const finalVideos = restoredVideos.length > 0 ? restoredVideos : editingDiary.videos;
+
         setEditingDiary(prev => (prev && prev.id === editingDiary.id) ? {
           ...prev,
           files: restoredFiles,
           audioRecordings: restoredAudio,
-          images: restoredImages,
-          videos: restoredVideos
+          images: finalImages,
+          videos: finalVideos,
+          drawing: restoredDrawing
         } : prev);
+
+        // Sync fresh live Object URLs into diaries list in memory so other views/modals access valid media
+        setDiaries(prev => prev.map(d => d.id === editingDiary.id ? {
+          ...d,
+          files: restoredFiles,
+          audioRecordings: restoredAudio,
+          images: finalImages,
+          videos: finalVideos,
+          drawing: restoredDrawing || d.drawing
+        } : d));
       }
     };
 
@@ -3024,25 +3067,29 @@ export default function App() {
   };
 
   // --- Save / Update the Active Diary ---
-  const handleSaveDiary = async () => {
-    if (!editingDiary) return;
+  // --- Save / Update the Active Diary ---
+  const handleSaveDiary = () => {
+    if (!editingDiary || isSavingDiaryRef.current) return;
+    isSavingDiaryRef.current = true;
+    setIsSavingDiary(true);
 
-    if (!editingDiary.title.trim()) {
-      editingDiary.title = 'مذكرة يومية بدون عنوان';
-    }
+    const safeTitle = editingDiary.title.trim() || (isAr ? 'مذكرة يومية بدون عنوان' : 'Untitled Diary');
 
-    // Call server API to perform intelligent AI mood analysis if possible!
-    let updatedEntry = { ...editingDiary };
+    let updatedEntry: DiaryEntry = {
+      ...editingDiary,
+      title: safeTitle,
+      updatedAt: new Date().toISOString()
+    };
 
     // Add edit addition if provided
     if (newEditAddition.trim()) {
       const additionDate = new Date();
-      const formattedTimestamp = additionDate.toLocaleDateString('ar-EG', {
+      const formattedTimestamp = additionDate.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
-      }) + ' الساعة ' + additionDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      }) + ' الساعة ' + additionDate.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
       const newEdit = {
         id: `edit-${Date.now()}`,
@@ -3056,36 +3103,68 @@ export default function App() {
       updatedEntry.isEdited = true;
     }
 
-    try {
-      const response = await fetch('/api/gemini/analyze-mood', {
+    // Atomic synchronous commit to diaries state
+    setDiaries(prev => {
+      const exists = prev.some(d => d.id === updatedEntry.id);
+      const next = (isNewEntry || !exists)
+        ? [updatedEntry, ...prev.filter(d => d.id !== updatedEntry.id)]
+        : prev.map(d => d.id === updatedEntry.id ? updatedEntry : d);
+
+      // Instant persist to localStorage without waiting for debounce
+      try {
+        const safeDiaries = next.map(d => ({
+          ...d,
+          audioRecordings: (d.audioRecordings || []).map(r => ({
+            ...r,
+            dataUrl: (r.attachmentId || (r.dataUrl && r.dataUrl.length > 500000)) ? '#' : r.dataUrl
+          })),
+          images: (d.images || []).map(img => (img && img.length > 500000) ? '' : img).filter(Boolean),
+          files: (d.files || []).map(f => ({
+            ...f,
+            dataUrl: (f.attachmentId || (f.dataUrl && f.dataUrl.length > 500000)) ? '#' : f.dataUrl
+          })),
+          videos: (d.videos || []).map(v => (v && v.length > 500000) ? '#' : v).filter(Boolean),
+          drawing: (d.drawingAttachmentId || (d.drawing && d.drawing.length > 200000)) ? '#' : d.drawing
+        }));
+        localStorage.setItem('yawmiyati_diaries', JSON.stringify(safeDiaries));
+        localStorage.removeItem('yawmiyati_draft_editing_diary');
+      } catch (err) {
+        console.warn('LocalStorage save error:', err);
+      }
+      return next;
+    });
+
+    // Close editor instantly so UI updates in < 5ms without freezing
+    setEditingDiary(null);
+    setIsNewEntry(false);
+    setDiaryAiAnswer('');
+    setNewEditAddition('');
+    isSavingDiaryRef.current = false;
+    setIsSavingDiary(false);
+
+    // Call server API to perform intelligent AI mood analysis in background (fire-and-forget)
+    if (updatedEntry.title.trim() || updatedEntry.content.trim()) {
+      fetch('/api/gemini/analyze-mood', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-gemini-key': settings.userApiKey || ''
         },
         body: JSON.stringify({
-          title: editingDiary.title,
-          content: editingDiary.content
+          title: updatedEntry.title,
+          content: updatedEntry.content
         })
-      });
-      const data = await response.json();
-      if (data.success) {
-        updatedEntry.aiMoodAnalysis = data.analysis;
-      }
-    } catch (e) {
-      console.error('Failed to get automatic AI mood analysis:', e);
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.analysis) && data.analysis.length > 0) {
+            setDiaries(prev => prev.map(d => d.id === updatedEntry.id ? { ...d, aiMoodAnalysis: data.analysis } : d));
+          }
+        })
+        .catch(e => {
+          console.warn('Background AI mood analysis skipped:', e);
+        });
     }
-
-    if (isNewEntry) {
-      setDiaries(prev => [updatedEntry, ...prev]);
-    } else {
-      setDiaries(prev => prev.map(d => d.id === updatedEntry.id ? updatedEntry : d));
-    }
-
-    setEditingDiary(null);
-    setIsNewEntry(false);
-    setDiaryAiAnswer('');
-    setNewEditAddition('');
   };
 
   // --- Export Active Diary Entry to PDF (Fully Client-side & Secure) ---
@@ -3225,20 +3304,23 @@ export default function App() {
     markFilePickerActive();
     const files = Array.from(e.target.files || []);
     if (files.length > 0 && editingDiary) {
-      const newImages = [];
+      const newImages: string[] = [];
+      const newImageAttachmentIds: string[] = [];
       try {
         for (const file of files) {
           const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
           const imageUrl = URL.createObjectURL(file);
           newImages.push(imageUrl);
+          newImageAttachmentIds.push(attachmentId);
         }
 
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            images: Array.from(new Set([...(prev.images || []), ...newImages]))
+            images: Array.from(new Set([...(prev.images || []), ...newImages])),
+            imageAttachmentIds: Array.from(new Set([...(prev.imageAttachmentIds || []), ...newImageAttachmentIds]))
           };
           saveDraftSynchronously(updated);
           return updated;
@@ -3375,12 +3457,17 @@ export default function App() {
   const handleDeleteDiaryImage = (index: number) => {
     setEditingDiary(prev => {
       if (!prev) return null;
+      const targetAttId = (prev.imageAttachmentIds || [])[index];
+      if (targetAttId) {
+        deleteAttachmentBlob(targetAttId);
+      }
       const targetUrl = (prev.images || [])[index];
       const targetFile = (prev.files || []).find(f => f.dataUrl === targetUrl);
       if (targetFile?.attachmentId) {
         deleteAttachmentBlob(targetFile.attachmentId);
       }
       const updatedImages = (prev.images || []).filter((_, i) => i !== index);
+      const updatedImageAttIds = (prev.imageAttachmentIds || []).filter((_, i) => i !== index);
       const updatedFiles = targetUrl
         ? (prev.files || []).filter(f => f.dataUrl !== targetUrl)
         : prev.files;
@@ -3388,6 +3475,7 @@ export default function App() {
       const updated = {
         ...prev,
         images: updatedImages,
+        imageAttachmentIds: updatedImageAttIds,
         files: updatedFiles
       };
       saveDraftSynchronously(updated);
@@ -3399,12 +3487,17 @@ export default function App() {
   const handleDeleteDiaryVideo = (index: number) => {
     setEditingDiary(prev => {
       if (!prev) return null;
+      const targetAttId = (prev.videoAttachmentIds || [])[index];
+      if (targetAttId) {
+        deleteAttachmentBlob(targetAttId);
+      }
       const targetUrl = (prev.videos || [])[index];
       const targetFile = (prev.files || []).find(f => f.dataUrl === targetUrl);
       if (targetFile?.attachmentId) {
         deleteAttachmentBlob(targetFile.attachmentId);
       }
       const updatedVideos = (prev.videos || []).filter((_, i) => i !== index);
+      const updatedVideoAttIds = (prev.videoAttachmentIds || []).filter((_, i) => i !== index);
       const updatedFiles = targetUrl
         ? (prev.files || []).filter(f => f.dataUrl !== targetUrl)
         : prev.files;
@@ -3412,7 +3505,26 @@ export default function App() {
       const updated = {
         ...prev,
         videos: updatedVideos,
+        videoAttachmentIds: updatedVideoAttIds,
         files: updatedFiles
+      };
+      saveDraftSynchronously(updated);
+      return updated;
+    });
+  };
+
+  // --- Dedicated Safe Delete Handler for Audio Recording ---
+  const handleDeleteAudioRecording = (recId: string) => {
+    setEditingDiary(prev => {
+      if (!prev) return null;
+      const targetRec = (prev.audioRecordings || []).find(r => r.id === recId);
+      if (targetRec?.attachmentId) {
+        deleteAttachmentBlob(targetRec.attachmentId);
+      }
+      const updatedAudio = (prev.audioRecordings || []).filter(r => r.id !== recId);
+      const updated = {
+        ...prev,
+        audioRecordings: updatedAudio
       };
       saveDraftSynchronously(updated);
       return updated;
@@ -3426,7 +3538,9 @@ export default function App() {
     if (files.length > 0 && editingDiary) {
       const newFiles: FileAttachment[] = [];
       const newImages: string[] = [];
+      const newImageAttachmentIds: string[] = [];
       const newVideos: string[] = [];
+      const newVideoAttachmentIds: string[] = [];
       const audioFilesToTranscribe: File[] = [];
       try {
         for (const file of files) {
@@ -3438,10 +3552,12 @@ export default function App() {
             const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
             await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
             newImages.push(URL.createObjectURL(file));
+            newImageAttachmentIds.push(attachmentId);
           } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
             const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
             await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
             newVideos.push(URL.createObjectURL(file));
+            newVideoAttachmentIds.push(attachmentId);
           } else {
             const newFile = await processSelectedFileAttachment(file);
             newFiles.push(newFile);
@@ -3453,7 +3569,9 @@ export default function App() {
             ...prev,
             files: [...(prev.files || []), ...newFiles],
             images: Array.from(new Set([...(prev.images || []), ...newImages])),
-            videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
+            imageAttachmentIds: Array.from(new Set([...(prev.imageAttachmentIds || []), ...newImageAttachmentIds])),
+            videos: Array.from(new Set([...(prev.videos || []), ...newVideos])),
+            videoAttachmentIds: Array.from(new Set([...(prev.videoAttachmentIds || []), ...newVideoAttachmentIds]))
           };
           saveDraftSynchronously(updated);
           return updated;
@@ -3478,7 +3596,8 @@ export default function App() {
     markFilePickerActive();
     const files = Array.from(e.target.files || []);
     if (files.length > 0 && editingDiary) {
-      const newVideos = [];
+      const newVideos: string[] = [];
+      const newVideoAttachmentIds: string[] = [];
       try {
         for (const file of files) {
           if (file.size > 200 * 1024 * 1024) continue;
@@ -3486,13 +3605,15 @@ export default function App() {
           await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
           const videoBlobUrl = URL.createObjectURL(file);
           newVideos.push(videoBlobUrl);
+          newVideoAttachmentIds.push(attachmentId);
         }
 
         setEditingDiary(prev => {
           if (!prev) return null;
           const updated = {
             ...prev,
-            videos: Array.from(new Set([...(prev.videos || []), ...newVideos]))
+            videos: Array.from(new Set([...(prev.videos || []), ...newVideos])),
+            videoAttachmentIds: Array.from(new Set([...(prev.videoAttachmentIds || []), ...newVideoAttachmentIds]))
           };
           saveDraftSynchronously(updated);
           return updated;
@@ -3550,18 +3671,21 @@ export default function App() {
     markFilePickerActive();
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      const newImages = [];
+      const newImages: string[] = [];
+      const newImageAttachmentIds: string[] = [];
       try {
         for (const file of files) {
           const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
           await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
           const imageUrl = URL.createObjectURL(file);
           newImages.push(imageUrl);
+          newImageAttachmentIds.push(attachmentId);
         }
         const diary = getOrCreateDiaryForUpload();
         const fullEntry = {
           ...diary,
-          images: [...(diary.images || []), ...newImages]
+          images: [...(diary.images || []), ...newImages],
+          imageAttachmentIds: [...(diary.imageAttachmentIds || []), ...newImageAttachmentIds]
         };
         setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
         setEditingDiary(fullEntry);
@@ -4256,7 +4380,9 @@ export default function App() {
     try {
       const newFiles: FileAttachment[] = [];
       const newImages: string[] = [];
+      const newImageAttachmentIds: string[] = [];
       const newVideos: string[] = [];
+      const newVideoAttachmentIds: string[] = [];
       const newAudioRecordings: AudioRecording[] = [];
       const audioToTranscribe: { recId: string; file: File; mime: string }[] = [];
 
@@ -4288,12 +4414,14 @@ export default function App() {
           await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
           const imageUrl = URL.createObjectURL(file);
           newImages.push(imageUrl);
+          newImageAttachmentIds.push(attachmentId);
         } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|m4v)$/i.test(name)) {
           if (file.size <= 200 * 1024 * 1024) {
             const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
             await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
             const videoBlobUrl = URL.createObjectURL(file);
             newVideos.push(videoBlobUrl);
+            newVideoAttachmentIds.push(attachmentId);
           }
         } else {
           // Documents / PDF / Generic files
@@ -4310,7 +4438,9 @@ export default function App() {
             ...prev,
             files: [...(prev.files || []), ...newFiles],
             images: Array.from(new Set([...(prev.images || []), ...newImages])),
+            imageAttachmentIds: Array.from(new Set([...(prev.imageAttachmentIds || []), ...newImageAttachmentIds])),
             videos: Array.from(new Set([...(prev.videos || []), ...newVideos])),
+            videoAttachmentIds: Array.from(new Set([...(prev.videoAttachmentIds || []), ...newVideoAttachmentIds])),
             audioRecordings: [...(prev.audioRecordings || []), ...newAudioRecordings]
           };
           saveDraftSynchronously(updated);
@@ -4326,7 +4456,9 @@ export default function App() {
                 ...d,
                 files: [...(d.files || []), ...newFiles],
                 images: Array.from(new Set([...(d.images || []), ...newImages])),
+                imageAttachmentIds: Array.from(new Set([...(d.imageAttachmentIds || []), ...newImageAttachmentIds])),
                 videos: Array.from(new Set([...(d.videos || []), ...newVideos])),
+                videoAttachmentIds: Array.from(new Set([...(d.videoAttachmentIds || []), ...newVideoAttachmentIds])),
                 audioRecordings: [...(d.audioRecordings || []), ...newAudioRecordings]
               };
             }
@@ -7582,38 +7714,82 @@ export default function App() {
                     <span className="block text-xs font-bold text-[#5A5A40]">{t.attachedImagesDrawings}</span>
                     <div className="flex flex-wrap gap-3">
                       {editingDiary.images.map((img, idx) => (
-                        <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-gray-50">
-                            <img
-                              src={img}
-                              className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-                              onClick={() => setPreviewMedia({ type: 'image', url: img })}
-                              alt={t.attachedImage || 'Image'}
-                            />
+                        <div key={idx} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-gray-50 flex flex-col justify-between p-1">
+                          <img
+                            src={img}
+                            className="w-full h-full object-cover rounded-xl cursor-pointer hover:scale-105 transition-transform"
+                            onClick={() => setPreviewMedia({ type: 'image', url: img })}
+                            alt={t.attachedImage || 'Image'}
+                            title={settings?.appLanguage === 'ar' ? 'انقر للمعاينة والفتح' : 'Click to preview / open'}
+                          />
+                          {/* Dedicated Action Buttons Overlay */}
+                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewMedia({ type: 'image', url: img });
+                              }}
+                              className="w-6 h-6 bg-[#2B3E50]/90 hover:bg-[#2B3E50] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
+                              title={settings?.appLanguage === 'ar' ? 'معاينة الصورة' : 'Preview Image'}
+                            >
+                              <Eye className="w-3 h-3" />
+                            </button>
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteDiaryImage(idx);
                               }}
-                              className="absolute top-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md z-10 cursor-pointer"
+                              className="w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
                               title={t.deleteMediaBtn || 'Delete'}
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
+                        </div>
                       ))}
 
                       {editingDiary.drawing && (
-                        <div className="relative w-24 h-20 rounded-xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white">
-                          <img src={editingDiary.drawing} className="w-full h-full object-contain cursor-pointer" onClick={() => setShowSketchboard(true)} />
-                          <div className="absolute top-0 right-0 bg-[#8B9D83] text-white text-[8px] px-1.5 py-0.5 rounded-bl">{t.drawing}</div>
-                          <button
-                            type="button"
-                            onClick={() => setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null)}
-                            className="absolute inset-0 bg-red-700/80 text-white flex items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-xs cursor-pointer"
-                          >
-                            حذف الرسمة
-                          </button>
+                        <div className="relative w-28 h-24 rounded-2xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white flex flex-col justify-between p-1">
+                          <img
+                            src={editingDiary.drawing}
+                            className="w-full h-full object-contain rounded-xl cursor-pointer hover:scale-105 transition-transform"
+                            onClick={() => setShowSketchboard(true)}
+                            alt={t.drawing || 'Drawing'}
+                            title={settings?.appLanguage === 'ar' ? 'انقر لتعديل أو معاينة الرسمة' : 'Click to edit or preview drawing'}
+                          />
+                          <div className="absolute top-1.5 left-1.5 bg-[#8B9D83] text-white text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-3xs pointer-events-none">
+                            {t.drawing || 'رسمة'}
+                          </div>
+                          {/* Dedicated Action Buttons for Drawing: Open / Edit & Delete */}
+                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowSketchboard(true);
+                              }}
+                              className="w-6 h-6 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
+                              title={settings?.appLanguage === 'ar' ? 'تعديل / معاينة الرسمة' : 'Edit / Preview Drawing'}
+                            >
+                              <span className="text-[10px]">✏️</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (editingDiary.drawingAttachmentId) {
+                                  deleteAttachmentBlob(editingDiary.drawingAttachmentId);
+                                }
+                                setEditingDiary(prev => prev ? { ...prev, drawing: undefined, drawingAttachmentId: undefined } : null);
+                              }}
+                              className="w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
+                              title={settings?.appLanguage === 'ar' ? 'حذف الرسمة' : 'Delete Drawing'}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -7796,7 +7972,7 @@ export default function App() {
                       <span>🎵</span>
                       <span>{t.addAudioFile}</span>
                       <input type="file" multiple
-                        accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus,.3gp,.amr" onChange={handleAudioFileUpload}
+                        accept="audio/*,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/aac,audio/m4a,audio/x-m4a,audio/flac,audio/webm" onChange={handleAudioFileUpload}
                         className="hidden"
                       />
                     </label>
@@ -8124,12 +8300,12 @@ export default function App() {
 
                               <button
                                 type="button"
-                                onClick={() => {
-                                  setEditingDiary(prev => prev ? { ...prev, audioRecordings: prev.audioRecordings.filter(x => x.id !== rec.id) } : null);
-                                }}
-                                className="text-red-600 hover:text-red-700 font-bold px-2.5 py-1 bg-white border border-red-100 rounded-lg cursor-pointer text-xs transition-colors"
+                                onClick={() => handleDeleteAudioRecording(rec.id)}
+                                className="text-red-600 hover:text-red-700 font-bold px-2.5 py-1 bg-white border border-red-100 rounded-lg cursor-pointer text-xs transition-colors flex items-center gap-1"
+                                title={settings?.appLanguage === 'ar' ? 'حذف التسجيل الصوتي' : 'Delete Audio Recording'}
                               >
-                                حذف
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>{settings?.appLanguage === 'ar' ? 'حذف' : 'Delete'}</span>
                               </button>
                             </div>
 
@@ -8341,8 +8517,14 @@ export default function App() {
                       <DrawingCanvas
                         initialDataUrl={editingDiary.drawing}
                         appLanguage={settings?.appLanguage || 'ar'}
-                        onSave={(dataUrl) => {
-                          setEditingDiary(prev => prev ? { ...prev, drawing: dataUrl } : null);
+                        onSave={async (dataUrl) => {
+                          const attachmentId = `att-draw-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+                          await saveAttachmentBlob(attachmentId, dataUrl, 'image/png');
+                          setEditingDiary(prev => prev ? {
+                            ...prev,
+                            drawing: dataUrl,
+                            drawingAttachmentId: attachmentId
+                          } : null);
                           setShowSketchboard(false);
                         }}
                         onCancel={() => setShowSketchboard(false)}
@@ -9022,9 +9204,16 @@ export default function App() {
                     <button
                       type="button"
                       onClick={handleSaveDiary}
-                      className="w-full sm:w-auto flex items-center justify-center space-x-1.5 space-x-reverse px-5 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      disabled={isSavingDiary}
+                      className={`w-full sm:w-auto flex items-center justify-center space-x-1.5 space-x-reverse px-5 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer ${
+                        isSavingDiary ? 'opacity-75 cursor-not-allowed' : ''
+                      }`}
                     >
-                      <span>{t.saveDiarySuccessBtn}</span>
+                      {isSavingDiary ? (
+                        <span>⏳ {settings?.appLanguage === 'ar' ? 'جاري الحفظ...' : 'Saving...'}</span>
+                      ) : (
+                        <span>{t.saveDiarySuccessBtn}</span>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -10863,25 +11052,10 @@ export default function App() {
           setShowAttachmentsPage(false);
           setShowSketchboard(true);
         }}
-        onDeleteImage={(idx) => {
-          setEditingDiary(prev => prev ? { ...prev, images: prev.images.filter((_, i) => i !== idx) } : null);
-        }}
-        onDeleteVideo={(idx) => {
-          setEditingDiary(prev => prev ? { ...prev, videos: prev.videos.filter((_, i) => i !== idx) } : null);
-        }}
-        onDeleteAudio={(recId) => {
-          setEditingDiary(prev => prev ? { ...prev, audioRecordings: prev.audioRecordings.filter(r => r.id !== recId) } : null);
-        }}
-        onDeleteFile={(fileId) => {
-          setEditingDiary(prev => {
-            if (!prev) return null;
-            const target = prev.files.find(f => f.id === fileId);
-            if (target?.attachmentId) {
-              deleteAttachmentBlob(target.attachmentId);
-            }
-            return { ...prev, files: prev.files.filter(f => f.id !== fileId) };
-          });
-        }}
+        onDeleteImage={handleDeleteDiaryImage}
+        onDeleteVideo={handleDeleteDiaryVideo}
+        onDeleteAudio={handleDeleteAudioRecording}
+        onDeleteFile={handleDeleteFileAttachment}
         onDeleteDrawing={() => {
           setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null);
         }}
@@ -12703,7 +12877,7 @@ export default function App() {
         type="file"
         multiple
         id="global-audio-uploader"
-        accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus,.3gp,.amr"
+        accept="audio/*,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/aac,audio/m4a,audio/x-m4a,audio/flac,audio/webm"
         className="hidden"
         onChange={handleGlobalAudioUpload}
       />

@@ -82,11 +82,14 @@ export interface DiaryEntry {
   importance: number; // Importance rating (1 to 5 stars)
   color: string; // Theme/background color for this note (e.g. bg-amber-50)
   images: string[]; // Base64 or Object URLs
+  imageAttachmentIds?: string[]; // Persistent IndexedDB Attachment IDs for images
   videos: string[]; // Video links/data
+  videoAttachmentIds?: string[]; // Persistent IndexedDB Attachment IDs for videos
   links?: string[]; // Web Links / URLs
   audioRecordings: AudioRecording[];
   files: FileAttachment[];
   drawing?: string; // Base64 data-uri of canvas drawing
+  drawingAttachmentId?: string; // Persistent IndexedDB Attachment ID for canvas drawing
   tasks: TaskItem[];
   tags: string[];
   chatLogs: ChatLogEntry[];
