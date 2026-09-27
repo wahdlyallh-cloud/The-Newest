@@ -3739,7 +3739,12 @@ export default function App() {
 
   const handleGlobalAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const files = Array.from(e.target.files || []);
+    const rawFiles = Array.from(e.target.files || []);
+    const files = rawFiles.filter(file => {
+      const type = (file.type || '').toLowerCase();
+      const name = (file.name || '').toLowerCase();
+      return type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|oga|flac|webm|opus|amr|3ga|wma|mid)$/i.test(name);
+    });
     if (files.length > 0) {
       const newRecordings = [];
       try {
@@ -4358,14 +4363,27 @@ export default function App() {
   // --- Audio File Uploader (من جهاز المستخدم) مع تفريغ الذكاء الاصطناعي الفوري المستقل ---
   const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) {
+    const rawFiles = Array.from(e.target.files || []);
+    if (rawFiles.length === 0) {
       resetFilePickerGuard();
       return;
     }
 
+    // Filter strictly for audio files (defense in depth in case system returned non-audio)
+    const audioFiles = rawFiles.filter(file => {
+      const type = (file.type || '').toLowerCase();
+      const name = (file.name || '').toLowerCase();
+      return type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|oga|flac|webm|opus|amr|3ga|wma|mid)$/i.test(name);
+    });
+
+    if (audioFiles.length === 0) {
+      resetFilePickerGuard();
+      e.target.value = '';
+      return;
+    }
+
     try {
-      await processAudioFilesBatch(files);
+      await processAudioFilesBatch(audioFiles);
     } finally {
       setActiveInputSection('none');
       resetFilePickerGuard();
@@ -7968,11 +7986,19 @@ export default function App() {
                   <div className="flex flex-wrap gap-2">
 
                     {/* Audio File Upload button */}
-                    <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs" title={t.chooseAudioFileTooltip}>
+                    <label
+                      htmlFor="audio-file-input"
+                      onClick={markFilePickerActive}
+                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs"
+                      title={t.chooseAudioFileTooltip}
+                    >
                       <span>🎵</span>
                       <span>{t.addAudioFile}</span>
-                      <input type="file" multiple
-                        accept="audio/*,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/aac,audio/m4a,audio/x-m4a,audio/flac,audio/webm" onChange={handleAudioFileUpload}
+                      <input
+                        id="audio-file-input"
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleAudioFileUpload}
                         className="hidden"
                       />
                     </label>
@@ -12877,7 +12903,7 @@ export default function App() {
         type="file"
         multiple
         id="global-audio-uploader"
-        accept="audio/*,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/aac,audio/m4a,audio/x-m4a,audio/flac,audio/webm"
+        accept="audio/*"
         className="hidden"
         onChange={handleGlobalAudioUpload}
       />
