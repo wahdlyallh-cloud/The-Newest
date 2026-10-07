@@ -7997,7 +7997,7 @@ export default function App() {
                       <input
                         id="audio-file-input"
                         type="file"
-                        accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.opus,.flac"
+                        accept="audio/*,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/aac,audio/ogg,audio/mp4,audio/m4a"
                         onChange={handleAudioFileUpload}
                         className="hidden"
                       />
@@ -12903,7 +12903,7 @@ export default function App() {
         type="file"
         multiple
         id="global-audio-uploader"
-        accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.opus,.flac"
+        accept="audio/*,audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/aac,audio/ogg,audio/mp4,audio/m4a"
         className="hidden"
         onChange={handleGlobalAudioUpload}
       />
