@@ -4391,6 +4391,49 @@ export default function App() {
     }
   };
 
+  // --- Audio File Picker Click (يستخدم File System Access API عند توفره لإجبار منتقي الصوتيات) ---
+  const handleAudioPickerClick = async (e: React.MouseEvent) => {
+    markFilePickerActive();
+    if ('showOpenFilePicker' in window) {
+      e.preventDefault();
+      try {
+        const [fileHandle] = await (window as any).showOpenFilePicker({
+          types: [
+            {
+              description: 'ملفات صوتية',
+              accept: {
+                'audio/*': ['.mp3', '.m4a', '.wav', '.aac', '.ogg', '.opus', '.flac']
+              }
+            }
+          ],
+          multiple: false
+        });
+        if (fileHandle) {
+          const file = await fileHandle.getFile();
+          if (file) {
+            try {
+              await processAudioFilesBatch([file]);
+            } finally {
+              setActiveInputSection('none');
+              resetFilePickerGuard();
+            }
+            return;
+          }
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          resetFilePickerGuard();
+          return; // User cancelled
+        }
+        // Fallback to standard input click below if API is restricted
+        const input = document.getElementById('audio-file-input') as HTMLInputElement | null;
+        if (input) {
+          input.click();
+        }
+      }
+    }
+  };
+
   // --- Universal Generic File Attachment Handler (Multi-file, Auto-categorizing) ---
   const handleGenericFileUpload = async (files: File[]) => {
     if (!files || files.length === 0 || !editingDiary) return;
@@ -7988,7 +8031,7 @@ export default function App() {
                     {/* Audio File Upload button */}
                     <label
                       htmlFor="audio-file-input"
-                      onClick={markFilePickerActive}
+                      onClick={handleAudioPickerClick}
                       className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs"
                       title={t.chooseAudioFileTooltip}
                     >
@@ -7997,7 +8040,8 @@ export default function App() {
                       <input
                         id="audio-file-input"
                         type="file"
-                        accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/aac,audio/m4a,audio/x-m4a,audio/ogg,audio/flac,audio/opus"
+                        accept="audio/*"
+                        onClick={(e) => e.stopPropagation()}
                         onChange={handleAudioFileUpload}
                         className="hidden"
                       />
