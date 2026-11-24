@@ -31,9 +31,9 @@ export function runUnifiedJournalTests() {
     }
   }
 
-  // 1. All 7 Types Configuration Integrity
-  assert(ALL_JOURNAL_TYPES.length === 7, 'All 7 Journal Entry Types are defined', ALL_JOURNAL_TYPES.length, 7);
-  const expectedTypes: JournalEntryType[] = ['diary', 'thought', 'gratitude', 'wisdom', 'quote', 'idea', 'goal'];
+  // 1. All 9 Types Configuration Integrity
+  assert(ALL_JOURNAL_TYPES.length === 9, 'All 9 Journal Entry Types are defined', ALL_JOURNAL_TYPES.length, 9);
+  const expectedTypes: JournalEntryType[] = ['diary', 'thought', 'gratitude', 'wisdom', 'quote', 'idea', 'goal', 'free_writing', 'memory'];
   expectedTypes.forEach(t => {
     const cfg = getJournalTypeConfig(t);
     assert(!!cfg && cfg.type === t, `Journal Type Config for "${t}" has valid icon (${cfg.icon}) and labels`, cfg.type, t);

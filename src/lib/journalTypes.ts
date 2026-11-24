@@ -23,6 +23,7 @@ export const ALL_JOURNAL_TYPES: JournalEntryType[] = [
   'wisdom',
   'quote',
   'idea',
+  'goal',
   'free_writing',
   'memory'
 ];

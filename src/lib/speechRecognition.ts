@@ -29,6 +29,67 @@ export interface SpeechManagerCallbacks {
   onSpeechEnd?: () => void;
 }
 
+/**
+ * Normalizes whitespace: collapses multiple consecutive spaces into a single space and trims edges.
+ */
+export function normalizeSpeechWhitespace(text: string): string {
+  if (!text) return '';
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Finds the maximum word-level overlap where the end of baseText matches the beginning of incomingText.
+ * Returns the non-overlapping remaining part of incomingText.
+ */
+export function reconcileWordOverlap(baseText: string, incomingText: string): string {
+  const cleanBase = normalizeSpeechWhitespace(baseText);
+  const cleanIncoming = normalizeSpeechWhitespace(incomingText);
+
+  if (!cleanBase) return cleanIncoming;
+  if (!cleanIncoming) return '';
+
+  if (cleanBase === cleanIncoming || cleanBase.endsWith(cleanIncoming)) {
+    return '';
+  }
+
+  if (cleanIncoming.startsWith(cleanBase)) {
+    const remainder = cleanIncoming.slice(cleanBase.length).trim();
+    return remainder;
+  }
+
+  const baseWords = cleanBase.split(' ');
+  const incomingWords = cleanIncoming.split(' ');
+  const maxCheck = Math.min(baseWords.length, incomingWords.length);
+
+  for (let overlapLen = maxCheck; overlapLen > 0; overlapLen--) {
+    const baseSuffix = baseWords.slice(baseWords.length - overlapLen).join(' ');
+    const incomingPrefix = incomingWords.slice(0, overlapLen).join(' ');
+
+    if (baseSuffix.toLowerCase() === incomingPrefix.toLowerCase()) {
+      const remainingWords = incomingWords.slice(overlapLen);
+      return remainingWords.join(' ');
+    }
+  }
+
+  return cleanIncoming;
+}
+
+/**
+ * Pure function to stitch a new final segment into the accumulated final transcript.
+ */
+export function stitchFinalSegment(currentFinal: string, newSegment: string): string {
+  const cleanCurrent = normalizeSpeechWhitespace(currentFinal);
+  const cleanSegment = normalizeSpeechWhitespace(newSegment);
+
+  if (!cleanCurrent) return cleanSegment;
+  if (!cleanSegment) return cleanCurrent;
+
+  const delta = reconcileWordOverlap(cleanCurrent, cleanSegment);
+  if (!delta) return cleanCurrent;
+
+  return `${cleanCurrent} ${delta}`;
+}
+
 export class SpeechRecognitionManager {
   private static instance: SpeechRecognitionManager | null = null;
 
@@ -251,28 +312,7 @@ export class SpeechRecognitionManager {
 
       rec.onresult = (event: any) => {
         if (instanceGeneration !== this.recognitionGeneration || this.isExplicitlyStopped) return;
-
-        // Process only using event.resultIndex as boundary
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (!result || !result[0]) continue;
-          const text = (result[0].transcript || '').trim();
-          if (!text) continue;
-
-          if (result.isFinal) {
-            instanceInterimMap.delete(i);
-
-            // A browser result index in this instance may be processed exactly once
-            if (!instanceCommittedIndices.has(i)) {
-              instanceCommittedIndices.add(i);
-              this.committedTranscript = this.mergeTranscriptWithSegment(this.committedTranscript, text);
-            }
-          } else {
-            instanceInterimMap.set(i, text);
-          }
-        }
-
-        this.emitState();
+        this.processRecognitionEvent(event, sessionToken);
       };
 
       rec.onerror = (event: any) => {
@@ -329,6 +369,38 @@ export class SpeechRecognitionManager {
       }
       this.emitState();
     }
+  }
+
+  /**
+   * Processes incoming Web Speech API results using the standard event.resultIndex loop.
+   */
+  public processRecognitionEvent(event: any, sessionToken?: number): void {
+    const targetSession = sessionToken ?? this.userSessionId;
+    if (!event || !event.results || targetSession !== this.userSessionId || this.isExplicitlyStopped) {
+      return;
+    }
+
+    const startIndex = typeof event.resultIndex === 'number' ? event.resultIndex : 0;
+    for (let i = startIndex; i < event.results.length; i++) {
+      const result = event.results[i];
+      if (!result || !result[0]) continue;
+      const text = (result[0].transcript || '').trim();
+      if (!text) continue;
+
+      if (result.isFinal) {
+        this.activeInterimMap.delete(i);
+
+        // A browser result index in this instance may be processed exactly once
+        if (!this.activeCommittedIndices.has(i)) {
+          this.activeCommittedIndices.add(i);
+          this.committedTranscript = this.mergeTranscriptWithSegment(this.committedTranscript, text);
+        }
+      } else {
+        this.activeInterimMap.set(i, text);
+      }
+    }
+
+    this.emitState();
   }
 
   /**
