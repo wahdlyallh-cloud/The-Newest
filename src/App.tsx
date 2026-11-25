@@ -58,6 +58,7 @@ import PsychologicalGrowthTree from './components/PsychologicalGrowthTree';
 import ShareableGratitudeCardModal, { CardExportData } from './components/ShareableGratitudeCardModal';
 import BehavioralCorrelationCard from './components/BehavioralCorrelationCard';
 import OfflineSyncBanner from './components/OfflineSyncBanner';
+import AppUpdateBanner from './components/AppUpdateBanner';
 import PredictiveHealthInsightsModal from './components/PredictiveHealthInsightsModal';
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
 import MarkdownMessage from './components/MarkdownMessage';
@@ -6536,6 +6537,9 @@ export default function App() {
 
         {/* Offline & Cloud Background Sync Status Banner */}
         <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
+
+        {/* Capacitor Android Native In-App Update Banner */}
+        <AppUpdateBanner appLanguage={settings?.appLanguage || 'ar'} />
 
         {/* Mock Android Notification Widget at the top of the Home Dashboard for simulation */}
 

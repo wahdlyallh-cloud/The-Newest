@@ -70,3 +70,27 @@ node scripts/validate-localization.mjs
 # 4. Production build
 npm run build
 ```
+
+---
+
+## 5. Capacitor Standalone Offline Android Setup & Auto-Updates
+
+1. **Standalone Offline Architecture**:
+   - `capacitor.config.ts`: Configured with `appId: 'com.hayatai.app'`, `appName: 'حياة AI'`, `webDir: 'dist'`, and `androidScheme: 'https'`.
+   - The web application is bundled directly into the APK assets (`dist/` synced into `android/app/src/main/assets/public`), running completely offline with no external host dependency.
+   - Preserves Capacitor's default `BridgeActivity` and `BridgeWebChromeClient` for native media permissions and strict file picker handling.
+
+2. **Fixed PKCS12 Signing Keystore & Dynamic Versioning**:
+   - Fixed personal signing keystore located at `android/app/hayat-release.p12` (`storeType "PKCS12"`, alias `hayat`, password `hayat2026`).
+   - Every build uses this exact keystore signature, enabling seamless **in-place updates** on Android devices without requiring uninstallation or losing local IndexedDB/localStorage data.
+   - `android/app/build.gradle` dynamically reads `versionCode` from `APP_VERSION_CODE` (default 100) and `versionName` from `APP_VERSION_NAME` (default "1.0.0").
+
+3. **In-App Update Checker (`AppUpdateBanner.tsx`)**:
+   - Mounts cleanly in `App.tsx` and activates **strictly** on native platforms via `Capacitor.isNativePlatform()` (never displayed on standard browsers).
+   - Silently checks `https://api.github.com/repos/wahdlyallh-cloud/The-Newest/releases/latest` on launch and when network connection returns.
+   - Compares remote `versionCode` marker against `VITE_APP_VERSION_CODE`. When an update is detected, presents an RTL-friendly banner allowing direct one-tap `.apk` download and in-place installation.
+
+4. **Automated GitHub Actions CI/CD**:
+   - `.github/workflows/build-android-apk.yml` triggers on push to `main` and `workflow_dispatch`.
+   - Builds web bundle with dynamic version code (`100 + GITHUB_RUN_NUMBER`), compiles signed release APK using Gradle with the fixed keystore, uploads the `.apk` as a workflow artifact, and creates a tagged GitHub Release with the APK attached.
+
