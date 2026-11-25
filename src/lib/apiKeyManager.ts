@@ -39,17 +39,41 @@ export function migrateSettingsApiKeys(settings: AppSettings): AppSettings {
     activeId = mainEntry.id;
   }
 
+  // Check and auto-reset cooled down keys
+  const now = Date.now();
+  let poolChanged = false;
+  pool = pool.map(k => {
+    if ((k.status === 'rate_limited' || k.status === 'quota_exhausted') && k.rateLimitResetAt && now >= k.rateLimitResetAt) {
+      poolChanged = true;
+      return {
+        ...k,
+        status: 'ready' as ApiKeyStatus,
+        lastErrorMsg: undefined,
+        rateLimitResetAt: undefined
+      };
+    }
+    return k;
+  });
+
   // Ensure priorities are normalized (1 to 5)
   pool = pool.slice(0, 5).map((entry, idx) => ({
     ...entry,
     priority: idx + 1
   }));
 
-  return {
+  const updatedSettings: AppSettings = {
     ...settings,
     apiKeys: pool,
     activeKeyId: activeId || (pool[0] ? pool[0].id : undefined)
   };
+
+  if (poolChanged && typeof window !== 'undefined' && window.localStorage) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
+    } catch (_) {}
+  }
+
+  return updatedSettings;
 }
 
 /**
@@ -188,16 +212,16 @@ export function classifyGeminiError(status: number, message: string): Classified
 /**
  * Rotate to next available key in pool upon quota/invalid failure
  */
-export function rotateToNextKey(failedKeyStr: string, errorType: ClassifiedErrorType): { newKey: string; hasNextKey: boolean } {
+export function rotateToNextKey(failedKeyStr: string, errorType: ClassifiedErrorType): { newKey: string; hasNextKey: boolean; allExhausted?: boolean } {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return { newKey: '', hasNextKey: false };
+    if (!saved) return { newKey: '', hasNextKey: false, allExhausted: true };
 
     const settings: AppSettings = JSON.parse(saved);
     const migrated = migrateSettingsApiKeys(settings);
     let pool = migrated.apiKeys ? [...migrated.apiKeys] : [];
 
-    if (pool.length === 0) return { newKey: '', hasNextKey: false };
+    if (pool.length === 0) return { newKey: '', hasNextKey: false, allExhausted: true };
 
     // Find failed entry index
     const failedIdx = pool.findIndex(k => k.key.trim() === failedKeyStr.trim());
@@ -208,11 +232,12 @@ export function rotateToNextKey(failedKeyStr: string, errorType: ClassifiedError
 
       if (errorType === 'quota_exhausted') {
         entry.status = 'quota_exhausted';
+        entry.rateLimitResetAt = Date.now() + 180000; // 3m cooldown window for quota
       } else if (errorType === 'invalid_key') {
         entry.status = 'invalid';
       } else if (errorType === 'rate_limited') {
         entry.status = 'rate_limited';
-        entry.rateLimitResetAt = Date.now() + 30000; // 30s transient rate limit window
+        entry.rateLimitResetAt = Date.now() + 60000; // 60s cooldown window for rate limit
       }
     }
 
@@ -225,48 +250,61 @@ export function rotateToNextKey(failedKeyStr: string, errorType: ClassifiedError
       migrated.activeKeyId = nextKey.id;
       migrated.apiKeys = pool;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-      return { newKey: nextKey.key.trim(), hasNextKey: true };
+      return { newKey: nextKey.key.trim(), hasNextKey: true, allExhausted: false };
     }
 
     // No next key available
     migrated.apiKeys = pool;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-    return { newKey: '', hasNextKey: false };
+    return { newKey: '', hasNextKey: false, allExhausted: true };
   } catch (e) {
     console.warn('[apiKeyManager] Error during key rotation:', e);
-    return { newKey: '', hasNextKey: false };
+    return { newKey: '', hasNextKey: false, allExhausted: false };
   }
 }
 
 /**
- * Record successful API usage for current key
+ * Record a successful API response for a key to update status and reset error state
  */
-export function recordKeySuccess(usedKeyStr: string): void {
-  if (!usedKeyStr || usedKeyStr.trim() === '') return;
+export function recordKeySuccess(keyStr: string): void {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return;
-
     const settings: AppSettings = JSON.parse(saved);
     const migrated = migrateSettingsApiKeys(settings);
-    let pool = migrated.apiKeys ? [...migrated.apiKeys] : [];
-
-    const keyIdx = pool.findIndex(k => k.key.trim() === usedKeyStr.trim());
-    if (keyIdx !== -1) {
-      const entry = pool[keyIdx];
-      entry.status = 'ready';
-      entry.requestsToday = (entry.requestsToday || 0) + 1;
-      entry.successfulRequests = (entry.successfulRequests || 0) + 1;
+    const pool = migrated.apiKeys ? [...migrated.apiKeys] : [];
+    const entry = pool.find(k => k.key.trim() === keyStr.trim());
+    if (entry) {
       entry.lastUsedAt = new Date().toISOString();
-      migrated.activeKeyId = entry.id;
+      entry.status = 'ready';
+      entry.lastErrorMsg = undefined;
+      entry.successfulRequests = (entry.successfulRequests || 0) + 1;
       migrated.apiKeys = pool;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
     }
-  } catch (e) {}
+  } catch (_) {}
 }
 
 /**
- * Perform minimal 1-token test query to verify key validity
+ * Task tiers for Smart Task-Based Model Selection
+ */
+export type AITaskType = 'light' | 'multimodal' | 'reasoning';
+
+export function getModelTierCandidates(taskType: AITaskType): string[] {
+  switch (taskType) {
+    case 'light':
+      return ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    case 'multimodal':
+      return ['gemini-2.5-flash', 'gemini-2.0-flash'];
+    case 'reasoning':
+      return ['gemini-2.5-pro', 'gemini-2.5-flash'];
+    default:
+      return ['gemini-2.5-flash', 'gemini-2.0-flash'];
+  }
+}
+
+/**
+ * Perform test query to verify key validity
  */
 export async function testGeminiApiKey(key: string): Promise<{ success: boolean; message: string }> {
   if (!key || key.trim() === '') {
@@ -274,34 +312,43 @@ export async function testGeminiApiKey(key: string): Promise<{ success: boolean;
   }
 
   const cleanKey = key.trim();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(cleanKey)}`;
+  const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+  let lastErr = '';
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
-        generationConfig: { maxOutputTokens: 1 }
-      })
-    });
+  for (const model of models) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
 
-    if (res.ok) {
-      return { success: true, message: 'API_KEY_VALID' };
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
+          generationConfig: { maxOutputTokens: 1 }
+        })
+      });
+
+      if (res.ok) {
+        return { success: true, message: 'API_KEY_VALID' };
+      }
+
+      const data = await res.json().catch(() => ({}));
+      const rawMsg = data?.error?.message || `HTTP ${res.status}`;
+      lastErr = rawMsg;
+
+      if (res.status === 400 || rawMsg.includes('API_KEY_INVALID') || rawMsg.includes('API key not valid')) {
+        return { success: false, message: 'API_KEY_INVALID' };
+      }
+      if (res.status === 429 || res.status === 403 || rawMsg.includes('RESOURCE_EXHAUSTED')) {
+        return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED' };
+      }
+      if (res.status === 404) {
+        continue; // Try next model
+      }
+    } catch (e: any) {
+      lastErr = e?.message || String(e);
     }
-
-    const data = await res.json().catch(() => ({}));
-    const rawMsg = data?.error?.message || `HTTP ${res.status}`;
-
-    if (res.status === 400 || rawMsg.includes('API_KEY_INVALID')) {
-      return { success: false, message: 'API_KEY_INVALID' };
-    }
-    if (res.status === 429 || res.status === 403 || rawMsg.includes('RESOURCE_EXHAUSTED')) {
-      return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED' };
-    }
-
-    return { success: false, message: `CONNECTION_FAILED: ${rawMsg}` };
-  } catch (e: any) {
-    return { success: false, message: `NETWORK_ERROR: ${e?.message || String(e)}` };
   }
+
+  return { success: false, message: `CONNECTION_FAILED: ${lastErr}` };
 }

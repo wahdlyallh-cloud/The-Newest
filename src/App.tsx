@@ -59,6 +59,7 @@ import BehavioralCorrelationCard from './components/BehavioralCorrelationCard';
 import OfflineSyncBanner from './components/OfflineSyncBanner';
 import PredictiveHealthInsightsModal from './components/PredictiveHealthInsightsModal';
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
+import MarkdownMessage from './components/MarkdownMessage';
 import OnboardingTourModal from './components/OnboardingTourModal';
 import ExportDiaryModal from './components/ExportDiaryModal';
 import AttachmentsPage from './components/AttachmentsPage';
@@ -4876,22 +4877,64 @@ export default function App() {
     setDiaryChatLoading(true);
 
     try {
-      // Collect attachments names
+      const isAr = (settings?.appLanguage || 'ar') === 'ar';
+
+      // 1. Current entry metadata & tasks
       const attachments: string[] = [];
       if (editingDiary.images && editingDiary.images.length > 0) attachments.push(`${editingDiary.images.length} صور`);
       if (editingDiary.audioRecordings && editingDiary.audioRecordings.length > 0) attachments.push(`${editingDiary.audioRecordings.length} تسجيلات صوتية`);
       if (editingDiary.files && editingDiary.files.length > 0) attachments.push(`${editingDiary.files.length} ملفات`);
       if (editingDiary.drawing) attachments.push(`تخطيط رسومي`);
 
-      const audioTranscriptions = (editingDiary.audioRecordings || []).map(a =>
-        `🎙️ [تسجيل ${a.name}]: ${a.transcription || 'لا يوجد تفريغ'}`
-      );
+      const currentTasks = (editingDiary.tasks || []).map(t => `${t.completed ? '✅' : '⏳'} ${t.text}`);
+      const currentLinks = editingDiary.links || [];
+      const currentFiles = (editingDiary.files || []).map(f => f.name);
+
+      // 2. Audio recordings with SER emotion details
+      const audioTranscriptions = (editingDiary.audioRecordings || []).map((a, idx) => {
+        const serInfo = a.speechEmotion ? ` (نبرة المشاعر: ${(a.speechEmotion as any).emotion || a.speechEmotion.primaryEmotion || ''} - تفاصيل النبرة: ${a.speechEmotion.vocalToneDetails || ''})` : '';
+        return `🎙️ [تسجيل #${idx + 1} "${a.name}"]: "${a.transcription || 'لا يوجد تفريغ'}"${serInfo}`;
+      });
+
+      // 3. Compact longitudinal index of user's past journal entries
+      const pastDiariesContext = (diaries || [])
+        .filter(d => d.id !== editingDiary.id)
+        .slice(0, 10)
+        .map(d => {
+          const dDate = d.createdAt ? new Date(d.createdAt).toLocaleDateString(isAr ? 'ar-SA' : 'en-US') : '';
+          const dTime = d.createdAt ? new Date(d.createdAt).toLocaleTimeString(isAr ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+          const excerpt = (d.content || '').replace(/\s+/g, ' ').slice(0, 100);
+          const m = (d.moods || []).join(', ');
+          return `• [${dDate} ${dTime}] عنوان: "${d.title || (isAr ? 'بدون عنوان' : 'Untitled')}" | المزاج: (${m || (isAr ? 'طبيعي' : 'Normal')}) | مقتطف: "${excerpt}..."`;
+        })
+        .join('\n');
+
+      // 4. Safe compressed extra inline image parts for multimodal reasoning
+      const extraParts: any[] = [];
+      if (editingDiary.images && editingDiary.images.length > 0) {
+        for (const img of editingDiary.images.slice(0, 2)) {
+          if (img && img.startsWith('data:image/') && img.includes(';base64,')) {
+            const parts = img.split(';base64,');
+            if (parts[1] && parts[1].length < 1500000) {
+              const mime = parts[0].replace('data:', '');
+              extraParts.push({ inlineData: { mimeType: mime, data: parts[1] } });
+            }
+          }
+        }
+      }
+      if (editingDiary.drawing && editingDiary.drawing.startsWith('data:image/') && editingDiary.drawing.includes(';base64,')) {
+        const parts = editingDiary.drawing.split(';base64,');
+        if (parts[1] && parts[1].length < 1500000) {
+          extraParts.push({ inlineData: { mimeType: 'image/png', data: parts[1] } });
+        }
+      }
 
       const res = await fetch('/api/gemini/diary-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-gemini-key': settings.userApiKey || ''
+          'x-gemini-key': settings.userApiKey || '',
+          'x-app-language': settings.appLanguage || 'ar'
         },
         body: JSON.stringify({
           title: editingDiary.title,
@@ -4900,10 +4943,18 @@ export default function App() {
           newMessage: textToSend.trim(),
           diaryType: editingDiary.diaryType || 'diary',
           moods: editingDiary.moods || [],
+          importance: editingDiary.importance || 3,
+          tasks: currentTasks,
+          links: currentLinks,
+          files: currentFiles,
+          createdAt: editingDiary.createdAt,
+          updatedAt: editingDiary.updatedAt,
           attachments,
           audioTranscriptions,
           aiMoodAnalysis: editingDiary.aiMoodAnalysis || [],
           tags: editingDiary.tags || [],
+          pastDiariesContext,
+          extraParts,
           appLanguage: settings.appLanguage || 'ar'
         })
       });
@@ -4923,17 +4974,20 @@ export default function App() {
         answerText = data.answer;
       } else if (data && (data.error || data.message)) {
         const rawErrStr = data.error || data.message;
-        answerText = `Google API Error: ${typeof rawErrStr === 'string' ? rawErrStr : JSON.stringify(rawErrStr)}`;
+        console.warn('API consultation warning:', rawErrStr);
       } else {
-        // Fallback directly to client-side Gemini generation if proxy server returned invalid JSON or error
+        // Fallback directly to client-side Gemini generation with Deep Reasoning Tier
         const promptContext = `الموضوع: ${editingDiary.title || 'مذكرة'}\nالمحتوى: ${editingDiary.content || ''}\nرسالة المستخدم الجديدة: ${textToSend.trim()}`;
         answerText = await generateGeminiContentDirect(
           promptContext,
-          'أنت مستشار نفسي وعاطفي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومدعم وتفاعلي باللغة العربية.',
-          settings.userApiKey, undefined, settings.appLanguage);
+          'أنت طبيب نفسي ومعالج إكلينيكي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومهني ومفصل باللغة العربية.',
+          settings.userApiKey, extraParts, settings.appLanguage, 'reasoning');
       }
 
-      const defaultErrStr = !settings.userApiKey ? 'يرجى التحقق من مفتاح API في الإعدادات' : 'Google API Error: Failed to generate response';
+      const defaultErrStr = !settings.userApiKey && (!settings.apiKeys || settings.apiKeys.length === 0)
+        ? (isAr ? 'يرجى التحقق من مفاتيح Gemini API في الإعدادات.' : 'Please check your Gemini API keys in settings.')
+        : (isAr ? 'عذراً، حدث تأخر مؤقت في استجابة الذكاء الاصطناعي. يرجى إعادة المحاولة.' : 'Temporary delay in AI response. Please try again.');
+
       const aiMsg: ChatLogEntry = {
         sender: 'ai',
         text: answerText && answerText.trim() ? answerText : defaultErrStr,
@@ -4947,11 +5001,14 @@ export default function App() {
         fallbackText = await generateGeminiContentDirect(
           `رسالة الفضفضة: ${textToSend.trim()}`,
           'أنت مستشار نفسي حكيم وداعم في تطبيق حياة AI. أجب بأسلوب دافئ ومطمئن.',
-          settings.userApiKey, undefined, settings.appLanguage);
+          settings.userApiKey, undefined, settings.appLanguage, 'reasoning');
       } catch (_) {}
 
-      const netErrStr = error?.message || String(error);
-      const defaultErrStr = !settings.userApiKey ? 'يرجى التحقق من مفتاح API في الإعدادات' : `Network Failure: ${netErrStr}`;
+      const isAr = (settings?.appLanguage || 'ar') === 'ar';
+      const defaultErrStr = !settings.userApiKey && (!settings.apiKeys || settings.apiKeys.length === 0)
+        ? (isAr ? 'يرجى التحقق من مفاتيح Gemini API في الإعدادات.' : 'Please check your Gemini API keys in settings.')
+        : (isAr ? 'عذراً، حدث تأخر مؤقت في الاتصال بالذكاء الاصطناعي. يرجى إعادة المحاولة.' : 'Temporary delay in AI response. Please try again.');
+
       const errorMsg: ChatLogEntry = {
         sender: 'ai',
         text: fallbackText && fallbackText.trim() ? fallbackText : defaultErrStr,
@@ -5048,7 +5105,14 @@ export default function App() {
 
   // --- Dynamic Backup and Restore Manager ---
   const handleExportBackup = () => {
-    const dataStr = JSON.stringify({ diaries, settings });
+    // Strictly sanitize and exclude all stored API keys from export
+    const safeSettings = settings ? { ...settings } : undefined;
+    if (safeSettings) {
+      delete (safeSettings as any).userApiKey;
+      delete (safeSettings as any).apiKeys;
+      delete (safeSettings as any).activeKeyId;
+    }
+    const dataStr = JSON.stringify({ diaries, settings: safeSettings });
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
     const exportFileDefaultName = `HayatAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
@@ -5124,12 +5188,20 @@ export default function App() {
     setEmailBackupStatus(t.sendingEmailBackup);
 
     try {
+      // Strictly exclude stored API keys from email backup
+      const safeSettings = settings ? { ...settings } : undefined;
+      if (safeSettings) {
+        delete (safeSettings as any).userApiKey;
+        delete (safeSettings as any).apiKeys;
+        delete (safeSettings as any).activeKeyId;
+      }
+
       const payload = {
         email: backupEmail,
         backupData: {
           diaries,
           habits,
-          settings,
+          settings: safeSettings,
           gratitudeCards,
           chatMessages: (() => {
             try {
@@ -8390,10 +8462,10 @@ export default function App() {
                       type="button"
                       onClick={() => setShowVoiceVentModal(true)}
                       className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-2xl text-xs font-black cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
-                      title={t.voiceQuickVent}
+                      title={t.voiceQuickVent || (isAr ? 'فضفضة صوتية سريعة' : 'Quick Voice Vent')}
                     >
                       <span className="text-base shrink-0">🎙️</span>
-                      <span className="truncate">{t.voiceQuickVent}</span>
+                      <span className="truncate">{t.voiceQuickVent || (isAr ? 'فضفضة صوتية سريعة' : 'Quick Voice Vent')}</span>
                     </button>
 
                     {/* 4. Add Audio File */}
@@ -9463,13 +9535,13 @@ export default function App() {
                                 />
                               )}
                               <div
-                                className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words whitespace-pre-wrap flex-1 shadow-3xs ${
+                                className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words flex-1 shadow-3xs ${
                                   msg.sender === 'user'
-                                    ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50'
+                                    ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50 whitespace-pre-wrap'
                                     : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
                                 }`}
                               >
-                                {msg.text}
+                                {msg.sender === 'user' ? msg.text : <MarkdownMessage content={msg.text} isAi={true} />}
                               </div>
                             </div>
                             <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
@@ -11493,6 +11565,7 @@ export default function App() {
         appLanguage={settings?.appLanguage || 'ar'}
         onSaveAudioRecording={(rec) => {
           addAudioToDiaryAtomic(rec);
+          handleTranscribeAudioItem(rec);
         }}
         onAppendTextToContent={(text) => {
           setEditingDiary(prev => {

@@ -112,9 +112,6 @@ export default function DailyProsConsModal({
   const [newUserPositive, setNewUserPositive] = useState('');
   const [newUserNegative, setNewUserNegative] = useState('');
 
-  const [newAiPositive, setNewAiPositive] = useState('');
-  const [newAiNegative, setNewAiNegative] = useState('');
-
   const [copySuccess, setCopySuccess] = useState(false);
   const [isCapturingImage, setIsCapturingImage] = useState(false);
   const [generatedImageModalUrl, setGeneratedImageModalUrl] = useState<string | null>(null);
@@ -331,56 +328,40 @@ export default function DailyProsConsModal({
     }
   }, [isOpen, dayKey]);
 
-  // AI Generation Logic
+  // AI Generation Logic with Strict Structured JSON (Zero System Prompt Leakage)
   const generateAiAnalysis = async () => {
     setIsGeneratingAi(true);
 
     const fullCompiledContext = compileFullDayData();
 
     if (!fullCompiledContext || fullCompiledContext.trim().length === 0) {
-      setAiPositives([t.noEntriesLoggedForPositives]);
-      setAiNegatives([t.noNegativesDetectedTest]);
+      setAiPositives([isAr ? "بدء تدوين الملاحظات والمشاعر لليوم هي خطوة واعية ممتازة لتعزيز صفاء الذهن." : (t.noEntriesLoggedForPositives || "No entries logged yet for positives.")]);
+      setAiNegatives([isAr ? "لا توجد تحديات أو سلبيات مسجلة حتى الآن لهذا اليوم." : (t.noNegativesDetectedTest || "No negatives detected yet.")]);
       setIsGeneratingAi(false);
       return;
     }
 
     try {
-      const response = await fetch('/api/gemini/smart-advisor', {
+      const response = await fetch('/api/gemini/pros-cons-report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-gemini-key': userApiKey || '',
+          'x-app-language': appLanguage
+        },
         body: JSON.stringify({
-          query: `أنت خبير وباحث نفسي وسلوكي متقدم ومساعد ذكي محترف في منصة "حياة AI".
-تلقيت سجلاً كاملاً وشاملاً لكافة النشاطات والبيانات المسجلة للمستخدم لهذا اليوم: (${displayDate}).
-
-### البيانات والأنشطة الشاملة المسجلة لليوم (${displayDate}):
-${fullCompiledContext}
-
----
-المطلوب منك بدقة ودون تحيز:
-قم بإجراء تحليل ذكي وشامل واستخراج أهم الإيجابيات والسلبيات الخاصة بهذا اليوم (${displayDate}).
-
-قواعد التوليد والتحليل:
-1. الشمولية والدقة: يجب استغلال وتجميع كل التفاصيل والبيانات المتاحة أعلاه من كافة أجزاء التطبيق (المذكرات، الخواطر، العادات المكتملة والمخفقة، المهام، تمارين تفنيد الأفكار CBT، الأدوية والعلاجات، ساعات النوم، الأنشطة الرياضية، المشاعر الصوتية، بطاقات الامتنان، والقراءة).
-2. الاحترافية والإيجاز: اكتب النقاط بأسلوب لغوي رصين، عالي الجودة، موجز جداً ومباشر دون تعقيد لفظي أو إطالة غير مبررة.
-3. التوازن الدقيق:
-   - الإيجابيات: استخرج من 3 إلى 5 نقاط جوهرية مركزة تمثل الإنجازات، السلوكيات الصحية، مشاعر الامتنان، نجاح تمارين التفكير أو العادات والمهام المكتملة.
-   - السلبيات والتحديات: استخرج من 3 إلى 5 نقاط جوهرية مركزة تمثل الضغوط الملاحظة، العادات غير المكتملة، الأفكار السلبية، المشاعر المضطربة، أو أي تقصير في المهام/الصحة (وإذا كان اليوم خاوياً من السلبيات، صغ تحدياً عابراً أو توصية تحسين دقيقة).
-
-يرجى إرجاع النتيجة بالصيغة التالية تماماً دون أي مقدمات أو خاتمة:
-الإيجابيات:
-- ...
-- ...
-السلبيات:
-- ...
-- ...`,
-          userApiKey
+          fullCompiledContext,
+          displayDate,
+          userApiKey,
+          appLanguage
         })
       });
 
       const data = await response.json();
 
-      if (data.success && data.answer) {
-        parseAiText(data.answer);
+      if (data.success && Array.isArray(data.pros) && Array.isArray(data.cons) && data.pros.length > 0) {
+        setAiPositives(data.pros);
+        setAiNegatives(data.cons);
       } else {
         fallbackNlpExtraction(fullCompiledContext);
       }
@@ -480,18 +461,6 @@ ${fullCompiledContext}
     setNewUserNegative('');
   };
 
-  const handleAddAiPositive = () => {
-    if (!newAiPositive.trim()) return;
-    setAiPositives(prev => [...prev, newAiPositive.trim()]);
-    setNewAiPositive('');
-  };
-
-  const handleAddAiNegative = () => {
-    if (!newAiNegative.trim()) return;
-    setAiNegatives(prev => [...prev, newAiNegative.trim()]);
-    setNewAiNegative('');
-  };
-
   // Save record
   const handleSave = () => {
     const allRecords = loadAllProsConsRecords();
@@ -540,6 +509,7 @@ ${t.generatedByHayatAiNotice}`;
 
     navigator.clipboard.writeText(summary);
     setCopySuccess(true);
+    showToast(t.copied || (isAr ? 'تم نسخ التقرير بنجاح! 📋' : 'Report copied successfully! 📋'));
     setTimeout(() => setCopySuccess(false), 2500);
   };
 
@@ -961,110 +931,121 @@ ${t.generatedByHayatAiNotice}`;
     try {
       await new Promise(r => setTimeout(r, 100));
 
-      // Create a fixed 800px-wide offscreen container for consistent 2-column layout on all mobile/desktop devices
+      // Create a fixed 880px-wide offscreen container for consistent 2-column layout on all mobile/desktop devices
       container = document.createElement('div');
       container.style.position = 'fixed';
       container.style.left = '-9999px';
       container.style.top = '0px';
-      container.style.width = '840px';
-      container.style.backgroundColor = '#FAF8F5';
-      container.style.direction = 'rtl';
-      container.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-      container.style.color = '#2D3748';
+      container.style.width = '880px';
+      container.style.backgroundColor = '#FAF9F6';
+      container.style.direction = langInfo.dir;
+      container.style.fontFamily = "'Segoe UI', 'Cairo', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif";
+      container.style.color = '#1E293B';
 
       const formatBoldHtml = (str: string) => {
         return str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       };
 
       const aiPosHtml = aiPositives.length > 0 ? aiPositives.map(p => `
-        <div style="background-color: #ffffff; border: 1px solid #C2DCBE; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #1E293B;">
-          <span style="margin-left: 6px;">🟢</span>${formatBoldHtml(p)}
+        <div style="background-color: #ffffff; border: 1.5px solid #BBF7D0; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 13.5px; line-height: 1.65; color: #1E293B; box-shadow: 0 2px 6px rgba(16,185,129,0.06); display: flex; align-items: flex-start; gap: 8px;">
+          <span style="font-size: 14px; margin-top: 2px;">🟢</span>
+          <div style="flex: 1;">${formatBoldHtml(p)}</div>
         </div>
-      `).join('') : '<div style="font-size: 12px; color: #A0AEC0; text-align: center; padding: 12px;">${t.noPositivesLoggedToday}</div>';
+      `).join('') : `<div style="font-size: 12px; color: #94A3B8; text-align: center; padding: 14px;">${t.noPositivesLoggedToday || 'لا توجد إيجابيات مدونة اليوم'}</div>`;
 
       const aiNegHtml = aiNegatives.length > 0 ? aiNegatives.map(n => `
-        <div style="background-color: #ffffff; border: 1px solid #F5C6C3; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #1E293B;">
-          <span style="margin-left: 6px;">🔴</span>${formatBoldHtml(n)}
+        <div style="background-color: #ffffff; border: 1.5px solid #FECDD3; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 13.5px; line-height: 1.65; color: #1E293B; box-shadow: 0 2px 6px rgba(244,63,94,0.06); display: flex; align-items: flex-start; gap: 8px;">
+          <span style="font-size: 14px; margin-top: 2px;">🔴</span>
+          <div style="flex: 1;">${formatBoldHtml(n)}</div>
         </div>
-      `).join('') : '<div style="font-size: 12px; color: #A0AEC0; text-align: center; padding: 12px;">${t.noNegativesLoggedToday}</div>';
+      `).join('') : `<div style="font-size: 12px; color: #94A3B8; text-align: center; padding: 14px;">${t.noNegativesLoggedToday || 'لا توجد سلبيات مدونة اليوم'}</div>`;
 
       const userPosHtml = userPositives.length > 0 ? userPositives.map(p => `
-        <div style="background-color: #FAF8F5; border: 1px solid #E2DCC8; border-radius: 10px; padding: 9px 12px; margin-bottom: 8px; font-size: 13px; color: #2D3748; line-height: 1.5;">
+        <div style="background-color: #FAF9F6; border: 1px solid #E2DCC8; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; color: #334155; line-height: 1.6;">
           • ${formatBoldHtml(p)}
         </div>
-      `).join('') : '<div style="font-size: 12px; color: #A0AEC0; text-align: center; padding: 12px;">${t.noCustomPointsEntered}</div>';
+      `).join('') : `<div style="font-size: 12px; color: #94A3B8; text-align: center; padding: 12px;">${t.noCustomPointsEntered || 'لا توجد نقاط مخصصة'}</div>`;
 
       const userNegHtml = userNegatives.length > 0 ? userNegatives.map(n => `
-        <div style="background-color: #FAF8F5; border: 1px solid #E2DCC8; border-radius: 10px; padding: 9px 12px; margin-bottom: 8px; font-size: 13px; color: #2D3748; line-height: 1.5;">
+        <div style="background-color: #FAF9F6; border: 1px solid #E2DCC8; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; color: #334155; line-height: 1.6;">
           • ${formatBoldHtml(n)}
         </div>
-      `).join('') : '<div style="font-size: 12px; color: #A0AEC0; text-align: center; padding: 12px;">${t.noCustomPointsEntered}</div>';
+      `).join('') : `<div style="font-size: 12px; color: #94A3B8; text-align: center; padding: 12px;">${t.noCustomPointsEntered || 'لا توجد نقاط مخصصة'}</div>`;
 
       container.innerHTML = `
-        <div style="border: 2px solid #E2DCC8; border-radius: 24px; overflow: hidden; background-color: #FAF8F5; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <div style="border: 2px solid #E2DCC8; border-radius: 28px; overflow: hidden; background-color: #FAF9F6; box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
           <!-- Header -->
-          <div style="background: linear-gradient(135deg, #2B3E50 0%, #3B5066 50%, #5A5A40 100%); color: #ffffff; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #E2DCC8;">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 16px; padding: 10px 14px; font-size: 26px;">⚖️</div>
+          <div style="background: linear-gradient(135deg, #1E293B 0%, #2B3E50 55%, #334155 100%); color: #ffffff; padding: 26px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #E2DCC8;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; padding: 12px 16px; font-size: 28px; display: flex; align-items: center; justify-content: center;">⚖️</div>
               <div>
-                <div style="font-size: 19px; font-weight: 900; display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-size: 21px; font-weight: 900; display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
                   <span>${t.prosConsReportTitle}</span>
-                  <span style="background-color: #8B9D83; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px;">{t.prosConsAiManual}</span>
+                  <span style="background-color: #10B981; color: #ffffff; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 12px;">${t.prosConsAiManual}</span>
                 </div>
                 <div style="font-size: 13px; color: #E2DCC8; font-weight: 600;">📅 ${displayDate}</div>
               </div>
             </div>
+            <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px; padding: 8px 16px; font-size: 12px; font-weight: 800; color: #F8FAFC;">
+              🌱 حياة AI • Hayat
+            </div>
           </div>
 
           <!-- Body -->
-          <div style="padding: 24px;">
-            <!-- Section 1: AI Generated -->
-            <div style="border-bottom: 2px solid #E2DCC8; padding-bottom: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="font-size: 15px; font-weight: 900; color: #2B3E50;">${t.prosConsAiSection}</div>
-              <div style="font-size: 12px; color: #718096; font-weight: 700;">${t.prosConsAiSubtitle}</div>
+          <div style="padding: 28px 32px;">
+            <!-- Section 1: AI Generated Insights -->
+            <div style="border-bottom: 2px solid #E2DCC8; padding-bottom: 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 16px; font-weight: 900; color: #1E293B; display: flex; align-items: center; gap: 6px;">
+                <span>✨</span>
+                <span>${t.prosConsAiSection}</span>
+              </div>
+              <div style="font-size: 12px; color: #64748B; font-weight: 700;">${t.prosConsAiSubtitle}</div>
             </div>
 
-            <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-              <!-- Right: Positives -->
-              <div style="flex: 1; background-color: #F2F7F2; border: 2px solid #C2DCBE; border-radius: 18px; padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #C2DCBE; padding-bottom: 10px; margin-bottom: 12px;">
-                  <span style="font-size: 13px; font-weight: 900; color: #2D5A27;">${t.prosConsAiPositives}</span>
-                  <span style="font-size: 11px; font-weight: 800; background-color: #D1E7DD; color: #0F5132; padding: 3px 10px; border-radius: 8px;">${aiPositives.length} {t.prosConsPoints}</span>
+            <div style="display: flex; gap: 20px; margin-bottom: 26px;">
+              <!-- Right: Positives (Green Accent) -->
+              <div style="flex: 1; background-color: #F0FDF4; border: 2px solid #BBF7D0; border-radius: 20px; padding: 18px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid #DCFCE7; padding-bottom: 10px; margin-bottom: 14px;">
+                  <span style="font-size: 14px; font-weight: 900; color: #15803D;">${t.prosConsAiPositives}</span>
+                  <span style="font-size: 11px; font-weight: 800; background-color: #DCFCE7; color: #166534; padding: 3px 10px; border-radius: 10px;">${aiPositives.length} ${t.prosConsPoints}</span>
                 </div>
                 ${aiPosHtml}
               </div>
 
-              <!-- Left: Negatives -->
-              <div style="flex: 1; background-color: #FDF3F2; border: 2px solid #F5C6C3; border-radius: 18px; padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F5C6C3; padding-bottom: 10px; margin-bottom: 12px;">
-                  <span style="font-size: 13px; font-weight: 900; color: #902923;">${t.prosConsAiNegatives}</span>
-                  <span style="font-size: 11px; font-weight: 800; background-color: #F8D7DA; color: #842029; padding: 3px 10px; border-radius: 8px;">${aiNegatives.length} {t.prosConsPoints}</span>
+              <!-- Left: Negatives (Rose Accent) -->
+              <div style="flex: 1; background-color: #FFF1F2; border: 2px solid #FECDD3; border-radius: 20px; padding: 18px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid #FFE4E6; padding-bottom: 10px; margin-bottom: 14px;">
+                  <span style="font-size: 14px; font-weight: 900; color: #BE123C;">${t.prosConsAiNegatives}</span>
+                  <span style="font-size: 11px; font-weight: 800; background-color: #FFE4E6; color: #9F1239; padding: 3px 10px; border-radius: 10px;">${aiNegatives.length} ${t.prosConsPoints}</span>
                 </div>
                 ${aiNegHtml}
               </div>
             </div>
 
-            <!-- Section 2: User Manual -->
-            <div style="border-bottom: 2px solid #E2DCC8; padding-bottom: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="font-size: 15px; font-weight: 900; color: #2B3E50;">${t.prosConsManualSection}</div>
-              <div style="font-size: 12px; color: #718096; font-weight: 700;">${t.prosConsManualSubtitle}</div>
+            <!-- Section 2: User Manual Entries -->
+            <div style="border-bottom: 2px solid #E2DCC8; padding-bottom: 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 16px; font-weight: 900; color: #1E293B; display: flex; align-items: center; gap: 6px;">
+                <span>✍️</span>
+                <span>${t.prosConsManualSection}</span>
+              </div>
+              <div style="font-size: 12px; color: #64748B; font-weight: 700;">${t.prosConsManualSubtitle}</div>
             </div>
 
-            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+            <div style="display: flex; gap: 20px; margin-bottom: 16px;">
               <!-- Right: Manual Positives -->
-              <div style="flex: 1; background-color: #ffffff; border: 2px solid #E2DCC8; border-radius: 18px; padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F0EDE4; padding-bottom: 10px; margin-bottom: 12px;">
-                  <span style="font-size: 13px; font-weight: 900; color: #5A5A40;">${t.prosConsManualPositives}</span>
-                  <span style="font-size: 11px; font-weight: 800; background-color: #F0EDE4; color: #4A5568; padding: 3px 10px; border-radius: 8px;">${userPositives.length} {t.prosConsPoints}</span>
+              <div style="flex: 1; background-color: #ffffff; border: 2px solid #E2DCC8; border-radius: 20px; padding: 18px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid #F0EDE4; padding-bottom: 10px; margin-bottom: 14px;">
+                  <span style="font-size: 14px; font-weight: 900; color: #5A5A40;">${t.prosConsManualPositives}</span>
+                  <span style="font-size: 11px; font-weight: 800; background-color: #F0EDE4; color: #4A5568; padding: 3px 10px; border-radius: 10px;">${userPositives.length} ${t.prosConsPoints}</span>
                 </div>
                 ${userPosHtml}
               </div>
 
               <!-- Left: Manual Negatives -->
-              <div style="flex: 1; background-color: #ffffff; border: 2px solid #E2DCC8; border-radius: 18px; padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F0EDE4; padding-bottom: 10px; margin-bottom: 12px;">
-                  <span style="font-size: 13px; font-weight: 900; color: #5A5A40;">${t.prosConsManualNegatives}</span>
-                  <span style="font-size: 11px; font-weight: 800; background-color: #F0EDE4; color: #4A5568; padding: 3px 10px; border-radius: 8px;">${userNegatives.length} {t.prosConsPoints}</span>
+              <div style="flex: 1; background-color: #ffffff; border: 2px solid #E2DCC8; border-radius: 20px; padding: 18px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid #F0EDE4; padding-bottom: 10px; margin-bottom: 14px;">
+                  <span style="font-size: 14px; font-weight: 900; color: #5A5A40;">${t.prosConsManualNegatives}</span>
+                  <span style="font-size: 11px; font-weight: 800; background-color: #F0EDE4; color: #4A5568; padding: 3px 10px; border-radius: 10px;">${userNegatives.length} ${t.prosConsPoints}</span>
                 </div>
                 ${userNegHtml}
               </div>
@@ -1072,9 +1053,9 @@ ${t.generatedByHayatAiNotice}`;
           </div>
 
           <!-- Footer -->
-          <div style="border-top: 2px solid #E2DCC8; padding: 14px 24px; background-color: #F0EDE4; font-size: 12px; color: #5A5A40; display: flex; align-items: center; justify-content: space-between; font-weight: 800;">
-            {t.prosConsFooterBrand}
-            {t.prosConsFooterPrivacy}
+          <div style="border-top: 2px solid #E2DCC8; padding: 16px 32px; background-color: #F0EDE4; font-size: 12px; color: #5A5A40; display: flex; align-items: center; justify-content: space-between; font-weight: 800;">
+            <span>${t.prosConsFooterBrand}</span>
+            <span>${t.prosConsFooterPrivacy}</span>
           </div>
         </div>
       `;
@@ -1211,24 +1192,6 @@ ${t.generatedByHayatAiNotice}`;
                     </li>
                   ))}
                 </ul>
-
-                {/* Add Custom AI Point */}
-                <div data-html2canvas-ignore="true" className="flex gap-1.5 pt-1">
-                  <input
-                    type="text"
-                    value={newAiPositive}
-                    onChange={(e) => setNewAiPositive(e.target.value)}
-                    placeholder={t.addPositivePoint}
-                    className="flex-1 bg-white border border-[#C2DCBE] rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddAiPositive}
-                    className="px-3 py-1.5 bg-emerald-700 text-white rounded-xl text-xs font-bold hover:bg-emerald-800 cursor-pointer"
-                  >
-                    + إدخال
-                  </button>
-                </div>
               </div>
 
               {/* AI Negatives (Left in RTL) */}
@@ -1260,24 +1223,6 @@ ${t.generatedByHayatAiNotice}`;
                     </li>
                   ))}
                 </ul>
-
-                {/* Add Custom AI Point */}
-                <div data-html2canvas-ignore="true" className="flex gap-1.5 pt-1">
-                  <input
-                    type="text"
-                    value={newAiNegative}
-                    onChange={(e) => setNewAiNegative(e.target.value)}
-                    placeholder={t.addNegativePoint}
-                    className="flex-1 bg-white border border-[#F5C6C3] rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddAiNegative}
-                    className="px-3 py-1.5 bg-rose-700 text-white rounded-xl text-xs font-bold hover:bg-rose-800 cursor-pointer"
-                  >
-                    + إدخال
-                  </button>
-                </div>
               </div>
 
             </div>
@@ -1459,10 +1404,10 @@ ${t.generatedByHayatAiNotice}`;
 
             <button
               onClick={handleSave}
-              className="px-5 py-2 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap active:scale-95 transition-all"
             >
-              <Save className="w-4 h-4 text-[#FEFAE0]" />
-              <span>{t.saveToProsCons}</span>
+              <Save className="w-4 h-4 text-[#FEFAE0] shrink-0" />
+              <span className="whitespace-nowrap">{t.saveToProsCons}</span>
             </button>
           </div>
 

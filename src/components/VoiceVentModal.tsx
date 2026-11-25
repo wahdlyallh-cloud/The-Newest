@@ -36,15 +36,19 @@ export default function VoiceVentModal({
   const intervalRef = useRef<number | null>(null);
   const liveTranscriptRef = useRef<string>('');
 
+  const [micPermissionError, setMicPermissionError] = useState<string | null>(null);
+
   useEffect(() => {
     if (isOpen) {
-      setIsRecording(false);
       setRecordingSeconds(0);
       setLiveTranscript('');
       setFinalTranscript('');
       setRecordedAudioRec(null);
       setIsAppended(false);
+      setMicPermissionError(null);
       liveTranscriptRef.current = '';
+      // Auto-start recording immediately upon opening
+      startRecording();
     } else {
       stopRecordingInternal();
     }
@@ -52,6 +56,7 @@ export default function VoiceVentModal({
 
   const startRecording = async () => {
     try {
+      setMicPermissionError(null);
       setIsRecording(true);
       setRecordingSeconds(0);
       setLiveTranscript('');
@@ -99,9 +104,18 @@ export default function VoiceVentModal({
 
         mediaRecorder.start(250);
       }
-    } catch (err) {
-      console.error('Failed to start voice vent recording:', err);
+    } catch (err: any) {
+      console.warn('Voice Vent auto-start or mic permission issue:', err);
       setIsRecording(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setMicPermissionError(
+        isAr
+          ? 'يرجى السماح بالوصول إلى الميكروفون لبدء الفضفضة الصوتية.'
+          : 'Please grant microphone permission to record your voice vent.'
+      );
     }
   };
 
@@ -240,6 +254,20 @@ export default function VoiceVentModal({
               )}
             </div>
           </div>
+
+          {/* Permission Error Notification */}
+          {micPermissionError && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-bold flex items-center justify-between">
+              <span>⚠️ {micPermissionError}</span>
+              <button
+                type="button"
+                onClick={() => startRecording()}
+                className="px-2.5 py-1 bg-red-600 text-white rounded-lg text-[10px] font-black hover:bg-red-700 cursor-pointer"
+              >
+                {isAr ? 'إعادة المحاولة' : 'Retry'}
+              </button>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="pt-2 border-t border-[#E2DCC8]/70 flex flex-wrap gap-2.5 items-center justify-between">

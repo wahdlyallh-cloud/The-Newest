@@ -1,5 +1,5 @@
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
+  if (!modelName || !modelName.trim()) return 'gemini-2.5-flash';
   return modelName.trim().replace(/^models\//, '');
 }
 
@@ -439,7 +439,9 @@ function handleGeminiError(res: any, error: any, customKey?: string) {
 
 // Helper function to generate content with fallback models
 async function generateWithGenAI(aiInstance: GoogleGenAI, config: any) {
-  const modelsToTry = ['gemini-3.5-flash-lite'];
+  const modelsToTry = config.model
+    ? [config.model, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite']
+    : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
   let lastErr: any = null;
   for (const modelName of modelsToTry) {
     try {
@@ -527,7 +529,7 @@ app.post("/api/gemini/verify-key", async (req, res) => {
     } else if (errorMsg.includes("Quota exceeded") || errorMsg.includes("limit") || errorMsg.includes("exhausted")) {
       errorMsg = "تم تجاوز حد الاستخدام المسموح به لهذا المفتاح (Quota Exceeded).";
     } else if (errorMsg.includes("unsupported country") || errorMsg.includes("not available in your country") || errorMsg.includes("not supported")) {
-      errorMsg = "طراز الذكاء الاصطناعي (gemini-3.5-flash-lite) أو منطقتك غير مدعومة حالياً مع هذا المفتاح.";
+      errorMsg = "طراز الذكاء الاصطناعي أو منطقتك غير مدعومة حالياً مع هذا المفتاح.";
     } else {
       errorMsg = `فشل التحقق بسبب: ${errorMsg}`;
     }

@@ -129,6 +129,17 @@ export default function GeminiKeyModal({
     setTestingKeyId(null);
   };
 
+  // Move key up or down in ordered priority list
+  const handleMoveKey = (index: number, direction: 'up' | 'down') => {
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= keysList.length) return;
+    const copy = [...keysList];
+    const [moved] = copy.splice(index, 1);
+    copy.splice(targetIdx, 0, moved);
+    const reordered = copy.map((k, idx) => ({ ...k, priority: idx + 1 }));
+    setKeysList(reordered);
+  };
+
   // Delete a key from pool
   const handleDeleteKey = (id: string) => {
     const filtered = keysList.filter(k => k.id !== id);
@@ -169,17 +180,30 @@ export default function GeminiKeyModal({
     onClose();
   };
 
-  const getStatusBadge = (status: ApiKeyStatus, isEnabled: boolean) => {
-    if (!isEnabled) {
+  const getStatusBadge = (entry: ApiKeyPoolEntry) => {
+    if (!entry.isEnabled) {
       return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{t.apiKeyStatusStandby}</span>;
     }
-    switch (status) {
+    const isCoolingDown = (entry.status === 'rate_limited' || entry.status === 'quota_exhausted') && entry.rateLimitResetAt && Date.now() < entry.rateLimitResetAt;
+    const remainingSec = isCoolingDown ? Math.ceil((entry.rateLimitResetAt! - Date.now()) / 1000) : 0;
+
+    switch (entry.status) {
       case 'ready':
         return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">{t.apiKeyStatusReady}</span>;
       case 'rate_limited':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">{t.apiKeyStatusRateLimited}</span>;
+        return (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+            <span>{t.apiKeyStatusRateLimited}</span>
+            {isCoolingDown && <span className="text-[9px] opacity-80">({remainingSec}s)</span>}
+          </span>
+        );
       case 'quota_exhausted':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">{t.apiKeyStatusQuotaExhausted}</span>;
+        return (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 flex items-center gap-1">
+            <span>{t.apiKeyStatusQuotaExhausted}</span>
+            {isCoolingDown && <span className="text-[9px] opacity-80">({remainingSec}s)</span>}
+          </span>
+        );
       case 'invalid':
         return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">{t.apiKeyStatusInvalid}</span>;
       default:
@@ -232,10 +256,13 @@ export default function GeminiKeyModal({
                     isActive ? 'border-[#3F5449] bg-white shadow-md' : 'border-[#E2DCC8] bg-white/70 hover:bg-white'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[#2B3E50] text-white text-[10px] font-black flex items-center justify-center">
+                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                      <span className="w-5 h-5 rounded-full bg-[#2B3E50] text-white text-[10px] font-black flex items-center justify-center shrink-0">
                         {index + 1}
+                      </span>
+                      <span className="text-[11px] font-black text-gray-400 shrink-0">
+                        Key #{index + 1}
                       </span>
                       <input
                         type="text"
@@ -244,11 +271,19 @@ export default function GeminiKeyModal({
                           const val = e.target.value;
                           setKeysList(prev => prev.map(k => k.id === entry.id ? { ...k, name: val } : k));
                         }}
-                        className="font-black text-xs text-[#2B3E50] bg-transparent focus:outline-none focus:border-b border-[#8B9D83]"
-                        placeholder={t.keyNamePlaceholder}
+                        className="font-black text-xs text-[#2B3E50] bg-transparent focus:outline-none focus:border-b border-[#8B9D83] flex-1 truncate"
+                        placeholder={`${t.apiKeyLabel || 'Key'} #${index + 1}`}
                       />
                     </div>
-                    {getStatusBadge(entry.status, entry.isEnabled)}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isActive && (
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#3F5449] text-white flex items-center gap-1 shadow-3xs">
+                          <span>⚡</span>
+                          <span>{appLanguage === 'ar' ? 'النشط حالياً' : 'Active'}</span>
+                        </span>
+                      )}
+                      {getStatusBadge(entry)}
+                    </div>
                   </div>
 
                   {/* Masked Key Display */}
@@ -273,8 +308,30 @@ export default function GeminiKeyModal({
                   )}
 
                   {/* Usage Stats & Action Bar */}
-                  <div className="flex items-center justify-between text-[10px] text-gray-500 font-bold pt-1 border-t border-gray-100">
-                    <span>الطلبات اليوم: {entry.requestsToday || 0}</span>
+                  <div className="flex items-center justify-between text-[10px] text-gray-500 font-bold pt-1 border-t border-gray-100 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span>الطلبات اليوم: {entry.requestsToday || 0}</span>
+                      <div className="flex items-center gap-0.5 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() => handleMoveKey(index, 'up')}
+                          className="p-1 text-gray-600 hover:text-black hover:bg-white disabled:opacity-20 rounded-md cursor-pointer transition-colors"
+                          title={t.moveUpTitle || 'تحريك للأعلى'}
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === keysList.length - 1}
+                          onClick={() => handleMoveKey(index, 'down')}
+                          className="p-1 text-gray-600 hover:text-black hover:bg-white disabled:opacity-20 rounded-md cursor-pointer transition-colors"
+                          title={t.moveDownTitle || 'تحريك للأسفل'}
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
 
                     <div className="flex items-center gap-1.5">
                       <button
@@ -284,22 +341,22 @@ export default function GeminiKeyModal({
                           isActive ? 'bg-[#3F5449] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
-                        {isActive ? 'نشط Active' : 'تفعيل'}
+                        {isActive ? (appLanguage === 'ar' ? 'نشط Active' : 'Active') : (appLanguage === 'ar' ? 'تفعيل' : 'Activate')}
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleTestKey(entry)}
                         disabled={isTesting}
-                        className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100"
+                        className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 cursor-pointer"
                       >
-                        {isTesting ? 'جاري الفحص...' : 'فحص Test'}
+                        {isTesting ? (t.analyzing || 'جاري الفحص...') : (appLanguage === 'ar' ? 'فحص Test' : 'Test')}
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleDeleteKey(entry.id)}
-                        className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
+                        className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
                         title={t.deleteDhikr || t.deleteKey}
                       >
                         <Trash2 className="w-3.5 h-3.5" />

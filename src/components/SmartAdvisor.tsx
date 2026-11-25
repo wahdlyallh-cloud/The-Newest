@@ -1,4 +1,5 @@
 import { generateGeminiContentDirect } from '../lib/gemini';
+import MarkdownMessage from './MarkdownMessage';
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -1186,7 +1187,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   : 'bg-white text-[#3A3A3A] border border-[#E2DCC8] rounded-tl-none font-normal'
               }`}
             >
-              <div className="whitespace-pre-wrap">{msg.text}</div>
+              <div>{msg.sender === 'user' ? <div className="whitespace-pre-wrap">{msg.text}</div> : <MarkdownMessage content={msg.text} isAi={true} />}</div>
               <div className="flex items-center justify-between gap-4 mt-2 pt-1 border-t border-dashed border-gray-100">
                 <span className={`block text-[9px] ${msg.sender === 'user' ? 'text-[#F9F7F2]/85' : 'text-gray-400'} text-left`}>
                   {new Date(msg.createdAt).toLocaleTimeString(langInfo.bcp47 || 'ar-EG', { hour: '2-digit', minute: '2-digit' })}

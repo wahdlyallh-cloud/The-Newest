@@ -4,12 +4,20 @@
 //  NEVER executes synchronously on app boot.
 // ============================================================
 
-export const AI_MODEL = 'gemini-3.5-flash-lite';
+import { 
+  getCandidateApiKeys, 
+  rotateToNextKey, 
+  recordKeySuccess, 
+  classifyGeminiError, 
+  AITaskType, 
+  getModelTierCandidates 
+} from './apiKeyManager';
+
+export const AI_MODEL = 'gemini-2.5-flash';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
  * Returns the exact model identifier without any alias translation or mapping.
- * Strictly preserves 'gemini-3.5-flash-lite' as the literal Model ID sent to Google API.
  */
 export function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return AI_MODEL;
@@ -365,7 +373,7 @@ export async function validateGeminiApiKey(
  * Calls the Gemini generateContent REST endpoint directly from the client.
  *
  * Model resolution strategy:
- *   gemini-3.5-flash-lite (Direct Model ID)
+ *   Smart Task-Based Model Tiers (Light, Multimodal, Reasoning)
  *
  * Every request includes BLOCK_NONE safety settings.
  * All error messages returned to callers are in Arabic.
@@ -375,7 +383,9 @@ export async function generateGeminiContentDirect(
   systemInstruction?: string,
   customKey?: string,
   extraParts?: any[],
-  appLanguage?: string
+  appLanguage?: string,
+  taskType: AITaskType = 'multimodal',
+  isJson?: boolean
 ): Promise<string> {
   let finalSystemInstruction = systemInstruction || '';
   if (appLanguage) {
@@ -386,107 +396,107 @@ export async function generateGeminiContentDirect(
         : langRule;
     }
   }
-  // ── Key guard ─────────────────────────────────────────────────
-  const cleanKey = getGeminiApiKey(customKey);
-  if (isKeyObviouslyInvalid(cleanKey)) {
+
+  const candidateKeys = getCandidateApiKeys(customKey);
+  if (candidateKeys.length === 0) {
     return 'يرجى التحقق من مفتاح API في الإعدادات';
   }
 
-  const modelsToTry = [AI_MODEL];
-
+  const modelsToTry = getModelTierCandidates(taskType);
   let lastError = '';
 
-  for (const model of modelsToTry) {
-    const url =
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}` +
-      `:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
+  for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
+    const currentKey = candidateKeys[keyIdx];
 
-    // ── Build user parts array with optional multimodal items ─────
-    const partsArray = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
-      ? [...extraParts, { text: userPromptWithContext }]
-      : [{ text: userPromptWithContext }];
+    for (const model of modelsToTry) {
+      const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}` +
+        `:generateContent?key=${encodeURIComponent(currentKey.trim())}`;
 
-    // ── Build request body with mandatory BLOCK_NONE safety settings ─
-    const requestBody: any = {
-      contents: [
-        {
-          role: 'user',
-          parts: partsArray,
-        },
-      ],
-      safetySettings: SAFETY_SETTINGS_BLOCK_NONE,
-    };
+      const partsArray = (extraParts && Array.isArray(extraParts) && extraParts.length > 0)
+        ? [...extraParts, { text: userPromptWithContext }]
+        : [{ text: userPromptWithContext }];
 
-    if (finalSystemInstruction) {
-      requestBody.systemInstruction = {
-        parts: [{ text: finalSystemInstruction }],
+      const requestBody: any = {
+        contents: [
+          {
+            role: 'user',
+            parts: partsArray,
+          },
+        ],
+        safetySettings: SAFETY_SETTINGS_BLOCK_NONE,
       };
-    }
 
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-
-      const responseText = await res.text();
-      let data: any = {};
-      if (responseText && responseText.trim()) {
-        try { data = JSON.parse(responseText); } catch (_) {}
+      if (finalSystemInstruction) {
+        requestBody.systemInstruction = {
+          parts: [{ text: finalSystemInstruction }],
+        };
       }
 
-      // ── Success path ──────────────────────────────────────────────
-      if (res.ok) {
-        const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (output && typeof output === 'string' && output.trim() !== '') {
-          return output;
+      if (isJson) {
+        requestBody.generationConfig = { responseMimeType: 'application/json' };
+      }
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        });
+
+        const responseText = await res.text();
+        let data: any = {};
+        if (responseText && responseText.trim()) {
+          try { data = JSON.parse(responseText); } catch (_) {}
         }
 
-        const candidate = data?.candidates?.[0];
-        if (candidate) {
-          const candidateText = candidate?.content?.parts?.[0]?.text;
-          if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
-            return candidateText;
+        // ── Success path ──────────────────────────────────────────────
+        if (res.ok) {
+          const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (output && typeof output === 'string' && output.trim() !== '') {
+            recordKeySuccess(currentKey);
+            return output.trim();
           }
         }
+
+        // ── Error path & Rotation ─────────────────────────────────────
+        const rawError = data?.error?.message || `HTTP ${res.status}`;
+        lastError = rawError;
+        const errType = classifyGeminiError(res.status, rawError);
+
+        if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
+          rotateToNextKey(currentKey, errType);
+          break; // break model loop to immediately try next key in pool
+        }
+
+        if (res.status === 404 || res.status === 503 || res.status === 529 || rawError.includes('high demand') || rawError.includes('not found')) {
+          continue; // try next model in tier
+        }
+      } catch (err: any) {
+        lastError = err?.message || String(err);
       }
-
-      // ── Error path ────────────────────────────────────────────────
-      const rawError =
-        data?.error?.message ||
-        data?.error?.status ||
-        data?.message ||
-        `HTTP ${res.status}: ${res.statusText || 'Google API Error'}`;
-      
-      const exactApiError = `Google API Error [${res.status}]: ${rawError}`;
-      lastError = exactApiError;
-
-      // Return exact raw API error directly to caller
-      return exactApiError;
-    } catch (err: any) {
-      const rawMsg = err?.message || String(err);
-      console.error(`[gemini] Model "${model}" fetch exception:`, rawMsg);
-      lastError = `Network Failure: ${rawMsg}`;
-      return `Network Failure: ${rawMsg}`;
     }
   }
 
-  // All models in the chain were exhausted
-  return lastError || 'Google API Error: Request failed';
+  if (lastError.includes('quota') || lastError.includes('RESOURCE_EXHAUSTED')) {
+    return 'جميع مفاتيح API المحددة قد وصلت إلى حد الاستهلاك اليومي / نفدت حصتها. يرجى إضافة مفتاح جديد أو المحاولة لاحقاً.';
+  }
+
+  return 'عذراً، تعذر الاتصال بنموذج الذكاء الاصطناعي حالياً. يرجى التحقق من الاتصال والمفتاح.';
 }
 
 /**
- * Transcribes audio data using Gemini multimodal REST API (`inlineData`).
+ * Transcribes audio data using Gemini multimodal REST API (`inlineData`) with Key Rotation & Multimodal Tier.
  */
 export async function transcribeAudioWithGemini(
   audioBase64: string,
   mimeType = 'audio/webm',
-  customKey?: string
+  customKey?: string,
+  appLanguage = 'ar'
 ): Promise<string> {
-  const cleanKey = getGeminiApiKey(customKey);
-  if (isKeyObviouslyInvalid(cleanKey)) {
-    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
+  const candidateKeys = getCandidateApiKeys(customKey);
+  if (candidateKeys.length === 0) {
+    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API في الإعدادات.';
   }
 
   let pureBase64 = audioBase64;
@@ -500,63 +510,82 @@ export async function transcribeAudioWithGemini(
     }
   }
 
+  // Clean MIME normalization for Gemini
   let cleanMime = resolvedMime;
-  if (cleanMime.includes("webm") || cleanMime.includes("opus")) cleanMime = "audio/webm";
+  if (cleanMime.includes("webm")) cleanMime = "audio/webm";
+  else if (cleanMime.includes("opus") || cleanMime.includes("ogg")) cleanMime = "audio/ogg";
   else if (cleanMime.includes("mp3") || cleanMime.includes("mpeg")) cleanMime = "audio/mp3";
   else if (cleanMime.includes("wav") || cleanMime.includes("x-wav")) cleanMime = "audio/wav";
-  else if (cleanMime.includes("ogg")) cleanMime = "audio/ogg";
   else if (cleanMime.includes("mp4") || cleanMime.includes("m4a") || cleanMime.includes("aac")) cleanMime = "audio/mp4";
   else if (cleanMime.includes("flac")) cleanMime = "audio/flac";
   else if (cleanMime.includes("3gp") || cleanMime.includes("amr")) cleanMime = "audio/3gpp";
   else cleanMime = "audio/webm";
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(cleanKey.trim())}`;
+  const modelsToTry = getModelTierCandidates('multimodal');
 
-  const requestBody = {
-    contents: [
-      {
-        role: 'user',
-        parts: [
+  for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
+    const currentKey = candidateKeys[keyIdx];
+
+    for (const model of modelsToTry) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(currentKey.trim())}`;
+
+      const requestBody = {
+        contents: [
           {
-            inlineData: {
-              mimeType: cleanMime,
-              data: pureBase64
-            }
-          },
-          {
-            text: 'Transcribe this audio recording with extreme accuracy in the spoken language. Output only the transcription verbatim without introductory or closing remarks.'
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType: cleanMime,
+                  data: pureBase64
+                }
+              },
+              {
+                text: 'قم بتفريغ هذا التسجيل الصوتي بدقة عالية إلى نص عربي منظم، حافظ على جميع الكلمات والتفاصيل دون حذف أو اختصار، وأضف علامات الترقيم المناسبة دون أي مقدمات أو خاتمة.'
+              }
+            ]
           }
-        ]
+        ],
+        safetySettings: SAFETY_SETTINGS_BLOCK_NONE
+      };
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        const responseText = await res.text();
+        let data: any = {};
+        if (responseText && responseText.trim()) {
+          try { data = JSON.parse(responseText); } catch (_) {}
+        }
+
+        if (res.ok) {
+          const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (output && typeof output === 'string' && output.trim() !== '') {
+            recordKeySuccess(currentKey);
+            return output.trim();
+          }
+        }
+
+        const rawError = data?.error?.message || `HTTP ${res.status}`;
+        const errType = classifyGeminiError(res.status, rawError);
+
+        if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
+          rotateToNextKey(currentKey, errType);
+          break; // try next key
+        }
+
+        if (res.status === 404 || res.status === 503 || res.status === 529 || rawError.includes('high demand') || rawError.includes('not found')) {
+          continue; // try next model in tier
+        }
+      } catch (err) {
+        console.warn(`[gemini-transcribe] Model ${model} failed with key #${keyIdx + 1}:`, err);
       }
-    ],
-    safetySettings: SAFETY_SETTINGS_BLOCK_NONE
-  };
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    const responseText = await res.text();
-    let data: any = {};
-    if (responseText && responseText.trim()) {
-      try { data = JSON.parse(responseText); } catch (_) {}
     }
-
-    if (res.ok) {
-      const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (output && typeof output === 'string' && output.trim() !== '') {
-        return output.trim();
-      }
-    }
-
-    const errStr = data?.error?.message || data?.message || `HTTP ${res.status}`;
-    console.warn('[gemini-transcribe] API Error:', errStr);
-    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
-  } catch (err) {
-    console.error('[gemini-transcribe] Fetch exception:', err);
-    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API.';
   }
+
+  return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API أو المحاولة لاحقاً.';
 }
