@@ -5,6 +5,17 @@ html, body, #root {
   overflow-x: hidden !important;
   max-width: 100vw !important;
   width: 100% !important;
+  min-height: 100dvh;
+  min-height: 100vh;
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
 @theme {
@@ -97,15 +108,19 @@ html, body, #root {
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Safe bottom padding for mobile action bars — respects iOS home-indicator notch */
-.pb-safe {
-  padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
+/* Safe top and bottom padding for mobile action bars and headers */
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
 }
 
-/* Extra bottom padding for elements that sit directly above the fixed bottom nav (~56px)
-   Combines nav height + iOS safe-area so content is never hidden behind either */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+
+/* Extra bottom padding for elements that sit directly above the fixed bottom nav (~64px)
+   Combines nav height + safe-area so content is never hidden behind navigation */
 .pb-nav-safe {
-  padding-bottom: max(4.5rem, calc(3.5rem + env(safe-area-inset-bottom, 0px)));
+  padding-bottom: max(5.5rem, calc(4.5rem + env(safe-area-inset-bottom, 0px)));
 }
 
 /* Visually suppress the sticky header when any modal backdrop is active,
@@ -121,4 +136,84 @@ html, body, #root {
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: #D4A37340; border-radius: 99px; }
 .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #D4A37340 transparent; }
+
+/* ── Native Touch Ergonomics & Interaction Polish ───────────────── */
+
+button, [role="button"], a, [role="tab"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Keep user text selection on readable content, notes, inputs and code */
+input, textarea, [contenteditable="true"], article, p, h1, h2, h3, h4, h5, h6, .selectable-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Minimum 44x44px touch target comfort utility */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Prevent unwanted mobile auto-zoom on form inputs/textareas (< 16px triggers zoom) */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Native Mobile Bottom Sheet / Modal Responsiveness */
+.modal-bottom-sheet {
+  align-items: flex-end !important;
+  padding: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .modal-bottom-sheet {
+    align-items: center !important;
+    padding: 1rem !important;
+  }
+}
+
+.modal-sheet-content {
+  border-top-left-radius: 28px !important;
+  border-top-right-radius: 28px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  max-height: 90dvh !important;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem)) !important;
+  width: 100% !important;
+}
+
+@media (min-width: 640px) {
+  .modal-sheet-content {
+    border-bottom-left-radius: 28px !important;
+    border-bottom-right-radius: 28px !important;
+    max-height: 85vh !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* Tactile tap feedback */
+.tap-feedback:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+
+/* Gate desktop-only hover effects on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:scale-105:hover,
+  .hover\:scale-\[1\.02\]:hover {
+    transform: none !important;
+  }
+}
 

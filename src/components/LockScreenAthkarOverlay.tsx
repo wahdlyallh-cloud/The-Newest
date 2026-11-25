@@ -249,7 +249,7 @@ export default function LockScreenAthkarOverlay({
       <div className="fixed inset-0 z-[9999] bg-slate-950/95 backdrop-blur-md overflow-y-auto text-white select-none dir-rtl">
 
         {/* Main Flexible Container with Safe Margins */}
-        <div className="flex flex-col justify-between min-h-screen p-6 pt-12 pb-10 gap-6 max-w-3xl mx-auto w-full relative z-10">
+        <div className="flex flex-col justify-between min-h-dvh min-h-screen p-6 pt-safe pb-safe gap-6 max-w-3xl mx-auto w-full relative z-10">
 
           {/* Background Ambient Glowing Orbs */}
           <div className="absolute top-1/3 -right-24 w-80 h-80 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none" />

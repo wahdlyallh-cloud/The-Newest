@@ -1192,42 +1192,23 @@ export default function App() {
     document.documentElement.lang = info.code;
   }, [settings.appLanguage]);
 
-  // Mobile Auto-Hiding Top Header State
+  // Mobile Top Header & Bottom Navigation State (Stable native navigation)
   const [isHeaderCollapsedOnMobile, setIsHeaderCollapsedOnMobile] = useState(false);
-  const headerAutoTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Mobile Auto-Hiding Bottom Navigation State
   const [isBottomNavCollapsedOnMobile, setIsBottomNavCollapsedOnMobile] = useState(false);
-  const bottomNavAutoTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Temporarily reveals header for 3 seconds, then auto-collapses on mobile
+  // Reveals header if collapsed
   const revealHeaderTemporarily = useCallback(() => {
     setIsHeaderCollapsedOnMobile(false);
-    if (headerAutoTimerRef.current) {
-      clearTimeout(headerAutoTimerRef.current);
-    }
-    headerAutoTimerRef.current = setTimeout(() => {
-      setIsHeaderCollapsedOnMobile(true);
-    }, 3000);
   }, []);
 
-  // Temporarily reveals bottom nav for 3 seconds, then auto-collapses on mobile
+  // Reveals bottom nav if collapsed
   const revealBottomNavTemporarily = useCallback(() => {
     setIsBottomNavCollapsedOnMobile(false);
-    if (bottomNavAutoTimerRef.current) {
-      clearTimeout(bottomNavAutoTimerRef.current);
-    }
-    bottomNavAutoTimerRef.current = setTimeout(() => {
-      setIsBottomNavCollapsedOnMobile(true);
-    }, 3000);
   }, []);
 
-  // Instantly collapses top header on mobile
+  // Collapses top header on mobile when explicitly requested
   const collapseHeaderOnMobile = useCallback(() => {
-    setIsHeaderCollapsedOnMobile(true);
-    if (headerAutoTimerRef.current) {
-      clearTimeout(headerAutoTimerRef.current);
-    }
+    // Kept for backward compatibility
   }, []);
 
   // Navbar More Menu Dropdown State & Ref
@@ -5445,7 +5426,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen w-full overflow-x-hidden ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-24 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
+      className={`min-h-dvh min-h-screen w-full overflow-x-hidden ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-nav-safe md:pb-12 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
       dir={isRtl ? 'rtl' : 'ltr'}
       style={{
         fontFamily: getFontCss(settings.appFont),
@@ -5678,7 +5659,7 @@ export default function App() {
 
       {/* 🚀 Header bar with branding & Responsive Navigation Toolbar */}
       <header
-        className={`sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs transition-all duration-300 transform ${
+        className={`sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs transition-all duration-300 transform pt-safe ${
           isHeaderCollapsedOnMobile
             ? 'max-sm:-translate-y-full max-sm:max-h-0 max-sm:opacity-0 max-sm:overflow-hidden max-sm:pointer-events-none'
             : 'max-sm:translate-y-0 max-sm:max-h-[500px] max-sm:opacity-100'
@@ -5690,7 +5671,108 @@ export default function App() {
           }
         }}
       >
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-6 py-2.5 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+        {/* 📱 Mobile / Compact Header (< 768px): Clean Single-Row Navigation */}
+        <div className="flex md:hidden items-center justify-between px-3 py-2 w-full gap-2">
+          {/* Mobile Branding */}
+          <div className="flex items-center space-x-2 space-x-reverse shrink-0 select-none">
+            <div className="w-8 h-8 bg-[#8B9D83] rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
+              <Brain className="w-4.5 h-4.5" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-1 space-x-reverse">
+                <h1 className="text-sm font-black tracking-tight text-[#3A3A3A] truncate max-w-[130px]">
+                  {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
+                </h1>
+                <span className="text-[9px] font-black bg-[#8B9D83] text-white px-1 py-0.5 rounded leading-none">
+                  AI
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 space-x-reverse text-[9px] font-bold text-gray-400">
+                <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                <span>{autoSaveStatus === 'saving' ? t('nav.saving') : (lastAutoSaveTime || '💾')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Quick Action Buttons */}
+          <div className="flex items-center space-x-1.5 space-x-reverse">
+            {/* Athkar Pill */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsFullAthkarModalOpen(true);
+                collapseHeaderOnMobile();
+              }}
+              className="flex items-center space-x-1 space-x-reverse px-2.5 py-1.5 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all touch-target"
+              title={t('nav.dhikr_title')}
+              aria-label={t('nav.dhikr')}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
+              <span className="hidden xs:inline">{t('nav.dhikr')}</span>
+            </button>
+
+            {/* Daily Tasks Badge */}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('diaries');
+                setActiveDiariesSubTab('tasks');
+                setEditingDiary(null);
+                collapseHeaderOnMobile();
+              }}
+              className="flex items-center space-x-1 space-x-reverse px-2.5 py-1.5 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all touch-target"
+              title={t('nav.daily_tasks')}
+              aria-label={t('nav.daily_tasks')}
+            >
+              <span className="flex items-center justify-center bg-[#C5221F] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
+                {incompleteTasksCount}
+              </span>
+              <span className="hidden xs:inline">{t('nav.daily_tasks')}</span>
+            </button>
+
+            {/* User / Account Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsAuthModalOpen(true);
+                collapseHeaderOnMobile();
+              }}
+              className={`p-2 border rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all touch-target flex items-center justify-center min-h-[36px] min-w-[36px] ${
+                currentUser
+                  ? 'bg-teal-700 text-white border-teal-800'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+              }`}
+              title={t('nav.account_title')}
+              aria-label={t('nav.account_title')}
+            >
+              {currentUser ? (
+                <Cloud className="w-4 h-4 text-teal-200 shrink-0" />
+              ) : (
+                <User className="w-4 h-4 text-emerald-600 shrink-0" />
+              )}
+            </button>
+
+            {/* Mobile More Menu Button */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowNavMoreMenu(prev => !prev)}
+                className={`p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[36px] min-w-[36px] ${
+                  showNavMoreMenu
+                    ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
+                    : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
+                }`}
+                title={t('nav.more_options')}
+                aria-label={t('nav.more_options')}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 💻 Desktop Header (>= 768px): Structured Desktop Layout with Central Navigation Tabs */}
+        <div className="hidden md:flex max-w-[1440px] mx-auto px-4 lg:px-6 py-2.5 items-center justify-between gap-4">
 
           {/* 🌟 Zone 1: Protected Branding Card (Zero-Occlusion, full size) */}
           <div className="flex items-center space-x-3 space-x-reverse shrink-0 select-none w-full md:w-auto justify-between md:justify-start">
@@ -5722,6 +5804,35 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* 🧭 Zone 2: Desktop Center Navigation Bar */}
+          <nav className="flex items-center bg-[#F4F1EA] p-1 rounded-2xl border border-[#E2DCC8]/80 shadow-inner shrink-0" aria-label="Desktop Navigation">
+            {[
+              { id: 'dashboard', label: t('nav.home'), icon: Calendar },
+              { id: 'diaries', label: t('nav.diaries'), icon: BookOpen },
+              { id: 'advisor', label: t('nav.advisor'), icon: Brain },
+              { id: 'analytics', label: t('nav.progress'), icon: Activity },
+              { id: 'settings', label: t('nav.settings'), icon: SettingsIcon }
+            ].map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => switchTab(tab.id as any)}
+                  className={`flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-white text-[#4E685B] shadow-xs font-black'
+                      : 'text-gray-600 hover:text-[#3A3A3A] hover:bg-white/60'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#8B9D83]' : 'text-gray-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
 
           {/* 🎯 Zones 2 & 3: Navigation Action Bar & Utility Controls */}
           <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end w-full md:w-auto">
@@ -10883,13 +10994,17 @@ export default function App() {
         </motion.div>
       )}
 
-      {/* Persistent Bottom Tab Navigation Bar with Lucide icons (Auto-collapses on mobile after 3s of inactivity) */}
+      {/* Persistent Bottom Tab Navigation Bar with Lucide icons (Mobile / APK Native Bottom Navigation) */}
       <nav
-        className={`fixed bottom-0 inset-x-0 bg-[#F9F7F2] border-t border-[#E2DCC8] py-2 z-[35] shadow-xs font-sans transition-all duration-300 transform ${
-          isBottomNavCollapsedOnMobile
+        className={`fixed bottom-0 inset-x-0 md:hidden bg-[#F9F7F2]/95 backdrop-blur-md border-t border-[#E2DCC8] z-[35] shadow-lg font-sans transition-all duration-300 transform ${
+          editingDiary !== null || isFullAthkarModalOpen || isLockScreenAthkarOpen
+            ? 'translate-y-full opacity-0 pointer-events-none'
+            : isBottomNavCollapsedOnMobile
             ? 'max-sm:translate-y-full max-sm:opacity-0 max-sm:pointer-events-none'
-            : 'max-sm:translate-y-0 max-sm:opacity-100'
+            : 'translate-y-0 opacity-100'
         }`}
+        style={{ paddingBottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
+        dir={isRtl ? 'rtl' : 'ltr'}
         onTouchStart={() => {
           if (!isBottomNavCollapsedOnMobile) {
             revealBottomNavTemporarily();
@@ -10899,79 +11014,84 @@ export default function App() {
           revealBottomNavTemporarily();
         }}
       >
-        <div className="max-w-md mx-auto px-1.5 sm:px-6 grid grid-cols-5 gap-0.5 text-center font-bold">
+        <div className="max-w-md mx-auto px-1.5 pt-1.5 grid grid-cols-5 gap-0.5 text-center font-bold">
 
           {/* Tab 1: Dashboard */}
           <button
+            type="button"
             onClick={() => {
               switchTab('dashboard');
               revealBottomNavTemporarily();
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'dashboard' ? 'text-[#8B9D83] scale-105 font-bold' : 'text-gray-400 hover:text-[#5A5A40]'
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'dashboard' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
             }`}
           >
-            <Calendar className="w-4.5 h-4.5 sm:w-5 sm:h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.home')}</span>
+            <Calendar className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.home')}</span>
           </button>
 
           {/* Tab 2: Journal Diaries */}
           <button
+            type="button"
             onClick={() => {
               switchTab('diaries');
               revealBottomNavTemporarily();
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'diaries' ? 'text-[#8B9D83] scale-105 font-bold' : 'text-gray-400 hover:text-[#5A5A40]'
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'diaries' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
             }`}
           >
-            <BookOpen className="w-4.5 h-4.5 sm:w-5 sm:h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.diaries')}</span>
+            <BookOpen className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.diaries')}</span>
           </button>
 
           {/* Tab 3: Flagship Smart Advisor */}
           <button
+            type="button"
             onClick={() => {
               switchTab('advisor');
               revealBottomNavTemporarily();
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'advisor' ? 'text-[#8B9D83] scale-105 font-bold' : 'text-gray-400 hover:text-[#5A5A40]'
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'advisor' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
             }`}
           >
             <div className="relative">
-              <Brain className="w-4.5 h-4.5 sm:w-5 sm:h-5 mb-1" />
-              <span className="absolute top-[-4px] left-[-4px] w-2 h-2 bg-[#D4A373] rounded-full animate-ping"></span>
+              <Brain className="w-5 h-5 mb-0.5" />
+              <span className="absolute top-[-3px] left-[-3px] w-2 h-2 bg-[#D4A373] rounded-full animate-ping"></span>
             </div>
-            <span className="text-[9px] sm:text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.advisor')}</span>
+            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.advisor')}</span>
           </button>
 
           {/* Tab 4: Interactive Charts & Analytics */}
           <button
+            type="button"
             onClick={() => {
               switchTab('analytics');
               revealBottomNavTemporarily();
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'analytics' ? 'text-[#8B9D83] scale-105 font-bold' : 'text-gray-400 hover:text-[#5A5A40]'
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'analytics' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
             }`}
           >
-            <Activity className="w-4.5 h-4.5 sm:w-5 sm:h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.progress')}</span>
+            <Activity className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.progress')}</span>
           </button>
 
           {/* Tab 5: Settings and Backup */}
           <button
+            type="button"
             onClick={() => {
               switchTab('settings');
               revealBottomNavTemporarily();
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'settings' ? 'text-[#8B9D83] scale-105 font-bold' : 'text-gray-400 hover:text-[#5A5A40]'
+            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'settings' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
             }`}
           >
-            <SettingsIcon className="w-4.5 h-4.5 sm:w-5 sm:h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.settings')}</span>
+            <SettingsIcon className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.settings')}</span>
           </button>
 
         </div>

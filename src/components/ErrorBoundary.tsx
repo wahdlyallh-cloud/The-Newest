@@ -68,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className={`min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-6 text-center text-[#3A3A3A] font-sans ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`min-h-dvh min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-6 text-center text-[#3A3A3A] font-sans ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
           <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-[#E2DCC8] shadow-lg space-y-4">
             <div className="text-4xl">🎙️</div>
             <h1 className="text-xl font-bold text-[#2B3E50]">{title}</h1>

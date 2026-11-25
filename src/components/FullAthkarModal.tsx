@@ -723,8 +723,8 @@ export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning
 
   return (
     <AnimatePresence>
-      {/* FULL VIEWPORT MODE: fixed inset-0 w-screen h-screen min-h-[100dvh] z-[9999] bg-slate-950 */}
-      <div className="fixed inset-0 w-screen h-screen min-h-[100dvh] z-[9999] bg-slate-950 text-amber-50 flex flex-col dir-rtl overflow-hidden select-none">
+      {/* FULL VIEWPORT MODE: fixed inset-0 w-full h-dvh min-h-[100dvh] z-[9999] bg-slate-950 */}
+      <div className="fixed inset-0 w-full h-dvh min-h-[100dvh] z-[9999] bg-slate-950 text-amber-50 flex flex-col dir-rtl overflow-hidden select-none pt-safe pb-safe">
         
         {/* Top Full Viewport Header - Compact Single Row Optimization */}
         <div className={`px-2.5 py-1.5 sm:px-4 sm:py-2 border-b flex items-center justify-between gap-1.5 shrink-0 shadow-md relative z-[10000] ${
