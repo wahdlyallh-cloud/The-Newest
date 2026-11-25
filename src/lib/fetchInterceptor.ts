@@ -737,15 +737,16 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
         });
       }
 
-      const answer = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts, 'deep', reqLang);
-      return createSuccessResponse({
-        success: true,
-        answer,
-        source: 'gemini-unified',
-        citations: retrievedContext?.sourceCitations,
-        correlations: retrievedContext?.crossSourceCorrelations
-      });
-    } catch (err: any) {
+      try {
+        const answer = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts, 'deep', reqLang);
+        return createSuccessResponse({
+          success: true,
+          answer,
+          source: 'gemini-unified',
+          citations: retrievedContext?.sourceCitations,
+          correlations: retrievedContext?.crossSourceCorrelations
+        });
+      } catch (err: any) {
       if (err?.errorType === 'quota_exhausted' || err?.message?.includes('quota') || err?.message?.includes('الحصة')) {
         return createErrorResponse(getLocalizedAIError('quota-exhausted', reqLang), true, 429, 'quota_exhausted');
       }
