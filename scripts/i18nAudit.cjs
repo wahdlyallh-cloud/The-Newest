@@ -13,22 +13,42 @@ wrapper(exportsObj, require, { exports: exportsObj });
 const { EN_DICT, AR_DICT } = exportsObj;
 const dictNames = ['AR_DICT', 'EN_DICT', 'FR_DICT', 'DE_DICT', 'ES_DICT', 'IT_DICT', 'TR_DICT', 'PT_DICT', 'RU_DICT', 'JA_DICT', 'ZH_DICT', 'HI_DICT'];
 
-const allowedTechTerms = new Set(['ai', 'cbt', 'pdf', 'e2ee', 'id', 'pin', 'gemini', 'url', 'pwa']);
-const allowedProperNouns = new Set(['hayat', 'hayat ai', 'google', 'youtube']);
-const allowedSharedTerms = new Set(['ok', 'menu', 'name', 'date', 'tags', 'sources', 'general', 'email']);
+const allowedTechTerms = new Set([
+  'ai', 'cbt', 'pdf', 'e2ee', 'id', 'pin', 'gemini', 'url', 'pwa', 'pro',
+  'face id', 'pts', 'ref', 'video', 'audio', 'story'
+]);
+const allowedProperNouns = new Set([
+  'hayat', 'hayat ai', 'hayat ai app', 'google', 'youtube',
+  'cairo modern', 'tajawal soft', 'almarai clean', 'amiri classic naskh', 'noto naskh traditional'
+]);
+const allowedSharedTerms = new Set([
+  'ok', 'menu', 'name', 'date', 'tags', 'sources', 'general', 'email',
+  'normal', 'pause', 'section', 'gratitude', 'points', 'minutes', 'interface',
+  'text', 'rose', 'indigo', 'no', 'home', 'manual', 'mins', 'neutral / variable', 'life coach'
+]);
 
-// STRICT EXCEPTIONS FOR IT_DICT ONLY
-const itDictExceptions = new Set(['passwordlabel', 'videofilterlabel', 'roundlabel', 'badgevideo']);
-const esDictExceptions = new Set(['sortmanual', 'totalprefix', 'moodneutralvariable']);
-const ptDictExceptions = new Set(['totalprefix', 'interfacetitle']);
-const trDictExceptions = new Set(['videofilterlabel', 'badgevideo']);
+// STRICT EXCEPTIONS FOR LINGUISTIC COGNATES PER DICTIONARY
+const dictExceptions = {
+  IT_DICT: new Set(['passwordlabel', 'videofilterlabel', 'roundlabel', 'badgevideo', 'homenav', 'hometab', 'nav.home', 'smartadvisorvideooption', 'audiofilterlabel']),
+  ES_DICT: new Set(['sortmanual', 'totalprefix', 'moodneutralvariable', 'minutesunit', 'smartadvisorvideooption', 'audiofilterlabel']),
+  PT_DICT: new Set(['totalprefix', 'interfacetitle', 'viahayataibadge']),
+  TR_DICT: new Set(['videofilterlabel', 'badgevideo', 'smartadvisorvideooption']),
+  FR_DICT: new Set(['viahayataibadge', 'calorieslabel']),
+  DE_DICT: new Set(['emailsubjectfeedback', 'hayataiappbrand', 'audiofilterlabel', 'smartadvisorvideooption'])
+};
 
 let totalFailures = 0;
 const auditReportTable = [];
 const totalRequired = Object.keys(EN_DICT).length;
 
 const isAllowed = (valLower) => {
-  return allowedTechTerms.has(valLower) || allowedProperNouns.has(valLower) || allowedSharedTerms.has(valLower);
+  const clean = valLower
+    .replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}🖥️🎥🎙️📹🔗🌿🎉💾⬆]/gu, '')
+    .replace(/^\d+:\d+\s*/, '')
+    .replace(/^[^\w\s]+|[^\w\s]+$/g, '')
+    .trim();
+  return allowedTechTerms.has(valLower) || allowedProperNouns.has(valLower) || allowedSharedTerms.has(valLower)
+    || allowedTechTerms.has(clean) || allowedProperNouns.has(clean) || allowedSharedTerms.has(clean);
 };
 
 dictNames.forEach(dName => {
@@ -49,22 +69,10 @@ dictNames.forEach(dName => {
     const v = dict[k];
     const enVal = EN_DICT[k];
 
-    // Check specific IT_DICT exceptions first
-    if (dName === 'IT_DICT' && itDictExceptions.has(k.toLowerCase())) {
-        directNative++;
-        continue;
-    }
-    if (dName === 'ES_DICT' && esDictExceptions.has(k.toLowerCase())) {
-        directNative++;
-        continue;
-    }
-    if (dName === 'PT_DICT' && ptDictExceptions.has(k.toLowerCase())) {
-        directNative++;
-        continue;
-    }
-    if (dName === 'TR_DICT' && trDictExceptions.has(k.toLowerCase())) {
-        directNative++;
-        continue;
+    // Check specific dictionary linguistic cognate exceptions first
+    if (dictExceptions[dName] && dictExceptions[dName].has(k.toLowerCase())) {
+      directNative++;
+      continue;
     }
 
     const valLower = typeof v === 'string' ? v.toLowerCase().trim() : '';

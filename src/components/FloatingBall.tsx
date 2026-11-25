@@ -22,11 +22,12 @@ export default function FloatingBall({ onAction, isCollapsed = false, appLanguag
 
   return (
     <div 
-      className={`fixed bottom-18 sm:bottom-20 start-3 sm:start-6 z-40 font-sans transition-all duration-300 transform ${
+      className={`fixed start-3 sm:start-6 z-40 font-sans transition-all duration-300 transform ${
         isCollapsed 
           ? 'max-sm:translate-y-28 max-sm:opacity-0 max-sm:pointer-events-none' 
           : 'max-sm:translate-y-0 max-sm:opacity-100'
       }`} 
+      style={{ bottom: 'calc(max(4.5rem, calc(3.8rem + env(safe-area-inset-bottom, 0px))))' }}
       dir={langInfo.dir}
     >
       {/* Expanded Menu Options with Animations */}

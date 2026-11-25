@@ -1196,6 +1196,39 @@ export default function App() {
   const [isHeaderCollapsedOnMobile, setIsHeaderCollapsedOnMobile] = useState(false);
   const [isBottomNavCollapsedOnMobile, setIsBottomNavCollapsedOnMobile] = useState(false);
 
+  // Mobile Virtual Keyboard detection (hides bottom nav during typing to prevent jumping)
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  useEffect(() => {
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        setIsKeyboardOpen(true);
+      }
+    };
+    const handleFocusOut = () => {
+      setIsKeyboardOpen(false);
+    };
+    const handleVisualViewportResize = () => {
+      if (window.visualViewport) {
+        const isShrunk = window.visualViewport.height < window.innerHeight - 120;
+        setIsKeyboardOpen(isShrunk);
+      }
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('focusout', handleFocusOut);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleVisualViewportResize);
+    }
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn);
+      document.removeEventListener('focusout', handleFocusOut);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleVisualViewportResize);
+      }
+    };
+  }, []);
+
   // Reveals header if collapsed
   const revealHeaderTemporarily = useCallback(() => {
     setIsHeaderCollapsedOnMobile(false);
@@ -6163,7 +6196,7 @@ export default function App() {
 
       {/* --- MEDIA PREVIEW MODAL --- */}
       {previewMedia && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4" onClick={() => setPreviewMedia(null)}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 keep-centered" onClick={() => setPreviewMedia(null)}>
           <button
             className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-all z-50 cursor-pointer"
             onClick={() => setPreviewMedia(null)}
@@ -6172,12 +6205,12 @@ export default function App() {
             <X className="w-6 h-6" />
           </button>
 
-          <div className="max-w-6xl max-h-screen flex items-center justify-center w-full h-full relative" onClick={e => e.stopPropagation()}>
+          <div className="max-w-6xl max-h-dvh max-h-screen flex items-center justify-center w-full h-full relative" onClick={e => e.stopPropagation()}>
             {previewMedia.type === 'image' && (
-              <img src={previewMedia.url} className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" alt="Preview" />
+              <img src={previewMedia.url} className="max-w-full max-h-[90dvh] max-h-[90vh] object-contain rounded-xl shadow-2xl" alt="Preview" />
             )}
             {previewMedia.type === 'video' && (
-              <video src={previewMedia.url} controls autoPlay className="max-w-full max-h-[90vh] rounded-xl shadow-2xl" />
+              <video src={previewMedia.url} controls autoPlay className="max-w-full max-h-[90dvh] max-h-[90vh] rounded-xl shadow-2xl" />
             )}
             {previewMedia.type === 'audio' && (
               <div className="bg-white p-6 rounded-2xl flex flex-col items-center gap-4 min-w-[300px]">
@@ -6186,7 +6219,7 @@ export default function App() {
               </div>
             )}
             {previewMedia.type === 'pdf' && (
-              <div className="w-[95vw] sm:w-[90vw] h-[88vh] max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-[#E2DCC8]" dir={langInfo.dir}>
+              <div className="w-[95vw] sm:w-[90vw] h-[88dvh] max-h-[88vh] max-w-4xl bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-[#E2DCC8]" dir={langInfo.dir}>
                 {/* PDF Header Toolbar */}
                 <div className="p-3 sm:p-4 bg-[#F9F7F2] border-b border-[#E2DCC8] flex items-center justify-between gap-2 shrink-0">
                   <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
@@ -10968,12 +11001,13 @@ export default function App() {
       )}
 
       {/* Mobile Draggable Floating Button for Bottom Nav (Appears when bottom nav auto-collapses on mobile) */}
-      {isBottomNavCollapsedOnMobile && (
+      {isBottomNavCollapsedOnMobile && !isKeyboardOpen && (
         <motion.div
           drag="x"
           dragMomentum={false}
           dragElastic={0.1}
           className="fixed bottom-3 end-4 z-40 sm:hidden flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-grab active:cursor-grabbing"
+          style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}
         >
           <button
             type="button"
@@ -10997,7 +11031,7 @@ export default function App() {
       {/* Persistent Bottom Tab Navigation Bar with Lucide icons (Mobile / APK Native Bottom Navigation) */}
       <nav
         className={`fixed bottom-0 inset-x-0 md:hidden bg-[#F9F7F2]/95 backdrop-blur-md border-t border-[#E2DCC8] z-[35] shadow-lg font-sans transition-all duration-300 transform ${
-          editingDiary !== null || isFullAthkarModalOpen || isLockScreenAthkarOpen
+          editingDiary !== null || isFullAthkarModalOpen || isLockScreenAthkarOpen || isKeyboardOpen
             ? 'translate-y-full opacity-0 pointer-events-none'
             : isBottomNavCollapsedOnMobile
             ? 'max-sm:translate-y-full max-sm:opacity-0 max-sm:pointer-events-none'

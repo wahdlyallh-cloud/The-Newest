@@ -393,7 +393,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
 
       {/* Biometric Active Verification Overlay Modal */}
       {showBiometricModal && (
-        <div className="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-200" dir={langInfo.dir}>
+        <div className="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-200 keep-centered" dir={langInfo.dir}>
           <div className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4 animate-in zoom-in-95">
             <div className="flex justify-center">
               {biometricStatus === 'scanning' && (
@@ -482,7 +482,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
 
       {/* Biometric Not-Enrolled Modal */}
       {showUnenrolledModal && (
-        <div className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-200" dir={langInfo.dir}>
+        <div className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-200 keep-centered" dir={langInfo.dir}>
           <div className="bg-[#FAF8F5] border-2 border-amber-300 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4 animate-in zoom-in-95">
             <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl w-16 h-16 mx-auto flex items-center justify-center border border-amber-200">
               <Fingerprint className="w-8 h-8" />

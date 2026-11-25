@@ -202,7 +202,33 @@ input, textarea, [contenteditable="true"], article, p, h1, h2, h3, h4, h5, h6, .
   }
 }
 
+/* Universal Mobile Modal to Bottom-Sheet Adaptation (< 640px) */
+@media (max-width: 639px) {
+  .fixed.inset-0.flex.items-center.justify-center:not(.keep-centered) {
+    align-items: flex-end !important;
+    padding: 0 !important;
+    padding-top: max(1rem, env(safe-area-inset-top, 1rem)) !important;
+  }
+
+  .fixed.inset-0.flex.items-center.justify-center:not(.keep-centered) > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 28px !important;
+    border-top-right-radius: 28px !important;
+    max-height: calc(100dvh - max(1rem, env(safe-area-inset-top, 1rem))) !important;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem)) !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+  }
+}
+
 /* Tactile tap feedback */
+.tap-feedback {
+  touch-action: manipulation;
+}
+
 .tap-feedback:active {
   transform: scale(0.96);
   opacity: 0.9;
@@ -212,7 +238,11 @@ input, textarea, [contenteditable="true"], article, p, h1, h2, h3, h4, h5, h6, .
 /* Gate desktop-only hover effects on touch devices */
 @media (hover: none) and (pointer: coarse) {
   .hover\:scale-105:hover,
-  .hover\:scale-\[1\.02\]:hover {
+  .hover\:scale-\[1\.02\]:hover,
+  .hover\:scale-110:hover,
+  .hover\:rotate-12:hover,
+  .hover\:-translate-y-0\.5:hover,
+  .group:hover .group-hover\:-translate-y-0\.5 {
     transform: none !important;
   }
 }
