@@ -3397,6 +3397,7 @@ export default function App() {
               imageAttachmentIds: Array.from(new Set([...(prev.imageAttachmentIds || []), ...newImageAttachmentIds]))
             };
             saveDraftSynchronously(updated);
+            setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, images: updated.images, imageAttachmentIds: updated.imageAttachmentIds } : d));
             return updated;
           });
         } else {
@@ -3530,6 +3531,31 @@ export default function App() {
     });
   };
 
+  // --- Dedicated Safe Open & Preview Handlers for Images and Videos with IndexedDB durability ---
+  const handleOpenDiaryImage = async (imgUrl: string, index: number) => {
+    let url = (imgUrl && imgUrl !== '#' && !imgUrl.startsWith('blob:null')) ? imgUrl : '';
+    const attId = editingDiary?.imageAttachmentIds?.[index];
+    if ((!url || url === '#' || url.startsWith('blob:')) && attId) {
+      const freshUrl = await getAttachmentObjectUrl(attId);
+      if (freshUrl) url = freshUrl;
+    }
+    if (url && url !== '#') {
+      setPreviewMedia({ type: 'image', url, name: settings?.appLanguage === 'ar' ? 'صورة مرفقة' : 'Image' });
+    }
+  };
+
+  const handleOpenDiaryVideo = async (vidUrl: string, index: number) => {
+    let url = (vidUrl && vidUrl !== '#' && !vidUrl.startsWith('blob:null')) ? vidUrl : '';
+    const attId = editingDiary?.videoAttachmentIds?.[index];
+    if ((!url || url === '#' || url.startsWith('blob:')) && attId) {
+      const freshUrl = await getAttachmentObjectUrl(attId);
+      if (freshUrl) url = freshUrl;
+    }
+    if (url && url !== '#') {
+      setPreviewMedia({ type: 'video', url, name: settings?.appLanguage === 'ar' ? 'فيديو مرفق' : 'Video' });
+    }
+  };
+
   // --- Dedicated Safe Delete Handler for Image ---
   const handleDeleteDiaryImage = (index: number) => {
     setEditingDiary(prev => {
@@ -3556,6 +3582,7 @@ export default function App() {
         files: updatedFiles
       };
       saveDraftSynchronously(updated);
+      setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, images: updated.images, imageAttachmentIds: updated.imageAttachmentIds, files: updated.files } : d));
       return updated;
     });
   };
@@ -3586,6 +3613,7 @@ export default function App() {
         files: updatedFiles
       };
       saveDraftSynchronously(updated);
+      setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, videos: updated.videos, videoAttachmentIds: updated.videoAttachmentIds, files: updated.files } : d));
       return updated;
     });
   };
@@ -3695,6 +3723,7 @@ export default function App() {
               videoAttachmentIds: Array.from(new Set([...(prev.videoAttachmentIds || []), ...newVideoAttachmentIds]))
             };
             saveDraftSynchronously(updated);
+            setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, videos: updated.videos, videoAttachmentIds: updated.videoAttachmentIds } : d));
             return updated;
           });
           setActiveInputSection('none');
@@ -7981,7 +8010,7 @@ export default function App() {
                       minHeight: '280px',
                       lineHeight: '1.85'
                     }}
-                    className={`w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto shadow-inner ${fontDrawerFamily}`}
+                    className={`w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto shadow-inner select-text selectable-text whitespace-pre-wrap ${fontDrawerFamily}`}
                   />
 
                   {/* Attachment & Features Toolbar directly attached to textarea (Image 4 format) */}
@@ -8238,7 +8267,14 @@ export default function App() {
                           <img
                             src={img}
                             className="w-full h-full object-cover rounded-xl cursor-pointer hover:scale-105 transition-transform"
-                            onClick={() => setPreviewMedia({ type: 'image', url: img })}
+                            onClick={() => handleOpenDiaryImage(img, idx)}
+                            onError={async (e) => {
+                              const attId = editingDiary?.imageAttachmentIds?.[idx];
+                              if (attId) {
+                                const fresh = await getAttachmentObjectUrl(attId);
+                                if (fresh) (e.target as HTMLImageElement).src = fresh;
+                              }
+                            }}
                             alt={t.attachedImage || 'Image'}
                             title={settings?.appLanguage === 'ar' ? 'انقر للمعاينة والفتح' : 'Click to preview / open'}
                           />
@@ -8248,7 +8284,7 @@ export default function App() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setPreviewMedia({ type: 'image', url: img });
+                                handleOpenDiaryImage(img, idx);
                               }}
                               className="w-6 h-6 bg-[#2B3E50]/90 hover:bg-[#2B3E50] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
                               title={settings?.appLanguage === 'ar' ? 'معاينة الصورة' : 'Preview Image'}
@@ -8347,7 +8383,19 @@ export default function App() {
                       {editingDiary.videos.map((vid, idx) => (
                         <div key={idx} className="relative bg-[#F9F7F2] p-3 border border-[#E2DCC8] rounded-xl flex flex-col space-y-2">
                           {vid.startsWith('data:video/') || vid.startsWith('blob:') || vid.includes('mp4') || vid.startsWith('data:application/octet-stream') ? (
-                            <video src={vid} controls className="w-full h-32 rounded-lg bg-black object-cover cursor-pointer" onClick={() => setPreviewMedia({ type: 'video', url: vid })} />
+                            <video
+                              src={vid}
+                              controls
+                              className="w-full h-32 rounded-lg bg-black object-cover cursor-pointer"
+                              onClick={() => handleOpenDiaryVideo(vid, idx)}
+                              onError={async (e) => {
+                                const attId = editingDiary?.videoAttachmentIds?.[idx];
+                                if (attId) {
+                                  const fresh = await getAttachmentObjectUrl(attId);
+                                  if (fresh) (e.target as HTMLVideoElement).src = fresh;
+                                }
+                              }}
+                            />
                           ) : (
                             <div className="bg-white p-2.5 rounded-lg border border-[#E2DCC8]/60 text-xs text-[#5A5A40] truncate flex items-center space-x-2 space-x-reverse">
                               <span className="font-semibold shrink-0">{t.videoLink}</span>
@@ -8359,7 +8407,7 @@ export default function App() {
                           <div className="flex items-center justify-between pt-1">
                             <button
                               type="button"
-                              onClick={() => setPreviewMedia({ type: 'video', url: vid })}
+                              onClick={() => handleOpenDiaryVideo(vid, idx)}
                               className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1 shadow-3xs"
                             >
                               <Eye className="w-3 h-3" />
@@ -11673,9 +11721,17 @@ export default function App() {
         appLanguage={settings?.appLanguage || 'ar'}
         onSaveAudioRecording={(rec) => {
           addAudioToDiaryAtomic(rec);
-          handleTranscribeAudioItem(rec);
+          // Only transcribe if not already successfully transcribed by Gemini in modal
+          if (!rec.transcription || rec.transcription === 'تسجيل فضفضة صوتية' || rec.transcription === 'Voice vent recording' || rec.transcription.includes('⏳')) {
+            handleTranscribeAudioItem(rec);
+          }
         }}
         onAppendTextToContent={(text) => {
+          if (editorRef.current) {
+            const current = editorRef.current.innerHTML || '';
+            const separator = current && current.trim() ? '<br/><br/>' : '';
+            editorRef.current.innerHTML = `${current}${separator}🎙️ [فضفضة صوتية]:<br/>${text.replace(/\n/g, '<br/>')}`;
+          }
           setEditingDiary(prev => {
             if (!prev) return null;
             const separator = prev.content && prev.content.trim() ? '\n\n' : '';
@@ -11693,6 +11749,10 @@ export default function App() {
         gratitudeCards={displayedGratitudeCards}
         appLanguage={settings?.appLanguage || 'ar'}
         onImportSelected={(formattedText) => {
+          if (editorRef.current) {
+            const current = editorRef.current.innerHTML || '';
+            editorRef.current.innerHTML = current + formattedText.replace(/\n/g, '<br/>');
+          }
           setEditingDiary(prev => {
             if (!prev) return null;
             const updated = {

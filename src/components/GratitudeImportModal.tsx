@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, CheckSquare, Square, Sparkles, Calendar, Layers, Plus } from 'lucide-react';
 import { GratitudeCard, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
@@ -9,6 +9,25 @@ interface GratitudeImportModalProps {
   gratitudeCards: GratitudeCard[];
   appLanguage: AppLanguage;
   onImportSelected: (formattedText: string) => void;
+}
+
+/**
+ * Check if a date string belongs to local today in a timezone-safe manner.
+ */
+function isCardFromToday(createdAt: string | undefined): boolean {
+  if (!createdAt) return false;
+  try {
+    const cardDate = new Date(createdAt);
+    if (isNaN(cardDate.getTime())) return false;
+    const now = new Date();
+    return (
+      cardDate.getFullYear() === now.getFullYear() &&
+      cardDate.getMonth() === now.getMonth() &&
+      cardDate.getDate() === now.getDate()
+    );
+  } catch {
+    return false;
+  }
 }
 
 export default function GratitudeImportModal({
@@ -22,31 +41,50 @@ export default function GratitudeImportModal({
   const langInfo = getLanguageInfo(appLanguage);
   const isAr = appLanguage === 'ar';
 
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
-
   const todayCards = useMemo(() => {
-    return (gratitudeCards || []).filter(c => c.createdAt && c.createdAt.startsWith(todayStr));
-  }, [gratitudeCards, todayStr]);
+    return (gratitudeCards || [])
+      .filter(c => isCardFromToday(c.createdAt))
+      .sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+  }, [gratitudeCards]);
 
-  // Default to 'today' unless today is empty and there are other cards
-  const [activeTab, setActiveTab] = useState<'today' | 'all'>(() => {
-    return todayCards.length > 0 ? 'today' : 'all';
-  });
+  const allCardsSorted = useMemo(() => {
+    return [...(gratitudeCards || [])].sort((a, b) => {
+      const aIsToday = isCardFromToday(a.createdAt);
+      const bIsToday = isCardFromToday(b.createdAt);
+      if (aIsToday && !bIsToday) return -1;
+      if (!aIsToday && bIsToday) return 1;
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
+  }, [gratitudeCards]);
+
+  // Default to 'today' unless today is empty
+  const [activeTab, setActiveTab] = useState<'today' | 'all'>('today');
 
   const displayedCards = useMemo(() => {
-    return activeTab === 'today' ? todayCards : (gratitudeCards || []);
-  }, [activeTab, todayCards, gratitudeCards]);
+    return activeTab === 'today' ? todayCards : allCardsSorted;
+  }, [activeTab, todayCards, allCardsSorted]);
 
-  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
-    // By default preselect all items shown in the current tab
-    const initialList = todayCards.length > 0 ? todayCards : (gratitudeCards || []);
-    return initialList.map(c => c.id);
-  });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const defaultTab = todayCards.length > 0 ? 'today' : 'all';
+      setActiveTab(defaultTab);
+      const targetList = defaultTab === 'today' ? todayCards : allCardsSorted;
+      setSelectedIds(targetList.map(c => c.id));
+    }
+  }, [isOpen, todayCards, allCardsSorted]);
 
   // Switch tab and keep reasonable selection
   const handleTabChange = (tab: 'today' | 'all') => {
     setActiveTab(tab);
-    const targetCards = tab === 'today' ? todayCards : (gratitudeCards || []);
+    const targetCards = tab === 'today' ? todayCards : allCardsSorted;
     setSelectedIds(targetCards.map(c => c.id));
   };
 

@@ -37,6 +37,29 @@ function getBestSupportedAudioMimeType(): string | undefined {
   return undefined;
 }
 
+/**
+ * Infer exact audio MIME type safely from file/blob metadata or filename extension.
+ */
+function inferAudioMimeType(file: Blob | File): string {
+  if (file.type && file.type.startsWith('audio/')) {
+    return file.type;
+  }
+  if ('name' in file && typeof (file as any).name === 'string') {
+    const ext = (file as any).name.split('.').pop()?.toLowerCase();
+    if (ext === 'mp3') return 'audio/mp3';
+    if (ext === 'wav') return 'audio/wav';
+    if (ext === 'm4a') return 'audio/m4a';
+    if (ext === 'aac') return 'audio/aac';
+    if (ext === 'ogg' || ext === 'oga') return 'audio/ogg';
+    if (ext === 'webm') return 'audio/webm';
+    if (ext === 'flac') return 'audio/flac';
+    if (ext === 'opus') return 'audio/opus';
+    if (ext === 'amr') return 'audio/amr';
+    if (ext === '3gp' || ext === '3gpp') return 'audio/3gpp';
+  }
+  return file.type || 'audio/webm';
+}
+
 export default function VoiceVentModal({
   isOpen,
   onClose,
@@ -101,13 +124,38 @@ export default function VoiceVentModal({
     setRecordedAudioRec(null);
     setIsAppended(false);
 
-    // 1. First, acquire audio stream via getUserMedia - Decoupled completely from SpeechRecognition
+    // Stop and release any previously active stream tracks to prevent NotReadableError / conflict
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (_) {}
+      mediaStreamRef.current = null;
+    }
+
+    // 1. Acquire audio stream via getUserMedia with graceful Android WebView fallback constraints
     let stream: MediaStream;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('navigator.mediaDevices.getUserMedia is not supported');
       }
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (firstErr: any) {
+        const firstErrName = firstErr?.name || '';
+        if (firstErrName === 'NotReadableError' || firstErrName === 'TrackStartError' || firstErrName === 'AbortError') {
+          // In Android WebView, hardware may be momentarily occupied or conflicting with default constraints
+          await new Promise((r) => setTimeout(r, 250));
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            }
+          });
+        } else {
+          throw firstErr;
+        }
+      }
       mediaStreamRef.current = stream;
     } catch (err: any) {
       const errorName = err?.name || 'PermissionError';
@@ -120,7 +168,7 @@ export default function VoiceVentModal({
       if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
         friendlyMsg = isAr ? 'لم يتم العثور على ميكروفون متصل بالجهاز.' : 'No microphone device found on this system.';
       } else if (errorName === 'NotReadableError' || errorName === 'TrackStartError') {
-        friendlyMsg = isAr ? 'الميكروفون قيد الاستخدام حالياً بواسطة تطبيق آخر.' : 'Microphone is currently in use by another application.';
+        friendlyMsg = isAr ? 'الميكروفون قيد الاستخدام حالياً بواسطة تطبيق آخر أو تعذر فتح مسار الصوت. يمكنك استخدام خيار اختيار ملف صوتي أدناه.' : 'Microphone is currently in use by another app or audio track could not start. You can pick an audio file below.';
       }
 
       setMicErrorDetails({
@@ -239,7 +287,8 @@ export default function VoiceVentModal({
    * Pipeline to save audio and process Gemini transcription
    */
   const processAndSaveAudio = async (audioBlob: Blob, initialText: string) => {
-    const mimeType = resolvedMimeTypeRef.current || audioBlob.type || 'audio/webm';
+    const mimeType = inferAudioMimeType(audioBlob) || resolvedMimeTypeRef.current || 'audio/webm';
+    resolvedMimeTypeRef.current = mimeType;
     const attachmentId = `att-vent-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const recId = `rec-vent-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
 
@@ -277,9 +326,13 @@ export default function VoiceVentModal({
     const finalText = resolvedTranscript || initialText || (isAr ? 'تسجيل فضفضة صوتية' : 'Voice vent recording');
     setFinalTranscript(finalText);
 
+    const displayName = ('name' in audioBlob && typeof (audioBlob as any).name === 'string' && (audioBlob as any).name)
+      ? (audioBlob as any).name
+      : `${t.voiceQuickVent || (isAr ? 'فضفضة صوتية' : 'Voice Vent')} (${new Date().toLocaleTimeString(langInfo.bcp47 || 'ar-SA', { hour: '2-digit', minute: '2-digit' })})`;
+
     const newRec: AudioRecording = {
       id: recId,
-      name: `${t.voiceQuickVent || (isAr ? 'فضفضة صوتية' : 'Voice Vent')} (${new Date().toLocaleTimeString(langInfo.bcp47 || 'ar-SA', { hour: '2-digit', minute: '2-digit' })})`,
+      name: displayName,
       dataUrl: blobUrl,
       blobUrl,
       duration: Math.max(recordingSeconds, 1),
@@ -335,11 +388,17 @@ export default function VoiceVentModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    resolvedMimeTypeRef.current = file.type || 'audio/webm';
-    setMicErrorDetails(null);
-    setRecordingSeconds(0);
-    await processAndSaveAudio(file, '');
-    e.target.value = '';
+    try {
+      const detectedMime = inferAudioMimeType(file);
+      resolvedMimeTypeRef.current = detectedMime;
+      setMicErrorDetails(null);
+      setRecordingSeconds(0);
+      await processAndSaveAudio(file, '');
+    } catch (fallbackErr) {
+      console.error('[VoiceVent] Audio file fallback failed:', fallbackErr);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   if (!isOpen) return null;
