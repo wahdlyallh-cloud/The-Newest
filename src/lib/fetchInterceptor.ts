@@ -7,7 +7,10 @@ import {
   recordKeySuccess,
   classifyGeminiError,
   AITaskType,
-  getModelTierCandidates
+  getModelTierCandidates,
+  getModelCandidatesForTask,
+  markModelUnavailableForKey,
+  markModelVerifiedForKey
 } from './apiKeyManager';
 import {
   buildUnifiedKnowledgeIndex,
@@ -16,7 +19,7 @@ import {
 } from '../services/unifiedAIKnowledgeService';
 
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-2.5-flash';
+  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
   return modelName.trim().replace(/^models\//, '');
 }
 
@@ -83,11 +86,11 @@ async function generateWithGeminiREST(
     throw new Error('API_KEY_MISSING_CHECK_SETTINGS');
   }
 
-  const modelsToTry = getModelTierCandidates(taskType);
   let lastErrorMsg = '';
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
+    const modelsToTry = await getModelCandidatesForTask(currentKey, taskType);
 
     for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
       const model = modelsToTry[modelIdx];
@@ -137,6 +140,7 @@ async function generateWithGeminiREST(
           if (candidate) {
             const candidateText = candidate?.content?.parts?.[0]?.text;
             if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
+              markModelVerifiedForKey(currentKey, model);
               recordKeySuccess(currentKey);
               console.log(`[REST] Success with Model: ${model} | Key #${keyIdx + 1} | Time: ${elapsed}ms`);
               return candidateText;
@@ -157,9 +161,14 @@ async function generateWithGeminiREST(
           break; // break model loop to try next candidate key in pool
         }
 
-        if (res.status === 404 || res.status === 503 || res.status === 529 || errMessage.includes('high demand') || errMessage.includes('not found')) {
+        // Model-specific failure: 404 NOT_FOUND, deprecated, no longer available, or restricted
+        // Runtime self-healing: cache failed model for this key & step down to next candidate model on SAME key
+        if (res.status === 404 || res.status === 503 || res.status === 529 || errMessage.includes('high demand') || errMessage.includes('not found') || errMessage.includes('no longer available') || errMessage.includes('deprecated') || (res.status === 403 && !errMessage.includes('quota') && !errMessage.includes('resource_exhausted'))) {
+          markModelUnavailableForKey(currentKey, model);
           continue; // try next model in loop with same key
         }
+
+        markModelUnavailableForKey(currentKey, model);
       } catch (e: any) {
         clearTimeout(timeoutTimer);
         const elapsed = Date.now() - reqStart;
@@ -1055,12 +1064,12 @@ ${getAILanguageInstruction(reqLang)}`;
       }
 
       if (base64Data || fileUri) {
-        const modelsToTry = getModelTierCandidates('multimodal');
         let lastError = "";
         const globalDeadline = Date.now() + 150000; // 150s Global Timeout
 
         keyLoop: for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
           const currentKey = candidateKeys[keyIdx];
+          const modelsToTry = await getModelCandidatesForTask(currentKey, 'multimodal');
 
           for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
             if (Date.now() >= globalDeadline) {
@@ -1135,6 +1144,7 @@ Return pure JSON only in the following format:
                 if (!responseText || !responseText.trim()) {
                   throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
                 }
+                markModelVerifiedForKey(currentKey, modName);
                 recordKeySuccess(currentKey);
                 console.log(`[AudioTranscription] Success with Model: ${modName} | Key #${keyIdx + 1} | Time: ${elapsed}ms`);
                 const resJson = JSON.parse(responseText);
@@ -1158,14 +1168,17 @@ Return pure JSON only in the following format:
                 const errType = classifyGeminiError(res.status, lastError);
                 console.warn(`[AudioTranscription] Model: ${modName} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
 
-                if (errType === 'quota_exhausted' || errType === 'invalid_key') {
+                if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
                   rotateToNextKey(currentKey, errType);
                   break; // break model loop to try next candidate key
                 }
 
-                if (res.status === 404 || res.status === 503 || res.status === 529 || lastError.includes('high demand') || lastError.includes('not found')) {
+                if (res.status === 404 || res.status === 503 || res.status === 529 || lastError.includes('high demand') || lastError.includes('not found') || lastError.includes('no longer available') || lastError.includes('deprecated') || (res.status === 403 && !lastError.includes('quota') && !lastError.includes('resource_exhausted'))) {
+                  markModelUnavailableForKey(currentKey, modName);
                   continue; // try next model with same key
                 }
+
+                markModelUnavailableForKey(currentKey, modName);
               }
             } catch (modelErr: any) {
               clearTimeout(timeoutTimer);

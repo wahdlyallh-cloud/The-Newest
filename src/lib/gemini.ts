@@ -10,10 +10,14 @@ import {
   recordKeySuccess, 
   classifyGeminiError, 
   AITaskType, 
-  getModelTierCandidates 
+  getModelTierCandidates,
+  getModelCandidatesForTask,
+  markModelUnavailableForKey,
+  markModelVerifiedForKey,
+  testGeminiApiKey
 } from './apiKeyManager';
 
-export const AI_MODEL = 'gemini-2.5-flash';
+export const AI_MODEL = 'gemini-3.5-flash-lite';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
@@ -300,71 +304,36 @@ export async function validateGeminiApiKey(
     };
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+  const res = await testGeminiApiKey(cleanKey);
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: 'hi' }] }]
-      })
-    });
-
-    const responseText = await res.text();
-    let errJson: any = null;
-    if (responseText && responseText.trim()) {
-      try { errJson = JSON.parse(responseText); } catch (_) {}
-    }
-
-    if (res.status === 200 || res.ok) {
-      return { success: true, message: (t as any).apiKeyVerified || 'Key verified successfully 🎉' };
-    }
-
-    const rawMsg =
-      errJson?.error?.message ||
-      `HTTP ${res.status}: ${res.statusText || 'Request error'}`;
-    console.error('[gemini] validateGeminiApiKey error:', rawMsg);
-
-    if (
-      res.status === 429 ||
-      rawMsg.includes('Quota exceeded') ||
-      rawMsg.includes('RESOURCE_EXHAUSTED')
-    ) {
-      return {
-        success: true,
-        message: `${(t as any).apiKeyVerified || 'Key saved'} 🎉 (${(t as any).dailyLimitReached || 'Daily limit temporarily reached'})`,
-        errorDetail: rawMsg,
-      };
-    }
-
-    if (
-      res.status === 400 ||
-      res.status === 403 ||
-      rawMsg.includes('API key not valid') ||
-      rawMsg.includes('API_KEY_INVALID')
-    ) {
-      return {
-        success: false,
-        message: (t as any).apiKeyInvalidError || 'Invalid API key. Please ensure it is copied correctly from Google AI Studio.',
-        errorDetail: rawMsg,
-      };
-    }
-
+  if (res.success) {
     return {
-      success: false,
-      message: (t as any).apiKeyCheckSettings || 'Please check your API key in settings',
-      errorDetail: rawMsg,
-    };
-  } catch (networkErr: any) {
-    const detail = networkErr?.message || String(networkErr);
-    console.error('[gemini] validateGeminiApiKey network error:', detail);
-    return {
-      success: false,
-      message: (t as any).networkError || 'Server connection failed. Please check your internet connection.',
-      errorDetail: detail,
+      success: true,
+      message: `${(t as any).apiKeyVerified || 'Key verified successfully 🎉'}${res.verifiedModel ? ` (${res.verifiedModel})` : ''}`,
     };
   }
+
+  if (res.errorType === 'quota_exhausted') {
+    return {
+      success: true,
+      message: `${(t as any).apiKeyVerified || 'Key saved'} 🎉 (${(t as any).dailyLimitReached || 'Daily limit temporarily reached'})`,
+      errorDetail: res.message,
+    };
+  }
+
+  if (res.errorType === 'invalid_key') {
+    return {
+      success: false,
+      message: (t as any).apiKeyInvalidError || 'Invalid API key. Please ensure it is copied correctly from Google AI Studio.',
+      errorDetail: res.message,
+    };
+  }
+
+  return {
+    success: false,
+    message: (t as any).apiKeyCheckSettings || 'Please check your API key in settings',
+    errorDetail: res.message,
+  };
 }
 
 // ─── Direct Content Generation (with model fallback chain) ────
@@ -402,11 +371,11 @@ export async function generateGeminiContentDirect(
     return 'يرجى التحقق من مفتاح API في الإعدادات';
   }
 
-  const modelsToTry = getModelTierCandidates(taskType);
   let lastError = '';
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
+    const modelsToTry = await getModelCandidatesForTask(currentKey, taskType);
 
     for (const model of modelsToTry) {
       const url =
@@ -454,6 +423,7 @@ export async function generateGeminiContentDirect(
         if (res.ok) {
           const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (output && typeof output === 'string' && output.trim() !== '') {
+            markModelVerifiedForKey(currentKey, model);
             recordKeySuccess(currentKey);
             return output.trim();
           }
@@ -464,14 +434,24 @@ export async function generateGeminiContentDirect(
         lastError = rawError;
         const errType = classifyGeminiError(res.status, rawError);
 
+        // Quota / Rate limit / True key invalidity -> rotate to next key in pool
         if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
           rotateToNextKey(currentKey, errType);
           break; // break model loop to immediately try next key in pool
         }
 
-        if (res.status === 404 || res.status === 503 || res.status === 529 || rawError.includes('high demand') || rawError.includes('not found')) {
+        // Model-specific failure: 404 NOT_FOUND, deprecated, or restricted
+        // Runtime self-healing: cache failed model for this key & step down to next candidate model on SAME key
+        if (res.status === 404 || rawError.includes('not found') || rawError.includes('no longer available') || rawError.includes('deprecated') || (res.status === 403 && !rawError.includes('quota') && !rawError.includes('resource_exhausted'))) {
+          markModelUnavailableForKey(currentKey, model);
+          continue; // try next model in tier on SAME key
+        }
+
+        if (res.status === 503 || res.status === 529 || rawError.includes('high demand')) {
           continue; // try next model in tier
         }
+
+        markModelUnavailableForKey(currentKey, model);
       } catch (err: any) {
         lastError = err?.message || String(err);
       }
@@ -521,10 +501,9 @@ export async function transcribeAudioWithGemini(
   else if (cleanMime.includes("3gp") || cleanMime.includes("amr")) cleanMime = "audio/3gpp";
   else cleanMime = "audio/webm";
 
-  const modelsToTry = getModelTierCandidates('multimodal');
-
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
+    const modelsToTry = await getModelCandidatesForTask(currentKey, 'multimodal');
 
     for (const model of modelsToTry) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(currentKey.trim())}`;
@@ -565,6 +544,7 @@ export async function transcribeAudioWithGemini(
         if (res.ok) {
           const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (output && typeof output === 'string' && output.trim() !== '') {
+            markModelVerifiedForKey(currentKey, model);
             recordKeySuccess(currentKey);
             return output.trim();
           }
@@ -578,9 +558,16 @@ export async function transcribeAudioWithGemini(
           break; // try next key
         }
 
-        if (res.status === 404 || res.status === 503 || res.status === 529 || rawError.includes('high demand') || rawError.includes('not found')) {
+        if (res.status === 404 || rawError.includes('not found') || rawError.includes('no longer available') || rawError.includes('deprecated') || (res.status === 403 && !rawError.includes('quota') && !rawError.includes('resource_exhausted'))) {
+          markModelUnavailableForKey(currentKey, model);
+          continue; // try next model in tier on SAME key
+        }
+
+        if (res.status === 503 || res.status === 529 || rawError.includes('high demand')) {
           continue; // try next model in tier
         }
+
+        markModelUnavailableForKey(currentKey, model);
       } catch (err) {
         console.warn(`[gemini-transcribe] Model ${model} failed with key #${keyIdx + 1}:`, err);
       }

@@ -163,15 +163,17 @@ export type ClassifiedErrorType = 'quota_exhausted' | 'rate_limited' | 'invalid_
 export function classifyGeminiError(status: number, message: string): ClassifiedErrorType {
   const msg = (message || '').toLowerCase();
 
-  // 1. Invalid Key Identification (requires explicit key invalidity confirmation)
+  // 1. True Key-Level Authentication Failures (requires explicit key invalidity confirmation)
+  // Fix false-positive "Invalid Key" detection: NEVER classify 404, model restrictions, or general errors as invalid_key!
   if (
+    status === 401 ||
     msg.includes('api_key_invalid') ||
     msg.includes('api key not valid') ||
     msg.includes('key not valid') ||
     msg.includes('api_key_service_blocked') ||
     msg.includes('api_key_not_found') ||
-    msg.includes('permission_denied') ||
-    msg.includes('unregistered')
+    msg.includes('api key expired') ||
+    (msg.includes('unregistered') && msg.includes('project'))
   ) {
     return 'invalid_key';
   }
@@ -179,16 +181,19 @@ export function classifyGeminiError(status: number, message: string): Classified
   // 2. Quota / Rate Limit Identification
   if (
     status === 429 ||
-    status === 403 ||
     msg.includes('resource_exhausted') ||
     msg.includes('quota exceeded') ||
     msg.includes('rate limit') ||
-    msg.includes('quota')
+    msg.includes('rate_limit')
   ) {
-    if (msg.includes('quota') || msg.includes('limit exceeded') || status === 403 || msg.includes('resource_exhausted')) {
+    if (msg.includes('quota') || msg.includes('limit exceeded') || msg.includes('resource_exhausted')) {
       return 'quota_exhausted';
     }
     return 'rate_limited';
+  }
+
+  if (status === 403 && (msg.includes('quota') || msg.includes('resource_exhausted') || msg.includes('exhausted') || msg.includes('limit'))) {
+    return 'quota_exhausted';
   }
 
   // 3. Transient / High Demand Server-side Overload (does NOT blame or exhaust the key)
@@ -288,34 +293,359 @@ export function recordKeySuccess(keyStr: string): void {
 /**
  * Task tiers for Smart Task-Based Model Selection
  */
-export type AITaskType = 'light' | 'multimodal' | 'reasoning';
+export type AITaskType = 'light' | 'multimodal' | 'deep' | 'reasoning';
 
-export function getModelTierCandidates(taskType: AITaskType): string[] {
-  switch (taskType) {
-    case 'light':
-      return ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
-    case 'multimodal':
-      return ['gemini-2.5-flash', 'gemini-2.0-flash'];
-    case 'reasoning':
-      return ['gemini-2.5-pro', 'gemini-2.5-flash'];
-    default:
-      return ['gemini-2.5-flash', 'gemini-2.0-flash'];
+/**
+ * Ranked priority lists per task tier using active Google models.
+ */
+export const STATIC_TASK_MODELS: Record<'light' | 'multimodal' | 'deep', string[]> = {
+  light: [
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+    'gemini-3.6-flash',
+    'gemini-3.8-flash',
+    'gemini-4-hydrogen'
+  ],
+  multimodal: [
+    'gemini-3.8-flash',
+    'gemini-4-hydrogen',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite'
+  ],
+  deep: [
+    'gemini-4-carbon',
+    'gemini-4-argon',
+    'gemini-4-hydrogen',
+    'gemini-3.8-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite'
+  ]
+};
+
+// Retired or restricted legacy models to permanently ignore everywhere
+export const RETIRED_LEGACY_MODELS = [
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-lite',
+  'gemini-3.8-pro',
+  'gemini-3-pro-preview'
+];
+
+// Specialized non-general endpoints to strictly exclude from model discovery
+export const EXCLUDED_SPECIALIZED_KEYWORDS = [
+  'tts',
+  'image',
+  'live',
+  'embedding',
+  'transcribe',
+  'omni',
+  'genie',
+  'robotics',
+  'decision',
+  'aqa',
+  'imagen',
+  'veo',
+  'nano-banana'
+];
+
+// In-memory cache for live discovered models per API key (6 hours TTL)
+interface DiscoveredCacheEntry {
+  models: string[];
+  timestamp: number;
+}
+const discoveryCache = new Map<string, DiscoveredCacheEntry>();
+const DISCOVERY_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+// Per-key unavailable/failed models cache for runtime self-healing
+const keyUnavailableModels = new Map<string, Set<string>>();
+
+// Per-key verified working model cache
+const keyVerifiedModels = new Map<string, string>();
+
+/**
+ * Mark a model as unavailable for a specific key (e.g. on 404 / deprecated)
+ */
+export function markModelUnavailableForKey(key: string, model: string): void {
+  if (!key || !model) return;
+  const cleanKey = key.trim();
+  const cleanModel = model.replace(/^models\//, '').trim();
+  if (!keyUnavailableModels.has(cleanKey)) {
+    keyUnavailableModels.set(cleanKey, new Set<string>());
+  }
+  keyUnavailableModels.get(cleanKey)!.add(cleanModel);
+}
+
+/**
+ * Check if a model has been cached as unavailable for a specific key
+ */
+export function isModelUnavailableForKey(key: string, model: string): boolean {
+  if (!key || !model) return false;
+  const cleanKey = key.trim();
+  const cleanModel = model.replace(/^models\//, '').trim();
+  return Boolean(keyUnavailableModels.get(cleanKey)?.has(cleanModel));
+}
+
+/**
+ * Mark a model as verified working for a specific key and update settings pool
+ */
+export function markModelVerifiedForKey(key: string, model: string): void {
+  if (!key || !model) return;
+  const cleanKey = key.trim();
+  const cleanModel = model.replace(/^models\//, '').trim();
+  keyVerifiedModels.set(cleanKey, cleanModel);
+
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const settings: AppSettings = JSON.parse(saved);
+        if (settings.apiKeys && Array.isArray(settings.apiKeys)) {
+          let changed = false;
+          settings.apiKeys = settings.apiKeys.map(k => {
+            if (k.key?.trim() === cleanKey) {
+              changed = true;
+              return {
+                ...k,
+                verifiedModel: cleanModel,
+                status: 'ready' as ApiKeyStatus,
+                lastErrorMsg: undefined
+              };
+            }
+            return k;
+          });
+          if (changed) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+          }
+        }
+      }
+    }
+  } catch (_) {}
+}
+
+/**
+ * Get verified active working model for key
+ */
+export function getVerifiedModelForKey(key: string): string | undefined {
+  if (!key) return undefined;
+  return keyVerifiedModels.get(key.trim());
+}
+
+/**
+ * Fetch live available models for an API key directly from Google GET /v1beta/models.
+ * Supports any valid key format (including AIza..., AQ.A..., etc. without prefix restriction).
+ */
+export async function discoverGoogleModels(key: string, forceRefresh = false): Promise<string[]> {
+  if (!key || key.trim().length < 6) return [];
+  const cleanKey = key.trim();
+  const now = Date.now();
+
+  const cached = discoveryCache.get(cleanKey);
+  if (!forceRefresh && cached && (now - cached.timestamp < DISCOVERY_TTL_MS)) {
+    return cached.models;
+  }
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanKey)}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!res.ok) {
+      if (cached) return cached.models;
+      return [];
+    }
+
+    const data = await res.json().catch(() => ({}));
+    const rawList: any[] = Array.isArray(data?.models) ? data.models : [];
+
+    const discovered = rawList
+      .filter(m => {
+        const rawName = String(m?.name || '').replace(/^models\//, '').trim();
+        const lower = rawName.toLowerCase();
+
+        // Must be a Gemini family model
+        if (!lower.includes('gemini')) return false;
+
+        // Must support generateContent
+        const methods: string[] = Array.isArray(m?.supportedGenerationMethods) ? m.supportedGenerationMethods : [];
+        if (methods.length > 0 && !methods.includes('generateContent')) return false;
+
+        // Exclude retired/restricted models
+        if (RETIRED_LEGACY_MODELS.some(r => lower.includes(r))) return false;
+
+        // Exclude non-general specialized endpoints
+        if (EXCLUDED_SPECIALIZED_KEYWORDS.some(k => lower.includes(k))) return false;
+
+        return true;
+      })
+      .map(m => String(m.name).replace(/^models\//, '').trim());
+
+    if (discovered.length > 0) {
+      discoveryCache.set(cleanKey, {
+        models: discovered,
+        timestamp: now
+      });
+    }
+
+    return discovered;
+  } catch (err) {
+    if (cached) return cached.models;
+    return [];
   }
 }
 
 /**
- * Perform test query to verify key validity
+ * Future-proof dynamic scorer for models beyond the static preference list.
+ * Ranks higher version numbers appropriately by tier (lite for light, flash/hydrogen for multimodal, carbon/argon/pro for deep).
  */
-export async function testGeminiApiKey(key: string): Promise<{ success: boolean; message: string }> {
+export function scoreModelForTask(model: string, taskType: 'light' | 'multimodal' | 'deep'): number {
+  const clean = model.replace(/^models\//, '').toLowerCase();
+  let score = 0;
+
+  // 1. Version extraction (e.g. gemini-3.5 => 350, gemini-3.8 => 380, gemini-4 => 400, gemini-5 => 500)
+  const match = clean.match(/gemini-(\d+(?:\.\d+)?)/);
+  const version = match ? parseFloat(match[1]) : 3.0;
+  score += version * 100;
+
+  // 2. Tier affinity bonuses
+  if (taskType === 'light') {
+    if (clean.includes('lite') || clean.includes('flash-lite')) score += 500;
+    else if (clean.includes('flash') || clean.includes('hydrogen')) score += 250;
+    else score += 50;
+  } else if (taskType === 'multimodal') {
+    if (clean.includes('flash') || clean.includes('hydrogen')) score += 400;
+    else if (clean.includes('lite')) score += 150;
+    else if (clean.includes('carbon') || clean.includes('argon') || clean.includes('pro')) score += 100;
+    else score += 50;
+  } else {
+    // deep
+    if (clean.includes('carbon') || clean.includes('argon') || clean.includes('pro') || clean.includes('ultra')) score += 600;
+    else if (clean.includes('hydrogen')) score += 400;
+    else if (clean.includes('flash')) score += 200;
+    else if (clean.includes('lite')) score += 100;
+    else score += 50;
+  }
+
+  // 3. Static preference bonus to preserve proven ranked hierarchy
+  const staticList = STATIC_TASK_MODELS[taskType];
+  const staticIdx = staticList.indexOf(clean);
+  if (staticIdx !== -1) {
+    score += (staticList.length - staticIdx) * 30;
+  }
+
+  return score;
+}
+
+/**
+ * Task-Adaptive candidate selector: intersects task tier ranked list with key's live discovered models,
+ * applies the future-proof dynamic scorer, and filters out failed models from the runtime self-healing cache.
+ */
+export async function getModelCandidatesForTask(key: string, taskType: AITaskType = 'multimodal'): Promise<string[]> {
+  const normalizedTask: 'light' | 'multimodal' | 'deep' =
+    taskType === 'reasoning' || taskType === 'deep' ? 'deep' : (taskType === 'light' ? 'light' : 'multimodal');
+
+  const staticRanked = STATIC_TASK_MODELS[normalizedTask];
+  const cleanKey = (key || '').trim();
+
+  let discovered: string[] = [];
+  if (cleanKey.length >= 6) {
+    discovered = await discoverGoogleModels(cleanKey).catch(() => []);
+  }
+
+  let candidates: string[] = [];
+
+  if (discovered && discovered.length > 0) {
+    // Intersect static ranked list with discovered models
+    const intersectedStatic = staticRanked.filter(m => discovered.includes(m));
+
+    // Dynamic scorer for any newly released Gemini models
+    const newerDiscovered = discovered.filter(m => !staticRanked.includes(m));
+    newerDiscovered.sort((a, b) => scoreModelForTask(b, normalizedTask) - scoreModelForTask(a, normalizedTask));
+
+    const merged = new Set<string>();
+
+    // If newer models outscore top static model, place them at the head
+    for (const m of newerDiscovered) {
+      if (scoreModelForTask(m, normalizedTask) > scoreModelForTask(staticRanked[0], normalizedTask)) {
+        merged.add(m);
+      }
+    }
+    for (const m of intersectedStatic) {
+      merged.add(m);
+    }
+    for (const m of newerDiscovered) {
+      merged.add(m);
+    }
+    for (const m of staticRanked) {
+      merged.add(m);
+    }
+
+    candidates = Array.from(merged);
+  } else {
+    // Fallback directly to the static ranked preference list if ListModels is blocked on key
+    candidates = [...staticRanked];
+  }
+
+  // Runtime self-healing: filter out models that failed inference on this specific key
+  const healthy = candidates.filter(m => !isModelUnavailableForKey(cleanKey, m));
+  return healthy.length > 0 ? healthy : [...staticRanked];
+}
+
+/**
+ * Synchronous static fallback tier candidates
+ */
+export function getModelTierCandidates(taskType: AITaskType): string[] {
+  const normalizedTask: 'light' | 'multimodal' | 'deep' =
+    taskType === 'reasoning' || taskType === 'deep' ? 'deep' : (taskType === 'light' ? 'light' : 'multimodal');
+  return STATIC_TASK_MODELS[normalizedTask] || STATIC_TASK_MODELS.multimodal;
+}
+
+/**
+ * Perform test query to verify key validity:
+ * 1. Discovers live models for the key and verifies generateContent execution against the first working candidate.
+ * 2. Never marks a key as invalid when a single model returns 404 or deprecated — steps down to next candidate.
+ * 3. Returns the verified working model name.
+ */
+export async function testGeminiApiKey(key: string): Promise<{
+  success: boolean;
+  message: string;
+  verifiedModel?: string;
+  errorType?: ClassifiedErrorType;
+}> {
   if (!key || key.trim() === '') {
     return { success: false, message: 'API_KEY_EMPTY' };
   }
 
   const cleanKey = key.trim();
-  const models = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
+  // 1. Discover live models
+  const discovered = await discoverGoogleModels(cleanKey, true).catch(() => []);
+  const priorityTestList = ['gemini-3.8-flash', 'gemini-4-hydrogen', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'];
+
+  const candidatesSet = new Set<string>();
+
+  // Prefer discovered models intersecting priority list
+  for (const m of priorityTestList) {
+    if (discovered.length === 0 || discovered.includes(m)) {
+      candidatesSet.add(m);
+    }
+  }
+  // Add any newly discovered general Gemini models
+  for (const m of discovered) {
+    candidatesSet.add(m);
+  }
+  // Ensure priority fallback models are included
+  for (const m of priorityTestList) {
+    candidatesSet.add(m);
+  }
+
+  const modelsToTest = Array.from(candidatesSet).filter(m => !isModelUnavailableForKey(cleanKey, m));
   let lastErr = '';
 
-  for (const model of models) {
+  for (const model of modelsToTest) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
 
     try {
@@ -329,22 +659,36 @@ export async function testGeminiApiKey(key: string): Promise<{ success: boolean;
       });
 
       if (res.ok) {
-        return { success: true, message: 'API_KEY_VALID' };
+        markModelVerifiedForKey(cleanKey, model);
+        return {
+          success: true,
+          message: 'API_KEY_VALID',
+          verifiedModel: model
+        };
       }
 
       const data = await res.json().catch(() => ({}));
       const rawMsg = data?.error?.message || `HTTP ${res.status}`;
       lastErr = rawMsg;
+      const status = res.status;
 
-      if (res.status === 400 || rawMsg.includes('API_KEY_INVALID') || rawMsg.includes('API key not valid')) {
-        return { success: false, message: 'API_KEY_INVALID' };
+      const errType = classifyGeminiError(status, rawMsg);
+      if (errType === 'invalid_key') {
+        return { success: false, message: 'API_KEY_INVALID', errorType: 'invalid_key' };
       }
-      if (res.status === 429 || res.status === 403 || rawMsg.includes('RESOURCE_EXHAUSTED')) {
-        return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED' };
+      if (errType === 'quota_exhausted' || errType === 'rate_limited') {
+        return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED', errorType: errType };
       }
-      if (res.status === 404) {
-        continue; // Try next model
+
+      // Model-specific failure: 404 NOT_FOUND, deprecated, or no longer available
+      // Step down to next candidate model on the SAME key without marking key invalid!
+      if (status === 404 || rawMsg.includes('not found') || rawMsg.includes('no longer available') || rawMsg.includes('deprecated')) {
+        markModelUnavailableForKey(cleanKey, model);
+        continue;
       }
+
+      // Other model-specific error: cache model as unavailable and try next model
+      markModelUnavailableForKey(cleanKey, model);
     } catch (e: any) {
       lastErr = e?.message || String(e);
     }

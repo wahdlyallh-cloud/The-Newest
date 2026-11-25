@@ -84,7 +84,7 @@ export default function GeminiKeyModal({
 
     const newEntry: ApiKeyPoolEntry = {
       id: `key_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      name: newKeyName.trim() || `${t.apiKeyLabel} ${keysList.length + 1}`,
+      name: newKeyName.trim() || `${t.keyNumberPrefix || 'Key'} ${keysList.length + 1}`,
       key: cleanKey,
       status: 'ready',
       isEnabled: true,
@@ -116,16 +116,32 @@ export default function GeminiKeyModal({
     // Update local status in state
     setKeysList(prev => prev.map(k => {
       if (k.id === entry.id) {
+        let newStatus: ApiKeyStatus = k.status;
+        if (res.success) {
+          newStatus = 'ready';
+        } else if (res.errorType === 'invalid_key') {
+          newStatus = 'invalid';
+        } else if (res.errorType === 'quota_exhausted' || res.errorType === 'rate_limited') {
+          newStatus = 'quota_exhausted';
+        } else {
+          newStatus = 'standby';
+        }
+
         return {
           ...k,
-          status: res.success ? 'ready' : (res.message.includes('Quota') ? 'quota_exhausted' : 'invalid'),
+          status: newStatus,
+          verifiedModel: res.verifiedModel || k.verifiedModel,
           lastErrorMsg: res.success ? undefined : res.message
         };
       }
       return k;
     }));
 
-    setTestResult({ id: entry.id, success: res.success, message: res.message });
+    const resultMessage = res.success
+      ? `${t.apiKeyVerified || 'Key verified successfully 🎉'}${res.verifiedModel ? ` (${res.verifiedModel})` : ''}`
+      : (res.errorType === 'invalid_key' ? (t.apiKeyInvalidError || 'API key invalid') : (res.errorType === 'quota_exhausted' ? (t.apiKeyStatusQuotaExhausted || 'Quota exhausted') : res.message));
+
+    setTestResult({ id: entry.id, success: res.success, message: resultMessage });
     setTestingKeyId(null);
   };
 
@@ -236,11 +252,11 @@ export default function GeminiKeyModal({
         {/* Content Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-4 pb-12 sm:pb-6">
           <p className="text-xs text-gray-600 font-extrabold leading-relaxed text-justify">
-            إدارة مفاتيح Gemini API المتعددة مع التبديل التلقائي عند اكتمال حد المفتاح الرئيسي (Automatic Failover & Key Rotation).
+            {t.geminiPoolDesc}
           </p>
 
           <div className="bg-amber-50/20 border border-amber-200/60 rounded-2xl p-3 text-[11px] text-amber-900 font-bold leading-relaxed">
-            ℹ️ ملاحظة: المفاتيح المحفوظة تُستخدم فقط محلياً داخل جهازك للاتصال المستقر بخدمات الذكاء الاصطناعي.
+            ℹ️ {t.geminiPoolNote}
           </div>
 
           {/* Keys Pool List */}
@@ -262,7 +278,7 @@ export default function GeminiKeyModal({
                         {index + 1}
                       </span>
                       <span className="text-[11px] font-black text-gray-400 shrink-0">
-                        Key #{index + 1}
+                        {t.keyNumberPrefix || 'Key'} #{index + 1}
                       </span>
                       <input
                         type="text"
@@ -272,14 +288,22 @@ export default function GeminiKeyModal({
                           setKeysList(prev => prev.map(k => k.id === entry.id ? { ...k, name: val } : k));
                         }}
                         className="font-black text-xs text-[#2B3E50] bg-transparent focus:outline-none focus:border-b border-[#8B9D83] flex-1 truncate"
-                        placeholder={`${t.apiKeyLabel || 'Key'} #${index + 1}`}
+                        placeholder={`${t.keyNumberPrefix || 'Key'} #${index + 1}`}
                       />
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {isActive && (
+                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                      {/* Prevent contradictory badges: never render active badge if key is invalid */}
+                      {isActive && entry.status !== 'invalid' && (
                         <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#3F5449] text-white flex items-center gap-1 shadow-3xs">
                           <span>⚡</span>
-                          <span>{appLanguage === 'ar' ? 'النشط حالياً' : 'Active'}</span>
+                          <span>{t.apiKeyActiveNow || 'النشط حالياً'}</span>
+                        </span>
+                      )}
+                      {/* Subtle active verified model badge when healthy */}
+                      {entry.verifiedModel && entry.status === 'ready' && (
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1" title={entry.verifiedModel}>
+                          <span>🤖</span>
+                          <span>{entry.verifiedModel}</span>
                         </span>
                       )}
                       {getStatusBadge(entry)}
@@ -310,7 +334,7 @@ export default function GeminiKeyModal({
                   {/* Usage Stats & Action Bar */}
                   <div className="flex items-center justify-between text-[10px] text-gray-500 font-bold pt-1 border-t border-gray-100 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
-                      <span>الطلبات اليوم: {entry.requestsToday || 0}</span>
+                      <span>{t.requestsTodayLabel || 'الطلبات اليوم:'} {entry.requestsToday || 0}</span>
                       <div className="flex items-center gap-0.5 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
                         <button
                           type="button"
@@ -341,7 +365,7 @@ export default function GeminiKeyModal({
                           isActive ? 'bg-[#3F5449] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
-                        {isActive ? (appLanguage === 'ar' ? 'نشط Active' : 'Active') : (appLanguage === 'ar' ? 'تفعيل' : 'Activate')}
+                        {isActive ? (t.apiKeyActive || 'نشط') : (t.apiKeyActivate || 'تفعيل')}
                       </button>
 
                       <button
@@ -350,7 +374,7 @@ export default function GeminiKeyModal({
                         disabled={isTesting}
                         className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 cursor-pointer"
                       >
-                        {isTesting ? (t.analyzing || 'جاري الفحص...') : (appLanguage === 'ar' ? 'فحص Test' : 'Test')}
+                        {isTesting ? (t.apiKeyTesting || t.analyzing || 'جاري الفحص...') : (t.apiKeyTest || 'فحص')}
                       </button>
 
                       <button
@@ -413,7 +437,7 @@ export default function GeminiKeyModal({
                       onClick={() => setShowAddForm(false)}
                       className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl"
                     >
-                      إلغاء
+                      {t.cancel || 'إلغاء'}
                     </button>
                     <button
                       type="button"
@@ -421,7 +445,7 @@ export default function GeminiKeyModal({
                       disabled={!newKeyInput.trim()}
                       className="flex-1 py-2 bg-[#3F5449] hover:bg-[#2C3E50] text-white font-black text-xs rounded-xl disabled:opacity-50"
                     >
-                      إضافة للـ Pool
+                      {t.addKeySubmit || 'إضافة المفتاح'}
                     </button>
                   </div>
                 </div>
