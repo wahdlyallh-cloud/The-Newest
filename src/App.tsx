@@ -5459,7 +5459,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-dvh min-h-screen w-full overflow-x-hidden ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-nav-safe md:pb-12 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
+      className={`min-h-dvh min-h-screen w-full overflow-x-clip ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-nav-safe md:pb-12 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
       dir={isRtl ? 'rtl' : 'ltr'}
       style={{
         fontFamily: getFontCss(settings.appFont),
@@ -6187,7 +6187,7 @@ export default function App() {
 
 
       {/* Main Content Area */}
-      <main className={`max-w-4xl mx-auto px-4 pb-28 md:pb-12 space-y-6 transition-all ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
+      <main className={`max-w-4xl mx-auto px-4 pb-nav-safe md:pb-12 space-y-6 transition-all ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
 
         {/* Offline & Cloud Background Sync Status Banner */}
         <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
