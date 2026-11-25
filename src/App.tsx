@@ -7,7 +7,7 @@ import {
   Settings as SettingsIcon, Sparkles, LogOut, CheckSquare,
   Trash2, Edit3, Trash, Star, Image, Paperclip, Mic, MicOff,
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
-  User, Printer, ChevronRight, ArrowRight, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
+  User, Printer, ChevronRight, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
   MoreVertical, MoreHorizontal, Folder, FileText
 } from 'lucide-react';
@@ -1333,6 +1333,8 @@ export default function App() {
   // --- Active Diary Editing State ---
   const [previewMedia, setPreviewMedia] = useState<{ type: 'image' | 'video' | 'audio' | 'pdf', url: string, name?: string } | null>(null);
   const [showExportDiaryModal, setShowExportDiaryModal] = useState<boolean>(false);
+  const [isTopDrawerOpen, setIsTopDrawerOpen] = useState<boolean>(false);
+  const [editingDrawingIndex, setEditingDrawingIndex] = useState<number | null>(null);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
   const [selectedChatIndices, setSelectedChatIndices] = useState<number[]>([]);
@@ -1368,7 +1370,11 @@ export default function App() {
             ...f,
             dataUrl: (f.attachmentId || (f.dataUrl && f.dataUrl.length > 500000)) ? '#' : f.dataUrl
           })),
-          drawing: (draft.drawingAttachmentId || (draft.drawing && draft.drawing.length > 200000)) ? '#' : draft.drawing
+          drawing: (draft.drawingAttachmentId || (draft.drawing && draft.drawing.length > 200000)) ? '#' : draft.drawing,
+          drawings: (draft.drawings || []).map((drawItem, dIdx) => {
+            const aId = draft.drawingAttachmentIds?.[dIdx];
+            return (aId || (drawItem && drawItem.length > 200000)) ? '#' : drawItem;
+          })
         };
         localStorage.setItem('yawmiyati_draft_editing_diary', JSON.stringify(safeDraft));
       } catch (e) {
@@ -2164,15 +2170,27 @@ export default function App() {
         hasChanges = true;
       }
 
-      // Rehydrate Drawing from drawingAttachmentId in IndexedDB if needed
-      let restoredDrawing = editingDiary.drawing;
-      if (editingDiary.drawingAttachmentId && (!editingDiary.drawing || editingDiary.drawing === '#' || editingDiary.drawing.startsWith('blob:null'))) {
-        const drawUrl = await getAttachmentObjectUrl(editingDiary.drawingAttachmentId);
-        if (drawUrl) {
-          restoredDrawing = drawUrl;
-          hasChanges = true;
+      // Rehydrate Drawings from IndexedDB if needed (Multiple Drawings Support)
+      let restoredDrawings = (Array.isArray(editingDiary.drawings) && editingDiary.drawings.length > 0)
+        ? [...editingDiary.drawings]
+        : (editingDiary.drawing ? [editingDiary.drawing] : []);
+      const attIds = (Array.isArray(editingDiary.drawingAttachmentIds) && editingDiary.drawingAttachmentIds.length > 0)
+        ? editingDiary.drawingAttachmentIds
+        : (editingDiary.drawingAttachmentId ? [editingDiary.drawingAttachmentId] : []);
+
+      if (attIds.length > 0) {
+        for (let i = 0; i < attIds.length; i++) {
+          const aid = attIds[i];
+          if (aid && (!restoredDrawings[i] || restoredDrawings[i] === '#' || restoredDrawings[i].startsWith('blob:null'))) {
+            const drawUrl = await getAttachmentObjectUrl(aid);
+            if (drawUrl) {
+              restoredDrawings[i] = drawUrl;
+              hasChanges = true;
+            }
+          }
         }
       }
+      let restoredDrawing = restoredDrawings[0] || editingDiary.drawing;
 
       if (hasChanges && !isCancelled) {
         const finalImages = restoredImages.length > 0 ? restoredImages : editingDiary.images;
@@ -2184,7 +2202,8 @@ export default function App() {
           audioRecordings: restoredAudio,
           images: finalImages,
           videos: finalVideos,
-          drawing: restoredDrawing
+          drawing: restoredDrawing,
+          drawings: restoredDrawings
         } : prev);
 
         // Sync fresh live Object URLs into diaries list in memory so other views/modals access valid media
@@ -2194,7 +2213,8 @@ export default function App() {
           audioRecordings: restoredAudio,
           images: finalImages,
           videos: finalVideos,
-          drawing: restoredDrawing || d.drawing
+          drawing: restoredDrawing || d.drawing,
+          drawings: restoredDrawings.length > 0 ? restoredDrawings : d.drawings
         } : d));
       }
     };
@@ -2940,7 +2960,7 @@ export default function App() {
     if (!editingDiary) return;
     const newTask: TaskItem = {
       id: `task-${Date.now()}`,
-      text: 'أضف المهمة هنا...',
+      text: '',
       completed: false
     };
     setEditingDiary(prev => {
@@ -3138,7 +3158,11 @@ export default function App() {
             dataUrl: (f.attachmentId || (f.dataUrl && f.dataUrl.length > 500000)) ? '#' : f.dataUrl
           })),
           videos: (d.videos || []).map(v => (v && v.length > 500000) ? '#' : v).filter(Boolean),
-          drawing: (d.drawingAttachmentId || (d.drawing && d.drawing.length > 200000)) ? '#' : d.drawing
+          drawing: (d.drawingAttachmentId || (d.drawing && d.drawing.length > 200000)) ? '#' : d.drawing,
+          drawings: (d.drawings || []).map((drawItem, dIdx) => {
+            const aId = d.drawingAttachmentIds?.[dIdx];
+            return (aId || (drawItem && drawItem.length > 200000)) ? '#' : drawItem;
+          })
         }));
         localStorage.setItem('yawmiyati_diaries', JSON.stringify(safeDiaries));
         localStorage.removeItem('yawmiyati_draft_editing_diary');
@@ -5704,105 +5728,240 @@ export default function App() {
           }
         }}
       >
-        {/* 📱 Mobile / Compact Header (< 768px): Clean Single-Row Navigation */}
-        <div className="flex md:hidden items-center justify-between px-3 py-2 w-full gap-2">
-          {/* Mobile Branding */}
-          <div className="flex items-center space-x-2 space-x-reverse shrink-0 select-none">
-            <div className="w-8 h-8 bg-[#8B9D83] rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
-              <Brain className="w-4.5 h-4.5" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center space-x-1 space-x-reverse">
-                <h1 className="text-sm font-black tracking-tight text-[#3A3A3A] truncate max-w-[130px]">
-                  {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
-                </h1>
-                <span className="text-[9px] font-black bg-[#8B9D83] text-white px-1 py-0.5 rounded leading-none">
-                  AI
-                </span>
+        {/* 📱 Mobile / Compact Header (< 768px): Expandable + Action Drawer */}
+        {!isTopDrawerOpen ? (
+          <div className="flex md:hidden items-center justify-between px-3 py-2 w-full gap-2 transition-all duration-300">
+            {/* Mobile Branding */}
+            <div className="flex items-center space-x-2 space-x-reverse shrink-0 select-none">
+              <div className="w-8 h-8 bg-[#8B9D83] rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
+                <Brain className="w-4.5 h-4.5" />
               </div>
-              <div className="flex items-center space-x-1 space-x-reverse text-[9px] font-bold text-gray-400">
-                <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-                <span>{autoSaveStatus === 'saving' ? t('nav.saving') : (lastAutoSaveTime || '💾')}</span>
+              <div className="flex flex-col">
+                <div className="flex items-center space-x-1 space-x-reverse">
+                  <h1 className="text-sm font-black tracking-tight text-[#3A3A3A] truncate max-w-[140px]">
+                    {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
+                  </h1>
+                  <span className="text-[9px] font-black bg-[#8B9D83] text-white px-1 py-0.5 rounded leading-none">
+                    AI
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1 space-x-reverse text-[9px] font-bold text-gray-400">
+                  <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                  <span>{autoSaveStatus === 'saving' ? t('nav.saving') : (lastAutoSaveTime || '💾')}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Mobile Quick Action Buttons */}
-          <div className="flex items-center space-x-1.5 space-x-reverse">
-            {/* Athkar Pill */}
+            {/* Consolidated Top-Bar + Toggle Button (smoothly rotates to × when open) */}
             <button
               type="button"
-              onClick={() => {
-                setIsFullAthkarModalOpen(true);
-                collapseHeaderOnMobile();
-              }}
-              className="flex items-center space-x-1 space-x-reverse px-2.5 py-1.5 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all touch-target"
-              title={t('nav.dhikr_title')}
-              aria-label={t('nav.dhikr')}
+              onClick={() => setIsTopDrawerOpen(true)}
+              className="relative p-2.5 rounded-xl border border-[#D1CCBA] bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] active:scale-95 transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[40px] min-w-[40px]"
+              title={t.topMenuQuickDrawer || 'القائمة السريعة والأقسام'}
+              aria-label={t.topMenuQuickDrawer || 'القائمة السريعة والأقسام'}
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
-              <span className="hidden xs:inline">{t('nav.dhikr')}</span>
-            </button>
-
-            {/* Daily Tasks Badge */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('diaries');
-                setActiveDiariesSubTab('tasks');
-                setEditingDiary(null);
-                collapseHeaderOnMobile();
-              }}
-              className="flex items-center space-x-1 space-x-reverse px-2.5 py-1.5 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all touch-target"
-              title={t('nav.daily_tasks')}
-              aria-label={t('nav.daily_tasks')}
-            >
-              <span className="flex items-center justify-center bg-[#C5221F] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
-                {incompleteTasksCount}
-              </span>
-              <span className="hidden xs:inline">{t('nav.daily_tasks')}</span>
-            </button>
-
-            {/* User / Account Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsAuthModalOpen(true);
-                collapseHeaderOnMobile();
-              }}
-              className={`p-2 border rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all touch-target flex items-center justify-center min-h-[36px] min-w-[36px] ${
-                currentUser
-                  ? 'bg-teal-700 text-white border-teal-800'
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-              }`}
-              title={t('nav.account_title')}
-              aria-label={t('nav.account_title')}
-            >
-              {currentUser ? (
-                <Cloud className="w-4 h-4 text-teal-200 shrink-0" />
-              ) : (
-                <User className="w-4 h-4 text-emerald-600 shrink-0" />
+              <Plus className="w-5 h-5 transition-transform duration-300 transform" />
+              {/* Subtle Red Indicator Dot if Unread Notifications or Incomplete Tasks Exist */}
+              {(incompleteTasksCount > 0 || (settings.reminders || []).some(r => r.active)) && (
+                <span className="absolute top-1.5 end-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse" />
               )}
             </button>
+          </div>
+        ) : (
+          <div className="flex md:hidden items-center justify-between px-2 py-1.5 w-full gap-2 transition-all duration-300 bg-[#FAF8F5] border-b border-[#E2DCC8]/80 animate-in fade-in slide-in-from-top-1 duration-200">
+            {/* Close Button that smoothly rotates to × */}
+            <button
+              type="button"
+              onClick={() => setIsTopDrawerOpen(false)}
+              className="p-2 rounded-xl bg-[#5A5A40] text-white hover:bg-[#474732] active:scale-95 transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[38px] min-w-[38px] shrink-0"
+              title={t.closeAction || 'إغلاق'}
+              aria-label={t.closeAction || 'إغلاق'}
+            >
+              <X className="w-5 h-5 transition-transform duration-300 transform rotate-90" />
+            </button>
 
-            {/* Mobile More Menu Button */}
-            <div className="relative shrink-0">
+            {/* Full-width Horizontal Scrollable Action Drawer */}
+            <div className="flex-1 flex items-center space-x-1.5 space-x-reverse overflow-x-auto scrollbar-none py-1 px-1 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {/* ── APP UTILITIES ── */}
+              {/* 1. Notifications / Smart Reminders */}
               <button
                 type="button"
-                onClick={() => setShowNavMoreMenu(prev => !prev)}
-                className={`p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[36px] min-w-[36px] ${
-                  showNavMoreMenu
-                    ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
-                    : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
-                }`}
-                title={t('nav.more_options')}
-                aria-label={t('nav.more_options')}
+                onClick={() => {
+                  setShowSmartRemindersModal(true);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="relative flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/90 rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t('nav.smart_reminders')}
               >
-                <MoreVertical className="w-4 h-4" />
+                <BellRing className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                <span>{t('nav.smart_reminders')}</span>
+                {(settings.reminders?.length || 0) > 0 && (
+                  <span className="text-[9px] bg-amber-600 text-white px-1.5 py-0.2 rounded-full font-bold">
+                    {settings.reminders.length}
+                  </span>
+                )}
+              </button>
+
+              {/* 2. Account / Profile */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAuthModalOpen(true);
+                  setIsTopDrawerOpen(false);
+                }}
+                className={`flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 border rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px] ${
+                  currentUser
+                    ? 'bg-teal-700 text-white border-teal-800'
+                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                }`}
+                title={t('nav.account_title')}
+              >
+                {currentUser ? (
+                  <>
+                    <Cloud className="w-3.5 h-3.5 text-teal-200 shrink-0" />
+                    <span className="truncate max-w-[80px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>{t('nav.sign_in')}</span>
+                  </>
+                )}
+              </button>
+
+              {/* 3. AI Sparkle */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('advisor');
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-900 border border-purple-200 rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t.aiAdvisor}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse shrink-0" />
+                <span>{t.aiAdvisor}</span>
+              </button>
+
+              {/* 4. Menu ⋮ */}
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowNavMoreMenu(prev => !prev)}
+                  className={`p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[36px] min-w-[36px] ${
+                    showNavMoreMenu
+                      ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
+                      : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
+                  }`}
+                  title={t('nav.more_options')}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* ── CLEAN SUBTLE VERTICAL DIVIDER ── */}
+              <div className="h-6 w-px bg-[#E2DCC8] shrink-0 mx-1" />
+
+              {/* ── SECONDARY SECTIONS (Icon + Clear Short Label) ── */}
+              {/* 1. Gratitude Wall (الامتنان) */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('diaries', { subTab: 'gratitude' });
+                  setActiveDiariesSubTab('gratitude');
+                  setEditingDiary(null);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#FAF0F4] text-[#9D4E6B] border border-[#F3D7E2] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t.gratitudeSubtab}
+              >
+                <span className="text-sm">🌸</span>
+                <span>{t.gratitudeSubtab || 'الامتنان'}</span>
+              </button>
+
+              {/* 2. CBT Therapy Exercises (التمارين) */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('diaries', { subTab: 'cbt' });
+                  setActiveDiariesSubTab('cbt');
+                  setEditingDiary(null);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#F0F4FA] text-[#3E5C76] border border-[#D3E0EA] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t.cbtSubtabLabel}
+              >
+                <span className="text-sm">🧠</span>
+                <span>{t.cbtSubtabLabel || 'التمارين'}</span>
+              </button>
+
+              {/* 3. Daily Tasks (المهام) */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('diaries', { subTab: 'tasks' });
+                  setActiveDiariesSubTab('tasks');
+                  setEditingDiary(null);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t.dailyTasksSubtabLabel}
+              >
+                <span className="flex items-center justify-center bg-[#C5221F] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
+                  {incompleteTasksCount}
+                </span>
+                <span>{t.dailyTasksSubtabLabel || 'المهام'}</span>
+              </button>
+
+              {/* 4. Athkar (الأذكار) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFullAthkarModalOpen(true);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t('nav.dhikr_title')}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
+                <span>{t('nav.dhikr')}</span>
+              </button>
+
+              {/* 5. Therapy Report Session (جلسة العلاج) */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('analytics', { subTab: 'report' });
+                  setAnalyticsSubTab('report');
+                  setEditingDiary(null);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#446A5E] text-white rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t('nav.therapy_session')}
+              >
+                <span className="text-sm">🎓</span>
+                <span>{t('nav.therapy_session')}</span>
+              </button>
+
+              {/* 6. Thoughts (خواطري) */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('diaries', { subTab: 'journal' });
+                  setActiveDiariesSubTab('journal');
+                  setDiaryTypeFilter('thought');
+                  setEditingDiary(null);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                title={t('nav.my_thoughts')}
+              >
+                <span className="text-sm">💭</span>
+                <span>{t('nav.my_thoughts')}</span>
               </button>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 💻 Desktop Header (>= 768px): Structured Desktop Layout with Central Navigation Tabs */}
         <div className="hidden md:flex max-w-[1440px] mx-auto px-4 lg:px-6 py-2.5 items-center justify-between gap-4">
@@ -7501,139 +7660,142 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* Rich Text Editor Toolbar */}
-                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 flex items-center gap-2 text-xs overflow-x-auto scrollbar-none">
-                    <button
-                      type="button"
-                      title={t.undoTooltip}
-                      onClick={handleUndo}
-                      className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs flex-shrink-0"
-                    >
-                      ↩️
-                    </button>
-                    <button
-                      type="button"
-                      title={t.redoTooltip}
-                      onClick={handleRedo}
-                      className="p-1.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-lg font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs flex-shrink-0"
-                    >
-                      ↪️
-                    </button>
+                  {/* Rich Text Editor Toolbar (Organized & Clutter-Free) */}
+                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 text-xs overflow-x-auto scrollbar-none">
+                    {/* Undo / Redo */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        title={t.undoTooltip}
+                        onClick={handleUndo}
+                        className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px]"
+                      >
+                        ↩️
+                      </button>
+                      <button
+                        type="button"
+                        title={t.redoTooltip}
+                        onClick={handleRedo}
+                        className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px]"
+                      >
+                        ↪️
+                      </button>
+                    </div>
 
-                    <div className="h-4 w-px bg-[#E2DCC8] mx-0.5" />
+                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
 
-                    <button
-                      type="button"
-                      title={t.boldTooltip}
-                      onClick={() => insertFormatting('**', '**')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer flex-shrink-0"
-                    >
-                      B
-                    </button>
-                    <button
-                      type="button"
-                      title={t.italicTooltip}
-                      onClick={() => insertFormatting('*', '*')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
-                    >
-                      I
-                    </button>
-                    <button
-                      type="button"
-                      title={t.underlineTooltip}
-                      onClick={() => insertFormatting('<u>', '</u>')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
-                    >
-                      U
-                    </button>
-                    <button
-                      type="button"
-                      title={t.strikethroughTooltip}
-                      onClick={() => insertFormatting('~~', '~~')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer flex-shrink-0"
-                    >
-                      S
-                    </button>
+                    {/* Inline Text Styles: B, I, U, S */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        title={t.boldTooltip}
+                        onClick={() => insertFormatting('**', '**')}
+                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        title={t.italicTooltip}
+                        onClick={() => insertFormatting('*', '*')}
+                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        title={t.underlineTooltip}
+                        onClick={() => insertFormatting('<u>', '</u>')}
+                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
+                      >
+                        U
+                      </button>
+                      <button
+                        type="button"
+                        title={t.strikethroughTooltip}
+                        onClick={() => insertFormatting('~~', '~~')}
+                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
+                      >
+                        S
+                      </button>
+                    </div>
 
-                    <div className="h-4 w-px bg-[#E2DCC8] mx-0.5" />
+                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
 
-                    <button
-                      type="button"
-                      title={t.h1Tooltip}
-                      onClick={() => insertFormatting('\n# ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer flex-shrink-0"
-                    >
-                      H1
-                    </button>
-                    <button
-                      type="button"
-                      title={t.h2Tooltip}
-                      onClick={() => insertFormatting('\n## ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0"
-                    >
-                      H2
-                    </button>
+                    {/* Headings & Blocks */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        title={t.h1Tooltip}
+                        onClick={() => insertFormatting('\n# ')}
+                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
+                      >
+                        H1
+                      </button>
+                      <button
+                        type="button"
+                        title={t.h2Tooltip}
+                        onClick={() => insertFormatting('\n## ')}
+                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        title={t.quoteTooltip}
+                        onClick={() => insertFormatting('\n> ')}
+                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
+                      >
+                        💬
+                      </button>
+                      <button
+                        type="button"
+                        title={t.bulletListTooltip}
+                        onClick={() => insertFormatting('\n- ')}
+                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px] whitespace-nowrap"
+                      >
+                        • {t.bulletListLabel}
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      title={t.quoteTooltip}
-                      onClick={() => insertFormatting('\n> ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0"
-                    >
-                      💬
-                    </button>
-                    <button
-                      type="button"
-                      title={t.bulletListTooltip}
-                      onClick={() => insertFormatting('\n- ')}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer flex-shrink-0 whitespace-nowrap"
-                    >
-                      • {t.bulletListLabel}
-                    </button>
+                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
 
-                    <div className="h-4 w-px bg-[#E2DCC8] mx-0.5" />
-
+                    {/* Font Colors Trigger Button */}
                     <button
                       type="button"
                       title={t.fontColorsTooltip}
                       onClick={() => setShowColorPalette(!showColorPalette)}
-                      className="px-2 py-1 bg-white hover:bg-[#EAE5D9] rounded-lg border border-[#E2DCC8] font-bold text-amber-800 flex items-center space-x-1 space-x-reverse cursor-pointer flex-shrink-0 whitespace-nowrap"
+                      className={`px-3 py-1.5 sm:py-2 rounded-xl border transition-all font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs shrink-0 whitespace-nowrap min-h-[36px] ${
+                        showColorPalette
+                          ? 'bg-amber-100 text-amber-950 border-amber-300'
+                          : 'bg-white hover:bg-[#EAE5D9] text-amber-800 border-[#E2DCC8]'
+                      }`}
                     >
                       <span>🎨</span>
                       <span>{t.fontColorsBtn}</span>
                     </button>
-
-                    <button
-                      type="button"
-                      title={t.moreFeaturesBtn}
-                      onClick={() => setShowMoreFeaturesSheet(true)}
-                      className="px-2.5 py-1 bg-[#8B9D83] hover:bg-[#6E8066] text-white rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs flex-shrink-0 whitespace-nowrap"
-                    >
-                      <span>✨</span>
-                      <span>{t.moreFeaturesBtn}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      title={t.aiWriterBtn}
-                      onClick={() => setShowAiWriterSheet(true)}
-                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs text-xs flex-shrink-0 whitespace-nowrap"
-                    >
-                      <span>✨</span>
-                      <span>{t.aiWriterBtn}</span>
-                    </button>
-
-                    {showColorPalette && (
-                      <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-[#E2DCC8]">
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-4 h-4 rounded-full bg-amber-600 border cursor-pointer" title={t.colorOrange} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-4 h-4 rounded-full bg-emerald-600 border cursor-pointer" title={t.colorGreen} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-4 h-4 rounded-full bg-blue-600 border cursor-pointer" title={t.colorBlue} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-4 h-4 rounded-full bg-red-600 border cursor-pointer" title={t.colorRed} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-4 h-4 rounded-full bg-purple-600 border cursor-pointer" title={t.colorPurple} />
-                      </div>
-                    )}
                   </div>
 
+                  {/* Dedicated Inline Font Colors Swatches Row (Natural anchored placement) */}
+                  {showColorPalette && (
+                    <div className="bg-[#FAF8F5] border-x border-[#E2DCC8] px-3.5 py-2 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <span className="text-[11px] font-black text-amber-950 shrink-0 flex items-center gap-1">
+                        <span>🎨</span>
+                        <span>{t.fontColorsBtn}:</span>
+                      </span>
+                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-5 h-5 rounded-full bg-amber-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorOrange} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorGreen} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-5 h-5 rounded-full bg-blue-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorBlue} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-5 h-5 rounded-full bg-red-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorRed} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-5 h-5 rounded-full bg-purple-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorPurple} />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#2B3E50">', '</span>')} className="w-5 h-5 rounded-full bg-[#2B3E50] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="كحلي" />
+                        <button type="button" onClick={() => insertFormatting('<span style="color:#3A3A3A">', '</span>')} className="w-5 h-5 rounded-full bg-[#3A3A3A] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="افتراضي" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Primary Writing Canvas (Generously sized, comfortable >= 16px typography, clearly framed) */}
                   <div
                     ref={editorRef}
                     contentEditable
@@ -7663,10 +7825,11 @@ export default function App() {
                     }}
                     style={{
                       backgroundColor: editingDiary.color || '#F9F7F2',
-                      fontSize: `${fontDrawerSize}px`,
-                      minHeight: '220px'
+                      fontSize: `${Math.max(16, fontDrawerSize)}px`,
+                      minHeight: '280px',
+                      lineHeight: '1.85'
                     }}
-                    className={`w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none p-4 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto ${fontDrawerFamily}`}
+                    className={`w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto shadow-inner ${fontDrawerFamily}`}
                   />
 
                   {/* Attachment & Features Toolbar directly attached to textarea (Image 4 format) */}
@@ -7955,48 +8118,68 @@ export default function App() {
                         </div>
                       ))}
 
-                      {editingDiary.drawing && (
-                        <div className="relative w-28 h-24 rounded-2xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white flex flex-col justify-between p-1">
-                          <img
-                            src={editingDiary.drawing}
-                            className="w-full h-full object-contain rounded-xl cursor-pointer hover:scale-105 transition-transform"
-                            onClick={() => setShowSketchboard(true)}
-                            alt={t.drawing || 'Drawing'}
-                            title={settings?.appLanguage === 'ar' ? 'انقر لتعديل أو معاينة الرسمة' : 'Click to edit or preview drawing'}
-                          />
-                          <div className="absolute top-1.5 left-1.5 bg-[#8B9D83] text-white text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-3xs pointer-events-none">
-                            {t.drawing || 'رسمة'}
-                          </div>
-                          {/* Dedicated Action Buttons for Drawing: Open / Edit & Delete */}
-                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
+                      {/* Drawings Thumbnail Grid (Unlimited Multi-Drawing Support) */}
+                      {(() => {
+                        const currentDrawings = (Array.isArray(editingDiary.drawings) && editingDiary.drawings.length > 0)
+                          ? editingDiary.drawings
+                          : (editingDiary.drawing ? [editingDiary.drawing] : []);
+
+                        return currentDrawings.map((drawDataUrl, dIdx) => (
+                          <div key={`draw-${dIdx}`} className="relative w-28 h-24 rounded-2xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white flex flex-col justify-between p-1">
+                            <img
+                              src={drawDataUrl}
+                              className="w-full h-full object-contain rounded-xl cursor-pointer hover:scale-105 transition-transform"
+                              onClick={() => {
+                                setEditingDrawingIndex(dIdx);
                                 setShowSketchboard(true);
                               }}
-                              className="w-6 h-6 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
-                              title={settings?.appLanguage === 'ar' ? 'تعديل / معاينة الرسمة' : 'Edit / Preview Drawing'}
-                            >
-                              <span className="text-[10px]">✏️</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (editingDiary.drawingAttachmentId) {
-                                  deleteAttachmentBlob(editingDiary.drawingAttachmentId);
-                                }
-                                setEditingDiary(prev => prev ? { ...prev, drawing: undefined, drawingAttachmentId: undefined } : null);
-                              }}
-                              className="w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
-                              title={settings?.appLanguage === 'ar' ? 'حذف الرسمة' : 'Delete Drawing'}
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
+                              alt={`${t.drawing || 'رسمة'} ${dIdx + 1}`}
+                              title={settings?.appLanguage === 'ar' ? 'انقر لتعديل أو معاينة الرسمة' : 'Click to edit or preview drawing'}
+                            />
+                            <div className="absolute top-1.5 left-1.5 bg-[#8B9D83] text-white text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-3xs pointer-events-none">
+                              {t.drawing || 'رسمة'} {currentDrawings.length > 1 ? `#${dIdx + 1}` : ''}
+                            </div>
+                            {/* Dedicated Action Buttons for Drawing: Edit & Delete */}
+                            <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingDrawingIndex(dIdx);
+                                  setShowSketchboard(true);
+                                }}
+                                className="w-6 h-6 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
+                                title={t.editDrawing || 'تعديل الرسمة'}
+                              >
+                                <span className="text-[10px]">✏️</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const attId = editingDiary.drawingAttachmentIds?.[dIdx] || (dIdx === 0 ? editingDiary.drawingAttachmentId : undefined);
+                                  if (attId) {
+                                    deleteAttachmentBlob(attId);
+                                  }
+                                  const updatedDrawings = currentDrawings.filter((_, i) => i !== dIdx);
+                                  const updatedIds = (editingDiary.drawingAttachmentIds || []).filter((_, i) => i !== dIdx);
+                                  setEditingDiary(prev => prev ? {
+                                    ...prev,
+                                    drawings: updatedDrawings,
+                                    drawingAttachmentIds: updatedIds,
+                                    drawing: updatedDrawings[0] || undefined,
+                                    drawingAttachmentId: updatedIds[0] || undefined
+                                  } : null);
+                                }}
+                                className="w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
+                                title={t.deleteDrawing || 'حذف الرسمة'}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ));
+                      })()}
                     </div>
                   </div>
                 )}
@@ -8167,34 +8350,18 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Media, Sketch and Voice attachment bar */}
-                <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <span className="text-xs font-bold text-[#5A5A40]">{t.addMediaAttachments}</span>
-                  <div className="flex flex-wrap gap-2">
+                {/* Media & Attachments Grid (Clean Symmetrical 2-col/4-col Responsive Grid) */}
+                <div className="bg-[#F9F7F2] p-4 sm:p-5 rounded-3xl border border-[#E2DCC8]/70 space-y-3">
+                  <span className="text-xs font-black text-[#5A5A40] block">{t.addMediaAttachments}</span>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 w-full">
 
-                    {/* Audio File Upload button */}
+                    {/* 1. Add Photo / Screenshot */}
                     <label
-                      htmlFor="audio-file-input"
-                      onClick={handleAudioPickerClick}
-                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs"
-                      title={t.chooseAudioFileTooltip}
+                      onClick={markFilePickerActive}
+                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-xs font-bold text-[#5A5A40] cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
                     >
-                      <span>🎵</span>
-                      <span>{t.addAudioFile}</span>
-                      <input
-                        id="audio-file-input"
-                        type="file"
-                        accept="audio/*"
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={handleAudioFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-
-                    {/* Image Snapper / File upload */}
-                    <label onClick={markFilePickerActive} className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                      <Image className="w-3.5 h-3.5 text-[#D4A373]" />
-                      <span>{t.addPhotoScreenshot}</span>
+                      <Image className="w-4 h-4 text-[#D4A373] shrink-0" />
+                      <span className="truncate">{t.addPhotoScreenshot}</span>
                       <input
                         id="image-upload-trigger"
                         type="file"
@@ -8205,161 +8372,168 @@ export default function App() {
                       />
                     </label>
 
-                    {/* Sketch Canvas sketchpad button */}
+                    {/* 2. Draw Mind Map / Sketch (Multi-drawing support) */}
                     <button
                       type="button"
-                      onClick={() => setShowSketchboard(true)}
-                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs"
+                      onClick={() => {
+                        setEditingDrawingIndex(null);
+                        setShowSketchboard(true);
+                      }}
+                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-xs font-bold text-[#5A5A40] cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
                     >
-                      <span className="text-[#8B9D83] font-bold">🎨</span>
-                      <span>{t.drawMindmap}</span>
+                      <span className="text-base text-[#8B9D83] shrink-0">🎨</span>
+                      <span className="truncate">{t.drawMindmap}</span>
                     </button>
 
-                    {/* Voice record mic button */}
-                    <button
-                      type="button"
-                      onClick={handleToggleRecording}
-                      className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 border rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-xs ${
-                        isRecording
-                          ? 'bg-red-500 text-white border-red-500 animate-pulse'
-                          : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
-                      }`}
-                    >
-                      <Mic className="w-3.5 h-3.5 text-red-500" />
-                      <span>{isRecording ? `${t.listening} (${recordingSeconds}s)` : (t.quickVoiceJournal)}</span>
-                    </button>
-
-                    {/* Quick Voice Vent Modal button */}
+                    {/* 3. Quick Voice Vent Modal (Single Voice Vent Action) */}
                     <button
                       type="button"
                       onClick={() => setShowVoiceVentModal(true)}
-                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
-                      title={t.voiceQuickVent || (settings?.appLanguage === 'ar' ? 'فضفضة صوتية سريعة' : 'Voice Vent')}
+                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-2xl text-xs font-black cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
+                      title={t.voiceQuickVent}
                     >
-                      <span>🎙️</span>
-                      <span>{t.voiceQuickVent || (settings?.appLanguage === 'ar' ? 'فضفضة سريعة' : 'Voice Vent')}</span>
+                      <span className="text-base shrink-0">🎙️</span>
+                      <span className="truncate">{t.voiceQuickVent}</span>
                     </button>
 
-                    {/* Attachments Page button */}
+                    {/* 4. Add Audio File */}
+                    <label
+                      htmlFor="audio-file-input"
+                      onClick={handleAudioPickerClick}
+                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-xs font-bold text-[#5A5A40] cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
+                      title={t.chooseAudioFileTooltip}
+                    >
+                      <span className="text-base shrink-0">🎵</span>
+                      <span className="truncate">{t.addAudioFile}</span>
+                      <input
+                        id="audio-file-input"
+                        type="file"
+                        accept="audio/*"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={handleAudioFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {/* 5. Attachments Page */}
                     <button
                       type="button"
                       onClick={() => setShowAttachmentsPage(true)}
-                      className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
-                      title={t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'صفحة الملحقات' : 'Attachments')}
+                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
+                      title={t.attachmentsPageTitle}
                     >
-                      <span>📁</span>
-                      <span>{t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'الملحقات' : 'Attachments')}</span>
-                      <span className="text-[10px] bg-[#8B9D83] text-white px-1.5 py-0.2 rounded-full font-bold">
-                        {(editingDiary.images || []).length + (editingDiary.videos || []).length + (editingDiary.audioRecordings || []).length + (editingDiary.files || []).length + (editingDiary.drawing ? 1 : 0)}
+                      <span className="text-base shrink-0">📁</span>
+                      <span className="truncate">{t.attachmentsPageTitle}</span>
+                      <span className="text-[10px] bg-[#8B9D83] text-white px-1.5 py-0.2 rounded-full font-bold shrink-0">
+                        {(editingDiary.images || []).length + (editingDiary.videos || []).length + (editingDiary.audioRecordings || []).length + (editingDiary.files || []).length + ((editingDiary.drawings && editingDiary.drawings.length > 0) ? editingDiary.drawings.length : (editingDiary.drawing ? 1 : 0))}
                       </span>
                     </button>
 
-                    {/* Audio Upload Loading Banner */}
-                    {audioUploadLoading && (
-                      <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold col-span-full animate-pulse shadow-sm" dir={langInfo.dir}>
-                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-700 shrink-0" />
-                        <span>⏳ {t.aiTranscriptionLoading}</span>
-                      </div>
-                    )}
-
-                    {/* Interactive Real-Time Live Recording Card */}
-                    {isRecording && (
-                      <div className="w-full mt-2 p-3.5 sm:p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300/80 rounded-2xl flex flex-col space-y-3 shadow-md col-span-full animate-fadeIn text-xs" dir={langInfo.dir}>
-                        <div className="flex items-center justify-between gap-2 border-b border-red-200/60 pb-2.5">
-                          <div className="flex items-center gap-2">
-                            <span className="relative flex h-3 w-3">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-                            </span>
-                            <span className="font-black text-red-800 text-xs flex items-center gap-1">
-                              <Mic className="w-3.5 h-3.5 text-red-600 animate-bounce" />
-                              <span>{t.listeningTranscribing}</span>
-                            </span>
-                          </div>
-                          <span className="font-mono font-black text-red-700 bg-white/90 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] shadow-3xs">
-                            ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
-                          </span>
-                        </div>
-
-                        {/* Live Transcript Area with Final / Interim Separation */}
-                        <div
-                          className="bg-white/95 p-3.5 rounded-xl border border-red-100 min-h-[75px] max-h-48 overflow-y-auto space-y-1.5 shadow-inner"
-                          style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
-                        >
-                          {speechTranscript ? (
-                            <p className="text-xs sm:text-sm text-[#2B3E50] leading-[1.9] font-medium">
-                              {speechTranscript}
-                            </p>
-                          ) : (
-                            <p className="text-xs text-gray-400 italic text-center py-3 font-semibold">
-                              🎙️ جاري الاستماع والكتابة لحظياً... تحدث الآن بوضوح وسيظهر كلامك هنا فوراً
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Control Action Buttons */}
-                        <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center justify-end pt-1">
-                          <button
-                            type="button"
-                            onClick={handleCancelRecording}
-                            className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1"
-                          >
-                            <span>{t.cancelAction}</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleStopAndInsertRecording}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
-                          >
-                            <span>{t.finishInsertText}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Web Link button */}
+                    {/* 6. Web Link */}
                     <button
                       type="button"
                       onClick={() => setActiveInputSection(activeInputSection === 'link' ? 'none' : 'link')}
-                      className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 border rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-xs ${
+                      className={`flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12 ${
                         activeInputSection === 'link'
                           ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
                           : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
                       }`}
                     >
-                      <span>🌐</span>
-                      <span>{t.webLink}</span>
+                      <span className="text-base shrink-0">🌐</span>
+                      <span className="truncate">{t.webLink}</span>
                     </button>
 
-                    {/* Video attachment button */}
+                    {/* 7. Video Link / File */}
                     <button
                       type="button"
                       onClick={() => setActiveInputSection(activeInputSection === 'video' ? 'none' : 'video')}
-                      className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 border rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-xs ${
+                      className={`flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12 ${
                         activeInputSection === 'video'
                           ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
                           : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
                       }`}
                     >
-                      <span>🎥</span>
-                      <span>{t.videoLabel}</span>
+                      <span className="text-base shrink-0">🎥</span>
+                      <span className="truncate">{t.videoLabel}</span>
                     </button>
 
-                    {/* PDF attachment button */}
+                    {/* 8. PDF File */}
                     <button
                       type="button"
                       onClick={() => setActiveInputSection(activeInputSection === 'pdf' ? 'none' : 'pdf')}
-                      className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 border rounded-xl text-xs font-semibold cursor-pointer transition-all shadow-xs ${
+                      className={`flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12 ${
                         activeInputSection === 'pdf'
                           ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
                           : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
                       }`}
                     >
-                      <span>📄</span>
-                      <span>{t.pdfFile}</span>
+                      <span className="text-base shrink-0">📄</span>
+                      <span className="truncate">{t.pdfLabel}</span>
                     </button>
-
                   </div>
+
+                  {/* Audio Upload Loading Banner */}
+                  {audioUploadLoading && (
+                    <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold animate-pulse shadow-sm" dir={langInfo.dir}>
+                      <RefreshCw className="w-4 h-4 animate-spin text-emerald-700 shrink-0" />
+                      <span>⏳ {t.aiTranscriptionLoading}</span>
+                    </div>
+                  )}
+
+                  {/* Interactive Real-Time Live Recording Card */}
+                  {isRecording && (
+                    <div className="w-full mt-2 p-3.5 sm:p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300/80 rounded-2xl flex flex-col space-y-3 shadow-md animate-fadeIn text-xs" dir={langInfo.dir}>
+                      <div className="flex items-center justify-between gap-2 border-b border-red-200/60 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                          </span>
+                          <span className="font-black text-red-800 text-xs flex items-center gap-1">
+                            <Mic className="w-3.5 h-3.5 text-red-600 animate-bounce" />
+                            <span>{t.listeningTranscribing}</span>
+                          </span>
+                        </div>
+                        <span className="font-mono font-black text-red-700 bg-white/90 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] shadow-3xs">
+                          ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
+                        </span>
+                      </div>
+
+                      {/* Live Transcript Area with Final / Interim Separation */}
+                      <div
+                        className="bg-white/95 p-3.5 rounded-xl border border-red-100 min-h-[75px] max-h-48 overflow-y-auto space-y-1.5 shadow-inner"
+                        style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
+                      >
+                        {speechTranscript ? (
+                          <p className="text-xs sm:text-sm text-[#2B3E50] leading-[1.9] font-medium">
+                            {speechTranscript}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic text-center py-3 font-semibold">
+                            🎙️ جاري الاستماع والكتابة لحظياً... تحدث الآن بوضوح وسيظهر كلامك هنا فوراً
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Control Action Buttons */}
+                      <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center justify-end pt-1">
+                        <button
+                          type="button"
+                          onClick={handleCancelRecording}
+                          className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1"
+                        >
+                          <span>{t.cancelAction}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleStopAndInsertRecording}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                        >
+                          <span>{t.finishInsertText}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Expandable Extra Attachment Sections */}
@@ -8724,24 +8898,51 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Custom Drawing Board Canvas Modal */}
+                {/* Custom Drawing Board Canvas Modal (Multi-Drawing Support) */}
                 {showSketchboard && (
                   <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                     <div className="w-full max-w-2xl h-[450px]">
                       <DrawingCanvas
-                        initialDataUrl={editingDiary.drawing}
+                        initialDataUrl={editingDrawingIndex !== null ? (editingDiary.drawings?.[editingDrawingIndex] || editingDiary.drawing || '') : ''}
                         appLanguage={settings?.appLanguage || 'ar'}
                         onSave={async (dataUrl) => {
                           const attachmentId = `att-draw-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
                           await saveAttachmentBlob(attachmentId, dataUrl, 'image/png');
-                          setEditingDiary(prev => prev ? {
-                            ...prev,
-                            drawing: dataUrl,
-                            drawingAttachmentId: attachmentId
-                          } : null);
+                          setEditingDiary(prev => {
+                            if (!prev) return null;
+                            const prevDrawings = (Array.isArray(prev.drawings) && prev.drawings.length > 0)
+                              ? [...prev.drawings]
+                              : (prev.drawing ? [prev.drawing] : []);
+                            const prevAttIds = (Array.isArray(prev.drawingAttachmentIds) && prev.drawingAttachmentIds.length > 0)
+                              ? [...prev.drawingAttachmentIds]
+                              : (prev.drawingAttachmentId ? [prev.drawingAttachmentId] : []);
+
+                            let nextDrawings;
+                            let nextAttIds;
+                            if (editingDrawingIndex !== null && editingDrawingIndex >= 0 && editingDrawingIndex < prevDrawings.length) {
+                              nextDrawings = [...prevDrawings];
+                              nextDrawings[editingDrawingIndex] = dataUrl;
+                              nextAttIds = [...prevAttIds];
+                              nextAttIds[editingDrawingIndex] = attachmentId;
+                            } else {
+                              nextDrawings = [...prevDrawings, dataUrl];
+                              nextAttIds = [...prevAttIds, attachmentId];
+                            }
+                            return {
+                              ...prev,
+                              drawings: nextDrawings,
+                              drawingAttachmentIds: nextAttIds,
+                              drawing: nextDrawings[0],
+                              drawingAttachmentId: nextAttIds[0]
+                            };
+                          });
+                          setEditingDrawingIndex(null);
                           setShowSketchboard(false);
                         }}
-                        onCancel={() => setShowSketchboard(false)}
+                        onCancel={() => {
+                          setEditingDrawingIndex(null);
+                          setShowSketchboard(false);
+                        }}
                       />
                     </div>
                   </div>
@@ -9438,70 +9639,7 @@ export default function App() {
 
 
 
-                 {/* Diaries & Gratitude Sub-Tab Swapper with Quick Search trigger */}
-                 <div className="flex items-center gap-2 max-w-xl mx-auto sm:mx-0">
-                   <div className="flex-1 flex bg-[#F0EDE4] p-1.5 rounded-2xl border border-[#E2DCC8]/60 shadow-3xs overflow-x-auto scrollbar-none" id="diaries-subtab-selector">
-                     <button
-                       onClick={() => setActiveDiariesSubTab('journal')}
-                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                         activeDiariesSubTab === 'journal'
-                           ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
-                           : 'text-gray-500 hover:text-[#5A5A40]'
-                       }`}
-                     >
-                       <span>📓</span>
-                       <span>{t.dailyJournalSubtab}</span>
-                     </button>
-                     <button
-                       onClick={() => setActiveDiariesSubTab('gratitude')}
-                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                         activeDiariesSubTab === 'gratitude'
-                           ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
-                           : 'text-gray-500 hover:text-[#5A5A40]'
-                       }`}
-                     >
-                       <span>🌸</span>
-                       <span>{t.gratitudeSubtab}</span>
-                     </button>
-                     <button
-                       onClick={() => setActiveDiariesSubTab('cbt')}
-                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                         activeDiariesSubTab === 'cbt'
-                           ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
-                           : 'text-gray-500 hover:text-[#5A5A40]'
-                       }`}
-                     >
-                       <span>🧠</span>
-                       <span>{t.cbtSubtabLabel}</span>
-                     </button>
-                     <button
-                       onClick={() => setActiveDiariesSubTab('tasks')}
-                       className={`flex-grow shrink-0 flex items-center justify-center space-x-1 space-x-reverse py-2 px-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                         activeDiariesSubTab === 'tasks'
-                           ? 'bg-white text-[#5A5A40] shadow-sm font-extrabold animate-fade-in'
-                           : 'text-gray-500 hover:text-[#5A5A40]'
-                       }`}
-                     >
-                       <span>📋</span>
-                       <span>{t.dailyTasksSubtabLabel}</span>
-                     </button>
-                   </div>
 
-                   {/* Quick Search Trigger Icon Button */}
-                   <button
-                     onClick={() => {
-                       setActiveDiariesSubTab('journal');
-                       setTimeout(() => {
-                         const el = document.getElementById('diaries-search-input');
-                         if (el) el.focus();
-                       }, 50);
-                     }}
-                     className="p-3 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-[#5A5A40] shadow-3xs hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0 flex items-center justify-center"
-                     title={t.searchDiariesAndThoughts}
-                   >
-                     <Search className="w-4 h-4 text-[#8B9D83]" />
-                   </button>
-                 </div>
 
                 {activeDiariesSubTab === 'journal' ? (
                   <div className="space-y-4">
@@ -9887,61 +10025,111 @@ export default function App() {
                 })()}
                   </div>
                 ) : activeDiariesSubTab === 'gratitude' ? (
-                  <GratitudeJournal
-                    gratitudeCards={displayedGratitudeCards}
-                    setGratitudeCards={setGratitudeCards}
-                    settings={settings}
-                    diaries={displayedDiaries}
-                    setDiaries={setDiaries}
-                    setActiveTab={setActiveTab}
-                    setActiveDiariesSubTab={setActiveDiariesSubTab}
-                    setDiaryTypeFilter={setDiaryTypeFilter}
-                    triggerGratitudeNotificationNow={() => setActiveGratitudeReminderNotification(true)}
-                    onOpenShareModal={(data) => {
-                      if (data) {
-                        setGratitudeShareData({
-                          text: data.text || '',
-                          category: data.category || 'امتنان'
-                        });
-                      } else {
-                        setGratitudeShareData(undefined);
-                      }
-                      setShowGratitudeShareModal(true);
-                    }}
-                  />
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    {/* 1-Tap Return to Journals Banner */}
+                    <div className="flex items-center justify-between bg-white border border-[#E2DCC8] p-3 rounded-2xl shadow-3xs">
+                      <button
+                        type="button"
+                        onClick={() => setActiveDiariesSubTab('journal')}
+                        className="flex items-center space-x-2 space-x-reverse text-xs font-black text-[#4E685B] hover:text-[#3B5A50] bg-[#8B9D83]/15 hover:bg-[#8B9D83]/25 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-3xs active:scale-95"
+                      >
+                        <ArrowLeft className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
+                        <span>{t.backToJournals || 'العودة إلى اليوميات والفضفضة'}</span>
+                      </button>
+                      <span className="text-xs font-black text-gray-500 flex items-center gap-1.5">
+                        <span>🌸</span>
+                        <span>{t.gratitudeSubtab}</span>
+                      </span>
+                    </div>
+                    <GratitudeJournal
+                      gratitudeCards={displayedGratitudeCards}
+                      setGratitudeCards={setGratitudeCards}
+                      settings={settings}
+                      diaries={displayedDiaries}
+                      setDiaries={setDiaries}
+                      setActiveTab={setActiveTab}
+                      setActiveDiariesSubTab={setActiveDiariesSubTab}
+                      setDiaryTypeFilter={setDiaryTypeFilter}
+                      triggerGratitudeNotificationNow={() => setActiveGratitudeReminderNotification(true)}
+                      onOpenShareModal={(data) => {
+                        if (data) {
+                          setGratitudeShareData({
+                            text: data.text || '',
+                            category: data.category || 'امتنان'
+                          });
+                        } else {
+                          setGratitudeShareData(undefined);
+                        }
+                        setShowGratitudeShareModal(true);
+                      }}
+                    />
+                  </div>
                 ) : activeDiariesSubTab === 'cbt' ? (
-                  /* Comprehensive CBT & Psychological Therapy Suite */
-                  <CBTExercisesSection
-                    diaries={displayedDiaries}
-                    selectedDate={selectedDate}
-                    handleUpdateHabit={handleUpdateHabit}
-                    isDarkMode={settings.isDarkMode}
-                    appLanguage={settings?.appLanguage || 'ar'}
-                  />
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    {/* 1-Tap Return to Journals Banner */}
+                    <div className="flex items-center justify-between bg-white border border-[#E2DCC8] p-3 rounded-2xl shadow-3xs">
+                      <button
+                        type="button"
+                        onClick={() => setActiveDiariesSubTab('journal')}
+                        className="flex items-center space-x-2 space-x-reverse text-xs font-black text-[#4E685B] hover:text-[#3B5A50] bg-[#8B9D83]/15 hover:bg-[#8B9D83]/25 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-3xs active:scale-95"
+                      >
+                        <ArrowLeft className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
+                        <span>{t.backToJournals || 'العودة إلى اليوميات والفضفضة'}</span>
+                      </button>
+                      <span className="text-xs font-black text-gray-500 flex items-center gap-1.5">
+                        <span>🧠</span>
+                        <span>{t.cbtSubtabLabel}</span>
+                      </span>
+                    </div>
+                    <CBTExercisesSection
+                      diaries={displayedDiaries}
+                      selectedDate={selectedDate}
+                      handleUpdateHabit={handleUpdateHabit}
+                      isDarkMode={settings.isDarkMode}
+                      appLanguage={settings?.appLanguage || 'ar'}
+                    />
+                  </div>
                 ) : (
-                  <TasksChecklistSection
-                    activeDiaryForSelectedDate={activeDiaryForSelectedDate}
-                    selectedDate={selectedDate}
-                    handleUpdateHabit={handleUpdateHabit}
-                    handleUpdateTasks={handleUpdateTasks}
-                    habits={displayedHabits}
-                    toggleHabitCompletion={toggleHabitCompletion}
-                    setHabits={setHabits}
-                    habitSettings={settings.habitSettings}
-                    onUpdateHabitSettings={(newSettings) =>
-                      setSettings(prev => ({
-                        ...prev,
-                        habitSettings: { ...(prev.habitSettings || {}), ...newSettings } as any
-                      }))
-                    }
-                    onImportData={(importedHabits, importedDiaries) => {
-                      if (importedHabits.length > 0) setHabits(importedHabits);
-                      if (importedDiaries && importedDiaries.length > 0) setDiaries(importedDiaries);
-                    }}
-                    isDarkMode={settings.isDarkMode}
-                    diaries={displayedDiaries}
-                    appLanguage={settings?.appLanguage || 'ar'}
-                  />
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    {/* 1-Tap Return to Journals Banner */}
+                    <div className="flex items-center justify-between bg-white border border-[#E2DCC8] p-3 rounded-2xl shadow-3xs">
+                      <button
+                        type="button"
+                        onClick={() => setActiveDiariesSubTab('journal')}
+                        className="flex items-center space-x-2 space-x-reverse text-xs font-black text-[#4E685B] hover:text-[#3B5A50] bg-[#8B9D83]/15 hover:bg-[#8B9D83]/25 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-3xs active:scale-95"
+                      >
+                        <ArrowLeft className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
+                        <span>{t.backToJournals || 'العودة إلى اليوميات والفضفضة'}</span>
+                      </button>
+                      <span className="text-xs font-black text-gray-500 flex items-center gap-1.5">
+                        <span>📋</span>
+                        <span>{t.dailyTasksSubtabLabel}</span>
+                      </span>
+                    </div>
+                    <TasksChecklistSection
+                      activeDiaryForSelectedDate={activeDiaryForSelectedDate}
+                      selectedDate={selectedDate}
+                      handleUpdateHabit={handleUpdateHabit}
+                      handleUpdateTasks={handleUpdateTasks}
+                      habits={displayedHabits}
+                      toggleHabitCompletion={toggleHabitCompletion}
+                      setHabits={setHabits}
+                      habitSettings={settings.habitSettings}
+                      onUpdateHabitSettings={(newSettings) =>
+                        setSettings(prev => ({
+                          ...prev,
+                          habitSettings: { ...(prev.habitSettings || {}), ...newSettings } as any
+                        }))
+                      }
+                      onImportData={(importedHabits, importedDiaries) => {
+                        if (importedHabits.length > 0) setHabits(importedHabits);
+                        if (importedDiaries && importedDiaries.length > 0) setDiaries(importedDiaries);
+                      }}
+                      isDarkMode={settings.isDarkMode}
+                      diaries={displayedDiaries}
+                      appLanguage={settings?.appLanguage || 'ar'}
+                    />
+                  </div>
                 )}
 
               </div>
@@ -10991,14 +11179,7 @@ export default function App() {
 
       </main>
 
-      {/* Floating radial assistant ball for quick navigation */}
-      {settings.floatingBallEnabled && (
-        <FloatingBall
-          onAction={handleQuickAction}
-          isCollapsed={isBottomNavCollapsedOnMobile}
-          appLanguage={settings?.appLanguage || 'ar'}
-        />
-      )}
+
 
       {/* Mobile Draggable Floating Button for Bottom Nav (Appears when bottom nav auto-collapses on mobile) */}
       {isBottomNavCollapsedOnMobile && !isKeyboardOpen && (
@@ -11065,11 +11246,12 @@ export default function App() {
             <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.home')}</span>
           </button>
 
-          {/* Tab 2: Journal Diaries */}
+          {/* Tab 2: Journal Diaries (Returns directly to Journaling & Venting) */}
           <button
             type="button"
             onClick={() => {
-              switchTab('diaries');
+              switchTab('diaries', { subTab: 'journal' });
+              setActiveDiariesSubTab('journal');
               revealBottomNavTemporarily();
             }}
             className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
@@ -11265,14 +11447,15 @@ export default function App() {
         userName={currentUser?.name || ''}
       />
 
-      {/* 📁 Dedicated Diary Attachments Page Modal */}
+      {/* 📁 Dedicated Diary Attachments Page Modal (Multi-Drawings Support) */}
       <AttachmentsPage
         isOpen={showAttachmentsPage}
         onClose={() => setShowAttachmentsPage(false)}
         diary={editingDiary}
         appLanguage={settings?.appLanguage || 'ar'}
         onPreviewMedia={setPreviewMedia}
-        onOpenDrawing={() => {
+        onOpenDrawing={(dIdx) => {
+          setEditingDrawingIndex(dIdx !== undefined ? dIdx : 0);
           setShowAttachmentsPage(false);
           setShowSketchboard(true);
         }}
@@ -11280,8 +11463,26 @@ export default function App() {
         onDeleteVideo={handleDeleteDiaryVideo}
         onDeleteAudio={handleDeleteAudioRecording}
         onDeleteFile={handleDeleteFileAttachment}
-        onDeleteDrawing={() => {
-          setEditingDiary(prev => prev ? { ...prev, drawing: undefined } : null);
+        onDeleteDrawing={(dIdx) => {
+          const idx = dIdx !== undefined ? dIdx : 0;
+          setEditingDiary(prev => {
+            if (!prev) return null;
+            const curDrawings = (Array.isArray(prev.drawings) && prev.drawings.length > 0)
+              ? prev.drawings
+              : (prev.drawing ? [prev.drawing] : []);
+            const curAttIds = prev.drawingAttachmentIds || (prev.drawingAttachmentId ? [prev.drawingAttachmentId] : []);
+            const attId = curAttIds[idx];
+            if (attId) deleteAttachmentBlob(attId);
+            const nextDrawings = curDrawings.filter((_, i) => i !== idx);
+            const nextAttIds = curAttIds.filter((_, i) => i !== idx);
+            return {
+              ...prev,
+              drawings: nextDrawings,
+              drawingAttachmentIds: nextAttIds,
+              drawing: nextDrawings[0] || undefined,
+              drawingAttachmentId: nextAttIds[0] || undefined
+            };
+          });
         }}
       />
 
@@ -11539,18 +11740,28 @@ export default function App() {
                 </div>
               )}
 
-              {/* Associated Drawing if any */}
-              {editingDiary.drawing && (
-                <div className="border border-gray-200 rounded-2xl p-6 space-y-3 bg-white shadow-3xs">
-                  <h3 className="text-xs font-black text-[#5A5A40] flex items-center">
-                    <span className="ml-1.5">🎨</span>
-                    <span>{t.attachedSketchDrawing}</span>
-                  </h3>
-                  <div className="w-full h-48 bg-[#F9F7F2] rounded-xl flex items-center justify-center overflow-hidden border border-gray-100">
-                    <img src={editingDiary.drawing} className="max-w-full max-h-full object-contain" alt={t.associatedDrawingAlt} referrerPolicy="no-referrer" />
+              {/* Associated Drawings if any (Multi-Drawing Support) */}
+              {(() => {
+                const viewDrawings = (Array.isArray(editingDiary.drawings) && editingDiary.drawings.length > 0)
+                  ? editingDiary.drawings
+                  : (editingDiary.drawing ? [editingDiary.drawing] : []);
+                if (viewDrawings.length === 0) return null;
+                return (
+                  <div className="border border-gray-200 rounded-2xl p-6 space-y-3 bg-white shadow-3xs">
+                    <h3 className="text-xs font-black text-[#5A5A40] flex items-center">
+                      <span className="ml-1.5">🎨</span>
+                      <span>{t.attachedSketchDrawing} ({viewDrawings.length})</span>
+                    </h3>
+                    <div className={`grid gap-3 ${viewDrawings.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                      {viewDrawings.map((dSrc, dIdx) => (
+                        <div key={dIdx} className="w-full h-48 bg-[#F9F7F2] rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 p-2">
+                          <img src={dSrc} className="max-w-full max-h-full object-contain" alt={`${t.associatedDrawingAlt} ${dIdx + 1}`} referrerPolicy="no-referrer" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Subsequent Additions & Edits Timeline if any */}
               {editingDiary.edits && editingDiary.edits.length > 0 && (

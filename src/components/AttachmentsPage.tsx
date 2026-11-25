@@ -13,12 +13,12 @@ interface AttachmentsPageProps {
   diary: DiaryEntry | null;
   appLanguage: AppLanguage;
   onPreviewMedia: (media: { type: 'image' | 'video' | 'audio' | 'pdf'; url: string; name?: string }) => void;
-  onOpenDrawing?: () => void;
+  onOpenDrawing?: (drawingIndex?: number) => void;
   onDeleteImage?: (index: number) => void;
   onDeleteVideo?: (index: number) => void;
   onDeleteAudio?: (id: string) => void;
   onDeleteFile?: (id: string) => void;
-  onDeleteDrawing?: () => void;
+  onDeleteDrawing?: (drawingIndex?: number) => void;
 }
 
 export default function AttachmentsPage({
@@ -127,8 +127,11 @@ export default function AttachmentsPage({
   const videosCount = (diary.videos || []).length;
   const audioCount = (diary.audioRecordings || []).length;
   const filesCount = (diary.files || []).length;
-  const hasDrawing = !!diary.drawing;
-  const totalCount = imagesCount + videosCount + audioCount + filesCount + (hasDrawing ? 1 : 0);
+  const drawings: string[] = (Array.isArray(diary.drawings) && diary.drawings.length > 0)
+    ? diary.drawings
+    : (diary.drawing ? [diary.drawing] : []);
+  const drawingsCount = drawings.length;
+  const totalCount = imagesCount + videosCount + audioCount + filesCount + drawingsCount;
 
   return (
     <div className="fixed inset-0 z-[115] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn" dir={langInfo.dir}>
@@ -190,8 +193,8 @@ export default function AttachmentsPage({
 
             <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 col-span-2 sm:col-span-1">
               <Layers className="w-4 h-4 text-blue-700" />
-              <span className="text-[10px] text-blue-900 font-bold">{isAr ? 'الرسم الذهني' : 'Drawing'}</span>
-              <span className="text-sm font-black text-blue-950">{hasDrawing ? '1' : '0'}</span>
+              <span className="text-[10px] text-blue-900 font-bold">{isAr ? 'الرسومات الذهنية' : 'Drawings'}</span>
+              <span className="text-sm font-black text-blue-950">{drawingsCount}</span>
             </div>
           </div>
 
@@ -437,49 +440,45 @@ export default function AttachmentsPage({
                 </div>
               )}
 
-              {/* 5. Mind Map Drawing */}
-              {hasDrawing && diary.drawing && (
+              {/* 5. Mind Map Drawings (Multi-Drawings Support) */}
+              {drawingsCount > 0 && (
                 <div className="space-y-3">
                   <h4 className="font-extrabold text-xs text-[#5A5A40] flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-blue-600" />
-                    <span>{t.canvasDrawing || (isAr ? 'الرسم والتخطيط الذهني' : 'Mind Map & Drawing')}</span>
+                    <span>{t.canvasDrawing || (isAr ? 'الرسم والتخطيط الذهني' : 'Mind Map & Drawings')} ({drawingsCount})</span>
                   </h4>
-                  <div className="p-4 bg-white border border-[#E2DCC8] rounded-2xl space-y-3 max-w-md">
-                    <img
-                      src={diary.drawing}
-                      alt="Mindmap Drawing"
-                      className="w-full max-h-48 object-contain rounded-xl border border-gray-100 bg-[#F9F7F2] cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={onOpenDrawing}
-                      onError={async (e) => {
-                        if (diary.drawingAttachmentId) {
-                          const fresh = await getAttachmentObjectUrl(diary.drawingAttachmentId);
-                          if (fresh) {
-                            (e.target as HTMLImageElement).src = fresh;
-                          }
-                        }
-                      }}
-                    />
-                    <div className="flex items-center justify-between pt-1">
-                      <button
-                        type="button"
-                        onClick={onOpenDrawing}
-                        className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-3xs"
-                      >
-                        {isAr ? 'فتح وتعديل الرسمة' : 'Open & Edit Drawing'}
-                      </button>
-                      {onDeleteDrawing && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteDrawing();
-                          }}
-                          className="text-xs text-red-600 hover:text-red-700 font-bold cursor-pointer"
-                        >
-                          {isAr ? 'حذف' : 'Delete'}
-                        </button>
-                      )}
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {drawings.map((drawSrc, dIdx) => (
+                      <div key={dIdx} className="p-4 bg-white border border-[#E2DCC8] rounded-2xl space-y-3">
+                        <img
+                          src={drawSrc}
+                          alt={`Mindmap Drawing ${dIdx + 1}`}
+                          className="w-full max-h-48 object-contain rounded-xl border border-gray-100 bg-[#F9F7F2] cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => onOpenDrawing?.(dIdx)}
+                        />
+                        <div className="flex items-center justify-between pt-1">
+                          <button
+                            type="button"
+                            onClick={() => onOpenDrawing?.(dIdx)}
+                            className="px-3 py-1.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-3xs"
+                          >
+                            {isAr ? 'فتح وتعديل الرسمة' : 'Open & Edit Drawing'}
+                          </button>
+                          {onDeleteDrawing && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteDrawing(dIdx);
+                              }}
+                              className="text-xs text-red-600 hover:text-red-700 font-bold cursor-pointer"
+                            >
+                              {isAr ? 'حذف' : 'Delete'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

@@ -88,8 +88,10 @@ export interface DiaryEntry {
   links?: string[]; // Web Links / URLs
   audioRecordings: AudioRecording[];
   files: FileAttachment[];
-  drawing?: string; // Base64 data-uri of canvas drawing
-  drawingAttachmentId?: string; // Persistent IndexedDB Attachment ID for canvas drawing
+  drawing?: string; // Base64 data-uri of canvas drawing (backward-compatibility)
+  drawingAttachmentId?: string; // Persistent IndexedDB Attachment ID for canvas drawing (backward-compatibility)
+  drawings?: string[]; // Multiple canvas drawings data-uris
+  drawingAttachmentIds?: string[]; // Multiple canvas drawings IndexedDB attachment IDs
   tasks: TaskItem[];
   tags: string[];
   chatLogs: ChatLogEntry[];

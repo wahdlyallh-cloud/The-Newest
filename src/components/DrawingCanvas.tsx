@@ -66,6 +66,21 @@ export default function DrawingCanvas({
     }
   }, []);
 
+  // Reload initial drawing if it changes externally
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = contextRef.current;
+    if (!canvas || !context || !initialDataUrl) return;
+    const rect = canvas.getBoundingClientRect();
+    const image = new Image();
+    image.onload = () => {
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, rect.width, rect.height);
+      context.drawImage(image, 0, 0, rect.width, rect.height);
+    };
+    image.src = initialDataUrl;
+  }, [initialDataUrl]);
+
   // Update stroke style when color or brush size changes
   useEffect(() => {
     if (contextRef.current) {

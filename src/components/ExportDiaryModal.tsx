@@ -70,11 +70,19 @@ export default function ExportDiaryModal({
     ? diary.content.replace(/<[^>]*>?/gm, '').trim()
     : (isAr ? 'لا يوجد محتوى مكتوب...' : 'No content written...');
 
+  // Multi-drawings backward-compatible normalization
+  const drawings: string[] = (Array.isArray(diary.drawings) && diary.drawings.length > 0)
+    ? diary.drawings
+    : (diary.drawing ? [diary.drawing] : []);
+
   const handleExportAsImage = async () => {
     if (!exportContainerRef.current) return;
     setIsExportingImage(true);
 
     try {
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
       await new Promise(resolve => setTimeout(resolve, 300));
       const element = exportContainerRef.current;
 
@@ -99,13 +107,35 @@ export default function ExportDiaryModal({
       });
 
       if (imageBlob) {
-        const url = URL.createObjectURL(imageBlob);
-        const link = document.createElement('a');
         const fileName = `HayatAI_Diary_${diary.createdAt.split('T')[0]}.png`;
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
+        const file = new File([imageBlob], fileName, { type: 'image/png' });
+
+        let shared = false;
+        if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: diary.title || 'Hayat AI Diary',
+            });
+            shared = true;
+          } catch (shareErr: any) {
+            if (shareErr.name === 'AbortError') {
+              setIsExportingImage(false);
+              return;
+            }
+          }
+        }
+
+        if (!shared) {
+          const url = URL.createObjectURL(imageBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
       }
     } catch (err) {
       console.error('Export Image error:', err);
@@ -120,6 +150,9 @@ export default function ExportDiaryModal({
     setIsExportingPdf(true);
 
     try {
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
       await new Promise(resolve => setTimeout(resolve, 300));
       const element = exportContainerRef.current;
 
@@ -158,7 +191,29 @@ export default function ExportDiaryModal({
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`HayatAI_Diary_${diary.createdAt.split('T')[0]}.pdf`);
+      const fileName = `HayatAI_Diary_${diary.createdAt.split('T')[0]}.pdf`;
+      const pdfBlob = pdf.output('blob');
+      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      let shared = false;
+      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        try {
+          await navigator.share({
+            files: [pdfFile],
+            title: diary.title || 'Hayat AI Diary PDF',
+          });
+          shared = true;
+        } catch (shareErr: any) {
+          if (shareErr.name === 'AbortError') {
+            setIsExportingPdf(false);
+            return;
+          }
+        }
+      }
+
+      if (!shared) {
+        pdf.save(fileName);
+      }
     } catch (err) {
       console.error('Export PDF error:', err);
       alert(isAr ? 'حدث خطأ أثناء تصدير PDF.' : 'Error exporting PDF.');
@@ -166,6 +221,12 @@ export default function ExportDiaryModal({
       setIsExportingPdf(false);
     }
   };
+
+  const dateMetaParts: string[] = [
+    showDay ? `📅 ${dayStr}` : '',
+    showDate ? `🗓️ ${dateStr}` : '',
+    showTime ? `⏰ ${timeStr}` : ''
+  ].filter(Boolean);
 
   return (
     <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn" dir={langInfo.dir}>
@@ -314,19 +375,21 @@ export default function ExportDiaryModal({
         </div>
       </div>
 
-      <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', zIndex: -100 }}>
+      {/* Render Template in DOM for html2canvas (Zero-Clipped Off-viewport) */}
+      <div style={{ position: 'fixed', left: 0, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -100 }}>
         <div
           ref={exportContainerRef}
           className="p-8 space-y-6 text-[#2B3E50]"
           style={{
             width: '750px',
             backgroundColor: diary.color || '#FFFDF5',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontFamily: 'Cairo, "Noto Naskh Arabic", system-ui, -apple-system, sans-serif',
             direction: isAr ? 'rtl' : 'ltr',
             textAlign: isAr ? 'right' : 'left'
           }}
         >
-          <div className="bg-white/90 p-5 rounded-2xl border border-[#E2DCC8] shadow-xs space-y-3">
+          {/* Header Card */}
+          <div className="bg-white/95 p-5 rounded-2xl border border-[#E2DCC8] shadow-xs space-y-3">
             <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-3 flex-wrap gap-2">
               <div className="space-y-1">
                 {diary.title && (
@@ -346,30 +409,38 @@ export default function ExportDiaryModal({
               )}
             </div>
 
-            {(showDate || showDay || showTime) && (
+            {/* Date / Day / Time strictly bound to toggles */}
+            {dateMetaParts.length > 0 && (
               <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 font-semibold pt-1">
-                {showDay && <span>📅 {dayStr}</span>}
-                {showDate && <span>• {dateStr}</span>}
-                {showTime && <span>• ⏰ {timeStr}</span>}
+                {dateMetaParts.map((item, idx) => (
+                  <span key={idx} className="inline-flex items-center gap-1">
+                    {idx > 0 && <span className="text-gray-300 mx-1">•</span>}
+                    <span>{item}</span>
+                  </span>
+                ))}
               </div>
             )}
 
+            {/* Dominant and Auto Moods strictly bound to toggles */}
             {(showDominantMood || showAutoMood) && (
-              <div className="space-y-1 pt-2 border-t border-[#E2DCC8]/40 text-xs">
+              <div className="space-y-1.5 pt-2 border-t border-[#E2DCC8]/40 text-xs">
                 {showDominantMood && (
-                  <div className="text-[#3A3A3A]">
-                    <strong className="text-amber-800">✨ {isAr ? 'المزاج الغالب:' : 'Dominant Mood:'}</strong> {manualMoods}
+                  <div className="text-[#3A3A3A] flex items-center gap-1.5">
+                    <strong className="text-amber-800">✨ {isAr ? 'المزاج الغالب:' : 'Dominant Mood:'}</strong>
+                    <span>{manualMoods}</span>
                   </div>
                 )}
                 {showAutoMood && (
-                  <div className="text-[#3A3A3A]">
-                    <strong className="text-purple-800">🧠 {isAr ? 'المزاج التلقائي (AI):' : 'Auto Mood (AI):'}</strong> {autoMoodText}
+                  <div className="text-[#3A3A3A] flex items-center gap-1.5">
+                    <strong className="text-purple-800">🧠 {isAr ? 'المزاج التلقائي (AI):' : 'Auto Mood (AI):'}</strong>
+                    <span>{autoMoodText}</span>
                   </div>
                 )}
               </div>
             )}
           </div>
 
+          {/* Diary Content Card */}
           <div className="bg-white p-6 rounded-2xl border border-[#E2DCC8] shadow-xs space-y-4">
             <div
               className="text-sm leading-relaxed text-[#3A3A3A] whitespace-pre-wrap font-medium"
@@ -378,21 +449,49 @@ export default function ExportDiaryModal({
               {cleanContent}
             </div>
 
-            {diary.drawing && (
-              <div className="pt-4 border-t border-[#E2DCC8]/50">
-                <span className="text-xs font-bold text-[#5A5A40] block mb-2">🎨 {t.canvasDrawing || 'الرسم الذهني'}:</span>
-                <img src={diary.drawing} className="max-h-64 rounded-xl border border-[#E2DCC8] object-contain mx-auto" alt="Drawing" />
+            {/* Attached Photos Grid */}
+            {diary.images && diary.images.length > 0 && (
+              <div className="pt-4 border-t border-[#E2DCC8]/50 space-y-2">
+                <span className="text-xs font-bold text-[#5A5A40] block">🖼️ {t.attachedImagesDrawings || (isAr ? 'الصور المرفقة' : 'Attached Photos')}:</span>
+                <div className={`grid gap-3 ${diary.images.length === 1 ? 'grid-cols-1' : diary.images.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  {diary.images.map((imgSrc, imgIdx) => (
+                    <img
+                      key={imgIdx}
+                      src={imgSrc}
+                      className="max-h-56 rounded-xl border border-[#E2DCC8] object-cover mx-auto w-full"
+                      alt={`Photo ${imgIdx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Attached Drawings Grid (Unlimited Multi-Drawing Support) */}
+            {drawings.length > 0 && (
+              <div className="pt-4 border-t border-[#E2DCC8]/50 space-y-2">
+                <span className="text-xs font-bold text-[#5A5A40] block">🎨 {t.canvasDrawing || (isAr ? 'الرسم والتخطيط الذهني' : 'Mind Map & Drawings')}:</span>
+                <div className={`grid gap-3 ${drawings.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {drawings.map((drawSrc, drawIdx) => (
+                    <img
+                      key={drawIdx}
+                      src={drawSrc}
+                      className="max-h-64 rounded-xl border border-[#E2DCC8] object-contain mx-auto bg-white p-1"
+                      alt={`Drawing ${drawIdx + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
+          {/* Footer Branding strictly respecting date toggle */}
           <div className="pt-2 flex items-center justify-between text-[11px] text-[#5A5A40] font-bold border-t border-[#E2DCC8]/60">
             <div className="flex items-center gap-1.5">
               <span>🌱</span>
               <span className="font-extrabold">Hayat AI (حياة AI)</span>
               <span>• {isAr ? 'مساحتك اليومية الآمنة' : 'Your Safe Daily Space'}</span>
             </div>
-            <span>{dateStr}</span>
+            {showDate && <span>{dateStr}</span>}
           </div>
         </div>
       </div>

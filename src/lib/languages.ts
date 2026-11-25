@@ -47,6 +47,14 @@ export function getBcp47Tag(code?: AppLanguage | string | null): string {
 export type TranslationKey = string;
 
 export const AR_DICT: Record<string, any> = {
+  backToJournals: "العودة إلى اليوميات والفضفضة",
+  editDrawing: "تعديل الرسمة",
+  deleteDrawing: "حذف الرسمة",
+  previewDrawing: "معاينة الرسمة",
+  topMenuQuickDrawer: "القائمة والأقسام الإضافية",
+  appUtilities: "أدوات التطبيق",
+  secondarySections: "الأقسام والأنشطة",
+
   // Onboarding Tour Multi-language Keys
   onboardingStepOf: "الخطوة {step} من {total}",
   onboardingCloseGuide: "إغلاق الدليل التفاعلي",
@@ -2900,6 +2908,7 @@ export const AR_DICT: Record<string, any> = {
 };
 
 export const EN_DICT: Record<string, any> = {
+
   onboardingStepOf: "Step {step} of {total}",
   onboardingCloseGuide: "Close Interactive Guide",
   onboardingWelcomeSubtitle: "Your safe psychological space to write, express, and grow with smart AI guidance.",
@@ -5400,6 +5409,7 @@ export const EN_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI Advisor:",};
 
 export const FR_DICT: Record<string, any> = {
+
   onboardingStepOf: "Étape {step} sur {total}",
   onboardingCloseGuide: "Fermer le guide interactif",
   onboardingWelcomeSubtitle: "Votre espace psychologique sécurisé pour écrire, vous exprimer et évoluer avec l'IA.",
@@ -7900,6 +7910,7 @@ export const FR_DICT: Record<string, any> = {
   chatAdvisorLabel: "Conseiller Hayat AI :",};
 
 export const DE_DICT: Record<string, any> = {
+
   onboardingStepOf: "Schritt {step} von {total}",
   onboardingCloseGuide: "Interaktiven Leitfaden schließen",
   onboardingWelcomeSubtitle: "Ihr sicherer psychologischer Raum zum Schreiben, Ausdrücken und Wachsen mit KI-Begleitung.",
@@ -10400,6 +10411,7 @@ export const DE_DICT: Record<string, any> = {
 };
 
 export const ES_DICT: Record<string, any> = {
+
   onboardingStepOf: "Paso {step} de {total}",
   onboardingCloseGuide: "Cerrar guía interactiva",
   onboardingWelcomeSubtitle: "Tu espacio psicológico seguro para escribir, expresarte y crecer con guía de IA inteligente.",
@@ -12900,6 +12912,7 @@ export const ES_DICT: Record<string, any> = {
   chatAdvisorLabel: "Asesor Hayat AI:",};
 
 export const IT_DICT: Record<string, any> = {
+
   onboardingStepOf: "Passo {step} di {total}",
   onboardingCloseGuide: "Chiudi guida interattiva",
   onboardingWelcomeSubtitle: "Il tuo spazio psicologico sicuro per scrivere, esprimerti e crescere con l'assistenza dell'IA.",
@@ -15400,6 +15413,7 @@ export const IT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consulente Hayat AI:",};
 
 export const TR_DICT: Record<string, any> = {
+
   onboardingStepOf: "Adım {step} / {total}",
   onboardingCloseGuide: "Etkileşimli Rehberi Kapat",
   onboardingWelcomeSubtitle: "Akıllı yapay zeka rehberliğiyle yazabileceğiniz, kendinizi ifade edip gelişebileceğiniz güvenli alanınız.",
@@ -17900,6 +17914,7 @@ export const TR_DICT: Record<string, any> = {
 };
 
 export const PT_DICT: Record<string, any> = {
+
   onboardingStepOf: "Passo {step} de {total}",
   onboardingCloseGuide: "Fechar guia interativo",
   onboardingWelcomeSubtitle: "Seu espaço psicológico seguro para escrever, se expressar e evoluir com orientação de IA.",
@@ -20400,6 +20415,7 @@ export const PT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consultor Hayat AI:",};
 
 export const RU_DICT: Record<string, any> = {
+
   onboardingStepOf: "Шаг {step} из {total}",
   onboardingCloseGuide: "Закрыть интерактивное руководство",
   onboardingWelcomeSubtitle: "Ваше безопасное психологическое пространство для записей, самовыражения и роста с помощью ИИ.",
@@ -22900,6 +22916,7 @@ export const RU_DICT: Record<string, any> = {
   chatAdvisorLabel: "Консультант Hayat AI:",};
 
 export const JA_DICT: Record<string, any> = {
+
   onboardingStepOf: "ステップ {step} / {total}",
   onboardingCloseGuide: "インタラクティブガイドを閉じる",
   onboardingWelcomeSubtitle: "AIのスマートな導きとともに、想いを綴り、自己表現を深め、成長できる安心の心理空間です。",
@@ -25400,6 +25417,7 @@ export const JA_DICT: Record<string, any> = {
 };
 
 export const ZH_DICT: Record<string, any> = {
+
   onboardingStepOf: "步骤 {step} / {total}",
   onboardingCloseGuide: "关闭互动指南",
   onboardingWelcomeSubtitle: "专属于您的安全心理空间，在智能AI的陪伴下倾诉心声、记录思绪与持续成长。",
@@ -27900,6 +27918,7 @@ export const ZH_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI 顾问:",};
 
 export const HI_DICT: Record<string, any> = {
+
   onboardingStepOf: "चरण {step} / {total}",
   onboardingCloseGuide: "इंटरैक्टिव गाइड बंद करें",
   onboardingWelcomeSubtitle: "स्मार्ट AI मार्गदर्शन के साथ लिखने, व्यक्त करने और विकसित होने का आपका सुरक्षित मनोवैज्ञानिक स्थान।",
