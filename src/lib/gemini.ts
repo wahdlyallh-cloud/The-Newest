@@ -13,6 +13,7 @@ import {
   getModelTierCandidates,
   getModelCandidatesForTask,
   markModelUnavailableForKey,
+  markModelFailedForKey,
   markModelVerifiedForKey,
   testGeminiApiKey
 } from './apiKeyManager';
@@ -368,14 +369,16 @@ export async function generateGeminiContentDirect(
 
   const candidateKeys = getCandidateApiKeys(customKey);
   if (candidateKeys.length === 0) {
-    return 'يرجى التحقق من مفتاح API في الإعدادات';
+    return getLocalizedAIError('key-missing', appLanguage);
   }
 
   let lastError = '';
+  let allKeysExhausted = true;
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
     const modelsToTry = await getModelCandidatesForTask(currentKey, taskType);
+    let allModels429OnThisKey = true;
 
     for (const model of modelsToTry) {
       const url =
@@ -424,45 +427,55 @@ export async function generateGeminiContentDirect(
           const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (output && typeof output === 'string' && output.trim() !== '') {
             markModelVerifiedForKey(currentKey, model);
-            recordKeySuccess(currentKey);
+            recordKeySuccess(currentKey, model);
             return output.trim();
           }
         }
 
-        // ── Error path & Rotation ─────────────────────────────────────
+        // ── Error path & Step-down ────────────────────────────────────
         const rawError = data?.error?.message || `HTTP ${res.status}`;
         lastError = rawError;
         const errType = classifyGeminiError(res.status, rawError);
 
-        // Quota / Rate limit / True key invalidity -> rotate to next key in pool
-        if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
-          rotateToNextKey(currentKey, errType);
-          break; // break model loop to immediately try next key in pool
+        // True key invalidity -> rotate key away
+        if (errType === 'invalid_key') {
+          rotateToNextKey(currentKey, 'invalid_key');
+          allModels429OnThisKey = false;
+          break; // break model loop to try next key in pool
         }
+
+        // 429 / Quota / Rate limit on (currentKey, model):
+        // Record per-model failure (24h if limit: 0 / free tier, else short cooldown)
+        // DO NOT mark entire key exhausted! Immediately step down to next model on SAME key!
+        if (errType === 'quota_exhausted' || errType === 'rate_limited' || res.status === 429) {
+          markModelFailedForKey(currentKey, model, res.status, rawError);
+          continue; // step down to next candidate model on SAME key
+        }
+
+        allModels429OnThisKey = false;
 
         // Model-specific failure: 404 NOT_FOUND, deprecated, or restricted
-        // Runtime self-healing: cache failed model for this key & step down to next candidate model on SAME key
-        if (res.status === 404 || rawError.includes('not found') || rawError.includes('no longer available') || rawError.includes('deprecated') || (res.status === 403 && !rawError.includes('quota') && !rawError.includes('resource_exhausted'))) {
-          markModelUnavailableForKey(currentKey, model);
-          continue; // try next model in tier on SAME key
-        }
-
-        if (res.status === 503 || res.status === 529 || rawError.includes('high demand')) {
-          continue; // try next model in tier
-        }
-
-        markModelUnavailableForKey(currentKey, model);
+        markModelFailedForKey(currentKey, model, res.status, rawError);
+        continue; // try next candidate model on SAME key
       } catch (err: any) {
+        allModels429OnThisKey = false;
         lastError = err?.message || String(err);
       }
     }
+
+    // Only mark the entire key as quota_exhausted if ALL candidate models failed with 429
+    if (allModels429OnThisKey) {
+      rotateToNextKey(currentKey, 'quota_exhausted');
+    } else {
+      allKeysExhausted = false;
+    }
   }
 
-  if (lastError.includes('quota') || lastError.includes('RESOURCE_EXHAUSTED')) {
-    return 'جميع مفاتيح API المحددة قد وصلت إلى حد الاستهلاك اليومي / نفدت حصتها. يرجى إضافة مفتاح جديد أو المحاولة لاحقاً.';
+  if (allKeysExhausted || lastError.includes('quota') || lastError.includes('RESOURCE_EXHAUSTED')) {
+    return getLocalizedAIError('quota-exhausted', appLanguage);
   }
 
-  return 'عذراً، تعذر الاتصال بنموذج الذكاء الاصطناعي حالياً. يرجى التحقق من الاتصال والمفتاح.';
+  return getLocalizedAIError('connection', appLanguage, lastError);
 }
 
 /**
@@ -476,7 +489,7 @@ export async function transcribeAudioWithGemini(
 ): Promise<string> {
   const candidateKeys = getCandidateApiKeys(customKey);
   if (candidateKeys.length === 0) {
-    return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API في الإعدادات.';
+    return getLocalizedAIError('key-missing', appLanguage);
   }
 
   let pureBase64 = audioBase64;
@@ -501,9 +514,13 @@ export async function transcribeAudioWithGemini(
   else if (cleanMime.includes("3gp") || cleanMime.includes("amr")) cleanMime = "audio/3gpp";
   else cleanMime = "audio/webm";
 
+  let lastAudioError = '';
+  let allKeysExhaustedAudio = true;
+
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
     const modelsToTry = await getModelCandidatesForTask(currentKey, 'multimodal');
+    let allModels429OnKey = true;
 
     for (const model of modelsToTry) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(currentKey.trim())}`;
@@ -545,34 +562,46 @@ export async function transcribeAudioWithGemini(
           const output = data?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (output && typeof output === 'string' && output.trim() !== '') {
             markModelVerifiedForKey(currentKey, model);
-            recordKeySuccess(currentKey);
+            recordKeySuccess(currentKey, model);
             return output.trim();
           }
         }
 
         const rawError = data?.error?.message || `HTTP ${res.status}`;
+        lastAudioError = rawError;
         const errType = classifyGeminiError(res.status, rawError);
 
-        if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
-          rotateToNextKey(currentKey, errType);
+        if (errType === 'invalid_key') {
+          rotateToNextKey(currentKey, 'invalid_key');
+          allModels429OnKey = false;
           break; // try next key
         }
 
-        if (res.status === 404 || rawError.includes('not found') || rawError.includes('no longer available') || rawError.includes('deprecated') || (res.status === 403 && !rawError.includes('quota') && !rawError.includes('resource_exhausted'))) {
-          markModelUnavailableForKey(currentKey, model);
-          continue; // try next model in tier on SAME key
+        if (errType === 'quota_exhausted' || errType === 'rate_limited' || res.status === 429) {
+          markModelFailedForKey(currentKey, model, res.status, rawError);
+          continue; // step down to next candidate model on SAME key
         }
 
-        if (res.status === 503 || res.status === 529 || rawError.includes('high demand')) {
-          continue; // try next model in tier
-        }
-
-        markModelUnavailableForKey(currentKey, model);
-      } catch (err) {
+        allModels429OnKey = false;
+        markModelFailedForKey(currentKey, model, res.status, rawError);
+        continue;
+      } catch (err: any) {
+        allModels429OnKey = false;
+        lastAudioError = err?.message || String(err);
         console.warn(`[gemini-transcribe] Model ${model} failed with key #${keyIdx + 1}:`, err);
       }
     }
+
+    if (allModels429OnKey) {
+      rotateToNextKey(currentKey, 'quota_exhausted');
+    } else {
+      allKeysExhaustedAudio = false;
+    }
   }
 
-  return 'عذراً، تعذر التفريغ النصي تلقائياً. يرجى التحقق من مفتاح API أو المحاولة لاحقاً.';
+  if (allKeysExhaustedAudio || lastAudioError.includes('quota') || lastAudioError.includes('RESOURCE_EXHAUSTED')) {
+    return getLocalizedAIError('quota-exhausted', appLanguage);
+  }
+
+  return getLocalizedAIError('connection', appLanguage, lastAudioError);
 }

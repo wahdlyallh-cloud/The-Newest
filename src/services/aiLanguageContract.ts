@@ -97,20 +97,32 @@ export function getAISystemLanguageContract(lang?: string, taskDescription?: str
 /**
  * Returns a localized user-facing error message.
  */
-export function getLocalizedAIError(errorType: 'key-missing' | 'rate-limit' | 'connection' | 'unauthorized' | string, lang?: string, rawDetails?: string): string {
+export function getLocalizedAIError(errorType: 'key-missing' | 'rate-limit' | 'quota-exhausted' | 'quota_exhausted' | 'connection' | 'unauthorized' | string, lang?: string, rawDetails?: string): string {
   const normalized = normalizeAppLanguage(lang);
   const t = getTranslation(normalized as any) as any;
+
+  if (rawDetails && (rawDetails.includes('__AI_QUOTA_EXCEEDED__') || rawDetails.includes('RESOURCE_EXHAUSTED') || rawDetails.includes('quota') || rawDetails.includes('الحصة'))) {
+    return t.allKeysQuotaExhausted || t.dailyLimitReached;
+  }
+  if (rawDetails && (rawDetails.includes('__AI_CHECK_API_KEY__') || rawDetails.includes('API_KEY_INVALID') || rawDetails.includes('api key not valid'))) {
+    return t.apiKeyCheckSettings;
+  }
 
   switch (errorType) {
     case 'key-missing':
       return t.apiKeyCheckSettings;
     case 'rate-limit':
-      return t.dailyLimitReached;
+    case 'quota-exhausted':
+    case 'quota_exhausted':
+      return t.allKeysQuotaExhausted || t.dailyLimitReached;
     case 'connection':
       return rawDetails ? `${t.connectionError}: ${rawDetails}` : (t.connectionError);
     case 'unauthorized':
       return t.keyVerificationFailed;
     default:
+      if (typeof errorType === 'string' && (errorType.includes('quota') || errorType.includes('__AI_QUOTA_EXCEEDED__'))) {
+        return t.allKeysQuotaExhausted || t.dailyLimitReached;
+      }
       return rawDetails || t.connectionError;
   }
 }

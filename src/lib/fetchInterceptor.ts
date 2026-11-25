@@ -10,6 +10,7 @@ import {
   getModelTierCandidates,
   getModelCandidatesForTask,
   markModelUnavailableForKey,
+  markModelFailedForKey,
   markModelVerifiedForKey
 } from './apiKeyManager';
 import {
@@ -79,7 +80,8 @@ async function generateWithGeminiREST(
   isJson?: boolean,
   userApiKey?: string,
   extraParts?: any[],
-  taskType: AITaskType = 'multimodal'
+  taskType: AITaskType = 'multimodal',
+  reqLang?: string
 ) {
   const candidateKeys = getCandidateApiKeys(userApiKey);
   if (candidateKeys.length === 0) {
@@ -87,10 +89,12 @@ async function generateWithGeminiREST(
   }
 
   let lastErrorMsg = '';
+  let allKeysExhausted = true;
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
     const modelsToTry = await getModelCandidatesForTask(currentKey, taskType);
+    let allModels429OnThisKey = true;
 
     for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
       const model = modelsToTry[modelIdx];
@@ -141,7 +145,7 @@ async function generateWithGeminiREST(
             const candidateText = candidate?.content?.parts?.[0]?.text;
             if (candidateText && typeof candidateText === 'string' && candidateText.trim() !== '') {
               markModelVerifiedForKey(currentKey, model);
-              recordKeySuccess(currentKey);
+              recordKeySuccess(currentKey, model);
               console.log(`[REST] Success with Model: ${model} | Key #${keyIdx + 1} | Time: ${elapsed}ms`);
               return candidateText;
             }
@@ -156,37 +160,56 @@ async function generateWithGeminiREST(
         const errType = classifyGeminiError(res.status, errMessage);
         console.warn(`[REST] Model: ${model} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
 
-        if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
-          rotateToNextKey(currentKey, errType);
+        // True key invalidity -> rotate key away
+        if (errType === 'invalid_key') {
+          rotateToNextKey(currentKey, 'invalid_key');
+          allModels429OnThisKey = false;
           break; // break model loop to try next candidate key in pool
         }
 
-        // Model-specific failure: 404 NOT_FOUND, deprecated, no longer available, or restricted
-        // Runtime self-healing: cache failed model for this key & step down to next candidate model on SAME key
-        if (res.status === 404 || res.status === 503 || res.status === 529 || errMessage.includes('high demand') || errMessage.includes('not found') || errMessage.includes('no longer available') || errMessage.includes('deprecated') || (res.status === 403 && !errMessage.includes('quota') && !errMessage.includes('resource_exhausted'))) {
-          markModelUnavailableForKey(currentKey, model);
-          continue; // try next model in loop with same key
+        // 429 / Quota / Rate limit on (currentKey, model):
+        // Mark failed/cooling down per-model and step down to next candidate model on SAME key!
+        if (errType === 'quota_exhausted' || errType === 'rate_limited' || res.status === 429) {
+          markModelFailedForKey(currentKey, model, res.status, errMessage);
+          continue; // immediately step down to next model on same key without exhausting key!
         }
 
-        markModelUnavailableForKey(currentKey, model);
+        allModels429OnThisKey = false;
+
+        // Model-specific failure: 404 NOT_FOUND, deprecated, no longer available, or restricted
+        markModelFailedForKey(currentKey, model, res.status, errMessage);
+        continue; // try next model in loop with same key
       } catch (e: any) {
         clearTimeout(timeoutTimer);
         const elapsed = Date.now() - reqStart;
         const isAbort = e?.name === 'AbortError';
         lastErrorMsg = isAbort ? 'انتهت مهلة استجابة النموذج (Timeout)' : (e.message || String(e));
+        allModels429OnThisKey = false;
         console.warn(`[REST] Model: ${model} | Key #${keyIdx + 1} | Exception: ${lastErrorMsg} | Time: ${elapsed}ms`);
       }
     }
+
+    // Only mark the entire key as quota_exhausted if ALL candidate models failed with 429
+    if (allModels429OnThisKey) {
+      rotateToNextKey(currentKey, 'quota_exhausted');
+    } else {
+      allKeysExhausted = false;
+    }
   }
 
-  if (lastErrorMsg.includes('quota') || lastErrorMsg.includes('RESOURCE_EXHAUSTED')) {
-    return '__AI_QUOTA_EXCEEDED__';
+  // Never return raw internal sentinels (__AI_QUOTA_EXCEEDED__ or __AI_CHECK_API_KEY__)
+  if (allKeysExhausted || lastErrorMsg.includes('quota') || lastErrorMsg.includes('RESOURCE_EXHAUSTED')) {
+    const quotaErr = new Error(getLocalizedAIError('quota-exhausted', reqLang));
+    (quotaErr as any).errorType = 'quota_exhausted';
+    throw quotaErr;
   }
   if (lastErrorMsg.includes('API_KEY_INVALID') || lastErrorMsg.includes('API key not valid')) {
-    return '__AI_CHECK_API_KEY__';
+    const authErr = new Error(getLocalizedAIError('key-missing', reqLang));
+    (authErr as any).errorType = 'invalid_key';
+    throw authErr;
   }
 
-  throw new Error(lastErrorMsg || 'Could not connect to Gemini models.');
+  throw new Error(lastErrorMsg || getLocalizedAIError('connection', reqLang));
 }
 
 // Intercept window.fetch robustly
@@ -620,12 +643,17 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       }
 
       try {
-        const answer = await generateWithGeminiREST(userQuery || 'Hello', generalSystemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts);
+        const answer = await generateWithGeminiREST(userQuery || 'Hello', generalSystemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts, 'deep', reqLang);
         return createSuccessResponse({ success: true, answer, source: 'gemini-general', citations: retrievedContext?.sourceCitations });
       } catch (err: any) {
+        if (err?.errorType === 'quota_exhausted' || err?.message?.includes('quota') || err?.message?.includes('الحصة')) {
+          return createErrorResponse(getLocalizedAIError('quota-exhausted', reqLang), true, 429, 'quota_exhausted');
+        }
         return createSuccessResponse({
           success: true,
-          answer: `أهلاً بك في المستشار الذكي العام! يسعدني الإجابة على استفسارك حول "${userQuery || 'موضوعك'}" وتقديم التحليلات والمساعدة والمعرفة الشاملة.`,
+          answer: reqLang === 'ar'
+            ? `أهلاً بك في المستشار الذكي العام! يسعدني الإجابة على استفسارك حول "${userQuery || 'موضوعك'}" وتقديم التحليلات والمساعدة والمعرفة الشاملة.`
+            : `Welcome to Hayat AI General Advisor! I am happy to assist you with your inquiry regarding "${userQuery || 'your topic'}" and provide insights and support.`,
           source: 'general-fallback'
         });
       }
@@ -633,8 +661,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
 
     const fallbackAnswer = getDynamicSmartAdvisorFallback(userQuery, reportType, diaries, books, gratitudeCards, habits, reqLang);
 
-    try {
-      let systemInstruction = `أنت المستشار الذكي الموحد في تطبيق 'حياة AI' (Unified Hayat AI Intelligence).
+    let systemInstruction = `أنت المستشار الذكي الموحد في تطبيق 'حياة AI' (Unified Hayat AI Intelligence).
 تجمع ببراعة بين دورين متكاملين:
 1) استشاري نفسي وحياتي عميق، واعٍ ومطلع بدقة متناهية على سجلات المستخدم ويومياته وعاداته وتجاربه عبر الزمن (Episodic, Semantic, Temporal, & Media Memory).
 2) ذكاء اصطناعي عام موسوعي يجيب عن أي موضوع في الحياة، العلوم، والتطوير الذاتي.
@@ -710,7 +737,7 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
         });
       }
 
-      const answer = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts);
+      const answer = await generateWithGeminiREST(userPrompt, systemInstruction + '\n\n' + getAILanguageInstruction(reqLang), false, keyToUse, extraParts, 'deep', reqLang);
       return createSuccessResponse({
         success: true,
         answer,
@@ -719,6 +746,9 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
         correlations: retrievedContext?.crossSourceCorrelations
       });
     } catch (err: any) {
+      if (err?.errorType === 'quota_exhausted' || err?.message?.includes('quota') || err?.message?.includes('الحصة')) {
+        return createErrorResponse(getLocalizedAIError('quota-exhausted', reqLang), true, 429, 'quota_exhausted');
+      }
       return createSuccessResponse({ success: true, answer: fallbackAnswer, source: 'smart-fallback' });
     }
   }
@@ -963,13 +993,17 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
         false, 
         keyToUse, 
         extraParts,
-        'reasoning'
+        'reasoning',
+        reqLang
       );
       if (answer && answer.trim() !== '') {
         return createSuccessResponse({ success: true, answer, source: "gemini" });
       }
       throw new Error("Empty response from Gemini");
     } catch (err: any) {
+      if (err?.errorType === 'quota_exhausted' || err?.message?.includes('quota') || err?.message?.includes('الحصة')) {
+        return createErrorResponse(getLocalizedAIError('quota-exhausted', reqLang), true, 429, 'quota_exhausted');
+      }
       const answer = generateSmartDynamicDiaryChatReply(newMessage, title, content, moods, tags, audioTranscriptions, chatLogs, reqLang);
       return createSuccessResponse({
         success: true,
@@ -1065,11 +1099,13 @@ ${getAILanguageInstruction(reqLang)}`;
 
       if (base64Data || fileUri) {
         let lastError = "";
+        let allKeysExhaustedAudio = true;
         const globalDeadline = Date.now() + 150000; // 150s Global Timeout
 
         keyLoop: for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
           const currentKey = candidateKeys[keyIdx];
           const modelsToTry = await getModelCandidatesForTask(currentKey, 'multimodal');
+          let allModels429OnKey = true;
 
           for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
             if (Date.now() >= globalDeadline) {
@@ -1145,7 +1181,7 @@ Return pure JSON only in the following format:
                   throw new Error("استجابة فارغة من خادم الذكاء الاصطناعي");
                 }
                 markModelVerifiedForKey(currentKey, modName);
-                recordKeySuccess(currentKey);
+                recordKeySuccess(currentKey, modName);
                 console.log(`[AudioTranscription] Success with Model: ${modName} | Key #${keyIdx + 1} | Time: ${elapsed}ms`);
                 const resJson = JSON.parse(responseText);
                 const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
@@ -1168,25 +1204,35 @@ Return pure JSON only in the following format:
                 const errType = classifyGeminiError(res.status, lastError);
                 console.warn(`[AudioTranscription] Model: ${modName} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
 
-                if (errType === 'quota_exhausted' || errType === 'rate_limited' || errType === 'invalid_key') {
-                  rotateToNextKey(currentKey, errType);
+                if (errType === 'invalid_key') {
+                  rotateToNextKey(currentKey, 'invalid_key');
+                  allModels429OnKey = false;
                   break; // break model loop to try next candidate key
                 }
 
-                if (res.status === 404 || res.status === 503 || res.status === 529 || lastError.includes('high demand') || lastError.includes('not found') || lastError.includes('no longer available') || lastError.includes('deprecated') || (res.status === 403 && !lastError.includes('quota') && !lastError.includes('resource_exhausted'))) {
-                  markModelUnavailableForKey(currentKey, modName);
-                  continue; // try next model with same key
+                if (errType === 'quota_exhausted' || errType === 'rate_limited' || res.status === 429) {
+                  markModelFailedForKey(currentKey, modName, res.status, lastError);
+                  continue; // step down to next model on same key without killing key!
                 }
 
-                markModelUnavailableForKey(currentKey, modName);
+                allModels429OnKey = false;
+                markModelFailedForKey(currentKey, modName, res.status, lastError);
+                continue;
               }
             } catch (modelErr: any) {
               clearTimeout(timeoutTimer);
               const elapsed = Date.now() - reqStart;
               const isAbort = modelErr?.name === 'AbortError';
               lastError = isAbort ? 'انتهت مهلة استجابة النموذج (Timeout)' : (modelErr?.message || `خطأ في الاتصال بالنموذج ${modName}`);
+              allModels429OnKey = false;
               console.warn(`[AudioTranscription] Model: ${modName} | Key #${keyIdx + 1} | Exception: ${lastError} | Time: ${elapsed}ms`);
             }
+          }
+
+          if (allModels429OnKey) {
+            rotateToNextKey(currentKey, 'quota_exhausted');
+          } else {
+            allKeysExhaustedAudio = false;
           }
         }
 
@@ -1196,6 +1242,10 @@ Return pure JSON only in the following format:
               ? "استغرقت معالجة التسجيل الصوتي وقتاً أطول من المتوقع، يرجى المحاولة مرة أخرى أو اختيار تسجيل أصغر."
               : "Audio processing took longer than expected. Please try again shortly."
           );
+        }
+
+        if (allKeysExhaustedAudio || lastError.toLowerCase().includes('quota') || lastError.toLowerCase().includes('resource_exhausted')) {
+          return createErrorResponse(getLocalizedAIError('quota-exhausted', reqLang), true, 429, 'quota_exhausted');
         }
 
         if (lastError.toLowerCase().includes('high demand') || lastError.toLowerCase().includes('overloaded') || lastError.includes('503') || lastError.includes('529')) {
@@ -1274,9 +1324,9 @@ function createSuccessResponse(data: any): Response {
 }
 
 // Helper to construct error response
-function createErrorResponse(message: string, requiresKey: boolean = true): Response {
-  return new Response(JSON.stringify({ success: false, error: message, requiresKey }), {
-    status: 400,
+function createErrorResponse(message: string, requiresKey: boolean = true, status: number = 400, errorType?: string): Response {
+  return new Response(JSON.stringify({ success: false, error: message, message, requiresKey, errorType }), {
+    status,
     headers: { 'Content-Type': 'application/json' }
   });
 }

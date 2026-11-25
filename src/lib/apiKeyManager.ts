@@ -271,19 +271,35 @@ export function rotateToNextKey(failedKeyStr: string, errorType: ClassifiedError
 /**
  * Record a successful API response for a key to update status and reset error state
  */
-export function recordKeySuccess(keyStr: string): void {
+export function recordKeySuccess(keyStr: string, verifiedModel?: string): void {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return;
     const settings: AppSettings = JSON.parse(saved);
     const migrated = migrateSettingsApiKeys(settings);
     const pool = migrated.apiKeys ? [...migrated.apiKeys] : [];
-    const entry = pool.find(k => k.key.trim() === keyStr.trim());
+    const cleanKey = keyStr.trim();
+    const entry = pool.find(k => k.key.trim() === cleanKey || k.id === cleanKey);
     if (entry) {
+      const today = new Date().toISOString().split('T')[0];
+      const lastDate = entry.lastUsedAt ? entry.lastUsedAt.split('T')[0] : '';
+      if (lastDate !== today) {
+        entry.requestsToday = 1;
+      } else {
+        entry.requestsToday = (entry.requestsToday || 0) + 1;
+      }
       entry.lastUsedAt = new Date().toISOString();
       entry.status = 'ready';
       entry.lastErrorMsg = undefined;
+      entry.rateLimitResetAt = undefined;
       entry.successfulRequests = (entry.successfulRequests || 0) + 1;
+
+      if (verifiedModel && verifiedModel.trim()) {
+        const cleanModel = verifiedModel.replace(/^models\//, '').trim();
+        entry.verifiedModel = cleanModel;
+        keyVerifiedModels.set(cleanKey, cleanModel);
+      }
+
       migrated.apiKeys = pool;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
     }
@@ -358,33 +374,164 @@ interface DiscoveredCacheEntry {
 const discoveryCache = new Map<string, DiscoveredCacheEntry>();
 const DISCOVERY_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
-// Per-key unavailable/failed models cache for runtime self-healing
+// Model availability and cooldown entry per (key, model)
+export interface ModelAvailabilityEntry {
+  until: number;           // expiration timestamp (ms)
+  unsupported: boolean;    // true if tier unsupported / limit: 0 (24h TTL)
+  reason?: string;
+}
+
+// Map from cleanKey -> Map<cleanModel, ModelAvailabilityEntry>
+const keyModelAvailability = new Map<string, Map<string, ModelAvailabilityEntry>>();
+
+// Cooldown durations
+export const COOLDOWN_UNSUPPORTED_MS = 24 * 60 * 60 * 1000; // 24 hours for limit: 0 / free tier restrictions
+export const COOLDOWN_TEMPORARY_MS = 60 * 1000;              // 60 seconds short cooldown for temporary rate limits
+const COOLDOWN_STORAGE_KEY = 'yawmiyati_model_cooldowns';
+
+function loadModelCooldowns(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = localStorage.getItem(COOLDOWN_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    const now = Date.now();
+    for (const [k, models] of Object.entries(parsed)) {
+      if (!keyModelAvailability.has(k)) keyModelAvailability.set(k, new Map());
+      const map = keyModelAvailability.get(k)!;
+      for (const [m, entry] of Object.entries(models as any)) {
+        if ((entry as any)?.until && (entry as any).until > now) {
+          map.set(m, entry as ModelAvailabilityEntry);
+        }
+      }
+    }
+  } catch (_) {}
+}
+
+function saveModelCooldowns(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const now = Date.now();
+    const serialized: Record<string, Record<string, ModelAvailabilityEntry>> = {};
+    for (const [k, map] of keyModelAvailability.entries()) {
+      const activeEntries: Record<string, ModelAvailabilityEntry> = {};
+      for (const [m, entry] of map.entries()) {
+        if (entry.until > now) {
+          activeEntries[m] = entry;
+        }
+      }
+      if (Object.keys(activeEntries).length > 0) {
+        serialized[k] = activeEntries;
+      }
+    }
+    localStorage.setItem(COOLDOWN_STORAGE_KEY, JSON.stringify(serialized));
+  } catch (_) {}
+}
+
+// Initial load of model cooldowns
+loadModelCooldowns();
+
+// Per-key unavailable/failed models cache for runtime self-healing backwards compatibility
 const keyUnavailableModels = new Map<string, Set<string>>();
 
 // Per-key verified working model cache
 const keyVerifiedModels = new Map<string, string>();
 
 /**
- * Mark a model as unavailable for a specific key (e.g. on 404 / deprecated)
+ * Check if error text or status indicates a zero-limit or paid-tier restriction
  */
-export function markModelUnavailableForKey(key: string, model: string): void {
+export function isZeroLimitOrTierRestrictedError(status: number, message: string): boolean {
+  const msg = (message || '').toLowerCase();
+  if (
+    msg.includes('limit: 0') ||
+    msg.includes('limit:0') ||
+    msg.includes('limit of 0') ||
+    msg.includes('free_tier') ||
+    msg.includes('free tier') ||
+    msg.includes('freetier') ||
+    msg.includes('not enabled') ||
+    msg.includes('paid tier') ||
+    msg.includes('pay-as-you-go') ||
+    msg.includes('billing') ||
+    msg.includes('tiered') ||
+    msg.includes('tier') ||
+    status === 404 ||
+    status === 403
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Mark a model as failed for a specific key with adaptive cooldown:
+ * - If limit: 0 or tier restricted -> cache as unsupported for 24 hours.
+ * - Otherwise put (key, model) on a short 60s cooldown.
+ */
+export function markModelFailedForKey(key: string, model: string, status: number, message: string): void {
   if (!key || !model) return;
   const cleanKey = key.trim();
   const cleanModel = model.replace(/^models\//, '').trim();
+
+  if (!keyModelAvailability.has(cleanKey)) {
+    keyModelAvailability.set(cleanKey, new Map());
+  }
+
+  const isUnsupported = isZeroLimitOrTierRestrictedError(status, message);
+  const duration = isUnsupported ? COOLDOWN_UNSUPPORTED_MS : COOLDOWN_TEMPORARY_MS;
+  const until = Date.now() + duration;
+
+  keyModelAvailability.get(cleanKey)!.set(cleanModel, {
+    until,
+    unsupported: isUnsupported,
+    reason: message
+  });
+
   if (!keyUnavailableModels.has(cleanKey)) {
     keyUnavailableModels.set(cleanKey, new Set<string>());
   }
   keyUnavailableModels.get(cleanKey)!.add(cleanModel);
+
+  saveModelCooldowns();
+}
+
+/**
+ * Check if a model is available (not cooling down and not unsupported) for a specific key
+ */
+export function isModelAvailableForKey(key: string, model: string): boolean {
+  if (!key || !model) return true;
+  const cleanKey = key.trim();
+  const cleanModel = model.replace(/^models\//, '').trim();
+
+  const map = keyModelAvailability.get(cleanKey);
+  if (!map) return true;
+
+  const entry = map.get(cleanModel);
+  if (!entry) return true;
+
+  if (Date.now() < entry.until) {
+    return false; // still in cooldown or unsupported
+  }
+
+  // Cooldown expired
+  map.delete(cleanModel);
+  keyUnavailableModels.get(cleanKey)?.delete(cleanModel);
+  saveModelCooldowns();
+  return true;
+}
+
+/**
+ * Mark a model as unavailable for a specific key (e.g. on 404 / deprecated)
+ */
+export function markModelUnavailableForKey(key: string, model: string): void {
+  markModelFailedForKey(key, model, 404, 'model_unavailable');
 }
 
 /**
  * Check if a model has been cached as unavailable for a specific key
  */
 export function isModelUnavailableForKey(key: string, model: string): boolean {
-  if (!key || !model) return false;
-  const cleanKey = key.trim();
-  const cleanModel = model.replace(/^models\//, '').trim();
-  return Boolean(keyUnavailableModels.get(cleanKey)?.has(cleanModel));
+  return !isModelAvailableForKey(key, model);
 }
 
 /**
@@ -396,6 +543,13 @@ export function markModelVerifiedForKey(key: string, model: string): void {
   const cleanModel = model.replace(/^models\//, '').trim();
   keyVerifiedModels.set(cleanKey, cleanModel);
 
+  // If this model was previously in cooldown, clear it since it is verified working
+  if (keyModelAvailability.has(cleanKey)) {
+    keyModelAvailability.get(cleanKey)!.delete(cleanModel);
+    saveModelCooldowns();
+  }
+  keyUnavailableModels.get(cleanKey)?.delete(cleanModel);
+
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -404,7 +558,7 @@ export function markModelVerifiedForKey(key: string, model: string): void {
         if (settings.apiKeys && Array.isArray(settings.apiKeys)) {
           let changed = false;
           settings.apiKeys = settings.apiKeys.map(k => {
-            if (k.key?.trim() === cleanKey) {
+            if (k.key?.trim() === cleanKey || k.id === cleanKey) {
               changed = true;
               return {
                 ...k,
@@ -429,7 +583,25 @@ export function markModelVerifiedForKey(key: string, model: string): void {
  */
 export function getVerifiedModelForKey(key: string): string | undefined {
   if (!key) return undefined;
-  return keyVerifiedModels.get(key.trim());
+  const clean = key.trim();
+  if (keyVerifiedModels.has(clean)) {
+    return keyVerifiedModels.get(clean);
+  }
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const settings: AppSettings = JSON.parse(saved);
+        const pool = settings.apiKeys || [];
+        const found = pool.find(k => k.key?.trim() === clean || k.id === clean);
+        if (found?.verifiedModel) {
+          keyVerifiedModels.set(clean, found.verifiedModel);
+          return found.verifiedModel;
+        }
+      }
+    }
+  } catch (_) {}
+  return undefined;
 }
 
 /**
@@ -541,7 +713,7 @@ export function scoreModelForTask(model: string, taskType: 'light' | 'multimodal
 
 /**
  * Task-Adaptive candidate selector: intersects task tier ranked list with key's live discovered models,
- * applies the future-proof dynamic scorer, and filters out failed models from the runtime self-healing cache.
+ * applies the future-proof dynamic scorer, always appends key's verifiedModel, and filters out failed / cooling down models.
  */
 export async function getModelCandidatesForTask(key: string, taskType: AITaskType = 'multimodal'): Promise<string[]> {
   const normalizedTask: 'light' | 'multimodal' | 'deep' =
@@ -589,25 +761,50 @@ export async function getModelCandidatesForTask(key: string, taskType: AITaskTyp
     candidates = [...staticRanked];
   }
 
-  // Runtime self-healing: filter out models that failed inference on this specific key
-  const healthy = candidates.filter(m => !isModelUnavailableForKey(cleanKey, m));
-  return healthy.length > 0 ? healthy : [...staticRanked];
+  // Always append verifiedModel (or proven light model) to every tier's fallback list if not already present
+  const verified = getVerifiedModelForKey(cleanKey) || 'gemini-3.5-flash-lite';
+  if (verified && !candidates.includes(verified)) {
+    candidates.push(verified);
+  }
+
+  // Skip models already cached as unsupported / limit: 0 or in active cooldown on this key
+  const available = candidates.filter(m => isModelAvailableForKey(cleanKey, m));
+  if (available.length > 0) {
+    // Ensure verifiedModel remains present if healthy
+    if (verified && !available.includes(verified) && isModelAvailableForKey(cleanKey, verified)) {
+      available.push(verified);
+    }
+    return available;
+  }
+
+  // Safety guarantee: fallback to verifiedModel or gemini-3.5-flash-lite
+  return [verified || 'gemini-3.5-flash-lite'];
 }
 
 /**
- * Synchronous static fallback tier candidates
+ * Synchronous static fallback tier candidates with verifiedModel fallback
  */
-export function getModelTierCandidates(taskType: AITaskType): string[] {
+export function getModelTierCandidates(taskType: AITaskType, key?: string): string[] {
   const normalizedTask: 'light' | 'multimodal' | 'deep' =
     taskType === 'reasoning' || taskType === 'deep' ? 'deep' : (taskType === 'light' ? 'light' : 'multimodal');
-  return STATIC_TASK_MODELS[normalizedTask] || STATIC_TASK_MODELS.multimodal;
+  const list = [...(STATIC_TASK_MODELS[normalizedTask] || STATIC_TASK_MODELS.multimodal)];
+  if (key) {
+    const verified = getVerifiedModelForKey(key);
+    if (verified && !list.includes(verified)) {
+      list.push(verified);
+    }
+    const filtered = list.filter(m => isModelAvailableForKey(key, m));
+    if (filtered.length > 0) return filtered;
+  }
+  return list;
 }
 
 /**
  * Perform test query to verify key validity:
  * 1. Discovers live models for the key and verifies generateContent execution against the first working candidate.
- * 2. Never marks a key as invalid when a single model returns 404 or deprecated — steps down to next candidate.
- * 3. Returns the verified working model name.
+ * 2. Never marks a key as invalid or quota-exhausted when a paid/zero-limit model fails — steps down to next candidate (e.g. gemini-3.5-flash-lite).
+ * 3. Only marks key as quota_exhausted if ALL candidate models fail with 429.
+ * 4. Returns the verified working model name.
  */
 export async function testGeminiApiKey(key: string): Promise<{
   success: boolean;
@@ -627,6 +824,12 @@ export async function testGeminiApiKey(key: string): Promise<{
 
   const candidatesSet = new Set<string>();
 
+  // If a verified model is already known, test it first
+  const existingVerified = getVerifiedModelForKey(cleanKey);
+  if (existingVerified) {
+    candidatesSet.add(existingVerified);
+  }
+
   // Prefer discovered models intersecting priority list
   for (const m of priorityTestList) {
     if (discovered.length === 0 || discovered.includes(m)) {
@@ -641,9 +844,12 @@ export async function testGeminiApiKey(key: string): Promise<{
   for (const m of priorityTestList) {
     candidatesSet.add(m);
   }
+  // Always guarantee gemini-3.5-flash-lite is in the candidate test set
+  candidatesSet.add('gemini-3.5-flash-lite');
 
-  const modelsToTest = Array.from(candidatesSet).filter(m => !isModelUnavailableForKey(cleanKey, m));
+  const modelsToTest = Array.from(candidatesSet);
   let lastErr = '';
+  let all429 = true;
 
   for (const model of modelsToTest) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
@@ -660,6 +866,7 @@ export async function testGeminiApiKey(key: string): Promise<{
 
       if (res.ok) {
         markModelVerifiedForKey(cleanKey, model);
+        recordKeySuccess(cleanKey, model);
         return {
           success: true,
           message: 'API_KEY_VALID',
@@ -676,22 +883,27 @@ export async function testGeminiApiKey(key: string): Promise<{
       if (errType === 'invalid_key') {
         return { success: false, message: 'API_KEY_INVALID', errorType: 'invalid_key' };
       }
-      if (errType === 'quota_exhausted' || errType === 'rate_limited') {
-        return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED', errorType: errType };
+
+      // Step down immediately on 429 / RESOURCE_EXHAUSTED / limit: 0 without marking whole key exhausted!
+      if (errType === 'quota_exhausted' || errType === 'rate_limited' || status === 429) {
+        markModelFailedForKey(cleanKey, model, status, rawMsg);
+        continue; // Try next candidate model (e.g. gemini-3.5-flash-lite) on the SAME key!
       }
 
-      // Model-specific failure: 404 NOT_FOUND, deprecated, or no longer available
+      all429 = false;
+
+      // Model-specific failure: 404 NOT_FOUND, deprecated, or restricted
       // Step down to next candidate model on the SAME key without marking key invalid!
-      if (status === 404 || rawMsg.includes('not found') || rawMsg.includes('no longer available') || rawMsg.includes('deprecated')) {
-        markModelUnavailableForKey(cleanKey, model);
-        continue;
-      }
-
-      // Other model-specific error: cache model as unavailable and try next model
-      markModelUnavailableForKey(cleanKey, model);
+      markModelFailedForKey(cleanKey, model, status, rawMsg);
     } catch (e: any) {
+      all429 = false;
       lastErr = e?.message || String(e);
     }
+  }
+
+  // Only if ALL candidate models failed with 429
+  if (all429 && lastErr) {
+    return { success: false, message: 'API_KEY_QUOTA_EXHAUSTED', errorType: 'quota_exhausted' };
   }
 
   return { success: false, message: `CONNECTION_FAILED: ${lastErr}` };
