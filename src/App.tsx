@@ -27,7 +27,8 @@ import { getFontCss, getLineHeightCss } from './lib/fonts';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
 import { uploadToGeminiFilesAPI } from './services/attachmentService';
 import { cleanDiaryText, generateGeminiContentDirect } from './lib/gemini';
-import { migrateSettingsApiKeys } from './lib/apiKeyManager';
+import { migrateSettingsApiKeys, getActiveApiKeyFromSettings } from './lib/apiKeyManager';
+import { getLocalizedAIError } from './services/aiLanguageContract';
 import SmartAdvisor from './components/SmartAdvisor';
 import GratitudeJournal from './components/GratitudeJournal';
 import LifeMap from './components/LifeMap';
@@ -1499,13 +1500,21 @@ export default function App() {
       setIsFullAthkarModalOpen(true);
     };
 
+    const handleSettingsUpdated = (e: any) => {
+      if (e?.detail) {
+        setSettings(prev => ({ ...prev, ...e.detail }));
+      }
+    };
+
     window.addEventListener('yawmiyaty_switch_app_tab', handleSwitchTab);
     window.addEventListener('open_full_athkar_modal', handleOpenFullAthkarModal);
+    window.addEventListener('yawmiyati_settings_updated', handleSettingsUpdated);
 
     return () => {
       window.removeEventListener('beforeunload', performFullSave);
       window.removeEventListener('yawmiyaty_switch_app_tab', handleSwitchTab);
       window.removeEventListener('open_full_athkar_modal', handleOpenFullAthkarModal);
+      window.removeEventListener('yawmiyati_settings_updated', handleSettingsUpdated);
     };
   }, [diaries, settings, habits, gratitudeCards, dailyQuote]);
 
@@ -4933,7 +4942,7 @@ export default function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-gemini-key': settings.userApiKey || '',
+          'x-gemini-key': getActiveApiKeyFromSettings(settings) || settings.userApiKey || '',
           'x-app-language': settings.appLanguage || 'ar'
         },
         body: JSON.stringify({
@@ -4975,13 +4984,33 @@ export default function App() {
       } else if (data && (data.error || data.message)) {
         const rawErrStr = data.error || data.message;
         console.warn('API consultation warning:', rawErrStr);
+        if (data.errorType === 'quota_exhausted' || String(rawErrStr).includes('quota') || String(rawErrStr).includes('RESOURCE_EXHAUSTED') || String(rawErrStr).includes('الحصة')) {
+          answerText = getLocalizedAIError('quota-exhausted', settings.appLanguage);
+        } else if (data.errorType === 'invalid_key' || String(rawErrStr).includes('API_KEY') || String(rawErrStr).includes('مفتاح')) {
+          answerText = getLocalizedAIError('key-missing', settings.appLanguage);
+        } else {
+          answerText = String(rawErrStr);
+        }
       } else {
         // Fallback directly to client-side Gemini generation with Deep Reasoning Tier
         const promptContext = `الموضوع: ${editingDiary.title || 'مذكرة'}\nالمحتوى: ${editingDiary.content || ''}\nرسالة المستخدم الجديدة: ${textToSend.trim()}`;
-        answerText = await generateGeminiContentDirect(
-          promptContext,
-          'أنت طبيب نفسي ومعالج إكلينيكي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومهني ومفصل باللغة العربية.',
-          settings.userApiKey, extraParts, settings.appLanguage, 'reasoning');
+        try {
+          answerText = await generateGeminiContentDirect(
+            promptContext,
+            'أنت طبيب نفسي ومعالج إكلينيكي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومهني ومفصل باللغة العربية.',
+            getActiveApiKeyFromSettings(settings) || settings.userApiKey, extraParts, settings.appLanguage, 'reasoning');
+        } catch (genErr) {
+          console.warn('Direct fallback generation warning:', genErr);
+        }
+      }
+
+      // Absolute ban on raw internal sentinel strings in chat bubble
+      if (typeof answerText === 'string') {
+        if (answerText.includes('__AI_QUOTA_EXCEEDED__') || answerText.includes('RESOURCE_EXHAUSTED')) {
+          answerText = getLocalizedAIError('quota-exhausted', settings.appLanguage);
+        } else if (answerText.includes('__AI_CHECK_API_KEY__') || answerText.includes('API_KEY_INVALID')) {
+          answerText = getLocalizedAIError('key-missing', settings.appLanguage);
+        }
       }
 
       const defaultErrStr = !settings.userApiKey && (!settings.apiKeys || settings.apiKeys.length === 0)
@@ -5001,8 +5030,16 @@ export default function App() {
         fallbackText = await generateGeminiContentDirect(
           `رسالة الفضفضة: ${textToSend.trim()}`,
           'أنت مستشار نفسي حكيم وداعم في تطبيق حياة AI. أجب بأسلوب دافئ ومطمئن.',
-          settings.userApiKey, undefined, settings.appLanguage, 'reasoning');
+          getActiveApiKeyFromSettings(settings) || settings.userApiKey, undefined, settings.appLanguage, 'reasoning');
       } catch (_) {}
+
+      if (typeof fallbackText === 'string') {
+        if (fallbackText.includes('__AI_QUOTA_EXCEEDED__') || fallbackText.includes('RESOURCE_EXHAUSTED')) {
+          fallbackText = getLocalizedAIError('quota-exhausted', settings.appLanguage);
+        } else if (fallbackText.includes('__AI_CHECK_API_KEY__') || fallbackText.includes('API_KEY_INVALID')) {
+          fallbackText = getLocalizedAIError('key-missing', settings.appLanguage);
+        }
+      }
 
       const isAr = (settings?.appLanguage || 'ar') === 'ar';
       const defaultErrStr = !settings.userApiKey && (!settings.apiKeys || settings.apiKeys.length === 0)
@@ -9541,7 +9578,16 @@ export default function App() {
                                     : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
                                 }`}
                               >
-                                {msg.sender === 'user' ? msg.text : <MarkdownMessage content={msg.text} isAi={true} />}
+                                {msg.sender === 'user' ? msg.text : (
+                                  <MarkdownMessage
+                                    content={
+                                      msg.text.includes('__AI_QUOTA_EXCEEDED__') || msg.text.includes('RESOURCE_EXHAUSTED')
+                                        ? getLocalizedAIError('quota-exhausted', settings?.appLanguage)
+                                        : (msg.text.includes('__AI_CHECK_API_KEY__') || msg.text.includes('API_KEY_INVALID') ? getLocalizedAIError('key-missing', settings?.appLanguage) : msg.text)
+                                    }
+                                    isAi={true}
+                                  />
+                                )}
                               </div>
                             </div>
                             <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">

@@ -101,10 +101,10 @@ export function getLocalizedAIError(errorType: 'key-missing' | 'rate-limit' | 'q
   const normalized = normalizeAppLanguage(lang);
   const t = getTranslation(normalized as any) as any;
 
-  if (rawDetails && (rawDetails.includes('__AI_QUOTA_EXCEEDED__') || rawDetails.includes('RESOURCE_EXHAUSTED') || rawDetails.includes('quota') || rawDetails.includes('الحصة'))) {
+  if (rawDetails && (rawDetails.includes('__AI_QUOTA_EXCEEDED__') || rawDetails.includes('RESOURCE_EXHAUSTED') || rawDetails.includes('quota') || rawDetails.includes('الحصة') || rawDetails.includes('429'))) {
     return t.allKeysQuotaExhausted || t.dailyLimitReached;
   }
-  if (rawDetails && (rawDetails.includes('__AI_CHECK_API_KEY__') || rawDetails.includes('API_KEY_INVALID') || rawDetails.includes('api key not valid'))) {
+  if (rawDetails && (rawDetails.includes('__AI_CHECK_API_KEY__') || rawDetails.includes('API_KEY_INVALID') || rawDetails.includes('api key not valid') || rawDetails.includes('API_KEY_MISSING'))) {
     return t.apiKeyCheckSettings;
   }
 
@@ -120,8 +120,11 @@ export function getLocalizedAIError(errorType: 'key-missing' | 'rate-limit' | 'q
     case 'unauthorized':
       return t.keyVerificationFailed;
     default:
-      if (typeof errorType === 'string' && (errorType.includes('quota') || errorType.includes('__AI_QUOTA_EXCEEDED__'))) {
+      if (typeof errorType === 'string' && (errorType.includes('quota') || errorType.includes('__AI_QUOTA_EXCEEDED__') || errorType.includes('RESOURCE_EXHAUSTED') || errorType.includes('429'))) {
         return t.allKeysQuotaExhausted || t.dailyLimitReached;
+      }
+      if (typeof errorType === 'string' && (errorType.includes('__AI_CHECK_API_KEY__') || errorType.includes('API_KEY_INVALID'))) {
+        return t.apiKeyCheckSettings;
       }
       return rawDetails || t.connectionError;
   }

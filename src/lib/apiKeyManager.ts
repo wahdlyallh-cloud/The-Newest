@@ -108,9 +108,15 @@ export function getActiveApiKeyFromSettings(settings?: AppSettings): string {
       available.sort((a, b) => a.priority - b.priority);
       return available[0].key.trim();
     }
+
+    // 3. If all keys in pool are temporarily cooling down, fallback to active or first enabled valid key
+    const enabledFallback = (activeId ? pool.find(k => k.id === activeId && k.isEnabled && k.status !== 'invalid') : undefined) || pool.find(k => k.isEnabled && k.status !== 'invalid');
+    if (enabledFallback && enabledFallback.key.trim() !== '') {
+      return enabledFallback.key.trim();
+    }
   }
 
-  // 3. Legacy single key fallback
+  // 4. Legacy single key fallback
   return settings.userApiKey ? settings.userApiKey.trim() : '';
 }
 
@@ -145,6 +151,16 @@ export function getCandidateApiKeys(initialKey?: string, settings?: AppSettings)
     available.sort((a, b) => a.priority - b.priority);
     for (const item of available) {
       keysSet.add(item.key.trim());
+    }
+
+    // If all enabled keys were temporarily cooling down, still provide enabled valid keys
+    // so our task-adaptive model step-down and verifiedModel can be attempted before giving up
+    if (keysSet.size === 0) {
+      const allEnabled = pool.filter(k => k.isEnabled && k.status !== 'invalid' && k.key.trim() !== '');
+      allEnabled.sort((a, b) => a.priority - b.priority);
+      for (const item of allEnabled) {
+        keysSet.add(item.key.trim());
+      }
     }
 
     if (settings.userApiKey && settings.userApiKey.trim() !== '') {
@@ -255,12 +271,18 @@ export function rotateToNextKey(failedKeyStr: string, errorType: ClassifiedError
       migrated.activeKeyId = nextKey.id;
       migrated.apiKeys = pool;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('yawmiyati_settings_updated', { detail: migrated }));
+      }
       return { newKey: nextKey.key.trim(), hasNextKey: true, allExhausted: false };
     }
 
     // No next key available
     migrated.apiKeys = pool;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('yawmiyati_settings_updated', { detail: migrated }));
+    }
     return { newKey: '', hasNextKey: false, allExhausted: true };
   } catch (e) {
     console.warn('[apiKeyManager] Error during key rotation:', e);
@@ -302,6 +324,9 @@ export function recordKeySuccess(keyStr: string, verifiedModel?: string): void {
 
       migrated.apiKeys = pool;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('yawmiyati_settings_updated', { detail: migrated }));
+      }
     }
   } catch (_) {}
 }
@@ -564,13 +589,15 @@ export function markModelVerifiedForKey(key: string, model: string): void {
                 ...k,
                 verifiedModel: cleanModel,
                 status: 'ready' as ApiKeyStatus,
-                lastErrorMsg: undefined
+                lastErrorMsg: undefined,
+                rateLimitResetAt: undefined
               };
             }
             return k;
           });
           if (changed) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            window.dispatchEvent(new CustomEvent('yawmiyati_settings_updated', { detail: settings }));
           }
         }
       }
@@ -766,19 +793,21 @@ export async function getModelCandidatesForTask(key: string, taskType: AITaskTyp
   if (verified && !candidates.includes(verified)) {
     candidates.push(verified);
   }
-
-  // Skip models already cached as unsupported / limit: 0 or in active cooldown on this key
-  const available = candidates.filter(m => isModelAvailableForKey(cleanKey, m));
-  if (available.length > 0) {
-    // Ensure verifiedModel remains present if healthy
-    if (verified && !available.includes(verified) && isModelAvailableForKey(cleanKey, verified)) {
-      available.push(verified);
-    }
-    return available;
+  if (!candidates.includes('gemini-3.5-flash-lite')) {
+    candidates.push('gemini-3.5-flash-lite');
   }
 
-  // Safety guarantee: fallback to verifiedModel or gemini-3.5-flash-lite
-  return [verified || 'gemini-3.5-flash-lite'];
+  // Skip models already cached as unsupported / limit: 0 or in active cooldown on this key,
+  // but GUARANTEE verifiedModel and gemini-3.5-flash-lite are NEVER excluded.
+  const available = candidates.filter(m => isModelAvailableForKey(cleanKey, m) || m === verified || m === 'gemini-3.5-flash-lite');
+  if (verified && !available.includes(verified)) {
+    available.push(verified);
+  }
+  if (!available.includes('gemini-3.5-flash-lite')) {
+    available.push('gemini-3.5-flash-lite');
+  }
+
+  return available;
 }
 
 /**

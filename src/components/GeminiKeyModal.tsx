@@ -38,10 +38,21 @@ export default function GeminiKeyModal({
 
   // Testing & Error State
   const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string } | null>(null);
+  const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string; verifiedModel?: string } | null>(null);
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  // Sync settings when external event fires
+  useEffect(() => {
+    const handleSync = (e: any) => {
+      if (e?.detail?.apiKeys) {
+        setKeysList(e.detail.apiKeys);
+      }
+    };
+    window.addEventListener('yawmiyati_settings_updated', handleSync);
+    return () => window.removeEventListener('yawmiyati_settings_updated', handleSync);
+  }, []);
 
   // Initialize pool on open
   useEffect(() => {
@@ -113,8 +124,7 @@ export default function GeminiKeyModal({
 
     const res = await testGeminiApiKey(entry.key);
 
-    // Update local status in state
-    setKeysList(prev => prev.map(k => {
+    const updatedList = keysList.map(k => {
       if (k.id === entry.id) {
         let newStatus: ApiKeyStatus = k.status;
         if (res.success) {
@@ -131,17 +141,48 @@ export default function GeminiKeyModal({
           ...k,
           status: newStatus,
           verifiedModel: res.verifiedModel || k.verifiedModel,
-          lastErrorMsg: res.success ? undefined : res.message
+          lastErrorMsg: res.success ? undefined : res.message,
+          rateLimitResetAt: res.success ? undefined : k.rateLimitResetAt,
+          requestsToday: res.success ? (k.requestsToday || 0) + 1 : k.requestsToday
         };
       }
       return k;
-    }));
+    });
+
+    setKeysList(updatedList);
+
+    // Auto-persist healthy state immediately so verified state is never lost even if modal closed without Save
+    if (res.success) {
+      try {
+        const saved = localStorage.getItem('yawmiyati_settings');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          parsed.apiKeys = updatedList;
+          if (!parsed.userApiKey || parsed.userApiKey.trim() === '') {
+            parsed.userApiKey = entry.key;
+          }
+          localStorage.setItem('yawmiyati_settings', JSON.stringify(parsed));
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('yawmiyati_settings_updated', { detail: parsed }));
+          }
+        }
+      } catch (_) {}
+
+      if (onSavePool) {
+        onSavePool(updatedList, selectedActiveId);
+      }
+    }
 
     const resultMessage = res.success
-      ? `${t.apiKeyVerified || 'Key verified successfully 🎉'}${res.verifiedModel ? ` (${res.verifiedModel})` : ''}`
+      ? (t.apiKeyVerified || 'Key verified successfully 🎉')
       : (res.errorType === 'invalid_key' ? (t.apiKeyInvalidError || 'API key invalid') : (res.errorType === 'quota_exhausted' ? (t.apiKeyStatusQuotaExhausted || 'Quota exhausted') : res.message));
 
-    setTestResult({ id: entry.id, success: res.success, message: resultMessage });
+    setTestResult({
+      id: entry.id,
+      success: res.success,
+      message: resultMessage,
+      verifiedModel: res.verifiedModel
+    });
     setTestingKeyId(null);
   };
 
@@ -273,7 +314,7 @@ export default function GeminiKeyModal({
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <span className="w-5 h-5 rounded-full bg-[#2B3E50] text-white text-[10px] font-black flex items-center justify-center shrink-0">
                         {index + 1}
                       </span>
@@ -291,19 +332,19 @@ export default function GeminiKeyModal({
                         placeholder={`${t.keyNumberPrefix || 'Key'} #${index + 1}`}
                       />
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {/* Prevent contradictory badges: never render active badge if key is invalid */}
                       {isActive && entry.status !== 'invalid' && (
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#3F5449] text-white flex items-center gap-1 shadow-3xs">
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#3F5449] text-white flex items-center gap-1 shadow-3xs shrink-0">
                           <span>⚡</span>
                           <span>{t.apiKeyActiveNow || 'النشط حالياً'}</span>
                         </span>
                       )}
                       {/* Subtle active verified model badge when healthy */}
                       {entry.verifiedModel && entry.status === 'ready' && (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1" title={entry.verifiedModel}>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1 shrink-0" title={entry.verifiedModel}>
                           <span>🤖</span>
-                          <span>{entry.verifiedModel}</span>
+                          <span dir="ltr" className="inline-block font-mono">{entry.verifiedModel}</span>
                         </span>
                       )}
                       {getStatusBadge(entry)}
@@ -324,10 +365,15 @@ export default function GeminiKeyModal({
 
                   {/* Test Result Message */}
                   {testResult && testResult.id === entry.id && (
-                    <div className={`text-[11px] font-bold p-2 rounded-xl mb-2 ${
+                    <div className={`text-[11px] font-bold p-2.5 rounded-xl mb-2 flex items-center justify-between gap-1.5 flex-wrap ${
                       testResult.success ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'
                     }`}>
-                      {testResult.message}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span>{testResult.message}</span>
+                        {testResult.verifiedModel && (
+                          <span>(<span dir="ltr" className="inline-block font-mono font-bold">{testResult.verifiedModel}</span>)</span>
+                        )}
+                      </div>
                     </div>
                   )}
 

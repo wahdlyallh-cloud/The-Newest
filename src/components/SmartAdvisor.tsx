@@ -1,4 +1,6 @@
 import { generateGeminiContentDirect } from '../lib/gemini';
+import { getActiveApiKeyFromSettings } from '../lib/apiKeyManager';
+import { getLocalizedAIError } from '../services/aiLanguageContract';
 import MarkdownMessage from './MarkdownMessage';
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download } from 'lucide-react';
@@ -79,7 +81,19 @@ interface Message {
   createdAt: string;
 }
 
+function sanitizeAdvisorText(text: string, lang: string): string {
+  if (!text) return '';
+  if (text.includes('__AI_QUOTA_EXCEEDED__') || text.includes('RESOURCE_EXHAUSTED')) {
+    return getLocalizedAIError('quota-exhausted', lang);
+  }
+  if (text.includes('__AI_CHECK_API_KEY__') || text.includes('API_KEY_INVALID')) {
+    return getLocalizedAIError('key-missing', lang);
+  }
+  return text;
+}
+
 export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar', onFilePickerOpen, onFilePickerClose }: SmartAdvisorProps) {
+  const effectiveKey = userApiKey || getActiveApiKeyFromSettings();
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const permissionsConfig = getPermissionsConfig(appLanguage);
@@ -399,7 +413,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-gemini-key': userApiKey || '',
+          'x-gemini-key': effectiveKey,
           'x-app-language': appLanguage
         },
         body: JSON.stringify(bodyData)
@@ -434,7 +448,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           isGeneralMode
             ? `أنت مساعد ذكي ومتعاطف في تطبيق 'حياة AI'. أجب بلغة المستخدم بشكل مريح وداعم.`
             : `أنت مساعد ذكي ومتعاطف في تطبيق 'حياة AI'. أجب بناءً على المذكرات بشكل داعم وملهم.`,
-          userApiKey,
+          effectiveKey,
           undefined,
           appLanguage
         );
@@ -446,6 +460,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           : 'أهلاً بك! أنا المستشار الذكي لليوميات.';
       }
 
+      answerText = sanitizeAdvisorText(answerText, appLanguage);
       setVoiceStatus('speaking');
       setVoiceTranscript(answerText);
 
@@ -716,7 +731,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-gemini-key': userApiKey || '',
+            'x-gemini-key': effectiveKey,
             'x-app-language': appLanguage
           },
           body: JSON.stringify({
@@ -747,16 +762,21 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           answerText = await generateGeminiContentDirect(
             textToSend || 'يرجى تقديم إجابة شاملة',
             `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح، حكمة، وذكاء، سواء كانت في المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو تحليل المرفقات.`,
-            userApiKey,
+            effectiveKey,
           undefined,
           appLanguage
         );
         }
 
+        const cleanGeneralAnswer = sanitizeAdvisorText(
+          answerText || 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع تعبيري أو معرفي.',
+          appLanguage
+        );
+
         const aiMsg: Message = {
           id: (Date.now() + 1).toString(),
           sender: 'ai',
-          text: answerText || 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع تعبيري أو معرفي.',
+          text: cleanGeneralAnswer,
           createdAt: new Date().toISOString()
         };
 
@@ -843,7 +863,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-gemini-key': userApiKey || '',
+          'x-gemini-key': effectiveKey,
           'x-app-language': appLanguage
         },
         body: JSON.stringify({
@@ -891,17 +911,19 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         finalAnswer = await generateGeminiContentDirect(
           groundedPrompt,
           `أنت المستشار الذكي الموحد في تطبيق 'حياة AI'. التزم بالدقة والشفافية التامة، واذكر المصادر بوضوح.`,
-          userApiKey,
+          effectiveKey,
           undefined,
           appLanguage
         );
       }
 
+      const cleanFinalAnswer = sanitizeAdvisorText(finalAnswer || 'أهلاً بك في المستشار الذكي! أنا رفيقك للتحليل والاستشارة والتطوير الذاتي في أي وقت.', appLanguage);
+
       setMessages(prev => {
         const updated = [...prev, {
           id: (Date.now() + 1).toString(),
           sender: 'ai' as const,
-          text: finalAnswer || 'أهلاً بك في المستشار الذكي! أنا رفيقك للتحليل والاستشارة والتطوير الذاتي في أي وقت.',
+          text: cleanFinalAnswer,
           createdAt: new Date().toISOString()
         }];
         localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(updated));
@@ -909,11 +931,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       });
     } catch (e: any) {
       console.error("SmartAdvisor Execution Error:", e);
-      const errorMsg = e?.message || 'تعذر الاتصال بـ Gemini API';
+      const rawErrorMsg = e?.message || 'تعذر الاتصال بـ Gemini API';
+      const cleanErrorMsg = sanitizeAdvisorText(rawErrorMsg, appLanguage);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: `⚠️ خطأ في الاتصال: ${errorMsg}`,
+        text: cleanErrorMsg.startsWith('⚠️') ? cleanErrorMsg : `⚠️ ${cleanErrorMsg}`,
         createdAt: new Date().toISOString()
       }]);
     } finally {
@@ -1187,7 +1210,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                   : 'bg-white text-[#3A3A3A] border border-[#E2DCC8] rounded-tl-none font-normal'
               }`}
             >
-              <div>{msg.sender === 'user' ? <div className="whitespace-pre-wrap">{msg.text}</div> : <MarkdownMessage content={msg.text} isAi={true} />}</div>
+              <div>{msg.sender === 'user' ? <div className="whitespace-pre-wrap">{msg.text}</div> : <MarkdownMessage content={sanitizeAdvisorText(msg.text, appLanguage)} isAi={true} />}</div>
               <div className="flex items-center justify-between gap-4 mt-2 pt-1 border-t border-dashed border-gray-100">
                 <span className={`block text-[9px] ${msg.sender === 'user' ? 'text-[#F9F7F2]/85' : 'text-gray-400'} text-left`}>
                   {new Date(msg.createdAt).toLocaleTimeString(langInfo.bcp47 || 'ar-EG', { hour: '2-digit', minute: '2-digit' })}

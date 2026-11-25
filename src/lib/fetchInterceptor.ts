@@ -1005,6 +1005,9 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
       if (err?.errorType === 'quota_exhausted' || err?.message?.includes('quota') || err?.message?.includes('الحصة')) {
         return createErrorResponse(getLocalizedAIError('quota-exhausted', reqLang), true, 429, 'quota_exhausted');
       }
+      if (err?.errorType === 'invalid_key' || err?.message?.includes('API_KEY')) {
+        return createErrorResponse(getLocalizedAIError('key-missing', reqLang), true, 401, 'invalid_key');
+      }
       const answer = generateSmartDynamicDiaryChatReply(newMessage, title, content, moods, tags, audioTranscriptions, chatLogs, reqLang);
       return createSuccessResponse({
         success: true,

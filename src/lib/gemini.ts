@@ -6,6 +6,7 @@
 
 import { 
   getCandidateApiKeys, 
+  getActiveApiKeyFromSettings,
   rotateToNextKey, 
   recordKeySuccess, 
   classifyGeminiError, 
@@ -117,6 +118,10 @@ export function getGeminiApiKey(customKey?: string): string {
     const key = sanitizeApiKeyString((window as any).__GEMINI_KEY__);
     if (key) return key;
   }
+
+  // Pool-aware lookup first
+  const poolKey = getActiveApiKeyFromSettings();
+  if (poolKey) return poolKey;
 
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
