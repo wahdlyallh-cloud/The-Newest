@@ -9,6 +9,7 @@ import {
 import { GratitudeCard, AppSettings, DiaryEntry, JournalEntryType } from '../types';
 import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from '../lib/journalTypes';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 
 export interface AIGratitudeHistoryItem {
   id: string;
@@ -123,10 +124,12 @@ export default function GratitudeJournal({
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleCopyCard = (cardId: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedCardId(cardId);
-    setTimeout(() => setCopiedCardId(null), 2000);
+  const handleCopyCard = async (cardId: string, text: string) => {
+    const ok = await copyTextSafe(text);
+    if (ok) {
+      setCopiedCardId(cardId);
+      setTimeout(() => setCopiedCardId(null), 2000);
+    }
   };
 
   const handleShowRandomMemory = () => {
@@ -1140,10 +1143,14 @@ export default function GratitudeJournal({
                           {/* Copy Text */}
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={async () => {
                               const fullText = item.userAnswer ? `${item.content}\n\n${'My Answer:'} ${item.userAnswer}` : item.content;
-                              navigator.clipboard.writeText(fullText);
-                              showToast(t.copiedToClipboard);
+                              const ok = await copyTextSafe(fullText);
+                              if (ok) {
+                                showToast(t.copiedToClipboard);
+                              } else {
+                                showToast(t.copyFailedToast || 'تعذر النسخ إلى الحافظة');
+                              }
                             }}
                             className="px-2 py-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1"
                             title={t.copyTextAction}

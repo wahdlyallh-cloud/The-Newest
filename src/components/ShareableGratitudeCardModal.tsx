@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, Share2, Sparkles, Copy, Check, Heart, Quote, Image as ImageIcon, Layout, Palette } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { AppLanguage, getTranslation } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 
 export interface CardExportData {
   text: string;
@@ -158,32 +159,7 @@ export default function ShareableGratitudeCardModal({
 
   // Helper for cross-platform clipboard copy
   const copyToClipboard = async (text: string): Promise<boolean> => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    } catch (_) {}
-
-    try {
-      if (typeof document !== 'undefined') {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        textArea.setAttribute('readonly', '');
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-        return successful;
-      }
-    } catch (err) {
-      console.error('[GratitudeExport] Fallback clipboard error:', err);
-    }
-    return false;
+    return await copyTextSafe(text);
   };
 
   // Pure Canvas 2D Fallback Generator (guaranteed 100% crash-proof image generation)

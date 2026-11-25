@@ -34,6 +34,8 @@ import {
 import { DiaryEntry, CBTWorksheet, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 
+import { copyTextSafe } from '../lib/clipboard';
+
 interface CBTExercisesSectionProps {
   diaries: DiaryEntry[];
   selectedDate: string;
@@ -816,9 +818,13 @@ export const CBTExercisesSection: React.FC<CBTExercisesSectionProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(card.text);
-                        alert(t.copingCardCopied);
+                      onClick={async () => {
+                        const ok = await copyTextSafe(card.text);
+                        if (ok) {
+                          alert(t.copingCardCopied);
+                        } else {
+                          alert(t.copyFailedToast || 'تعذر النسخ إلى الحافظة');
+                        }
                       }}
                       className="p-1 bg-white/80 hover:bg-pink-100 text-pink-600 rounded-lg text-xs transition-colors cursor-pointer border border-pink-200"
                       title={t.copyTextTooltip}

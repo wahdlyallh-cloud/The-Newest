@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 import MonthlyMentalHealthPDFReportModal, { SavedPDFReport, INITIAL_SAVED_REPORTS } from './MonthlyMentalHealthPDFReportModal';
 
 interface IntegratedTherapyReportProps {
@@ -257,9 +258,11 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   const handleCopyText = async () => {
     try {
       const textToCopy = `${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
-      await navigator.clipboard.writeText(textToCopy);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000);
+      const ok = await copyTextSafe(textToCopy);
+      if (ok) {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 3000);
+      }
     } catch (e) {
       console.error(e);
     }

@@ -7,6 +7,7 @@ import {
 import html2canvas from 'html2canvas';
 import { DiaryEntry, Habit, GratitudeCard, Book, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 
 export interface DailyProsConsEntry {
   dayKey: string; // 'YYYY-MM-DD'
@@ -489,7 +490,7 @@ export default function DailyProsConsModal({
   };
 
   // Copy Summary
-  const handleCopy = () => {
+  const handleCopy = async () => {
     const summary = `⚖️ ${t.dailyProsConsReportTitle} - ${displayDate}
 ----------------------------------------
 🧠 ${t.aiPositivesHeader}
@@ -507,10 +508,14 @@ ${userNegatives.length > 0 ? userNegatives.map(n => `• ${n}`).join('\n') : (t.
 ---
 ${t.generatedByHayatAiNotice}`;
 
-    navigator.clipboard.writeText(summary);
-    setCopySuccess(true);
-    showToast(t.copied || (isAr ? 'تم نسخ التقرير بنجاح! 📋' : 'Report copied successfully! 📋'));
-    setTimeout(() => setCopySuccess(false), 2500);
+    const ok = await copyTextSafe(summary);
+    if (ok) {
+      setCopySuccess(true);
+      showToast(t.copied || (isAr ? 'تم نسخ التقرير بنجاح! 📋' : 'Report copied successfully! 📋'));
+      setTimeout(() => setCopySuccess(false), 2500);
+    } else {
+      showToast(t.copyFailedToast || (isAr ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy to clipboard'));
+    }
   };
 
   // Export Word Document

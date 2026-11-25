@@ -65,6 +65,9 @@ import OnboardingTourModal from './components/OnboardingTourModal';
 import ExportDiaryModal from './components/ExportDiaryModal';
 import AttachmentsPage from './components/AttachmentsPage';
 import VoiceVentModal from './components/VoiceVentModal';
+import GratitudeImportModal from './components/GratitudeImportModal';
+import { copyTextSafe } from './lib/clipboard';
+import { compressImageFile } from './lib/mediaStorage';
 import { SpeechRecognitionManager } from './lib/speechRecognition';
 import { formatDate, formatTime, formatDateTime, formatNumber } from './lib/formatters';
 
@@ -1339,6 +1342,15 @@ export default function App() {
   const [editingDrawingIndex, setEditingDrawingIndex] = useState<number | null>(null);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
+  const [showGratitudeImportModal, setShowGratitudeImportModal] = useState<boolean>(false);
+  const [globalCopyToast, setGlobalCopyToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showGlobalCopyToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
+    setGlobalCopyToast({ message: msg, type });
+    setTimeout(() => {
+      setGlobalCopyToast(prev => (prev?.message === msg ? null : prev));
+    }, 2500);
+  }, []);
   const [selectedChatIndices, setSelectedChatIndices] = useState<number[]>([]);
   const [isChatSelectMode, setIsChatSelectMode] = useState<boolean>(false);
   const [editingDiary, setEditingDiary] = useState<DiaryEntry | null>(() => {
@@ -2815,11 +2827,17 @@ export default function App() {
     setAiWriterTopicInput('');
   };
 
-  const handleCopyAiNote = () => {
+  const handleCopyAiNote = async () => {
     if (!aiWriterResult) return;
-    navigator.clipboard.writeText(`${aiWriterResult.title}\n\n${aiWriterResult.content}`);
-    setCopiedAiText(true);
-    setTimeout(() => setCopiedAiText(false), 2000);
+    const fullNoteText = `${aiWriterResult.title}\n\n${aiWriterResult.content}`;
+    const ok = await copyTextSafe(fullNoteText);
+    if (ok) {
+      setCopiedAiText(true);
+      showGlobalCopyToast(t.copiedTextSuccess || (settings?.appLanguage === 'ar' ? 'تم نسخ النص بنجاح 📋' : 'Text copied to clipboard!'), 'success');
+      setTimeout(() => setCopiedAiText(false), 2000);
+    } else {
+      showGlobalCopyToast(t.copyFailedToast || (settings?.appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy to clipboard'), 'error');
+    }
   };
 
   // --- Rich Text Editor Ref & Visual Formatting Engine ---
@@ -3350,38 +3368,49 @@ export default function App() {
   // --- Image File Uploader (Gallery & Camera Photos via IndexedDB) ---
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const files = Array.from(e.target.files || []);
+    const inputEl = e.target;
+    const files = Array.from(inputEl?.files || []);
     if (files.length > 0 && editingDiary) {
       const newImages: string[] = [];
       const newImageAttachmentIds: string[] = [];
       try {
         for (const file of files) {
-          const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-          await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
-          const imageUrl = URL.createObjectURL(file);
-          newImages.push(imageUrl);
-          newImageAttachmentIds.push(attachmentId);
+          try {
+            // Compress large images safely on offscreen canvas before storing
+            const compressed = await compressImageFile(file, 1600, 0.82);
+            const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+            await saveAttachmentBlob(attachmentId, compressed.blob, compressed.mimeType || 'image/jpeg');
+            const imageUrl = URL.createObjectURL(compressed.blob);
+            newImages.push(imageUrl);
+            newImageAttachmentIds.push(attachmentId);
+          } catch (fileErr) {
+            console.error('[ImageUpload] Error processing file:', file.name, fileErr);
+          }
         }
 
-        setEditingDiary(prev => {
-          if (!prev) return null;
-          const updated = {
-            ...prev,
-            images: Array.from(new Set([...(prev.images || []), ...newImages])),
-            imageAttachmentIds: Array.from(new Set([...(prev.imageAttachmentIds || []), ...newImageAttachmentIds]))
-          };
-          saveDraftSynchronously(updated);
-          return updated;
-        });
+        if (newImages.length > 0) {
+          setEditingDiary(prev => {
+            if (!prev) return null;
+            const updated = {
+              ...prev,
+              images: Array.from(new Set([...(prev.images || []), ...newImages])),
+              imageAttachmentIds: Array.from(new Set([...(prev.imageAttachmentIds || []), ...newImageAttachmentIds]))
+            };
+            saveDraftSynchronously(updated);
+            return updated;
+          });
+        } else {
+          alert(settings?.appLanguage === 'ar' ? 'تعذر قراءة الصور المحددة، يرجى المحاولة مرة أخرى.' : 'Unable to read selected photos. Please try again.');
+        }
       } catch (err) {
-        alert('حدث خطأ أثناء حفظ الصورة. تأكد من وجود مساحة كافية.');
+        alert(settings?.appLanguage === 'ar' ? 'حدث خطأ أثناء حفظ الصورة. تأكد من وجود مساحة كافية.' : 'Error saving photo. Please check available storage.');
       } finally {
         resetFilePickerGuard();
       }
     } else {
       resetFilePickerGuard();
     }
-    e.target.value = '';
+    if (inputEl) inputEl.value = '';
   };
 
   // --- Safe File Attachment Helper with Native IndexedDB Binary Persistence ---
@@ -3642,7 +3671,8 @@ export default function App() {
   // --- Video File Uploader (Gallery & Camera Videos via IndexedDB) ---
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const files = Array.from(e.target.files || []);
+    const inputEl = e.target;
+    const files = Array.from(inputEl?.files || []);
     if (files.length > 0 && editingDiary) {
       const newVideos: string[] = [];
       const newVideoAttachmentIds: string[] = [];
@@ -3656,17 +3686,21 @@ export default function App() {
           newVideoAttachmentIds.push(attachmentId);
         }
 
-        setEditingDiary(prev => {
-          if (!prev) return null;
-          const updated = {
-            ...prev,
-            videos: Array.from(new Set([...(prev.videos || []), ...newVideos])),
-            videoAttachmentIds: Array.from(new Set([...(prev.videoAttachmentIds || []), ...newVideoAttachmentIds]))
-          };
-          saveDraftSynchronously(updated);
-          return updated;
-        });
-        setActiveInputSection('none');
+        if (newVideos.length > 0) {
+          setEditingDiary(prev => {
+            if (!prev) return null;
+            const updated = {
+              ...prev,
+              videos: Array.from(new Set([...(prev.videos || []), ...newVideos])),
+              videoAttachmentIds: Array.from(new Set([...(prev.videoAttachmentIds || []), ...newVideoAttachmentIds]))
+            };
+            saveDraftSynchronously(updated);
+            return updated;
+          });
+          setActiveInputSection('none');
+        } else {
+          alert(settings?.appLanguage === 'ar' ? 'تعذر قراءة ملف الفيديو المحدد.' : 'Unable to read selected video.');
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -3675,7 +3709,7 @@ export default function App() {
     } else {
       resetFilePickerGuard();
     }
-    e.target.value = '';
+    if (inputEl) inputEl.value = '';
   };
 
   // --- Helper to Find or Create Today's / Selected Date's Diary for Dashboard Uploads ---
@@ -3717,57 +3751,30 @@ export default function App() {
   // --- Global File Upload Handlers (for direct Dashboard access) ---
   const handleGlobalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     markFilePickerActive();
-    const files = Array.from(e.target.files || []);
+    const inputEl = e.target;
+    const files = Array.from(inputEl?.files || []);
     if (files.length > 0) {
       const newImages: string[] = [];
       const newImageAttachmentIds: string[] = [];
       try {
         for (const file of files) {
-          const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-          await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
-          const imageUrl = URL.createObjectURL(file);
-          newImages.push(imageUrl);
-          newImageAttachmentIds.push(attachmentId);
+          try {
+            const compressed = await compressImageFile(file, 1600, 0.82);
+            const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+            await saveAttachmentBlob(attachmentId, compressed.blob, compressed.mimeType || 'image/jpeg');
+            const imageUrl = URL.createObjectURL(compressed.blob);
+            newImages.push(imageUrl);
+            newImageAttachmentIds.push(attachmentId);
+          } catch (fileErr) {
+            console.error('[GlobalImageUpload] Error:', fileErr);
+          }
         }
-        const diary = getOrCreateDiaryForUpload();
-        const fullEntry = {
-          ...diary,
-          images: [...(diary.images || []), ...newImages],
-          imageAttachmentIds: [...(diary.imageAttachmentIds || []), ...newImageAttachmentIds]
-        };
-        setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
-        setEditingDiary(fullEntry);
-        setIsNewEntry(false);
-        setActiveTab('diaries');
-      } catch (err) {
-        console.error(err);
-      } finally {
-        resetFilePickerGuard();
-      }
-    } else {
-      resetFilePickerGuard();
-    }
-    e.target.value = '';
-  };
-
-  const handleGlobalVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    markFilePickerActive();
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      const newVideos = [];
-      try {
-        for (const file of files) {
-          if (file.size > 200 * 1024 * 1024) continue;
-          const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-          await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
-          const videoBlobUrl = URL.createObjectURL(file);
-          newVideos.push(videoBlobUrl);
-        }
-        if (newVideos.length > 0) {
+        if (newImages.length > 0) {
           const diary = getOrCreateDiaryForUpload();
           const fullEntry = {
             ...diary,
-            videos: [...(diary.videos || []), ...newVideos]
+            images: [...(diary.images || []), ...newImages],
+            imageAttachmentIds: [...(diary.imageAttachmentIds || []), ...newImageAttachmentIds]
           };
           setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
           setEditingDiary(fullEntry);
@@ -3782,7 +3789,46 @@ export default function App() {
     } else {
       resetFilePickerGuard();
     }
-    e.target.value = '';
+    if (inputEl) inputEl.value = '';
+  };
+
+  const handleGlobalVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    markFilePickerActive();
+    const inputEl = e.target;
+    const files = Array.from(inputEl?.files || []);
+    if (files.length > 0) {
+      const newVideos = [];
+      const newVideoAttachmentIds: string[] = [];
+      try {
+        for (const file of files) {
+          if (file.size > 200 * 1024 * 1024) continue;
+          const attachmentId = `att-vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          await saveAttachmentBlob(attachmentId, file, file.type || 'video/mp4');
+          const videoBlobUrl = URL.createObjectURL(file);
+          newVideos.push(videoBlobUrl);
+          newVideoAttachmentIds.push(attachmentId);
+        }
+        if (newVideos.length > 0) {
+          const diary = getOrCreateDiaryForUpload();
+          const fullEntry = {
+            ...diary,
+            videos: [...(diary.videos || []), ...newVideos],
+            videoAttachmentIds: [...(diary.videoAttachmentIds || []), ...newVideoAttachmentIds]
+          };
+          setDiaries(prev => prev.map(d => d.id === diary.id ? fullEntry : d));
+          setEditingDiary(fullEntry);
+          setIsNewEntry(false);
+          setActiveTab('diaries');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        resetFilePickerGuard();
+      }
+    } else {
+      resetFilePickerGuard();
+    }
+    if (inputEl) inputEl.value = '';
   };
 
   const handleGlobalAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -4519,9 +4565,10 @@ export default function App() {
           newAudioRecordings.push(newRec);
           audioToTranscribe.push({ recId: newRecId, file, mime: detectedMime });
         } else if (type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg|ico|heic|heif|avif)$/i.test(name)) {
+          const compressed = await compressImageFile(file, 1600, 0.82);
           const attachmentId = `att-img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-          await saveAttachmentBlob(attachmentId, file, file.type || 'image/png');
-          const imageUrl = URL.createObjectURL(file);
+          await saveAttachmentBlob(attachmentId, compressed.blob, compressed.mimeType || 'image/jpeg');
+          const imageUrl = URL.createObjectURL(compressed.blob);
           newImages.push(imageUrl);
           newImageAttachmentIds.push(attachmentId);
         } else if (type.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|3gp|m4v)$/i.test(name)) {
@@ -5065,7 +5112,7 @@ export default function App() {
   };
 
   // --- Copy Full Diary AI Chat to Clipboard ---
-  const handleCopyDiaryChat = () => {
+  const handleCopyDiaryChat = async () => {
     if (!editingDiary?.chatLogs || editingDiary.chatLogs.length === 0) return;
     const formatted = editingDiary.chatLogs.map(c => {
       const sender = c.sender === 'user' ? (t.meLabel || 'User') : (t.aiPsychAdvisor || 'AI Advisor');
@@ -5073,11 +5120,12 @@ export default function App() {
       return `[${sender} - ${time}]:\n${c.text}\n`;
     }).join('\n-------------------\n\n');
 
-    navigator.clipboard.writeText(formatted).then(() => {
-      alert(t.chatCopiedSuccess || (settings?.appLanguage === 'ar' ? 'تم نسخ المحادثة بنجاح 📋' : 'Chat copied to clipboard!'));
-    }).catch(err => {
-      console.warn('Clipboard write failed:', err);
-    });
+    const ok = await copyTextSafe(formatted);
+    if (ok) {
+      showGlobalCopyToast(t.chatCopiedSuccess || (settings?.appLanguage === 'ar' ? 'تم نسخ المحادثة بنجاح 📋' : 'Chat copied to clipboard!'), 'success');
+    } else {
+      showGlobalCopyToast(t.copyFailedToast || (settings?.appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy to clipboard'), 'error');
+    }
   };
 
   // --- Export Diary Chat as PDF ---
@@ -6932,9 +6980,15 @@ export default function App() {
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse shrink-0">
                   <button
-                    onClick={() => {
-                      const qT = dailyQuote?.quote || t.quoteDefaultText; const qA = dailyQuote?.author || t.quoteDefaultAuthor; navigator.clipboard.writeText(`"${qT}" - ${qA}`);
-                      alert(t.quoteCopiedAlert);
+                    onClick={async () => {
+                      const qT = dailyQuote?.quote || t.quoteDefaultText;
+                      const qA = dailyQuote?.author || t.quoteDefaultAuthor;
+                      const ok = await copyTextSafe(`"${qT}" - ${qA}`);
+                      if (ok) {
+                        showGlobalCopyToast(t.quoteCopiedAlert || (settings?.appLanguage === 'ar' ? 'تم نسخ الحكمة بنجاح 📋' : 'Quote copied!'), 'success');
+                      } else {
+                        showGlobalCopyToast(t.copyFailedToast || (settings?.appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy quote'), 'error');
+                      }
                     }}
                     className="p-2.5 bg-white border border-[#E2DCC8] hover:border-[#D4A373] text-[#5A5A40] rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-center"
                     title={t.copyQuoteTooltip}
@@ -7749,18 +7803,7 @@ export default function App() {
                     {gratitudeCards.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => {
-                          const todayStr = new Date().toISOString().split('T')[0];
-                          const todaysCards = gratitudeCards.filter(c => c.createdAt.startsWith(todayStr));
-                          if (todaysCards.length > 0) {
-                            const formatted = `\n\n🌸 ${t.importGratitudeTitle}:\n` + todaysCards.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
-                            setEditingDiary(prev => prev ? { ...prev, content: prev.content + formatted } : null);
-                          } else {
-                            const lastThree = gratitudeCards.slice(0, 3);
-                            const formatted = `\n\n🌸 ${t.importGratitudeTitle}:\n` + lastThree.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
-                            setEditingDiary(prev => prev ? { ...prev, content: prev.content + formatted } : null);
-                          }
-                        }}
+                        onClick={() => setShowGratitudeImportModal(true)}
                         className="text-[10px] text-[#8B9D83] hover:text-[#5A5A40] font-extrabold flex items-center space-x-1 space-x-reverse cursor-pointer bg-[#8B9D83]/8 px-2.5 py-1 rounded-lg transition-colors border border-[#8B9D83]/20 animate-pulse"
                       >
                         <span>🌸</span>
@@ -7994,7 +8037,7 @@ export default function App() {
                         <span>📎</span>
                         <span className="hidden sm:inline">{t.attachFileTitle}</span>
                         <input type="file" multiple
-                          accept="*/*" onChange={async (e) => {
+                          accept="application/pdf,.doc,.docx,.txt,.rtf,.odt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onChange={async (e) => {
                             markFilePickerActive();
                             const files = Array.from(e.target.files || []);
                             if (files.length > 0) {
@@ -8475,7 +8518,7 @@ export default function App() {
                         id="image-upload-trigger"
                         type="file"
                         multiple
-                        accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.avif"
+                        accept="image/*"
                         onChange={handleImageUpload}
                         className="hidden"
                       />
@@ -8680,7 +8723,7 @@ export default function App() {
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>{t.chooseVideoFromDevice}</span>
                               <input type="file" multiple
-                                accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.3gp,.m4v" onChange={handleVideoUpload}
+                                accept="video/*" onChange={handleVideoUpload}
                                 className="hidden"
                               />
                             </label>
@@ -8720,7 +8763,7 @@ export default function App() {
                             <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
                               <span>{t.chooseFileFromDevice}</span>
                               <input type="file" multiple
-                                accept=".pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onChange={handlePdfUpload}
+                                accept="application/pdf" onChange={handlePdfUpload}
                                 className="hidden"
                               />
                             </label>
@@ -9102,7 +9145,7 @@ export default function App() {
                           </div>
                           <span className="text-xs font-bold text-[#3A3A3A]">{t.addImageIcon}</span>
                           <input type="file" multiple
-                            accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.avif" onChange={(e) => {
+                            accept="image/*" onChange={(e) => {
                               handleImageUpload(e);
                               setShowMoreFeaturesSheet(false);
                             }}
@@ -9135,13 +9178,14 @@ export default function App() {
                           </div>
                           <span className="text-xs font-bold text-[#3A3A3A]">{t.attachFileIcon}</span>
                           <input type="file" multiple
-                            accept="*/*" onChange={async (e) => {
+                            accept="application/pdf,.doc,.docx,.txt,.rtf,.odt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onChange={async (e) => {
                               markFilePickerActive();
                               const files = Array.from(e.target.files || []);
                               if (files.length > 0) {
                                 await handleGenericFileUpload(files);
                               }
                               e.target.value = '';
+                              resetFilePickerGuard();
                               setShowMoreFeaturesSheet(false);
                             }}
                             className="hidden"
@@ -9572,7 +9616,7 @@ export default function App() {
                                 />
                               )}
                               <div
-                                className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words flex-1 shadow-3xs ${
+                                className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words flex-1 shadow-3xs select-text ${
                                   msg.sender === 'user'
                                     ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50 whitespace-pre-wrap'
                                     : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
@@ -9590,9 +9634,27 @@ export default function App() {
                                 )}
                               </div>
                             </div>
-                            <span className="text-[9px] text-gray-400 mt-1 px-1 font-medium">
-                              {msg.sender === 'user' ? (t.meLabel) : (t.aiPsychAdvisor)} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
-                            </span>
+                            <div className="flex items-center justify-between w-full mt-1 px-1 gap-2">
+                              <span className="text-[9px] text-gray-400 font-medium">
+                                {msg.sender === 'user' ? (t.meLabel) : (t.aiPsychAdvisor)} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  const ok = await copyTextSafe(msg.text);
+                                  if (ok) {
+                                    showGlobalCopyToast(t.copySuccessToast || (settings?.appLanguage === 'ar' ? 'تم النسخ إلى الحافظة بنجاح 📋' : 'Copied!'), 'success');
+                                  } else {
+                                    showGlobalCopyToast(t.copyFailedToast || (settings?.appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy'), 'error');
+                                  }
+                                }}
+                                className="p-0.5 text-gray-400 hover:text-[#8B9D83] rounded transition-colors cursor-pointer"
+                                title={t.copyTextBtn || (settings?.appLanguage === 'ar' ? 'نسخ الرسالة' : 'Copy Message')}
+                              >
+                                <Copy className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
                           </div>
                         );
                       })
@@ -11624,6 +11686,34 @@ export default function App() {
         }}
       />
 
+      {/* 🌸 Selective Gratitude Wall Import Modal */}
+      <GratitudeImportModal
+        isOpen={showGratitudeImportModal}
+        onClose={() => setShowGratitudeImportModal(false)}
+        gratitudeCards={displayedGratitudeCards}
+        appLanguage={settings?.appLanguage || 'ar'}
+        onImportSelected={(formattedText) => {
+          setEditingDiary(prev => {
+            if (!prev) return null;
+            const updated = {
+              ...prev,
+              content: (prev.content || '') + formattedText
+            };
+            saveDraftSynchronously(updated);
+            setDiaries(diariesPrev => diariesPrev.map(d => d.id === prev.id ? { ...d, content: updated.content } : d));
+            return updated;
+          });
+        }}
+      />
+
+      {/* 📋 Bulletproof Global Clipboard Toast */}
+      {globalCopyToast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[220] bg-[#2B3E50]/95 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-bold animate-fadeIn border border-[#E2DCC8]/30">
+          <span className="text-sm">{globalCopyToast.type === 'success' ? '📋' : '⚠️'}</span>
+          <span>{globalCopyToast.message}</span>
+        </div>
+      )}
+
       {/* 🧭 Interactive Onboarding Tour Modal */}
       <OnboardingTourModal
         isOpen={showOnboardingTour}
@@ -13415,7 +13505,7 @@ export default function App() {
         type="file"
         multiple
         id="global-image-uploader"
-        accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.avif"
+        accept="image/*"
         className="hidden"
         onChange={handleGlobalImageUpload}
       />
@@ -13423,7 +13513,7 @@ export default function App() {
         type="file"
         multiple
         id="global-video-uploader"
-        accept="video/*,.mp4,.webm,.mov,.avi,.mkv,.3gp,.m4v"
+        accept="video/*"
         className="hidden"
         onChange={handleGlobalVideoUpload}
       />
@@ -13431,7 +13521,7 @@ export default function App() {
         type="file"
         multiple
         id="global-audio-uploader"
-        accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/aac,audio/m4a,audio/x-m4a,audio/ogg,audio/flac,audio/opus"
+        accept="audio/*"
         className="hidden"
         onChange={handleGlobalAudioUpload}
       />
@@ -13439,7 +13529,7 @@ export default function App() {
         type="file"
         multiple
         id="global-document-uploader"
-        accept=".pdf,.doc,.docx,.txt,.rtf,.odt,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,*/*"
+        accept="application/pdf,.doc,.docx,.txt,.rtf,.odt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
         className="hidden"
         onChange={handleGlobalDocumentUpload}
       />

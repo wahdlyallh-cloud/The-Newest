@@ -9,6 +9,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend } from 'recharts';
 
 export interface SavedPDFReport {
@@ -687,9 +688,11 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   const handleCopyText = async () => {
     try {
       const fullText = `🎓 ${periodTitle}\nمنصة حياة AI | الفترة: ${periodLabel}\n\n📊 الإحصائيات السريعة:\n- عدد المذكرات: ${stats.totalDiaries}\n- متوسط النوم: ${stats.avgSleep} ساعة/ليلة\n- معدل المزاج: ${stats.avgMood} / 10\n- وقت الرياضة: ${stats.totalSportsMinutes} دقيقة\n\n📋 التقرير والتحليل السريري للمستشار الذكي:\n${aiAnalysisText || 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي للنوم.'}\n\n${patientNotes ? `📝 ملاحظات وأسئلة المعالج:\n${patientNotes}\n\n` : ''}تم إنشاء التقرير عبر منصة حياة AI بتاريخ ${new Date().toLocaleDateString('ar-EG')}`;
-      await navigator.clipboard.writeText(fullText);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000);
+      const ok = await copyTextSafe(fullText);
+      if (ok) {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 3000);
+      }
     } catch (e) {
       console.error(e);
     }

@@ -3,7 +3,8 @@ import { getActiveApiKeyFromSettings } from '../lib/apiKeyManager';
 import { getLocalizedAIError } from '../services/aiLanguageContract';
 import MarkdownMessage from './MarkdownMessage';
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download } from 'lucide-react';
+import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download, Check } from 'lucide-react';
+import { copyTextSafe } from '../lib/clipboard';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
@@ -1028,10 +1029,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
   };
 
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const activeMessages = activeAdvisorTab === 'diary' ? messages : generalMessages;
 
   // --- Copy and Export Handlers for Smart Advisor Chat ---
-  const handleCopyAdvisorChat = () => {
+  const handleCopyAdvisorChat = async () => {
     if (activeMessages.length === 0) return;
     const formatted = activeMessages.map(m => {
       const sender = m.sender === 'user' ? (t.meLabel || 'User') : (activeAdvisorTab === 'general' ? 'Hayat AI' : (t.aiPsychAdvisor || 'Smart Advisor'));
@@ -1039,9 +1041,12 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       return `[${sender}${time ? ` - ${time}` : ''}]:\n${m.text}\n`;
     }).join('\n-------------------\n\n');
 
-    navigator.clipboard.writeText(formatted).then(() => {
+    const ok = await copyTextSafe(formatted);
+    if (ok) {
       alert(t.chatCopiedSuccess || (appLanguage === 'ar' ? 'تم نسخ المحادثة بنجاح 📋' : 'Chat copied to clipboard!'));
-    }).catch(err => console.warn(err));
+    } else {
+      alert(t.copyFailedToast || (appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy to clipboard'));
+    }
   };
 
   const handleExportAdvisorChatPdf = async () => {
@@ -1204,38 +1209,58 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             className={`flex ${msg.sender === 'user' ? 'justify-start' : 'justify-end'}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl p-3.5 text-sm shadow-xs leading-relaxed ${
+              className={`max-w-[85%] rounded-2xl p-3.5 text-sm shadow-xs leading-relaxed select-text ${
                 msg.sender === 'user'
                   ? 'bg-[#8B9D83] text-white rounded-tr-none'
                   : 'bg-white text-[#3A3A3A] border border-[#E2DCC8] rounded-tl-none font-normal'
               }`}
             >
               <div>{msg.sender === 'user' ? <div className="whitespace-pre-wrap">{msg.text}</div> : <MarkdownMessage content={sanitizeAdvisorText(msg.text, appLanguage)} isAi={true} />}</div>
-              <div className="flex items-center justify-between gap-4 mt-2 pt-1 border-t border-dashed border-gray-100">
+              <div className="flex items-center justify-between gap-2 mt-2 pt-1 border-t border-dashed border-gray-100">
                 <span className={`block text-[9px] ${msg.sender === 'user' ? 'text-[#F9F7F2]/85' : 'text-gray-400'} text-left`}>
                   {new Date(msg.createdAt).toLocaleTimeString(langInfo.bcp47 || 'ar-EG', { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 
-                {msg.sender === 'ai' && (
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={() => handleToggleSpeech(msg.id, msg.text)}
-                    className={`p-1 rounded-lg hover:bg-[#F0EDE4]/60 transition-colors flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
-                      currentlySpeakingId === msg.id ? 'text-red-600 bg-red-50' : 'text-[#8B9D83]'
+                    type="button"
+                    onClick={async () => {
+                      const ok = await copyTextSafe(msg.text);
+                      if (ok) {
+                        setCopiedMessageId(msg.id);
+                        setTimeout(() => setCopiedMessageId(null), 2000);
+                      }
+                    }}
+                    className={`p-1 rounded-lg hover:bg-[#F0EDE4]/60 transition-colors flex items-center gap-0.5 text-[10px] font-bold cursor-pointer ${
+                      copiedMessageId === msg.id ? 'text-emerald-700 font-black' : (msg.sender === 'user' ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-[#8B9D83]')
                     }`}
+                    title={t.copyTextBtn || (appLanguage === 'ar' ? 'نسخ النص' : 'Copy Text')}
                   >
-                    {currentlySpeakingId === msg.id ? (
-                      <>
-                        <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></span>
-                        <span>⏹️ {t.smartAdvisorStopAudio}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>🔊</span>
-                        <span>{t.smartAdvisorListenAudio}</span>
-                      </>
-                    )}
+                    {copiedMessageId === msg.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                    {copiedMessageId === msg.id && <span className="text-[9px]">{t.copied || 'تم النسخ'}</span>}
                   </button>
-                )}
+
+                  {msg.sender === 'ai' && (
+                    <button
+                      onClick={() => handleToggleSpeech(msg.id, msg.text)}
+                      className={`p-1 rounded-lg hover:bg-[#F0EDE4]/60 transition-colors flex items-center gap-1 text-[10px] font-bold cursor-pointer ${
+                        currentlySpeakingId === msg.id ? 'text-red-600 bg-red-50' : 'text-[#8B9D83]'
+                      }`}
+                    >
+                      {currentlySpeakingId === msg.id ? (
+                        <>
+                          <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping"></span>
+                          <span>⏹️ {t.smartAdvisorStopAudio}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>🔊</span>
+                          <span>{t.smartAdvisorListenAudio}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

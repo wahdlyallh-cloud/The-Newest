@@ -47,6 +47,21 @@ export function getBcp47Tag(code?: AppLanguage | string | null): string {
 export type TranslationKey = string;
 
 export const AR_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "استيراد من جدار الامتنان",
+  importGratitudeTabToday: "اليوم",
+  importGratitudeTabAllDays: "كل الأيام",
+  importGratitudeSelectAll: "تحديد الكل",
+  importGratitudeDeselectAll: "إلغاء التحديد",
+  importGratitudeAddSelected: "إضافة المحدد",
+  importGratitudeNoItemsToday: "لا توجد بطاقات امتنان مسجلة لليوم.",
+  importGratitudeNoItemsAll: "لا توجد بطاقات امتنان بعد.",
+  importGratitudeSelectedCount: "تم تحديد",
+  micAccessErrorTitle: "تعذر الوصول إلى الميكروفون",
+  micAccessErrorPermission: "يرجى السماح بالوصول إلى الميكروفون من إعدادات التطبيق أو النظام.",
+  micPickAudioFallback: "اختيار ملف صوتي من الجهاز",
+  copySuccessToast: "تم النسخ إلى الحافظة بنجاح 📋",
+  copyFailedToast: "تعذر النسخ إلى الحافظة",
   backToJournals: "العودة إلى اليوميات والفضفضة",
   editDrawing: "تعديل الرسمة",
   deleteDrawing: "حذف الرسمة",
@@ -2919,6 +2934,21 @@ export const AR_DICT: Record<string, any> = {
 };
 
 export const EN_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Import from Gratitude Wall",
+  importGratitudeTabToday: "Today",
+  importGratitudeTabAllDays: "All Days",
+  importGratitudeSelectAll: "Select All",
+  importGratitudeDeselectAll: "Deselect All",
+  importGratitudeAddSelected: "Add Selected",
+  importGratitudeNoItemsToday: "No gratitude entries recorded for today.",
+  importGratitudeNoItemsAll: "No gratitude cards found yet.",
+  importGratitudeSelectedCount: "Selected",
+  micAccessErrorTitle: "Microphone Access Denied",
+  micAccessErrorPermission: "Please allow microphone access in your browser or device settings.",
+  micPickAudioFallback: "Choose Audio File from Device",
+  copySuccessToast: "Copied to clipboard successfully 📋",
+  copyFailedToast: "Failed to copy to clipboard",
 
   onboardingStepOf: "Step {step} of {total}",
   onboardingCloseGuide: "Close Interactive Guide",
@@ -5431,6 +5461,21 @@ export const EN_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI Advisor:",};
 
 export const FR_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Importer du mur de gratitude",
+  importGratitudeTabToday: "Aujourd'hui",
+  importGratitudeTabAllDays: "Tous les jours",
+  importGratitudeSelectAll: "Tout sélectionner",
+  importGratitudeDeselectAll: "Tout désélectionner",
+  importGratitudeAddSelected: "Ajouter la sélection",
+  importGratitudeNoItemsToday: "Aucune entrée de gratitude aujourd'hui.",
+  importGratitudeNoItemsAll: "Aucune carte de gratitude pour le moment.",
+  importGratitudeSelectedCount: "Sélectionné",
+  micAccessErrorTitle: "Accès au microphone refusé",
+  micAccessErrorPermission: "Veuillez autoriser l'accès au microphone dans les paramètres.",
+  micPickAudioFallback: "Choisir un fichier audio de l'appareil",
+  copySuccessToast: "Copié dans le presse-papiers avec succès 📋",
+  copyFailedToast: "Échec de la copie dans le presse-papiers",
 
   onboardingStepOf: "Étape {step} sur {total}",
   onboardingCloseGuide: "Fermer le guide interactif",
@@ -7943,6 +7988,21 @@ export const FR_DICT: Record<string, any> = {
   chatAdvisorLabel: "Conseiller Hayat AI :",};
 
 export const DE_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Von der Dankbarkeitswand importieren",
+  importGratitudeTabToday: "Heute",
+  importGratitudeTabAllDays: "Alle Tage",
+  importGratitudeSelectAll: "Alle auswählen",
+  importGratitudeDeselectAll: "Auswahl aufheben",
+  importGratitudeAddSelected: "Ausgewählte hinzufügen",
+  importGratitudeNoItemsToday: "Heute sind keine Dankbarkeitseinträge vorhanden.",
+  importGratitudeNoItemsAll: "Noch keine Dankbarkeitskarten vorhanden.",
+  importGratitudeSelectedCount: "Ausgewählt",
+  micAccessErrorTitle: "Mikrofonzugriff verweigert",
+  micAccessErrorPermission: "Bitte erlauben Sie den Mikrofonzugriff in den Einstellungen.",
+  micPickAudioFallback: "Audiodatei vom Gerät auswählen",
+  copySuccessToast: "Erfolgreich in die Zwischenablage kopiert 📋",
+  copyFailedToast: "Kopieren in die Zwischenablage fehlgeschlagen",
 
   onboardingStepOf: "Schritt {step} von {total}",
   onboardingCloseGuide: "Interaktiven Leitfaden schließen",
@@ -10455,6 +10515,21 @@ export const DE_DICT: Record<string, any> = {
 };
 
 export const ES_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Importar del muro de gratitud",
+  importGratitudeTabToday: "Hoy",
+  importGratitudeTabAllDays: "Todos los días",
+  importGratitudeSelectAll: "Seleccionar todo",
+  importGratitudeDeselectAll: "Deseleccionar todo",
+  importGratitudeAddSelected: "Agregar seleccionados",
+  importGratitudeNoItemsToday: "No hay entradas de gratitud registradas para hoy.",
+  importGratitudeNoItemsAll: "No hay tarjetas de gratitud todavía.",
+  importGratitudeSelectedCount: "Seleccionado",
+  micAccessErrorTitle: "Acceso al micrófono denegado",
+  micAccessErrorPermission: "Permita el acceso al micrófono en la configuración.",
+  micPickAudioFallback: "Elegir archivo de audio del dispositivo",
+  copySuccessToast: "Copiado al portapapeles con éxito 📋",
+  copyFailedToast: "Error al copiar al portapapeles",
 
   onboardingStepOf: "Paso {step} de {total}",
   onboardingCloseGuide: "Cerrar guía interactiva",
@@ -12967,6 +13042,21 @@ export const ES_DICT: Record<string, any> = {
   chatAdvisorLabel: "Asesor Hayat AI:",};
 
 export const IT_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Importa dal muro della gratitudine",
+  importGratitudeTabToday: "Oggi",
+  importGratitudeTabAllDays: "Tutti i giorni",
+  importGratitudeSelectAll: "Seleziona tutto",
+  importGratitudeDeselectAll: "Deseleziona tutto",
+  importGratitudeAddSelected: "Aggiungi selezionati",
+  importGratitudeNoItemsToday: "Nessuna voce di gratitudine registrata per oggi.",
+  importGratitudeNoItemsAll: "Nessuna scheda di gratitudine trovata.",
+  importGratitudeSelectedCount: "Selezionato",
+  micAccessErrorTitle: "Accesso al microfono negato",
+  micAccessErrorPermission: "Consenti l accesso al microfono nelle impostazioni.",
+  micPickAudioFallback: "Scegli file audio dal dispositivo",
+  copySuccessToast: "Copiato negli appunti con successo 📋",
+  copyFailedToast: "Impossibile copiare negli appunti",
 
   onboardingStepOf: "Passo {step} di {total}",
   onboardingCloseGuide: "Chiudi guida interattiva",
@@ -15479,6 +15569,21 @@ export const IT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consulente Hayat AI:",};
 
 export const TR_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Şükran Duvarından İçe Aktar",
+  importGratitudeTabToday: "Bugün",
+  importGratitudeTabAllDays: "Tüm Günler",
+  importGratitudeSelectAll: "Tümünü Seç",
+  importGratitudeDeselectAll: "Seçimi Kaldır",
+  importGratitudeAddSelected: "Seçilenleri Ekle",
+  importGratitudeNoItemsToday: "Bugün için kaydedilmiş şükran notu yok.",
+  importGratitudeNoItemsAll: "Henüz şükran kartı bulunamadı.",
+  importGratitudeSelectedCount: "Seçildi",
+  micAccessErrorTitle: "Mikrofon Erişimi Reddedildi",
+  micAccessErrorPermission: "Lütfen ayarlardan mikrofon erişimine izin verin.",
+  micPickAudioFallback: "Cihazdan Ses Dosyası Seç",
+  copySuccessToast: "Panoya başarıyla kopyalandı 📋",
+  copyFailedToast: "Panoya kopyalanamadı",
 
   onboardingStepOf: "Adım {step} / {total}",
   onboardingCloseGuide: "Etkileşimli Rehberi Kapat",
@@ -17991,6 +18096,21 @@ export const TR_DICT: Record<string, any> = {
 };
 
 export const PT_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Importar do mural de gratidão",
+  importGratitudeTabToday: "Hoje",
+  importGratitudeTabAllDays: "Todos os dias",
+  importGratitudeSelectAll: "Selecionar tudo",
+  importGratitudeDeselectAll: "Desmarcar tudo",
+  importGratitudeAddSelected: "Adicionar selecionados",
+  importGratitudeNoItemsToday: "Nenhuma entrada de gratidão registrada hoje.",
+  importGratitudeNoItemsAll: "Nenhum cartão de gratidão encontrado.",
+  importGratitudeSelectedCount: "Selecionado",
+  micAccessErrorTitle: "Acesso ao microfone negado",
+  micAccessErrorPermission: "Permita o acesso ao microfone nas configurações.",
+  micPickAudioFallback: "Escolher arquivo de áudio do dispositivo",
+  copySuccessToast: "Copiado para a área de transferência com sucesso 📋",
+  copyFailedToast: "Falha ao copiar para a área de transferência",
 
   onboardingStepOf: "Passo {step} de {total}",
   onboardingCloseGuide: "Fechar guia interativo",
@@ -20503,6 +20623,21 @@ export const PT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consultor Hayat AI:",};
 
 export const RU_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "Импорт со стены благодарности",
+  importGratitudeTabToday: "Сегодня",
+  importGratitudeTabAllDays: "Все дни",
+  importGratitudeSelectAll: "Выбрать все",
+  importGratitudeDeselectAll: "Снять выбор",
+  importGratitudeAddSelected: "Добавить выбранное",
+  importGratitudeNoItemsToday: "Сегодня нет записей благодарности.",
+  importGratitudeNoItemsAll: "Карточки благодарности пока не найдены.",
+  importGratitudeSelectedCount: "Выбрано",
+  micAccessErrorTitle: "Доступ к микрофону запрещен",
+  micAccessErrorPermission: "Пожалуйста, разрешите доступ к микрофону в настройках.",
+  micPickAudioFallback: "Выбрать аудиофайл с устройства",
+  copySuccessToast: "Успешно скопировано в буфер обмена 📋",
+  copyFailedToast: "Не удалось скопировать в буфер обмена",
 
   onboardingStepOf: "Шаг {step} из {total}",
   onboardingCloseGuide: "Закрыть интерактивное руководство",
@@ -23015,6 +23150,21 @@ export const RU_DICT: Record<string, any> = {
   chatAdvisorLabel: "Консультант Hayat AI:",};
 
 export const JA_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "感謝の壁から取り込む",
+  importGratitudeTabToday: "今日",
+  importGratitudeTabAllDays: "すべての日",
+  importGratitudeSelectAll: "すべて選択",
+  importGratitudeDeselectAll: "選択解除",
+  importGratitudeAddSelected: "選択した項目を追加",
+  importGratitudeNoItemsToday: "本日の感謝の記録はありません。",
+  importGratitudeNoItemsAll: "感謝カードはまだありません。",
+  importGratitudeSelectedCount: "選択中",
+  micAccessErrorTitle: "マイクへのアクセスが拒否されました",
+  micAccessErrorPermission: "設定でマイクへのアクセスを許可してください。",
+  micPickAudioFallback: "端末から音声ファイルを選択",
+  copySuccessToast: "クリップボードに正常にコピーされました 📋",
+  copyFailedToast: "クリップボードへのコピーに失敗しました",
 
   onboardingStepOf: "ステップ {step} / {total}",
   onboardingCloseGuide: "インタラクティブガイドを閉じる",
@@ -25527,6 +25677,21 @@ export const JA_DICT: Record<string, any> = {
 };
 
 export const ZH_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "从感恩之墙导入",
+  importGratitudeTabToday: "今天",
+  importGratitudeTabAllDays: "所有日期",
+  importGratitudeSelectAll: "全选",
+  importGratitudeDeselectAll: "取消全选",
+  importGratitudeAddSelected: "添加所选内容",
+  importGratitudeNoItemsToday: "今天暂无感恩记录。",
+  importGratitudeNoItemsAll: "暂无感恩卡片。",
+  importGratitudeSelectedCount: "已选择",
+  micAccessErrorTitle: "麦克风访问被拒绝",
+  micAccessErrorPermission: "请在设置中允许麦克风访问权限。",
+  micPickAudioFallback: "从设备选择音频文件",
+  copySuccessToast: "已成功复制到剪贴板 📋",
+  copyFailedToast: "复制到剪贴板失败",
 
   onboardingStepOf: "步骤 {step} / {total}",
   onboardingCloseGuide: "关闭互动指南",
@@ -28039,6 +28204,21 @@ export const ZH_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI 顾问:",};
 
 export const HI_DICT: Record<string, any> = {
+  // --- Batch 1 Enhanced Localization Keys ---
+  importGratitudeModalTitle: "कृतज्ञता दीवार से आयात करें",
+  importGratitudeTabToday: "आज",
+  importGratitudeTabAllDays: "सभी दिन",
+  importGratitudeSelectAll: "सभी चुनें",
+  importGratitudeDeselectAll: "चयन हटाएं",
+  importGratitudeAddSelected: "चयनित जोड़ें",
+  importGratitudeNoItemsToday: "आज के लिए कोई कृतज्ञता प्रविष्टि दर्ज नहीं है।",
+  importGratitudeNoItemsAll: "अभी तक कोई कृतज्ञता कार्ड नहीं मिला।",
+  importGratitudeSelectedCount: "चयनित",
+  micAccessErrorTitle: "माइक्रोफ़ोन पहुंच अस्वीकृत",
+  micAccessErrorPermission: "कृपया सेटिंग्स में माइक्रोफ़ोन पहुंच की अनुमति दें।",
+  micPickAudioFallback: "डिवाइस से ऑडियो फ़ाइल चुनें",
+  copySuccessToast: "क्लिपबोर्ड पर सफलतापूर्वक कॉपी किया गया 📋",
+  copyFailedToast: "क्लिपबोर्ड पर कॉपी करने में विफल",
 
   onboardingStepOf: "चरण {step} / {total}",
   onboardingCloseGuide: "इंटरैक्टिव गाइड बंद करें",

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Brain, FileText, CheckCircle, AlertTriangle, Sparkles, Printer, ArrowRight, Download, Copy, Check, FileCode } from 'lucide-react';
 import { DiaryEntry } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 
 interface TherapistReportModalProps {
   isOpen: boolean;
@@ -140,9 +141,11 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   const handleCopyText = async () => {
     try {
       const textToCopy = `${t.therapistReportTitle}\n${t.timePeriod} ${startDate} - ${endDate}\n\n${t.statistics}\n- ${t.diariesCount} ${totalEntries}\n- ${t.avgSleep} ${averageSleep} ${t.hoursUnit}\n- ${t.sportsTime} ${totalSports} ${t.minutesUnit}\n\n${t.aiClinicalAnalysisTitle}\n${reportText}`;
-      await navigator.clipboard.writeText(textToCopy);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000);
+      const ok = await copyTextSafe(textToCopy);
+      if (ok) {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 3000);
+      }
     } catch (e) {
       console.error(e);
     }

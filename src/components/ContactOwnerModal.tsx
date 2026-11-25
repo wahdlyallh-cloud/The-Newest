@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Copy, Mail, Check, Heart } from 'lucide-react';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import { copyTextSafe } from '../lib/clipboard';
 
 interface ContactOwnerModalProps {
   isOpen: boolean;
@@ -19,11 +20,13 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
 
   const emailAddress = "wahdlyallh@gmail.com";
 
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(emailAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const ok = await copyTextSafe(emailAddress);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const handleEmailClick = () => {

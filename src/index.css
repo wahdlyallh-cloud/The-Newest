@@ -189,9 +189,10 @@ button, [role="button"], a, [role="tab"] {
 }
 
 /* Keep user text selection on readable content, notes, inputs and code */
-input, textarea, [contenteditable], [contenteditable="true"], article, p, h1, h2, h3, h4, h5, h6, .selectable-text {
-  user-select: text;
-  -webkit-user-select: text;
+input, textarea, [contenteditable], [contenteditable="true"], article, p, h1, h2, h3, h4, h5, h6, .selectable-text, .select-text, [data-selectable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -webkit-touch-callout: default !important;
 }
 
 /* Minimum 44x44px touch target comfort utility */
