@@ -47,6 +47,14 @@ export function getBcp47Tag(code?: AppLanguage | string | null): string {
 export type TranslationKey = string;
 
 export const AR_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "مراجعة وتأكيد الفضفضة الصوتية",
+  voiceVentSavedSuccess: "تم حفظ التسجيل والمرفق الصوتي بنجاح 🎉",
+  voiceVentAddToDiaryBtn: "إضافة إلى اليوميات",
+  voiceVentKeepAudioOnlyBtn: "حفظ كمرفق صوتي فقط / إغلاق",
+  voiceVentSaveAndAnalyzeBtn: "حفظ المرفق الصوتي",
+  voiceVentDiscardBtn: "تجاهل وإعادة التسجيل",
+  voiceVentToneAnalysisTitle: "تحليل نبرة الصوت والمشاعر (Gemini AI):",
+  voiceVentPostSaveNotice: "تم حفظ التسجيل في المرفقات الصوتية بأمان. اختر كيف تود المتابعة:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "استيراد من جدار الامتنان",
   importGratitudeTabToday: "اليوم",
@@ -2934,6 +2942,14 @@ export const AR_DICT: Record<string, any> = {
 };
 
 export const EN_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Review & Confirm Voice Vent",
+  voiceVentSavedSuccess: "Audio recording and attachment saved successfully 🎉",
+  voiceVentAddToDiaryBtn: "Add to Diary",
+  voiceVentKeepAudioOnlyBtn: "Keep as Audio Only / Close",
+  voiceVentSaveAndAnalyzeBtn: "Save Audio Attachment",
+  voiceVentDiscardBtn: "Discard & Re-record",
+  voiceVentToneAnalysisTitle: "Vocal Tone & Emotion Analysis (Gemini AI):",
+  voiceVentPostSaveNotice: "The recording has been safely saved in audio attachments. Choose how to proceed:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Import from Gratitude Wall",
   importGratitudeTabToday: "Today",
@@ -5461,6 +5477,14 @@ export const EN_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI Advisor:",};
 
 export const FR_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Examiner et confirmer le message vocal",
+  voiceVentSavedSuccess: "Enregistrement audio et pièce jointe enregistrés avec succès 🎉",
+  voiceVentAddToDiaryBtn: "Ajouter au journal",
+  voiceVentKeepAudioOnlyBtn: "Conserver en audio uniquement / Fermer",
+  voiceVentSaveAndAnalyzeBtn: "Enregistrer la pièce jointe audio",
+  voiceVentDiscardBtn: "Supprimer et réenregistrer",
+  voiceVentToneAnalysisTitle: "Analyse du ton vocal et des émotions (Gemini AI) :",
+  voiceVentPostSaveNotice: "L enregistrement a été sauvegardé en toute sécurité dans les pièces jointes audio. Choisissez comment continuer :",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Importer du mur de gratitude",
   importGratitudeTabToday: "Aujourd'hui",
@@ -7988,6 +8012,14 @@ export const FR_DICT: Record<string, any> = {
   chatAdvisorLabel: "Conseiller Hayat AI :",};
 
 export const DE_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Sprachnachricht überprüfen und bestätigen",
+  voiceVentSavedSuccess: "Audioaufnahme und Anhang erfolgreich gespeichert 🎉",
+  voiceVentAddToDiaryBtn: "Zum Tagebuch hinzufügen",
+  voiceVentKeepAudioOnlyBtn: "Nur als Audio behalten / Schließen",
+  voiceVentSaveAndAnalyzeBtn: "Audioanhang speichern",
+  voiceVentDiscardBtn: "Verwerfen und neu aufnehmen",
+  voiceVentToneAnalysisTitle: "Tonfall- und Emotionsanalyse (Gemini AI):",
+  voiceVentPostSaveNotice: "Die Aufnahme wurde sicher in den Audioanhängen gespeichert. Wählen Sie das weitere Vorgehen:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Von der Dankbarkeitswand importieren",
   importGratitudeTabToday: "Heute",
@@ -10515,6 +10547,14 @@ export const DE_DICT: Record<string, any> = {
 };
 
 export const ES_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Revisar y confirmar desahogo de voz",
+  voiceVentSavedSuccess: "Grabación de audio y adjunto guardados con éxito 🎉",
+  voiceVentAddToDiaryBtn: "Agregar al diario",
+  voiceVentKeepAudioOnlyBtn: "Guardar solo como audio / Cerrar",
+  voiceVentSaveAndAnalyzeBtn: "Guardar archivo de audio adjunto",
+  voiceVentDiscardBtn: "Descartar y volver a grabar",
+  voiceVentToneAnalysisTitle: "Análisis de tono vocal y emociones (Gemini AI):",
+  voiceVentPostSaveNotice: "La grabación se ha guardado de forma segura en los archivos de audio adjuntos. Elija cómo proceder:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Importar del muro de gratitud",
   importGratitudeTabToday: "Hoy",
@@ -13042,6 +13082,14 @@ export const ES_DICT: Record<string, any> = {
   chatAdvisorLabel: "Asesor Hayat AI:",};
 
 export const IT_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Rivedi e conferma lo sfogo vocale",
+  voiceVentSavedSuccess: "Registrazione audio e allegato salvati con successo 🎉",
+  voiceVentAddToDiaryBtn: "Aggiungi al diario",
+  voiceVentKeepAudioOnlyBtn: "Mantieni solo come audio / Chiudi",
+  voiceVentSaveAndAnalyzeBtn: "Salva allegato audio",
+  voiceVentDiscardBtn: "Elimina e registra di nuovo",
+  voiceVentToneAnalysisTitle: "Analisi del tono vocale e delle emozioni (Gemini AI):",
+  voiceVentPostSaveNotice: "La registrazione è stata salvata in sicurezza negli allegati audio. Scegli come procedere:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Importa dal muro della gratitudine",
   importGratitudeTabToday: "Oggi",
@@ -15569,6 +15617,14 @@ export const IT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consulente Hayat AI:",};
 
 export const TR_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Sesli İç Dökümünü İncele ve Onayla",
+  voiceVentSavedSuccess: "Ses kaydı ve eki başarıyla kaydedildi 🎉",
+  voiceVentAddToDiaryBtn: "Günlüğe Ekle",
+  voiceVentKeepAudioOnlyBtn: "Yalnızca Ses Olarak Tut / Kapat",
+  voiceVentSaveAndAnalyzeBtn: "Ses Ekini Kaydet",
+  voiceVentDiscardBtn: "At ve Yeniden Kaydet",
+  voiceVentToneAnalysisTitle: "Ses Tonu ve Duygu Analizi (Gemini AI):",
+  voiceVentPostSaveNotice: "Kayıt, ses eklerinde güvenle saklandı. Nasıl devam edeceğinizi seçin:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Şükran Duvarından İçe Aktar",
   importGratitudeTabToday: "Bugün",
@@ -18096,6 +18152,14 @@ export const TR_DICT: Record<string, any> = {
 };
 
 export const PT_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Revisar e confirmar desabafo de voz",
+  voiceVentSavedSuccess: "Gravação de áudio e anexo salvos com sucesso 🎉",
+  voiceVentAddToDiaryBtn: "Adicionar ao diário",
+  voiceVentKeepAudioOnlyBtn: "Manter apenas como áudio / Fechar",
+  voiceVentSaveAndAnalyzeBtn: "Salvar anexo de áudio",
+  voiceVentDiscardBtn: "Descartar e gravar novamente",
+  voiceVentToneAnalysisTitle: "Análise de tom vocal e emoções (Gemini AI):",
+  voiceVentPostSaveNotice: "A gravação foi salva com segurança nos anexos de áudio. Escolha como prosseguir:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Importar do mural de gratidão",
   importGratitudeTabToday: "Hoje",
@@ -20623,6 +20687,14 @@ export const PT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consultor Hayat AI:",};
 
 export const RU_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "Просмотр и подтверждение голосовой записи",
+  voiceVentSavedSuccess: "Аудиозапись и вложение успешно сохранены 🎉",
+  voiceVentAddToDiaryBtn: "Добавить в дневник",
+  voiceVentKeepAudioOnlyBtn: "Сохранить только как аудио / Закрыть",
+  voiceVentSaveAndAnalyzeBtn: "Сохранить аудиовложение",
+  voiceVentDiscardBtn: "Удалить и записать заново",
+  voiceVentToneAnalysisTitle: "Анализ тона голоса и эмоций (Gemini AI):",
+  voiceVentPostSaveNotice: "Запись надежно сохранена в аудиовложениях. Выберите дальнейшее действие:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "Импорт со стены благодарности",
   importGratitudeTabToday: "Сегодня",
@@ -23150,6 +23222,14 @@ export const RU_DICT: Record<string, any> = {
   chatAdvisorLabel: "Консультант Hayat AI:",};
 
 export const JA_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "音声ベントの確認と確定",
+  voiceVentSavedSuccess: "音声録音と添付ファイルが正常に保存されました 🎉",
+  voiceVentAddToDiaryBtn: "日記に追加",
+  voiceVentKeepAudioOnlyBtn: "音声のみとして保持 / 閉じる",
+  voiceVentSaveAndAnalyzeBtn: "音声添付ファイルを保存",
+  voiceVentDiscardBtn: "破棄して再録音",
+  voiceVentToneAnalysisTitle: "声のトーンと感情の分析 (Gemini AI):",
+  voiceVentPostSaveNotice: "録音は音声添付ファイルに安全に保存されました。続行する方法を選択してください：",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "感謝の壁から取り込む",
   importGratitudeTabToday: "今日",
@@ -25677,6 +25757,14 @@ export const JA_DICT: Record<string, any> = {
 };
 
 export const ZH_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "审阅并确认语音倾诉",
+  voiceVentSavedSuccess: "录音和附件已成功保存 🎉",
+  voiceVentAddToDiaryBtn: "添加到日记",
+  voiceVentKeepAudioOnlyBtn: "仅保留为音频 / 关闭",
+  voiceVentSaveAndAnalyzeBtn: "保存音频附件",
+  voiceVentDiscardBtn: "放弃并重新录制",
+  voiceVentToneAnalysisTitle: "声音语调与情感分析 (Gemini AI)：",
+  voiceVentPostSaveNotice: "录音已安全保存在音频附件中。请选择接下来的操作：",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "从感恩之墙导入",
   importGratitudeTabToday: "今天",
@@ -28204,6 +28292,14 @@ export const ZH_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI 顾问:",};
 
 export const HI_DICT: Record<string, any> = {
+  voiceVentReviewTitle: "वॉयस वेंट की समीक्षा और पुष्टि करें",
+  voiceVentSavedSuccess: "ऑडियो रिकॉर्डिंग और अनुलग्नक सफलतापूर्वक सहेजा गया 🎉",
+  voiceVentAddToDiaryBtn: "डायरी में जोड़ें",
+  voiceVentKeepAudioOnlyBtn: "केवल ऑडियो के रूप में रखें / बंद करें",
+  voiceVentSaveAndAnalyzeBtn: "ऑडियो अनुलग्नक सहेजें",
+  voiceVentDiscardBtn: "त्यागें और फिर से रिकॉर्ड करें",
+  voiceVentToneAnalysisTitle: "स्वर टोन और भावना विश्लेषण (Gemini AI):",
+  voiceVentPostSaveNotice: "रिकॉर्डिंग को ऑडियो अनुलग्नकों में सुरक्षित रूप से सहेजा गया है। चुनें कि आप कैसे आगे बढ़ना चाहते हैं:",
   // --- Batch 1 Enhanced Localization Keys ---
   importGratitudeModalTitle: "कृतज्ञता दीवार से आयात करें",
   importGratitudeTabToday: "आज",

@@ -1,5 +1,20 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import { X, Mic, Square, Sparkles, RefreshCw, Upload, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  X,
+  Mic,
+  Square,
+  Sparkles,
+  RefreshCw,
+  Upload,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  Volume2,
+  BookOpen,
+  Music,
+  Trash2,
+  Edit3
+} from 'lucide-react';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
 import { transcribeAudioWithGemini } from '../lib/gemini';
@@ -71,15 +86,30 @@ export default function VoiceVentModal({
   const langInfo = getLanguageInfo(appLanguage);
   const isAr = appLanguage === 'ar';
 
+  // Step 1: Recording, Step 2: Review (Editable & Tone Analysis), Step 3: Saved Choices
+  const [modalStep, setModalStep] = useState<'recording' | 'review' | 'saved'>('recording');
+
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [liveTranscript, setLiveTranscript] = useState('');
-  const [finalTranscript, setFinalTranscript] = useState('');
-  const [recordedAudioRec, setRecordedAudioRec] = useState<AudioRecording | null>(null);
-  const [isAppended, setIsAppended] = useState(false);
 
-  // Audio Capture Refs
+  // Live and Editable Transcripts
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [editableTranscript, setEditableTranscript] = useState('');
+
+  // Audio blob and player
+  const [currentAudioBlob, setCurrentAudioBlob] = useState<Blob | null>(null);
+  const [audioBlobUrl, setAudioBlobUrl] = useState<string>('');
+
+  // Vocal tone analysis state
+  const [vocalTone, setVocalTone] = useState<AudioRecording['speechEmotion'] | null>(null);
+
+  // Saved audio recording metadata
+  const [savedRecording, setSavedRecording] = useState<AudioRecording | null>(null);
+  const [isAppendedToDiary, setIsAppendedToDiary] = useState(false);
+
+  // Capture Refs
+  const isRecordingRef = useRef<boolean>(false);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -88,7 +118,11 @@ export default function VoiceVentModal({
   const liveTranscriptRef = useRef<string>('');
   const fileFallbackInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Only populated if navigator.mediaDevices.getUserMedia itself throws
+  // Native SpeechRecognition instance tracking for pause-safe auto-restarts
+  const nativeSpeechRecRef = useRef<any>(null);
+  const speechAccumulatedPrefixRef = useRef<string>('');
+
+  // Error Details
   const [micErrorDetails, setMicErrorDetails] = useState<{
     friendly: string;
     technicalName?: string;
@@ -96,35 +130,153 @@ export default function VoiceVentModal({
 
   useEffect(() => {
     if (isOpen) {
-      setRecordingSeconds(0);
-      setLiveTranscript('');
-      setFinalTranscript('');
-      setRecordedAudioRec(null);
-      setIsAppended(false);
-      setIsTranscribing(false);
-      setMicErrorDetails(null);
-      liveTranscriptRef.current = '';
-      // Auto-start recording immediately upon opening
+      resetModalState();
       startRecording();
     } else {
       stopRecordingInternal();
+      cleanupBlobUrl();
     }
     return () => {
       stopRecordingInternal();
+      cleanupBlobUrl();
     };
   }, [isOpen]);
 
-  const startRecording = async () => {
-    setMicErrorDetails(null);
+  const cleanupBlobUrl = () => {
+    if (audioBlobUrl) {
+      try {
+        URL.revokeObjectURL(audioBlobUrl);
+      } catch (_) {}
+    }
+  };
+
+  const resetModalState = () => {
+    setModalStep('recording');
+    setIsRecording(false);
+    isRecordingRef.current = false;
     setIsTranscribing(false);
+    setRecordingSeconds(0);
+    setLiveTranscript('');
+    setEditableTranscript('');
+    setCurrentAudioBlob(null);
+    cleanupBlobUrl();
+    setAudioBlobUrl('');
+    setVocalTone(null);
+    setSavedRecording(null);
+    setIsAppendedToDiary(false);
+    setMicErrorDetails(null);
     audioChunksRef.current = [];
     liveTranscriptRef.current = '';
-    setLiveTranscript('');
-    setFinalTranscript('');
-    setRecordedAudioRec(null);
-    setIsAppended(false);
+    speechAccumulatedPrefixRef.current = '';
+  };
 
-    // Stop and release any previously active stream tracks to prevent NotReadableError / conflict
+  /**
+   * Helper to convert an Audio Blob to Base64 data URL safely
+   */
+  const convertBlobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') resolve(reader.result);
+        else reject(new Error('Failed to read audio blob as Base64'));
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  /**
+   * Native SpeechRecognition parallel runner with pause-safe auto-restart
+   */
+  const startParallelSpeechRecognition = () => {
+    try {
+      const SpeechClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechClass) {
+        // Fallback silently if unsupported in Android WebView
+        return;
+      }
+
+      // Cleanup any existing instance
+      if (nativeSpeechRecRef.current) {
+        try {
+          nativeSpeechRecRef.current.onend = null;
+          nativeSpeechRecRef.current.onerror = null;
+          nativeSpeechRecRef.current.abort();
+        } catch (_) {}
+        nativeSpeechRecRef.current = null;
+      }
+
+      const recognition = new SpeechClass();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.lang = langInfo.speechLang || (isAr ? 'ar-EG' : 'en-US');
+
+      let currentSessionFinal = '';
+
+      recognition.onresult = (event: any) => {
+        let interim = '';
+        let newlyFinalized = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          const text = res[0]?.transcript || '';
+          if (res.isFinal) {
+            newlyFinalized += text + ' ';
+          } else {
+            interim += text;
+          }
+        }
+
+        if (newlyFinalized) {
+          currentSessionFinal += newlyFinalized;
+        }
+
+        const fullSpoken = (speechAccumulatedPrefixRef.current + ' ' + currentSessionFinal + ' ' + interim).trim();
+        liveTranscriptRef.current = fullSpoken;
+        setLiveTranscript(fullSpoken);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('[VoiceVent] SpeechRecognition notice (non-fatal):', event?.error);
+      };
+
+      // Pause-safe auto-restart: keeps recognition alive across natural pauses as long as user is recording
+      recognition.onend = () => {
+        // Commit current session finals to accumulated prefix
+        if (currentSessionFinal.trim()) {
+          speechAccumulatedPrefixRef.current = (speechAccumulatedPrefixRef.current + ' ' + currentSessionFinal).trim();
+          currentSessionFinal = '';
+        }
+
+        if (isRecordingRef.current) {
+          // User is still speaking; restart recognition automatically
+          try {
+            recognition.start();
+          } catch (_) {
+            // If already restarting or hardware busy, retry after short backoff
+            setTimeout(() => {
+              if (isRecordingRef.current) {
+                try {
+                  recognition.start();
+                } catch (_) {}
+              }
+            }, 150);
+          }
+        }
+      };
+
+      nativeSpeechRecRef.current = recognition;
+      recognition.start();
+    } catch (speechErr) {
+      console.warn('[VoiceVent] WebSpeech parallel runner unavailable or bypassed:', speechErr);
+    }
+  };
+
+  const startRecording = async () => {
+    resetModalState();
+
+    // Release any previous tracks
     if (mediaStreamRef.current) {
       try {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -132,7 +284,7 @@ export default function VoiceVentModal({
       mediaStreamRef.current = null;
     }
 
-    // 1. Acquire audio stream via getUserMedia with graceful Android WebView fallback constraints
+    // 1. Acquire audio stream with Android WebView resilient fallbacks
     let stream: MediaStream;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -143,7 +295,6 @@ export default function VoiceVentModal({
       } catch (firstErr: any) {
         const firstErrName = firstErr?.name || '';
         if (firstErrName === 'NotReadableError' || firstErrName === 'TrackStartError' || firstErrName === 'AbortError') {
-          // In Android WebView, hardware may be momentarily occupied or conflicting with default constraints
           await new Promise((r) => setTimeout(r, 250));
           stream = await navigator.mediaDevices.getUserMedia({
             audio: {
@@ -159,7 +310,7 @@ export default function VoiceVentModal({
       mediaStreamRef.current = stream;
     } catch (err: any) {
       const errorName = err?.name || 'PermissionError';
-      console.warn('[VoiceVent] getUserMedia failed:', errorName, err);
+      console.warn('[VoiceVent] getUserMedia error:', errorName, err);
 
       let friendlyMsg = t.micAccessErrorPermission || (isAr
         ? 'يرجى السماح بالوصول إلى الميكروفون من إعدادات المتصفح أو التطبيق.'
@@ -168,7 +319,9 @@ export default function VoiceVentModal({
       if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
         friendlyMsg = isAr ? 'لم يتم العثور على ميكروفون متصل بالجهاز.' : 'No microphone device found on this system.';
       } else if (errorName === 'NotReadableError' || errorName === 'TrackStartError') {
-        friendlyMsg = isAr ? 'الميكروفون قيد الاستخدام حالياً بواسطة تطبيق آخر أو تعذر فتح مسار الصوت. يمكنك استخدام خيار اختيار ملف صوتي أدناه.' : 'Microphone is currently in use by another app or audio track could not start. You can pick an audio file below.';
+        friendlyMsg = isAr
+          ? 'الميكروفون قيد الاستخدام حالياً بواسطة تطبيق آخر أو تعذر فتح مسار الصوت. يمكنك استخدام خيار اختيار ملف صوتي أدناه.'
+          : 'Microphone is currently in use by another app. You can pick an audio file below.';
       }
 
       setMicErrorDetails({
@@ -176,10 +329,11 @@ export default function VoiceVentModal({
         technicalName: `${errorName}${err.message ? `: ${err.message}` : ''}`
       });
       setIsRecording(false);
+      isRecordingRef.current = false;
       return;
     }
 
-    // 2. Initialize MediaRecorder safely with best supported MIME type
+    // 2. Initialize MediaRecorder: continuous, UNLIMITED recording until explicit Stop
     try {
       const bestMime = getBestSupportedAudioMimeType();
       const options: MediaRecorderOptions = bestMime ? { mimeType: bestMime } : {};
@@ -196,9 +350,10 @@ export default function VoiceVentModal({
 
       mediaRecorder.start(250);
       setIsRecording(true);
+      isRecordingRef.current = true;
       setRecordingSeconds(0);
 
-      // Start Recording Timer
+      // Start elapsed timer
       if (intervalRef.current) clearInterval(intervalRef.current);
       intervalRef.current = window.setInterval(() => {
         setRecordingSeconds((prev) => prev + 1);
@@ -210,43 +365,36 @@ export default function VoiceVentModal({
         technicalName: String(mrErr?.name || mrErr?.message || mrErr)
       });
       setIsRecording(false);
+      isRecordingRef.current = false;
       return;
     }
 
-    // 3. Optional Best-Effort Web Speech API: Ignored completely if unsupported or throws inside Android WebView
-    try {
-      const manager = SpeechRecognitionManager.getInstance();
-      if (manager.isSupported()) {
-        manager.startSession({
-          lang: langInfo.speechLang || (isAr ? 'ar-EG' : 'en-US'),
-          continuous: true,
-          callbacks: {
-            onTranscriptChange: (state) => {
-              liveTranscriptRef.current = state.displayTranscript;
-              setLiveTranscript(state.displayTranscript);
-            },
-            onError: (speechErr) => {
-              // Silently ignore speech recognition errors inside Android WebView (e.g. not-allowed, service-not-allowed)
-              console.warn('[VoiceVent] WebSpeech error ignored gracefully in favor of MediaRecorder:', speechErr);
-            }
-          }
-        });
-      }
-    } catch (speechInitErr) {
-      console.warn('[VoiceVent] WebSpeech init ignored gracefully:', speechInitErr);
-    }
+    // 3. Start parallel live SpeechRecognition with auto-restart
+    startParallelSpeechRecognition();
   };
 
   const stopRecordingInternal = (): string => {
+    isRecordingRef.current = false;
+    setIsRecording(false);
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
-    // Stop WebSpeech silently
+    // Teardown native speech recognition
+    if (nativeSpeechRecRef.current) {
+      try {
+        nativeSpeechRecRef.current.onend = null;
+        nativeSpeechRecRef.current.onerror = null;
+        nativeSpeechRecRef.current.stop();
+      } catch (_) {}
+      nativeSpeechRecRef.current = null;
+    }
+
+    // Also stop SpeechRecognitionManager singleton if running
     try {
-      const manager = SpeechRecognitionManager.getInstance();
-      manager.finalize();
+      SpeechRecognitionManager.getInstance().finalize();
     } catch (_) {}
 
     // Stop MediaRecorder
@@ -256,7 +404,7 @@ export default function VoiceVentModal({
       } catch (_) {}
     }
 
-    // Stop Audio Tracks
+    // Stop all audio tracks
     if (mediaStreamRef.current) {
       try {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -264,139 +412,192 @@ export default function VoiceVentModal({
       mediaStreamRef.current = null;
     }
 
-    setIsRecording(false);
     return (liveTranscriptRef.current || liveTranscript).trim();
   };
 
   /**
-   * Helper to convert an Audio Blob to Base64 data URL
+   * Action: User taps Stop (إيقاف) -> stop recording, build blob, run Gemini transcription & tone analysis, transition to Review Step
    */
-  const convertBlobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') resolve(reader.result);
-        else reject(new Error('Failed to read audio blob as Base64'));
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+  const handleStopAndReview = async () => {
+    const rawSpoken = stopRecordingInternal();
+
+    // Small delay to allow MediaRecorder to emit final audio slice
+    await new Promise((r) => setTimeout(r, 140));
+
+    let audioBlob: Blob;
+    if (audioChunksRef.current.length > 0) {
+      audioBlob = new Blob(audioChunksRef.current, {
+        type: resolvedMimeTypeRef.current || 'audio/webm'
+      });
+    } else {
+      audioBlob = new Blob([], { type: resolvedMimeTypeRef.current || 'audio/webm' });
+    }
+
+    setCurrentAudioBlob(audioBlob);
+    const newBlobUrl = URL.createObjectURL(audioBlob);
+    setAudioBlobUrl(newBlobUrl);
+
+    // Initial editable transcript
+    let currentBestText = rawSpoken;
+    setEditableTranscript(currentBestText);
+    setModalStep('review');
+
+    // Run Gemini Multimodal Audio Transcription & Vocal Tone / Emotion Analysis
+    if (audioBlob.size > 0) {
+      setIsTranscribing(true);
+      try {
+        const base64Audio = await convertBlobToBase64(audioBlob);
+        const mime = inferAudioMimeType(audioBlob) || resolvedMimeTypeRef.current || 'audio/webm';
+
+        // 1. Direct audio-to-text transcription via Gemini
+        const aiTranscription = await transcribeAudioWithGemini(
+          base64Audio,
+          mime,
+          undefined,
+          appLanguage
+        );
+
+        if (
+          aiTranscription &&
+          !aiTranscription.includes('__AI_CHECK_API_KEY__') &&
+          !aiTranscription.includes('RESOURCE_EXHAUSTED') &&
+          !aiTranscription.includes('وضع المعالجة الصوتية')
+        ) {
+          currentBestText = aiTranscription.trim();
+          setEditableTranscript(currentBestText);
+        }
+
+        // 2. Multimodal vocal tone and speech emotion analysis
+        try {
+          const res = await fetch('/api/gemini/transcribe-audio', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-app-language': appLanguage
+            },
+            body: JSON.stringify({
+              audioData: base64Audio,
+              mimeType: mime,
+              fileName: 'voice-vent.webm',
+              appLanguage: appLanguage
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.speechEmotion) {
+              setVocalTone(data.speechEmotion);
+            }
+          }
+        } catch (toneErr) {
+          console.warn('[VoiceVent] Tone analysis endpoint fallback:', toneErr);
+        }
+      } catch (aiErr) {
+        console.warn('[VoiceVent] AI transcription error:', aiErr);
+      } finally {
+        setIsTranscribing(false);
+      }
+    }
   };
 
   /**
-   * Pipeline to save audio and process Gemini transcription
+   * Action: User taps Save (حفظ) in Review step -> Persists blob into IndexedDB and attachments
    */
-  const processAndSaveAudio = async (audioBlob: Blob, initialText: string) => {
-    const mimeType = inferAudioMimeType(audioBlob) || resolvedMimeTypeRef.current || 'audio/webm';
-    resolvedMimeTypeRef.current = mimeType;
+  const handleSaveToAttachments = async () => {
+    if (!currentAudioBlob) return;
+
+    const mime = inferAudioMimeType(currentAudioBlob) || resolvedMimeTypeRef.current || 'audio/webm';
     const attachmentId = `att-vent-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const recId = `rec-vent-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
 
-    // 1. Save directly into IndexedDB for persistent binary durability
-    await saveAttachmentBlob(attachmentId, audioBlob, mimeType);
-    const blobUrl = URL.createObjectURL(audioBlob);
+    // 1. Durably save blob into IndexedDB
+    await saveAttachmentBlob(attachmentId, currentAudioBlob, mime);
 
-    let resolvedTranscript = initialText;
-
-    // 2. Automatically dispatch audio to Gemini Multimodal Audio Transcription pipeline
-    setIsTranscribing(true);
-    try {
-      const base64Audio = await convertBlobToBase64(audioBlob);
-      const aiTranscription = await transcribeAudioWithGemini(
-        base64Audio,
-        mimeType,
-        undefined,
-        appLanguage
-      );
-
-      if (
-        aiTranscription &&
-        !aiTranscription.includes('__AI_CHECK_API_KEY__') &&
-        !aiTranscription.includes('RESOURCE_EXHAUSTED') &&
-        !aiTranscription.includes('وضع المعالجة الصوتية')
-      ) {
-        resolvedTranscript = aiTranscription.trim();
-      }
-    } catch (aiErr) {
-      console.warn('[VoiceVent] Gemini transcription fallback:', aiErr);
-    } finally {
-      setIsTranscribing(false);
-    }
-
-    const finalText = resolvedTranscript || initialText || (isAr ? 'تسجيل فضفضة صوتية' : 'Voice vent recording');
-    setFinalTranscript(finalText);
-
-    const displayName = ('name' in audioBlob && typeof (audioBlob as any).name === 'string' && (audioBlob as any).name)
-      ? (audioBlob as any).name
+    const displayName = ('name' in currentAudioBlob && typeof (currentAudioBlob as any).name === 'string' && (currentAudioBlob as any).name)
+      ? (currentAudioBlob as any).name
       : `${t.voiceQuickVent || (isAr ? 'فضفضة صوتية' : 'Voice Vent')} (${new Date().toLocaleTimeString(langInfo.bcp47 || 'ar-SA', { hour: '2-digit', minute: '2-digit' })})`;
+
+    const finalText = editableTranscript.trim() || (isAr ? 'تسجيل فضفضة صوتية' : 'Voice vent recording');
 
     const newRec: AudioRecording = {
       id: recId,
       name: displayName,
-      dataUrl: blobUrl,
-      blobUrl,
+      dataUrl: audioBlobUrl,
+      blobUrl: audioBlobUrl,
       duration: Math.max(recordingSeconds, 1),
-      mimeType,
+      mimeType: mime,
       transcription: finalText,
-      attachmentId
+      attachmentId,
+      speechEmotion: vocalTone || {
+        primaryEmotion: isAr ? 'طبيعي' : 'normal',
+        intensity: isAr ? 'متوسطة' : 'medium',
+        intensityScore: 70,
+        vocalToneDetails: isAr ? 'نبرة صوت هادئة ومستقرة' : 'Calm and steady vocal tone',
+        recommendedColor: 'teal'
+      }
     };
 
-    setRecordedAudioRec(newRec);
+    setSavedRecording(newRec);
     onSaveAudioRecording(newRec);
-
-    // Auto-insert cleanly into diary content
-    if (finalText && finalText.trim() && !isAppended) {
-      onAppendTextToContent(finalText.trim());
-      setIsAppended(true);
-    }
-  };
-
-  const handleStopAndSave = async () => {
-    const rawSpeechText = stopRecordingInternal();
-    setIsRecording(false);
-
-    // Give MediaRecorder ~120ms to flush the last audio chunk
-    await new Promise((r) => setTimeout(r, 120));
-
-    const hasChunks = audioChunksRef.current.length > 0;
-    if (hasChunks) {
-      const audioBlob = new Blob(audioChunksRef.current, {
-        type: resolvedMimeTypeRef.current || 'audio/webm'
-      });
-      await processAndSaveAudio(audioBlob, rawSpeechText);
-    } else {
-      setFinalTranscript(rawSpeechText);
-      if (rawSpeechText) {
-        onAppendTextToContent(rawSpeechText);
-        setIsAppended(true);
-      }
-    }
-  };
-
-  const handleAppendToContent = () => {
-    const textToAppend = finalTranscript || liveTranscript;
-    if (!textToAppend.trim()) return;
-
-    onAppendTextToContent(textToAppend.trim());
-    setIsAppended(true);
+    setModalStep('saved');
   };
 
   /**
-   * Fallback: pick existing audio file from device when mic permission is unavailable
+   * Action: Choice 1 -> Insert transcript into Diary editor
+   */
+  const handleInsertIntoDiary = () => {
+    const textToInsert = editableTranscript.trim();
+    if (textToInsert && !isAppendedToDiary) {
+      onAppendTextToContent(textToInsert);
+      setIsAppendedToDiary(true);
+    }
+    // Close modal cleanly after user choice
+    setTimeout(() => {
+      onClose();
+    }, 400);
+  };
+
+  /**
+   * Action: Choice 2 -> Keep as audio attachment only and close
+   */
+  const handleKeepAsAudioOnly = () => {
+    onClose();
+  };
+
+  /**
+   * Fallback file picker for restricted environments
    */
   const handleAudioFileFallbackChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
+      stopRecordingInternal();
       const detectedMime = inferAudioMimeType(file);
       resolvedMimeTypeRef.current = detectedMime;
-      setMicErrorDetails(null);
+      setCurrentAudioBlob(file);
+      cleanupBlobUrl();
+      const newBlobUrl = URL.createObjectURL(file);
+      setAudioBlobUrl(newBlobUrl);
       setRecordingSeconds(0);
-      await processAndSaveAudio(file, '');
+      setMicErrorDetails(null);
+      setModalStep('review');
+      setIsTranscribing(true);
+
+      const base64Audio = await convertBlobToBase64(file);
+      const aiTranscription = await transcribeAudioWithGemini(
+        base64Audio,
+        detectedMime,
+        undefined,
+        appLanguage
+      );
+      if (aiTranscription && !aiTranscription.includes('__AI_CHECK_API_KEY__')) {
+        setEditableTranscript(aiTranscription.trim());
+      }
     } catch (fallbackErr) {
-      console.error('[VoiceVent] Audio file fallback failed:', fallbackErr);
+      console.error('[VoiceVent] File fallback failed:', fallbackErr);
     } finally {
+      setIsTranscribing(false);
       e.target.value = '';
     }
   };
@@ -416,19 +617,29 @@ export default function VoiceVentModal({
               className={`p-2.5 rounded-2xl ${
                 isRecording
                   ? 'bg-red-500 text-white animate-pulse'
+                  : modalStep === 'saved'
+                  ? 'bg-emerald-100 text-emerald-700'
                   : 'bg-red-100 text-red-700'
               }`}
             >
-              <Mic className="w-5 h-5" />
+              {modalStep === 'saved' ? <CheckCircle2 className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </div>
             <div>
               <h3 className="font-black text-sm sm:text-base text-[#3A3A3A] flex items-center gap-1.5">
-                <span>{t.voiceQuickVent || (isAr ? 'فضفضة صوتية سريعة' : 'Quick Voice Vent')}</span>
+                <span>
+                  {modalStep === 'recording'
+                    ? (t.voiceQuickVent || (isAr ? 'فضفضة صوتية غير محدودة' : 'Continuous Voice Vent'))
+                    : modalStep === 'review'
+                    ? (t.voiceVentReviewTitle || (isAr ? 'مراجعة وتأكيد الفضفضة الصوتية' : 'Review & Confirm Voice Vent'))
+                    : (t.voiceVentSavedSuccess || (isAr ? 'تم حفظ المرفق الصوتي' : 'Saved Audio Attachment'))}
+                </span>
               </h3>
               <p className="text-[11px] text-gray-500 font-medium">
-                {isAr
-                  ? 'سجل صوتك بحرية مع الحفظ والتفريغ الذكي التلقائي'
-                  : 'Record freely with automatic audio save and smart transcription'}
+                {modalStep === 'recording'
+                  ? (isAr ? 'سجل بحرية دون توقف تلقائي... يتوقف فقط عند نقر إيقاف' : 'Speak continuously without timeouts; stops only on tapping stop')
+                  : modalStep === 'review'
+                  ? (isAr ? 'استمع للتسجيل، عدل النص، واحفظ المرفق بأمان' : 'Listen, edit transcript, and save attachment securely')
+                  : (isAr ? 'اختر إضافة النص إلى اليوميات أو الإبقاء عليه كمرفق صوتي' : 'Choose to add to diary or keep as audio attachment only')}
               </p>
             </div>
           </div>
@@ -443,76 +654,160 @@ export default function VoiceVentModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 text-xs">
-          {/* Status & Timer Card */}
-          <div className="p-4 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {isRecording ? (
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-                </span>
-              ) : isTranscribing ? (
-                <Loader2 className="w-4 h-4 text-[#8B9D83] animate-spin" />
-              ) : (
-                <span className="w-3 h-3 rounded-full bg-gray-400"></span>
+        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+          {/* STEP 1: RECORDING VIEW */}
+          {modalStep === 'recording' && (
+            <>
+              {/* Status & Timer Banner */}
+              <div className="p-4 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {isRecording ? (
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                    </span>
+                  ) : (
+                    <span className="w-3 h-3 rounded-full bg-gray-400"></span>
+                  )}
+                  <span className="font-extrabold text-xs text-[#3A3A3A]">
+                    {isRecording
+                      ? (isAr ? 'جاري التسجيل الصوتي المباشر دون قيود...' : 'Continuous recording in progress...')
+                      : (isAr ? 'جاهز للتسجيل' : 'Ready to record')}
+                  </span>
+                </div>
+
+                <div className="font-mono font-black text-xs px-3 py-1 bg-white border border-[#E2DCC8] rounded-full text-red-700 shadow-3xs">
+                  ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
+                </div>
+              </div>
+
+              {/* Live Speech Recognition Transcript Box */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-xs text-[#5A5A40] flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
+                    <span>{t.liveTranscription || (isAr ? 'التفريغ والنص الحي المباشر:' : 'Live Transcript:')}</span>
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-bold">
+                    {isAr ? 'تحديث تلقائي مستمر' : 'Continuous live updates'}
+                  </span>
+                </div>
+
+                <div className="p-4 bg-white border border-[#E2DCC8] rounded-2xl min-h-[140px] max-h-56 overflow-y-auto shadow-inner text-xs leading-relaxed text-[#3A3A3A] font-medium whitespace-pre-wrap select-text">
+                  {liveTranscript ? (
+                    <p className="leading-loose text-xs sm:text-sm text-[#2B3E50]">
+                      {liveTranscript}
+                    </p>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center py-6 text-center text-gray-400 space-y-1.5">
+                      <Mic className="w-6 h-6 text-red-300 animate-pulse" />
+                      <p className="text-xs font-semibold">
+                        {isAr
+                          ? 'تحدث بحرية... خذ وقتك وتنفس براحة، فالتسجيل مستمر دون انقطاع.'
+                          : 'Speak freely... Take pauses and breathe comfortably; recording continues uninterrupted.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* STEP 2: REVIEW & SAVE STEP */}
+          {modalStep === 'review' && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Audio Playback Player */}
+              {audioBlobUrl && (
+                <div className="p-3.5 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#3A3A3A]">
+                    <span className="flex items-center gap-1.5">
+                      <Volume2 className="w-4 h-4 text-emerald-600" />
+                      <span>{isAr ? 'معاينة التسجيل الصوتي' : 'Audio Playback'}</span>
+                    </span>
+                    <span className="font-mono text-[11px] text-gray-500">
+                      {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <audio controls className="w-full h-10 rounded-lg outline-none" src={audioBlobUrl} />
+                </div>
               )}
-              <span className="font-extrabold text-xs text-[#3A3A3A]">
-                {isRecording
-                  ? (isAr ? 'جاري التسجيل الصوتي المباشر...' : 'Recording voice vent...')
-                  : isTranscribing
-                  ? (isAr ? 'جاري التفريغ الذكي بواسطة Gemini...' : 'Transcribing audio with Gemini...')
-                  : finalTranscript
-                  ? (isAr ? 'اكتمل التسجيل والتفريغ' : 'Recording completed')
-                  : (isAr ? 'جاهز للتسجيل' : 'Ready to record')}
-              </span>
-            </div>
 
-            <div className="font-mono font-black text-xs px-3 py-1 bg-white border border-[#E2DCC8] rounded-full text-red-700 shadow-3xs">
-              ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
-            </div>
-          </div>
+              {/* Editable Transcript Editor */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-xs text-[#5A5A40] flex items-center gap-1.5">
+                    <Edit3 className="w-3.5 h-3.5 text-[#8B9D83]" />
+                    <span>{isAr ? 'النص المفرغ (يمكنك تعديله قبل الحفظ):' : 'Transcript (editable):'}</span>
+                  </span>
+                  {isTranscribing && (
+                    <span className="text-[10px] text-[#8B9D83] font-bold flex items-center gap-1 animate-pulse">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>{isAr ? 'جاري تحسين النص عبر Gemini...' : 'Refining via Gemini...'}</span>
+                    </span>
+                  )}
+                </div>
 
-          {/* Live / Final Transcript Box */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="font-extrabold text-xs text-[#5A5A40] flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
-                <span>{t.liveTranscription || (isAr ? 'التفريغ والنص المستخرج:' : 'Transcription:')}</span>
-              </span>
-              {isTranscribing && (
-                <span className="text-[10px] text-[#8B9D83] font-bold animate-pulse">
-                  ✨ Gemini AI
-                </span>
+                <textarea
+                  value={editableTranscript}
+                  onChange={(e) => setEditableTranscript(e.target.value)}
+                  placeholder={isAr ? 'اكتب أو عدل التفريغ النصي هنا...' : 'Edit transcript here...'}
+                  rows={4}
+                  className="w-full p-3.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs sm:text-sm leading-relaxed text-[#2B3E50] focus:ring-2 focus:ring-[#8B9D83] focus:border-transparent outline-none resize-none shadow-inner"
+                />
+              </div>
+
+              {/* Vocal Tone & Emotion Analysis Card */}
+              {vocalTone && (
+                <div className="p-3.5 bg-gradient-to-r from-teal-50/80 to-emerald-50/80 border border-teal-200 rounded-2xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-xs text-teal-900 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                      <span>{t.voiceVentToneAnalysisTitle || (isAr ? 'تحليل نبرة الصوت والمشاعر (Gemini AI):' : 'Vocal Tone Analysis (Gemini AI):')}</span>
+                    </span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
+                      {vocalTone.primaryEmotion || (isAr ? 'طبيعي' : 'Normal')} ({vocalTone.intensityScore || 70}%)
+                    </span>
+                  </div>
+                  {vocalTone.vocalToneDetails && (
+                    <p className="text-[11px] text-teal-800 font-medium leading-relaxed">
+                      {vocalTone.vocalToneDetails}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
+          )}
 
-            <div className="p-4 bg-white border border-[#E2DCC8] rounded-2xl min-h-[140px] max-h-56 overflow-y-auto shadow-inner text-xs leading-relaxed text-[#3A3A3A] font-medium whitespace-pre-wrap select-text">
-              {liveTranscript || finalTranscript ? (
-                <p className="leading-loose text-xs sm:text-sm text-[#2B3E50]">
-                  {finalTranscript || liveTranscript}
+          {/* STEP 3: POST-SAVE CHOICE CONTROLS */}
+          {modalStep === 'saved' && (
+            <div className="py-4 space-y-4 animate-fadeIn text-center">
+              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-1">
+                <h4 className="font-black text-sm text-[#3A3A3A]">
+                  {t.voiceVentSavedSuccess || (isAr ? 'تم حفظ التسجيل والمرفق الصوتي بنجاح 🎉' : 'Audio recording saved successfully 🎉')}
+                </h4>
+                <p className="text-xs text-gray-600 max-w-sm mx-auto leading-relaxed">
+                  {t.voiceVentPostSaveNotice || (isAr
+                    ? 'تم حفظ التسجيل في المرفقات الصوتية بأمان. اختر كيف تود المتابعة:'
+                    : 'The recording has been safely saved in audio attachments. Choose how to proceed:')}
                 </p>
-              ) : isTranscribing ? (
-                <div className="h-full flex flex-col items-center justify-center py-6 text-center text-gray-500 space-y-2">
-                  <Loader2 className="w-6 h-6 text-[#8B9D83] animate-spin" />
-                  <p className="text-xs font-bold text-[#5A5A40]">
-                    {isAr ? 'جاري تحويل الصوت إلى نص بدقة عالية...' : 'Transcribing audio to text...'}
-                  </p>
-                </div>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center py-6 text-center text-gray-400 space-y-1.5">
-                  <Mic className="w-6 h-6 text-gray-300 animate-pulse" />
-                  <p className="text-xs font-semibold">
-                    {isAr
-                      ? 'تحدث بحرية... سيتم حفظ التسجيل الصوتي وتفريغه بدقة.'
-                      : 'Speak freely... Audio recording and transcription will be automatically saved.'}
-                  </p>
+              </div>
+
+              {editableTranscript && (
+                <div className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl text-start max-h-28 overflow-y-auto text-xs text-gray-700">
+                  <span className="font-bold block text-[10px] text-gray-500 mb-0.5">
+                    {isAr ? 'معاينة النص المحفوظ:' : 'Saved transcript preview:'}
+                  </span>
+                  <p className="line-clamp-3">{editableTranscript}</p>
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          {/* Specific Microphone Permission / Access Error Notification */}
+          {/* Microphone Access Error Notification */}
           {micErrorDetails && (
             <div className="p-3.5 bg-red-50 border border-red-200 text-red-800 rounded-2xl text-xs space-y-2">
               <div className="flex items-start gap-2">
@@ -553,7 +848,7 @@ export default function VoiceVentModal({
             </div>
           )}
 
-          {/* Hidden Fallback Audio File Input */}
+          {/* Hidden File Picker */}
           <input
             ref={fileFallbackInputRef}
             type="file"
@@ -562,9 +857,21 @@ export default function VoiceVentModal({
             className="hidden"
           />
 
-          {/* Action Buttons */}
-          <div className="pt-2 border-t border-[#E2DCC8]/70 flex flex-wrap gap-2.5 items-center justify-between">
-            {!isRecording && !finalTranscript && (
+          {/* Footer Action Buttons */}
+          <div className="pt-3 border-t border-[#E2DCC8]/70">
+            {/* Step 1: Recording Controls */}
+            {modalStep === 'recording' && isRecording && (
+              <button
+                type="button"
+                onClick={handleStopAndReview}
+                className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center space-x-2 space-x-reverse"
+              >
+                <Square className="w-4 h-4 fill-white" />
+                <span>{isAr ? 'إيقاف ومراجعة التسجيل' : 'Stop & Review Recording'}</span>
+              </button>
+            )}
+
+            {modalStep === 'recording' && !isRecording && (
               <div className="w-full flex gap-2">
                 <button
                   type="button"
@@ -586,44 +893,48 @@ export default function VoiceVentModal({
               </div>
             )}
 
-            {isRecording && (
-              <button
-                type="button"
-                onClick={handleStopAndSave}
-                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center space-x-2 space-x-reverse animate-bounce"
-              >
-                <Square className="w-4 h-4 fill-white" />
-                <span>{t.saveRecording || (isAr ? 'إيقاف وحفظ التسجيل' : 'Stop & Save Recording')}</span>
-              </button>
-            )}
-
-            {!isRecording && finalTranscript && (
+            {/* Step 2: Review Controls -> Save or Re-record */}
+            {modalStep === 'review' && (
               <div className="w-full flex flex-col sm:flex-row gap-2.5">
                 <button
                   type="button"
                   onClick={startRecording}
-                  className="flex-1 py-2.5 px-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 py-3 px-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>{isAr ? 'تسجيل جديد' : 'Record Again'}</span>
+                  <span>{t.voiceVentDiscardBtn || (isAr ? 'تجاهل وإعادة التسجيل' : 'Discard & Re-record')}</span>
                 </button>
 
                 <button
                   type="button"
-                  disabled={isAppended || !finalTranscript.trim()}
-                  onClick={handleAppendToContent}
-                  className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5 ${
-                    isAppended
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-[#8B9D83] hover:bg-[#72856A] text-white'
-                  }`}
+                  onClick={handleSaveToAttachments}
+                  className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5"
                 >
-                  <span>{isAppended ? '✓' : '✍️'}</span>
-                  <span>
-                    {isAppended
-                      ? (isAr ? 'تمت الإضافة للنص' : 'Added to text')
-                      : (t.addTranscriptionToText || (isAr ? 'إضافة للنص' : 'Add to text'))}
-                  </span>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{t.voiceVentSaveAndAnalyzeBtn || (isAr ? 'حفظ المرفق الصوتي' : 'Save Audio Attachment')}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Step 3: Explicit Post-Save Choice Buttons */}
+            {modalStep === 'saved' && (
+              <div className="w-full flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleInsertIntoDiary}
+                  className="w-full py-3.5 px-4 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>{t.voiceVentAddToDiaryBtn || (isAr ? 'إضافة إلى اليوميات' : 'Add to Diary')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleKeepAsAudioOnly}
+                  className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Music className="w-4 h-4" />
+                  <span>{t.voiceVentKeepAudioOnlyBtn || (isAr ? 'حفظ كمرفق صوتي فقط / إغلاق' : 'Keep as Audio Only / Close')}</span>
                 </button>
               </div>
             )}

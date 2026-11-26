@@ -20,7 +20,7 @@ import {
 } from '../services/unifiedAIKnowledgeService';
 
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-2.5-flash';
+  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
   return modelName.trim().replace(/^models\//, '');
 }
 
@@ -114,11 +114,41 @@ async function generateWithGeminiREST(
         ]
       };
 
+      // Strip prefilled model turns from contents if any
+      if (Array.isArray(requestBody.contents)) {
+        while (requestBody.contents.length > 0) {
+          const last = requestBody.contents[requestBody.contents.length - 1];
+          if (last && (last.role === 'model' || last.role === 'assistant')) {
+            requestBody.contents.pop();
+          } else {
+            break;
+          }
+        }
+      }
+
       if (systemInstruction) {
         requestBody.systemInstruction = { parts: [{ text: systemInstruction }] };
       }
       if (isJson) {
         requestBody.generationConfig = { responseMimeType: 'application/json' };
+      }
+      if (requestBody.generationConfig) {
+        const cleanMod = cleanModelIdentifier(model).toLowerCase();
+        if (
+          cleanMod.includes('gemini-3.5') ||
+          cleanMod.includes('gemini-3.6') ||
+          cleanMod.includes('gemini-3.7') ||
+          cleanMod.includes('gemini-3.8') ||
+          cleanMod.includes('gemini-4') ||
+          cleanMod.includes('gemini-5') ||
+          cleanMod.includes('hydrogen')
+        ) {
+          delete requestBody.generationConfig.temperature;
+          delete requestBody.generationConfig.topP;
+          delete requestBody.generationConfig.top_p;
+          delete requestBody.generationConfig.topK;
+          delete requestBody.generationConfig.top_k;
+        }
       }
 
       const controller = new AbortController();

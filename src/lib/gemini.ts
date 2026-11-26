@@ -19,7 +19,7 @@ import {
   testGeminiApiKey
 } from './apiKeyManager';
 
-export const AI_MODEL = 'gemini-2.5-flash';
+export const AI_MODEL = 'gemini-3.5-flash-lite';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 
 /**
@@ -28,6 +28,51 @@ export const DEFAULT_GEMINI_MODEL = AI_MODEL;
 export function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return AI_MODEL;
   return modelName.trim().replace(/^models\//, '');
+}
+
+/**
+ * Normalizes generationConfig for Gemini 3.5+ and Gemini 4 models by stripping
+ * deprecated sampling parameters (temperature, top_p, topP, top_k, topK).
+ */
+export function sanitizeGenerationConfigForModel(model: string, config?: any): any {
+  if (!config || typeof config !== 'object') return config;
+  const cleanMod = cleanModelIdentifier(model).toLowerCase();
+  const isGemini35PlusOr4 =
+    cleanMod.includes('gemini-3.5') ||
+    cleanMod.includes('gemini-3.6') ||
+    cleanMod.includes('gemini-3.7') ||
+    cleanMod.includes('gemini-3.8') ||
+    cleanMod.includes('gemini-4') ||
+    cleanMod.includes('gemini-5') ||
+    cleanMod.includes('hydrogen');
+
+  if (isGemini35PlusOr4) {
+    const sanitized = { ...config };
+    delete sanitized.temperature;
+    delete sanitized.topP;
+    delete sanitized.top_p;
+    delete sanitized.topK;
+    delete sanitized.top_k;
+    return sanitized;
+  }
+  return config;
+}
+
+/**
+ * Ensures `contents` array never ends with a prefilled `model` turn (which causes 400 errors).
+ */
+export function sanitizeContentsForGemini(contents: any[]): any[] {
+  if (!Array.isArray(contents) || contents.length === 0) return contents;
+  const cleaned = [...contents];
+  while (cleaned.length > 0) {
+    const last = cleaned[cleaned.length - 1];
+    if (last && (last.role === 'model' || last.role === 'assistant')) {
+      cleaned.pop();
+    } else {
+      break;
+    }
+  }
+  return cleaned;
 }
 
 /**
@@ -395,12 +440,12 @@ export async function generateGeminiContentDirect(
         : [{ text: userPromptWithContext }];
 
       const requestBody: any = {
-        contents: [
+        contents: sanitizeContentsForGemini([
           {
             role: 'user',
             parts: partsArray,
           },
-        ],
+        ]),
         safetySettings: SAFETY_SETTINGS_BLOCK_NONE,
       };
 
@@ -411,7 +456,9 @@ export async function generateGeminiContentDirect(
       }
 
       if (isJson) {
-        requestBody.generationConfig = { responseMimeType: 'application/json' };
+        requestBody.generationConfig = sanitizeGenerationConfigForModel(model, { responseMimeType: 'application/json' });
+      } else if (requestBody.generationConfig) {
+        requestBody.generationConfig = sanitizeGenerationConfigForModel(model, requestBody.generationConfig);
       }
 
       try {

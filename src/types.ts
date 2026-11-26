@@ -202,7 +202,7 @@ export interface ApiKeyPoolEntry {
   lastUsedAt?: string;
   lastErrorMsg?: string;
   rateLimitResetAt?: number; // timestamp ms
-  verifiedModel?: string; // Subtle verified active model ID (e.g. gemini-2.5-flash)
+  verifiedModel?: string; // Subtle verified active model ID (e.g. gemini-3.5-flash-lite)
   createdAt: string;
 }
 
