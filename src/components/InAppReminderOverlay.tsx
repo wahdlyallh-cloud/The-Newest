@@ -22,10 +22,10 @@ export const InAppReminderOverlay: React.FC<InAppReminderOverlayProps> = ({
   onAnswer,
   appLanguage = 'ar'
 }) => {
-  if (!reminder) return null;
-
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  if (!reminder) return null;
 
   return (
     <div

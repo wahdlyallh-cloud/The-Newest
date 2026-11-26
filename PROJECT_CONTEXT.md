@@ -212,6 +212,13 @@ npm run build
   - Migrated all direct `html2canvas` calls across the codebase (`ExportDiaryModal.tsx`, `DailyProsConsModal.tsx`, `MonthlyMentalHealthPDFReportModal.tsx`, `ShareableGratitudeCardModal.tsx`, `SmartAdvisor.tsx`, and `App.tsx`) to `captureElementToCanvas`.
   - Upgraded `ExportDiaryModal.tsx` media detection to inspect all visual attachments (including image-typed files and drawings) and preload them into inline Base64 data URIs from `IndexedDB` prior to capture.
 
+---
+
+## 16. React Error #310 Resolution (Unconditional Hook Placement Before Early Returns)
+
+- **Root Cause & Fix:** Resolved `Minified React error #310` ("Rendered more hooks than during the previous render") by ensuring all React hooks, initializations, and event callbacks in initial launch components (`OnboardingTourModal.tsx`, `InAppReminderOverlay.tsx`, `App.tsx`, `StaticNotification.tsx`) are declared unconditionally at the top of each component body prior to any conditional branching or early `return` guards.
+
+
 
 
 

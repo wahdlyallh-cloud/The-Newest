@@ -58,6 +58,29 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
   const t = getTranslation(appLanguage);
   const isRtl = isRtlLanguage(appLanguage);
 
+  const handleNext = () => {
+    if (currentStep < 6) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      handleComplete();
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const handleComplete = () => {
+    try {
+      localStorage.setItem('hayat_onboarding_completed', 'true');
+    } catch (e) {
+      console.warn('Could not save onboarding state:', e);
+    }
+    onClose();
+  };
+
   // Keyboard navigation & accessibility
   useEffect(() => {
     if (!isOpen) return;
@@ -83,31 +106,6 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, currentStep, isRtl]);
-
-  if (!isOpen) return null;
-
-  const handleNext = () => {
-    if (currentStep < 6) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    }
-  };
-
-  const handleComplete = () => {
-    try {
-      localStorage.setItem('hayat_onboarding_completed', 'true');
-    } catch (e) {
-      console.warn('Could not save onboarding state:', e);
-    }
-    onClose();
-  };
 
   // Touch swipe handling
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -461,6 +459,8 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
   const currentSlide = slides[currentStep];
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === slides.length - 1;
+
+  if (!isOpen) return null;
 
   return (
     <div
