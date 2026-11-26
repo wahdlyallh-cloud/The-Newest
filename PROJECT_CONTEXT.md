@@ -216,7 +216,8 @@ npm run build
 
 ## 16. React Error #310 Resolution (Unconditional Hook Placement Before Early Returns)
 
-- **Root Cause & Fix:** Resolved `Minified React error #310` ("Rendered more hooks than during the previous render") by ensuring all React hooks, initializations, and event callbacks in initial launch components (`OnboardingTourModal.tsx`, `InAppReminderOverlay.tsx`, `App.tsx`, `StaticNotification.tsx`) are declared unconditionally at the top of each component body prior to any conditional branching or early `return` guards.
+- **Root Cause & Fix:** Resolved `Minified React error #310` ("Rendered more hooks than during the previous render") on startup. The primary culprit was in `src/components/LanguagesModal.tsx` where the custom hook `useRegisterBackStep` was declared *after* the early return guard (`if (!isOpen) return null;`). On fresh launch / cleared storage, `LanguagesModal` rendered with `isOpen=false` (calling 2 hooks), then flipped to `isOpen=true` when the initial language picker opened (calling 3 hooks including `useRegisterBackStep`), triggering error #310.
+- **Remediation:** Moved `useRegisterBackStep` along with language initialization unconditionally to the top of `LanguagesModal.tsx` prior to `if (!isOpen) return null;`, and audited all initial-mount components (`OnboardingTourModal.tsx`, `InAppReminderOverlay.tsx`, `StaticNotification.tsx`, `FloatingBall.tsx`, `App.tsx`) to guarantee strict hook call count invariants across all renders.
 
 
 

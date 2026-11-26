@@ -33,13 +33,13 @@ export default function LanguagesModal({
   const [activeTab, setActiveTab] = useState<'languages' | 'typography'>('languages');
   const [searchTerm, setSearchTerm] = useState('');
 
-  if (!isOpen) return null;
-
   const currentInfo = getLanguageInfo(appLanguage);
   const t = MULTI_TRANSLATIONS[appLanguage] || MULTI_TRANSLATIONS.ar;
   const isArabic = appLanguage === 'ar';
 
   useRegisterBackStep('modal_languages', 'modal', isOpen && !isFirstTime, onClose, t.languagesTitle);
+
+  if (!isOpen) return null;
 
   const filteredLanguages = SUPPORTED_LANGUAGES.filter((lang) =>
     lang.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
