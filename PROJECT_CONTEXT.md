@@ -15,6 +15,7 @@ This document summarizes the core architecture, AI routing model, Android APK We
   - Prevents localStorage quota exhaustion (5MB limit) by storing blobs in IndexedDB and maintaining metadata in `localStorage`.
 - **`src/lib/clipboard.ts` (`copyTextSafe`)**: Bulletproof clipboard copy utility tailored for Android WebView, iOS WebKit, and desktop browsers (modern Clipboard API with fallback to temporary `textarea` + `document.execCommand('copy')`).
 - **`src/components/VoiceVentModal.tsx`**: Quick Voice Venting ("فضفضة صوتية سريعة") with safe MediaRecorder MIME detection, resilient audio recording, optional live speech recognition, and automatic Gemini transcription on stop.
+- **`src/components/OnboardingTourModal.tsx`**: Vibrant fast-paced interactive "اكتشف حياة AI" tour featuring 7 dedicated slides with animated gradients, gesture touch swiping, feature chips, and direct action triggers covering offline privacy, live voice venting, token saver mode, Phone ↔ Laptop email sync, long PNG/PDF export & WriteDiary import, and interactive floating reminders.
 - **`src/components/GratitudeImportModal.tsx`**: Selective Gratitude Wall Import modal supporting "اليوم" / "كل الأيام" filters, multi-select, and seamless appending to diary entries.
 - **`src/lib/languages.ts`**: 12-language localization dictionary (`ar`, `en`, `fr`, `de`, `es`, `it`, `tr`, `pt`, `ru`, `ja`, `zh`, `hi`).
 

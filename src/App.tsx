@@ -12143,6 +12143,18 @@ export default function App() {
           setShowOnboardingTour(false);
           setShowVoiceJournalModal(true);
         }}
+        onOpenVoiceVent={() => {
+          setShowOnboardingTour(false);
+          setShowVoiceVentModal(true);
+        }}
+        onOpenSyncModal={() => {
+          setShowOnboardingTour(false);
+          setIsAuthModalOpen(true);
+        }}
+        onOpenWriteDiaryImport={() => {
+          setShowOnboardingTour(false);
+          setShowWriteDiaryImporter(true);
+        }}
         appLanguage={settings?.appLanguage || 'ar'}
       />
 
