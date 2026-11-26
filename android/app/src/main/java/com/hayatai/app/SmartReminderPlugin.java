@@ -35,6 +35,7 @@ public class SmartReminderPlugin extends Plugin {
     public static final String KEY_REMINDERS = "active_reminders";
     public static final String KEY_RESPONSES = "pending_responses";
     public static boolean isAppForeground = false;
+    public static final String LOCKSCREEN_PREFS = PersistentNotificationHelper.PREFS_NAME;
 
     @Override
     public void handleOnResume() {
@@ -46,6 +47,27 @@ public class SmartReminderPlugin extends Plugin {
     public void handleOnPause() {
         super.handleOnPause();
         isAppForeground = false;
+    }
+
+    @PluginMethod
+    public void setLockScreenNotification(PluginCall call) {
+        try {
+            boolean enabled = call.getBoolean("enabled", false);
+            PersistentNotificationHelper.setEnabled(getContext(), enabled,
+                    call.getString("title", "حياة AI"),
+                    call.getString("body", "كتابة وفضفضة سريعة من شاشة القفل"),
+                    call.getString("writeLabel", "كتابة سريعة"),
+                    call.getString("voiceLabel", "فضفضة صوتية"));
+            JSObject ret = new JSObject(); ret.put("enabled", enabled); call.resolve(ret);
+        } catch (Exception error) { call.reject("Failed to update lock-screen notification", error); }
+    }
+
+    @PluginMethod
+    public void getPendingQuickAction(PluginCall call) {
+        JSObject ret = new JSObject();
+        String action = MainActivity.consumePendingQuickAction();
+        ret.put("action", action == null ? "" : action);
+        call.resolve(ret);
     }
 
     @PluginMethod

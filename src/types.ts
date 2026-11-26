@@ -223,6 +223,9 @@ export interface AppSettings {
   appLineHeight?: AppLineHeight; // App line height
   floatingBallEnabled: boolean;
   appPinCode?: string; // Screen Lock PIN
+  appPasswordHash?: string; // SHA-256 hash for alphanumeric app password
+  appLockMethod?: 'pin' | 'password';
+  appLockGracePeriodMs?: number;
   isAppLocked: boolean;
   biometricCredentialId?: string; // WebAuthn Passkey Credential ID
   isBiometricEnabled?: boolean; // Toggle for Biometrics (Fingerprint / Face ID)

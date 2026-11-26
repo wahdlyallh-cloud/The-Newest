@@ -28,6 +28,14 @@ export interface SmartReminderPluginInterface {
   consumePendingResponses(): Promise<{
     responses: Array<{ reminderId: string; answer: 'yes' | 'no' | 'dismissed'; answeredAt: number }>;
   }>;
+  setLockScreenNotification(options: {
+    enabled: boolean;
+    title?: string;
+    body?: string;
+    writeLabel?: string;
+    voiceLabel?: string;
+  }): Promise<{ enabled: boolean }>;
+  getPendingQuickAction(): Promise<{ action: '' | 'write' | 'voice' }>;
 }
 
 const SmartReminder = registerPlugin<SmartReminderPluginInterface>('SmartReminder', {
@@ -74,6 +82,12 @@ const SmartReminder = registerPlugin<SmartReminderPluginInterface>('SmartReminde
     },
     async consumePendingResponses() {
       return { responses: [] };
+    },
+    async setLockScreenNotification() {
+      return { enabled: false };
+    },
+    async getPendingQuickAction() {
+      return { action: '' as const };
     }
   }
 });

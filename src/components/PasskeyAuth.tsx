@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Fingerprint, KeyRound, ShieldCheck, AlertCircle, CheckCircle2, Lock, Smartphone } from 'lucide-react';
 import { AppLanguage, getTranslation } from '../lib/languages';
 import { registerBiometrics, isBiometricsSupported, isIframeOrWebView } from '../lib/biometrics';
+import { hashAppPassword } from '../lib/passwordSecurity';
 
 interface PasskeyAuthProps {
   appLanguage?: AppLanguage;
   biometricCredentialId?: string;
   isAppLockEnabled?: boolean;
   appPinCode?: string;
+  appPasswordHash?: string;
+  appLockMethod?: 'pin' | 'password';
   onUpdateSecuritySettings: (newSettings: {
     biometricCredentialId?: string;
     isBiometricEnabled?: boolean;
     isAppLockEnabled?: boolean;
     appPinCode?: string;
+    appPasswordHash?: string;
+    appLockMethod?: 'pin' | 'password';
   }) => void;
 }
 
@@ -21,11 +26,14 @@ export default function PasskeyAuth({
   biometricCredentialId,
   isAppLockEnabled = false,
   appPinCode = '1234',
+  appPasswordHash,
+  appLockMethod = 'pin',
   onUpdateSecuritySettings
 }: PasskeyAuthProps) {
   const t = getTranslation(appLanguage);
 
   const [pinCode, setPinCode] = useState<string>(appPinCode || '1234');
+  const [password, setPassword] = useState<string>('');
   const [isLockEnabled, setIsLockEnabled] = useState<boolean>(isAppLockEnabled);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
@@ -133,6 +141,13 @@ export default function PasskeyAuth({
     });
   };
 
+  const handlePasswordChange = async (value: string) => {
+    setPassword(value);
+    if (value.length >= 6) {
+      onUpdateSecuritySettings({ appLockMethod: 'password', appPasswordHash: await hashAppPassword(value), isAppLockEnabled: isLockEnabled });
+    }
+  };
+
   return (
     <div className="bg-[#FAF8F5] border border-[#E5E1D4] rounded-3xl p-5 space-y-5 shadow-xs" dir={appLanguage === 'ar' ? 'rtl' : 'ltr'}>
       {/* Header */}
@@ -213,6 +228,19 @@ export default function PasskeyAuth({
               : 'PIN code secures your entries upon app exit'}
           </span>
         </div>
+      </div>
+
+      {/* Biometric Passkey Hardware Registration Box */}
+      <div className="bg-white p-4 rounded-2xl border border-[#E5E1D4] space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-black text-[#2B3E50]">{t.passwordLockMode}</span>
+          <select value={appLockMethod} onChange={(e) => onUpdateSecuritySettings({ appLockMethod: e.target.value as 'pin' | 'password', isAppLockEnabled: isLockEnabled })} className="rounded-lg border border-[#E5E1D4] px-2 py-1 text-xs font-bold">
+            <option value="pin">{t.pinCode4Digits}</option>
+            <option value="password">{t.passwordLockLabel}</option>
+          </select>
+        </div>
+        {appLockMethod === 'password' && <input type="password" value={password} onChange={(e) => handlePasswordChange(e.target.value)} placeholder={t.passwordLockPlaceholder} className="w-full rounded-xl border border-[#E5E1D4] px-3 py-2 text-sm outline-none focus:border-[#8B9D83]" />}
+        {appLockMethod === 'password' && !appPasswordHash && <p className="text-[10px] font-bold text-amber-700">{t.passwordLockInvalid}</p>}
       </div>
 
       {/* Biometric Passkey Hardware Registration Box */}

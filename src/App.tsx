@@ -45,7 +45,7 @@ import WeeklyHabitsMoodChart from './components/WeeklyHabitsMoodChart';
 import SleepMoodCorrelationChart from './components/SleepMoodCorrelationChart';
 import SmartRemindersModal from './components/SmartRemindersModal';
 import InAppReminderOverlay, { InAppReminderData } from './components/InAppReminderOverlay';
-import SmartReminder, { syncAllRemindersNative } from './lib/smartReminderBridge';
+import SmartReminder, { syncAllRemindersNative, isNativeAndroid } from './lib/smartReminderBridge';
 import { AuthModal } from './components/AuthModal';
 import {
   saveAttachmentBlob,
@@ -1436,6 +1436,7 @@ export default function App() {
   const [editingDrawingIndex, setEditingDrawingIndex] = useState<number | null>(null);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
+  const [pendingNativeQuickAction, setPendingNativeQuickAction] = useState<'new_note' | 'voice' | 'notes' | null>(null);
   const [showGratitudeImportModal, setShowGratitudeImportModal] = useState<boolean>(false);
   const [globalCopyToast, setGlobalCopyToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -1937,6 +1938,16 @@ export default function App() {
 
   // --- Persistent Lock Screen Notification Widget Helper ---
   const triggerLockScreenNotification = useCallback(async () => {
+    if (isNativeAndroid) {
+      await SmartReminder.setLockScreenNotification({
+        enabled: true,
+        title: t.lockScreenNotificationTitle,
+        body: t.lockScreenPermanentDesc,
+        writeLabel: t.quickActionNewDiary,
+        voiceLabel: t.quickVoiceJournal
+      });
+      return;
+    }
     if (!('Notification' in window)) return;
 
     if (Notification.permission !== 'granted') {
@@ -1976,7 +1987,9 @@ export default function App() {
 
   useEffect(() => {
     if (settings.lockScreenWidgetEnabled !== false && settings.notificationsEnabled) {
-      triggerLockScreenNotification();
+      triggerLockScreenNotification().catch(() => {});
+    } else if (isNativeAndroid) {
+      SmartReminder.setLockScreenNotification({ enabled: false }).catch(() => {});
     }
   }, [settings.lockScreenWidgetEnabled, settings.notificationsEnabled, triggerLockScreenNotification]);
 
@@ -3311,6 +3324,24 @@ export default function App() {
       setActiveTab('diaries');
     }
   };
+
+  // Consume native lock-screen actions on launch/resume; PINLock executes them only after unlock.
+  useEffect(() => {
+    const consumeQuickAction = async () => {
+      try {
+        const result = await SmartReminder.getPendingQuickAction();
+        if (result.action === 'write' || result.action === 'voice') {
+          const action = result.action === 'write' ? 'new_note' : 'voice';
+          if (settings.isAppLocked) setPendingNativeQuickAction(action);
+          else handleQuickAction(action);
+        }
+      } catch {}
+    };
+    consumeQuickAction();
+    const onResume = () => consumeQuickAction();
+    window.addEventListener('resume', onResume);
+    return () => window.removeEventListener('resume', onResume);
+  }, [settings.isAppLocked]);
 
   // --- Initialize blank or default diary entry ---
   const startNewDiary = (initialType: JournalEntryType = 'diary') => {
@@ -5976,9 +6007,20 @@ export default function App() {
       <PINLock
         correctPin={settings.appPinCode || '1234'}
         biometricCredentialId={settings.biometricCredentialId}
+        appPasswordHash={settings.appPasswordHash}
+        appLockMethod={settings.appLockMethod || 'pin'}
         appLanguage={settings?.appLanguage || 'ar'}
-        onUnlocked={() => setSettings(prev => ({ ...prev, isAppLocked: false }))}
+        initialQuickAction={pendingNativeQuickAction}
+        onUnlocked={() => {
+          setSettings(prev => ({ ...prev, isAppLocked: false }));
+          if (pendingNativeQuickAction) {
+            const action = pendingNativeQuickAction;
+            setPendingNativeQuickAction(null);
+            setTimeout(() => handleQuickAction(action), 350);
+          }
+        }}
         onQuickAction={(actionType) => {
+          setPendingNativeQuickAction(null);
           setSettings(prev => ({ ...prev, isAppLocked: false }));
           setTimeout(() => {
             handleQuickAction(actionType);
@@ -11043,13 +11085,17 @@ export default function App() {
                       biometricCredentialId={settings.biometricCredentialId}
                       isAppLockEnabled={settings.isAppLocked}
                       appPinCode={settings.appPinCode}
+                      appPasswordHash={settings.appPasswordHash}
+                      appLockMethod={settings.appLockMethod}
                       onUpdateSecuritySettings={(newSec) => {
                         setSettings(prev => ({
                           ...prev,
                           ...(newSec.biometricCredentialId ? { biometricCredentialId: newSec.biometricCredentialId } : {}),
                           ...(newSec.isBiometricEnabled !== undefined ? { isBiometricEnabled: newSec.isBiometricEnabled } : {}),
                           ...(newSec.isAppLockEnabled !== undefined ? { isAppLocked: newSec.isAppLockEnabled } : {}),
-                          ...(newSec.appPinCode ? { appPinCode: newSec.appPinCode } : {})
+                          ...(newSec.appPinCode ? { appPinCode: newSec.appPinCode } : {}),
+                          ...(newSec.appPasswordHash ? { appPasswordHash: newSec.appPasswordHash } : {}),
+                          ...(newSec.appLockMethod ? { appLockMethod: newSec.appLockMethod } : {})
                         }));
                         if (newSec.biometricCredentialId) {
                           try {
@@ -11565,7 +11611,15 @@ export default function App() {
                       onClick={() => {
                         const newState = settings.lockScreenWidgetEnabled === false ? true : false;
                         setSettings(prev => ({ ...prev, lockScreenWidgetEnabled: newState }));
-                        if (newState) {
+                        if (isNativeAndroid) {
+                          SmartReminder.setLockScreenNotification({
+                            enabled: newState,
+                            title: t.lockScreenNotificationTitle,
+                            body: t.lockScreenPermanentDesc,
+                            writeLabel: t.quickActionNewDiary,
+                            voiceLabel: t.quickVoiceJournal
+                          }).then(() => showGlobalCopyToast(newState ? t.lockScreenAlertSuccess : t.notificationActiveNow, 'success')).catch(() => showGlobalCopyToast(t.biometricsUnavailable, 'error'));
+                        } else if (newState) {
                           triggerLockScreenNotification();
                         }
                       }}

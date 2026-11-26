@@ -26,6 +26,7 @@ public class ReminderAlarmReceiver extends BroadcastReceiver {
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             rescheduleAllOnBoot(context);
+            PersistentNotificationHelper.restoreIfEnabled(context);
             return;
         }
 

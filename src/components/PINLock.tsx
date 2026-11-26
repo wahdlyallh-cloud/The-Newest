@@ -4,6 +4,8 @@ import StaticNotification from './StaticNotification';
 import { verifyBiometrics } from '../lib/biometrics';
 import { AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
+import { authenticateNativeBiometric } from '../lib/biometricAuth';
+import { verifyAppPassword } from '../lib/passwordSecurity';
 
 interface PINLockProps {
   correctPin: string;
@@ -11,14 +13,18 @@ interface PINLockProps {
   appLanguage?: AppLanguage;
   onUnlocked: () => void;
   onQuickAction?: (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes') => void;
+  initialQuickAction?: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | null;
+  appPasswordHash?: string;
+  appLockMethod?: 'pin' | 'password';
 }
 
-export default function PINLock({ correctPin, biometricCredentialId, appLanguage = 'ar', onUnlocked, onQuickAction }: PINLockProps) {
+export default function PINLock({ correctPin, biometricCredentialId, appLanguage = 'ar', onUnlocked, onQuickAction, initialQuickAction = null, appPasswordHash, appLockMethod = 'pin' }: PINLockProps) {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
 
   const [viewMode, setViewMode] = useState<'lockscreen' | 'pinpad'>('lockscreen');
   const [pin, setPin] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
   const [isScreenOff, setIsScreenOff] = useState(false);
@@ -38,6 +44,10 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
 
   const [timeString, setTimeString] = useState('');
   const [dateString, setDateString] = useState('');
+
+  useEffect(() => {
+    if (initialQuickAction) setPendingAction(initialQuickAction);
+  }, [initialQuickAction]);
 
   // Update time live on the lock screen
   useEffect(() => {
@@ -87,6 +97,11 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
   const handleDelete = () => {
     setPin(prev => prev.slice(0, -1));
     setError(false);
+  };
+
+  const handlePasswordSubmit = async () => {
+    if (await verifyAppPassword(password, appPasswordHash)) executeUnlock(pendingAction);
+    else { setError(true); setPassword(''); }
   };
 
   // Camera stream Effect for Live Face ID scan
@@ -163,6 +178,11 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
     setBiometricType(type);
 
     if (type === 'fingerprint') {
+      const nativeResult = await authenticateNativeBiometric(appLanguage).catch(() => ({ authenticated: false, error: 'NATIVE_BIOMETRIC_FAILED' }));
+      if (nativeResult.authenticated) {
+        executeUnlock(targetAction);
+        return;
+      }
       // Trigger REAL WebAuthn / Capacitor Hardware Verification directly
       const res = await verifyBiometrics(savedCredId || undefined, appLanguage);
 
@@ -293,9 +313,14 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-3 py-1 rounded-full inline-block">💡 {t.defaultPinHint}</p>
           </div>
 
-          {/* Dots & Feedbacks */}
+          {/* Password or PIN feedback */}
           <div className="flex flex-col items-center space-y-3 my-auto">
-            <div className="flex space-x-3.5 space-x-reverse justify-center">
+            {appLockMethod === 'password' ? (
+              <div className="w-full max-w-xs space-y-3">
+                <input autoFocus type="password" value={password} onChange={(event) => { setPassword(event.target.value); setError(false); }} onKeyDown={(event) => { if (event.key === 'Enter') handlePasswordSubmit(); }} placeholder={t.passwordLockPlaceholder} className="w-full rounded-2xl border border-[#E2DCC8] bg-white px-4 py-3 text-center font-bold outline-none focus:border-[#8B9D83]" />
+                <button type="button" onClick={handlePasswordSubmit} className="w-full rounded-2xl bg-[#8B9D83] py-3 text-sm font-black text-white">{t.passwordLockEnable}</button>
+              </div>
+            ) : <div className="flex space-x-3.5 space-x-reverse justify-center">
               {[0, 1, 2, 3].map((index) => (
                 <div
                   key={index}
@@ -306,7 +331,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
                   }`}
                 />
               ))}
-            </div>
+            </div>}
 
             {error && (
               <div className="flex items-center space-x-2 space-x-reverse text-[#D4A373] text-xs font-bold animate-bounce">
@@ -324,7 +349,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
           </div>
 
           {/* Dialer Keypad */}
-          <div className="w-full max-w-xs mx-auto space-y-4">
+          {appLockMethod !== 'password' && <div className="w-full max-w-xs mx-auto space-y-4">
             <div className="grid grid-cols-3 gap-3.5 text-center">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <button
@@ -387,7 +412,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
                 {t.pinHint}
               </span>
             </div>
-          </div>
+          </div>}
         </div>
       )}
 

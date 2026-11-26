@@ -245,3 +245,10 @@ npm run build
 - Advisor attachments and recorded voice messages use `prepareGeminiMedia`: inline payloads below 4MB, Gemini File API for larger media with live progress, and precision-tier generation for media turns.
 - `LiveVoiceChatModal.tsx` shares full conversation history, supports browser speech recognition and MediaRecorder transcription, Arabic speech synthesis, instant interruption with a spoken-point note, optional RMS barge-in, and Android-back cleanup.
 - Text turns use the selected tier (auto maps to fast); multimodal and audio transcription turns explicitly use precision.
+
+## 20. Native Lock Screen Quick Access & App Security (2026-11-27)
+- `PersistentNotificationHelper.java` maintains the enabled state and localized labels for a public, ongoing Android lock-screen notification with write and voice actions; it restores after app resume and boot.
+- `BiometricAuthPlugin.java` exposes AndroidX `BiometricPrompt` for strong/weak fingerprint and face authentication, while `src/lib/biometricAuth.ts` keeps the Capacitor bridge typed.
+- `SmartReminderPlugin.java` exposes `setLockScreenNotification()` and `getPendingQuickAction()`; `MainActivity.java` captures and clears action intents safely.
+- App lock supports the legacy PIN path plus locally hashed alphanumeric passwords through `passwordSecurity.ts`; native biometrics remain an optional fallback and all React hooks stay before early returns.
+- Quality gates passed on 2026-11-27: TypeScript, strict 12-locale i18n audit, localization validator, and production build. Gradle was intentionally not run locally.

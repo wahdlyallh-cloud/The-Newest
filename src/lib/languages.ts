@@ -47,6 +47,15 @@ export function getBcp47Tag(code?: AppLanguage | string | null): string {
 export type TranslationKey = string;
 
 export const AR_DICT: Record<string, any> = {
+  passwordLockLabel: "كلمة مرور القفل",
+  passwordLockMode: "قفل بكلمة مرور",
+  passwordLockPlaceholder: "أدخل كلمة مرور من حروف وأرقام",
+  passwordLockEnable: "تفعيل قفل كلمة المرور",
+  passwordLockInvalid: "أدخل كلمة مرور صحيحة",
+  nativeBiometricTitle: "فتح حياة AI",
+  nativeBiometricSubtitle: "استخدم بصمة الإصبع أو الوجه",
+  quickActionWriteLabel: "كتابة سريعة",
+  quickActionVoiceLabel: "فضفضة صوتية",
   includeAttachedImages: "تضمين الصور المرفقة",
   includeTasks: "تضمين قائمة المهام",
   tasksCompletedCount: "تم إنجاز {completed} من {total}",
@@ -2979,6 +2988,15 @@ export const AR_DICT: Record<string, any> = {
 };
 
 export const EN_DICT: Record<string, any> = {
+  passwordLockLabel: "Lock password",
+  passwordLockMode: "Password lock",
+  passwordLockPlaceholder: "Enter an alphanumeric password",
+  passwordLockEnable: "Enable password lock",
+  passwordLockInvalid: "Enter a valid password",
+  nativeBiometricTitle: "Unlock Hayat AI",
+  nativeBiometricSubtitle: "Use fingerprint or face unlock",
+  quickActionWriteLabel: "Quick writing",
+  quickActionVoiceLabel: "Voice vent",
   includeAttachedImages: "Include Attached Images",
   includeTasks: "Include Tasks / To-Do List",
   tasksCompletedCount: "{completed} of {total} completed",
@@ -5551,6 +5569,15 @@ export const EN_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI Advisor:",};
 
 export const FR_DICT: Record<string, any> = {
+  passwordLockLabel: "Mot de passe du verrouillage",
+  passwordLockMode: "Verrouillage par mot de passe",
+  passwordLockPlaceholder: "Saisissez un mot de passe alphanumérique",
+  passwordLockEnable: "Activer le verrouillage par mot de passe",
+  passwordLockInvalid: "Saisissez un mot de passe valide",
+  nativeBiometricTitle: "Ouvrir Hayat AI",
+  nativeBiometricSubtitle: "Utilisez l’empreinte ou le visage",
+  quickActionWriteLabel: "Écriture rapide",
+  quickActionVoiceLabel: "Confession vocale",
   includeAttachedImages: "Inclure les images jointes",
   includeTasks: "Inclure la liste des tâches",
   tasksCompletedCount: "{completed} sur {total} terminées",
@@ -8123,6 +8150,15 @@ export const FR_DICT: Record<string, any> = {
   chatAdvisorLabel: "Conseiller Hayat AI :",};
 
 export const DE_DICT: Record<string, any> = {
+  passwordLockLabel: "Sperrpasswort",
+  passwordLockMode: "Passwortsperre",
+  passwordLockPlaceholder: "Alphanumerisches Passwort eingeben",
+  passwordLockEnable: "Passwortsperre aktivieren",
+  passwordLockInvalid: "Gültiges Passwort eingeben",
+  nativeBiometricTitle: "Hayat AI entsperren",
+  nativeBiometricSubtitle: "Fingerabdruck oder Gesicht verwenden",
+  quickActionWriteLabel: "Schnell schreiben",
+  quickActionVoiceLabel: "Sprach-Notiz",
   includeAttachedImages: "Angehängte Bilder einfügen",
   includeTasks: "Aufgabenliste einfügen",
   tasksCompletedCount: "{completed} von {total} erledigt",
@@ -10695,6 +10731,15 @@ export const DE_DICT: Record<string, any> = {
 };
 
 export const ES_DICT: Record<string, any> = {
+  passwordLockLabel: "Contraseña de bloqueo",
+  passwordLockMode: "Bloqueo con contraseña",
+  passwordLockPlaceholder: "Introduce una contraseña alfanumérica",
+  passwordLockEnable: "Activar bloqueo con contraseña",
+  passwordLockInvalid: "Introduce una contraseña válida",
+  nativeBiometricTitle: "Desbloquear Hayat AI",
+  nativeBiometricSubtitle: "Usa huella o rostro",
+  quickActionWriteLabel: "Escritura rápida",
+  quickActionVoiceLabel: "Desahogo de voz",
   includeAttachedImages: "Incluir imágenes adjuntas",
   includeTasks: "Incluir lista de tareas",
   tasksCompletedCount: "{completed} de {total} completadas",
@@ -13267,6 +13312,15 @@ export const ES_DICT: Record<string, any> = {
   chatAdvisorLabel: "Asesor Hayat AI:",};
 
 export const IT_DICT: Record<string, any> = {
+  passwordLockLabel: "Password di blocco",
+  passwordLockMode: "Blocco con password",
+  passwordLockPlaceholder: "Inserisci una password alfanumerica",
+  passwordLockEnable: "Attiva blocco con password",
+  passwordLockInvalid: "Inserisci una password valida",
+  nativeBiometricTitle: "Sblocca Hayat AI",
+  nativeBiometricSubtitle: "Usa impronta o volto",
+  quickActionWriteLabel: "Scrittura rapida",
+  quickActionVoiceLabel: "Sfogo vocale",
   includeAttachedImages: "Includi immagini allegate",
   includeTasks: "Includi lista delle attività",
   tasksCompletedCount: "{completed} su {total} completate",
@@ -15839,6 +15893,15 @@ export const IT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consulente Hayat AI:",};
 
 export const TR_DICT: Record<string, any> = {
+  passwordLockLabel: "Kilit parolası",
+  passwordLockMode: "Parola şifreli kilit",
+  passwordLockPlaceholder: "Alfanümerik parola girin",
+  passwordLockEnable: "Parola kilidini etkinleştir",
+  passwordLockInvalid: "Geçerli parola girin",
+  nativeBiometricTitle: "Hayat AI kilidini aç",
+  nativeBiometricSubtitle: "Parmak izi veya yüz kullan",
+  quickActionWriteLabel: "Hızlı yazma",
+  quickActionVoiceLabel: "Sesli iç dökme",
   includeAttachedImages: "Ekli Resimleri Dahil Et",
   includeTasks: "Görev Listesini Dahil Et",
   tasksCompletedCount: "{total} görevden {completed} tanesi tamamlandı",
@@ -18411,6 +18474,15 @@ export const TR_DICT: Record<string, any> = {
 };
 
 export const PT_DICT: Record<string, any> = {
+  passwordLockLabel: "Senha de bloqueio",
+  passwordLockMode: "Bloqueio por senha",
+  passwordLockPlaceholder: "Digite uma senha alfanumérica",
+  passwordLockEnable: "Ativar bloqueio por senha",
+  passwordLockInvalid: "Digite uma senha válida",
+  nativeBiometricTitle: "Desbloquear Hayat AI",
+  nativeBiometricSubtitle: "Use impressão digital ou rosto",
+  quickActionWriteLabel: "Escrita rápida",
+  quickActionVoiceLabel: "Desabafo por voz",
   includeAttachedImages: "Incluir imagens anexadas",
   includeTasks: "Incluir lista de tarefas",
   tasksCompletedCount: "{completed} de {total} concluídas",
@@ -20983,6 +21055,15 @@ export const PT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consultor Hayat AI:",};
 
 export const RU_DICT: Record<string, any> = {
+  passwordLockLabel: "Пароль блокировки",
+  passwordLockMode: "Блокировка паролем",
+  passwordLockPlaceholder: "Введите буквенно-цифровой пароль",
+  passwordLockEnable: "Включить блокировку паролем",
+  passwordLockInvalid: "Введите действительный пароль",
+  nativeBiometricTitle: "Разблокировать Hayat AI",
+  nativeBiometricSubtitle: "Используйте отпечаток или лицо",
+  quickActionWriteLabel: "Быстрая запись",
+  quickActionVoiceLabel: "Голосовая заметка",
   includeAttachedImages: "Включить прикрепленные изображения",
   includeTasks: "Включить список задач",
   tasksCompletedCount: "{completed} из {total} выполнено",
@@ -23555,6 +23636,15 @@ export const RU_DICT: Record<string, any> = {
   chatAdvisorLabel: "Консультант Hayat AI:",};
 
 export const JA_DICT: Record<string, any> = {
+  passwordLockLabel: "ロックパスワード",
+  passwordLockMode: "パスワードロック",
+  passwordLockPlaceholder: "英数字のパスワードを入力",
+  passwordLockEnable: "パスワードロックを有効化",
+  passwordLockInvalid: "有効なパスワードを入力",
+  nativeBiometricTitle: "Hayat AIのロック解除",
+  nativeBiometricSubtitle: "指紋または顔認証を使用",
+  quickActionWriteLabel: "クイック入力",
+  quickActionVoiceLabel: "音声メモ",
   includeAttachedImages: "添付画像を含める",
   includeTasks: "タスクリストを含める",
   tasksCompletedCount: "{total}件中{completed}件完了",
@@ -26127,6 +26217,15 @@ export const JA_DICT: Record<string, any> = {
 };
 
 export const ZH_DICT: Record<string, any> = {
+  passwordLockLabel: "锁定密码",
+  passwordLockMode: "密码锁",
+  passwordLockPlaceholder: "输入字母数字密码",
+  passwordLockEnable: "启用密码锁",
+  passwordLockInvalid: "请输入有效密码",
+  nativeBiometricTitle: "解锁 Hayat AI",
+  nativeBiometricSubtitle: "使用指纹或面部解锁",
+  quickActionWriteLabel: "快速书写",
+  quickActionVoiceLabel: "语音倾诉",
   includeAttachedImages: "包含附件图片",
   includeTasks: "包含任务清单",
   tasksCompletedCount: "已完成 {completed} / {total}",
@@ -28699,6 +28798,15 @@ export const ZH_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI 顾问:",};
 
 export const HI_DICT: Record<string, any> = {
+  passwordLockLabel: "लॉक पासवर्ड",
+  passwordLockMode: "पासवर्ड लॉक",
+  passwordLockPlaceholder: "अक्षर और अंकों वाला पासवर्ड दर्ज करें",
+  passwordLockEnable: "पासवर्ड लॉक चालू करें",
+  passwordLockInvalid: "मान्य पासवर्ड दर्ज करें",
+  nativeBiometricTitle: "Hayat AI अनलॉक करें",
+  nativeBiometricSubtitle: "फिंगरप्रिंट या चेहरा उपयोग करें",
+  quickActionWriteLabel: "त्वरित लेखन",
+  quickActionVoiceLabel: "वॉइस वेंट",
   includeAttachedImages: "संलग्न चित्र शामिल करें",
   includeTasks: "कार्य सूची शामिल करें",
   tasksCompletedCount: "{total} में से {completed} पूर्ण",
