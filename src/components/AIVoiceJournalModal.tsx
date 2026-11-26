@@ -504,7 +504,7 @@ export default function AIVoiceJournalModal({
       const dayName = now.toLocaleDateString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47, { weekday: 'long' });
       const timeStr = now.toLocaleTimeString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47, { hour: '2-digit', minute: '2-digit' });
 
-      const analysisPrompt = `نسّق هذه المذكرة الصوتية بلغة المتحدث مع الحفاظ الكامل على معناها وكلماتها الحقيقية، ثم استخرج المشاعر والحالة المزاجية دون اختلاق أي معلومات:
+      const analysisPrompt = `أولاً، اعتبر النص المرفق تفريغاً حرفياً عالي الدقة: لا تحذف أو تلخص أو تعيد صياغة أي كلمة، وادعم العربية المصرية والعربية الفصحى والإنجليزية والكلام المختلط مع علامات ترقيم طبيعية. نسّق هذه المذكرة بلغة المتحدث مع الحفاظ الكامل على معناها وكلماتها الحقيقية، ثم استخرج المشاعر والحالة المزاجية دون اختلاق أي معلومات:
 
 """
 ${finalSpokenText}

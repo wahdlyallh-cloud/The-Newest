@@ -1,6 +1,7 @@
 /**
  * Pure TypeScript 16kHz Mono PCM -> WAV Encoder & Audio Stream Chunker.
  * Zero microphone conflict on Android Capacitor: attaches to the already-running
+ * stream for verbatim Egyptian Arabic/MSA/English mixed-speech transcription.
  * MediaStream via AudioContext and ScriptProcessor/AudioWorklet.
  */
 

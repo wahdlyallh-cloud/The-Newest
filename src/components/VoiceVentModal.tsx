@@ -577,7 +577,7 @@ export default function VoiceVentModal({
         const base64Audio = await convertBlobToBase64(audioBlob);
         const mime = inferAudioMimeType(audioBlob) || resolvedMimeTypeRef.current || 'audio/webm';
 
-        // 1. Direct audio-to-text transcription via Gemini
+        // 1. Direct audio-to-text transcription via Gemini: verbatim Egyptian Arabic/MSA/English/mixed speech.
         const aiTranscription = await transcribeAudioWithGemini(
           base64Audio,
           mime,

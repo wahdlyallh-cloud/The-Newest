@@ -3,6 +3,7 @@ import { X, Eye, EyeOff, Globe, Plus, CheckCircle, AlertTriangle, ShieldCheck, A
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { ApiKeyPoolEntry, ApiKeyStatus } from '../types';
 import { maskApiKey, testGeminiApiKey, discoverGoogleModels } from '../lib/apiKeyManager';
+import { refreshDiscoveredModels } from '../lib/geminiModelRouter';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
 
@@ -41,6 +42,8 @@ export default function GeminiKeyModal({
   // Testing & Error State
   const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string; verifiedModel?: string } | null>(null);
+  const [isScanningAll, setIsScanningAll] = useState(false);
+  const [scanSummary, setScanSummary] = useState<string>('');
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
@@ -190,6 +193,31 @@ export default function GeminiKeyModal({
     setTestingKeyId(null);
   };
 
+  const handleScanAllKeys = async () => {
+    if (isScanningAll) return;
+    setIsScanningAll(true);
+    setScanSummary('');
+    let healthy = 0;
+    const updated = [...keysList];
+    for (let index = 0; index < updated.length; index++) {
+      const entry = updated[index];
+      if (!entry.key.trim()) continue;
+      const result = await testGeminiApiKey(entry.key);
+      if (result.success) healthy++;
+      updated[index] = {
+        ...entry,
+        status: result.success ? 'ready' : result.errorType === 'invalid_key' ? 'invalid' : result.errorType === 'quota_exhausted' || result.errorType === 'rate_limited' ? 'rate_limited' : 'standby',
+        verifiedModel: result.verifiedModel || entry.verifiedModel,
+        lastErrorMsg: result.success ? undefined : result.message,
+        requestsToday: result.success ? (entry.requestsToday || 0) + 1 : entry.requestsToday
+      };
+    }
+    await refreshDiscoveredModels().catch(() => []);
+    setKeysList(updated);
+    setScanSummary((t.geminiHealthyKeysSummary || 'Healthy ready keys: {count} of {total}').replace('{count}', String(healthy)).replace('{total}', String(updated.filter(k => k.key.trim()).length)));
+    setIsScanningAll(false);
+  };
+
   // Move key up or down in ordered priority list
   const handleMoveKey = (index: number, direction: 'up' | 'down') => {
     const targetIdx = direction === 'up' ? index - 1 : index + 1;
@@ -242,26 +270,32 @@ export default function GeminiKeyModal({
   };
 
   const getStatusBadge = (entry: ApiKeyPoolEntry) => {
+    if (!entry.key.trim()) {
+      return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{t.geminiKeyEmptyPill || 'فارغ'}</span>;
+    }
+    if (entry.id === selectedActiveId && entry.status !== 'invalid') {
+      return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">{t.geminiKeyActivePill || 'نشط الآن'}</span>;
+    }
     if (!entry.isEnabled) {
-      return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{t.apiKeyStatusStandby}</span>;
+      return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{t.geminiKeyStandbyPill || 'احتياطي جاهز'}</span>;
     }
     const isCoolingDown = (entry.status === 'rate_limited' || entry.status === 'quota_exhausted') && entry.rateLimitResetAt && Date.now() < entry.rateLimitResetAt;
     const remainingSec = isCoolingDown ? Math.ceil((entry.rateLimitResetAt! - Date.now()) / 1000) : 0;
 
     switch (entry.status) {
       case 'ready':
-        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">{t.apiKeyStatusReady}</span>;
+        return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">{t.geminiKeyStandbyPill || 'احتياطي جاهز'}</span>;
       case 'rate_limited':
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-            <span>{t.apiKeyStatusRateLimited}</span>
+            <span>{t.geminiKeyCooldownPill || 'في فترة تهدئة - ينتقل تلقائيًا'}</span>
             {isCoolingDown && <span className="text-[9px] opacity-80">({remainingSec}s)</span>}
           </span>
         );
       case 'quota_exhausted':
         return (
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 flex items-center gap-1">
-            <span>{t.apiKeyStatusQuotaExhausted}</span>
+            <span>{t.geminiKeyCooldownPill || 'في فترة تهدئة - ينتقل تلقائيًا'}</span>
             {isCoolingDown && <span className="text-[9px] opacity-80">({remainingSec}s)</span>}
           </span>
         );
@@ -300,6 +334,16 @@ export default function GeminiKeyModal({
           <div className="bg-amber-50/20 border border-amber-200/60 rounded-2xl p-3 text-[11px] text-amber-900 font-bold leading-relaxed">
             ℹ️ {t.geminiPoolNote}
           </div>
+
+          <button
+            type="button"
+            onClick={handleScanAllKeys}
+            disabled={isScanningAll || keysList.length === 0}
+            className="w-full py-3 rounded-2xl bg-[#2B3E50] text-white text-xs font-black disabled:opacity-50 transition-all"
+          >
+            {isScanningAll ? (t.apiKeyTesting || 'جاري الفحص...') : (t.geminiScanKeys || 'فحص الـ 5 مفاتيح وتحديث النماذج')}
+          </button>
+          {scanSummary && <div className="text-center text-[11px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2">{scanSummary}</div>}
 
           {/* Keys Pool List */}
           <div className="space-y-3">
@@ -437,6 +481,12 @@ export default function GeminiKeyModal({
                 </div>
               );
             })}
+            {Array.from({ length: Math.max(0, 5 - keysList.length) }).map((_, index) => (
+              <div key={`empty-key-slot-${index}`} className="border border-dashed border-gray-200 rounded-2xl px-4 py-3 flex items-center justify-between bg-gray-50/60">
+                <span className="text-[11px] font-bold text-gray-400">{t.keyNumberPrefix || 'Key'} #{keysList.length + index + 1}</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{t.geminiKeyEmptyPill || 'فارغ'}</span>
+              </div>
+            ))}
           </div>
 
           {/* Add New Key Form / Button */}

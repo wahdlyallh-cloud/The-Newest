@@ -233,3 +233,9 @@ npm run build
 - Applied the uploaded olive-green artwork pixel-for-pixel as resources/icon.png; regenerated mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi launcher, round, and safe-zone foreground PNGs and switched Android 8-15 adaptive icons to the matching olive diagonal background.
 - Quality gates passed: `npx tsc --noEmit`, `node scripts/i18nAudit.cjs`, `node scripts/validate-localization.mjs`, and `npm run build`. No files under `.github/` were changed and Gradle was not run.
 - Extended the export audit to the therapist, integrated therapy, and monthly mental-health reports: removed popup/iframe printing and raw anchor downloads, routed HTML/TXT/Word exports through exportBlobSafe, and made PDF failure handling non-blocking.
+
+## 18. Dynamic Gemini Routing, Uploads & Five-Key Diagnostics (2026-11-27)
+- `src/lib/geminiModelRouter.ts` discovers active `generateContent` Gemini models per key with a 12-hour cache and routes `auto`, `fast`, `precision`, or explicit model preferences by task.
+- `src/lib/geminiFileUpload.ts` uses inline Base64 below 4MB and Gemini resumable File API uploads with processing polling, progress callbacks, the original Blob reference, and key failover.
+- Gemini request paths share persisted key cooldown diagnostics for 400/403/429/503 responses and the settings modal can scan all five configured keys while refreshing models.
+- Audio prompts now require verbatim Egyptian Arabic, MSA, English, and mixed-speech transcription without summarization or invented wording.

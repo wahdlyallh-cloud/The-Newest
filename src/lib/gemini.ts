@@ -17,8 +17,10 @@ import {
   markModelFailedForKey,
   markModelVerifiedForKey,
   invalidateModelCacheAndRefresh,
-  testGeminiApiKey
+  testGeminiApiKey,
+  cooldownKey
 } from './apiKeyManager';
+import { getModelsForKeyAndTask } from './geminiModelRouter';
 
 export const AI_MODEL = 'gemini-3.5-flash-lite';
 export const DEFAULT_GEMINI_MODEL = AI_MODEL;
@@ -428,7 +430,7 @@ export async function generateGeminiContentDirect(
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
-    const modelsToTry = await getModelCandidatesForTask(currentKey, taskType);
+    const modelsToTry = await getModelsForKeyAndTask(currentKey, taskType);
     let allModels429OnThisKey = true;
 
     for (const model of modelsToTry) {
@@ -489,6 +491,7 @@ export async function generateGeminiContentDirect(
         const rawError = data?.error?.message || `HTTP ${res.status}`;
         lastError = rawError;
         const errType = classifyGeminiError(res.status, rawError);
+        if ([400, 403, 429, 503].includes(res.status)) cooldownKey(currentKey, res.status, rawError);
 
         // True key invalidity -> rotate key away
         if (errType === 'invalid_key') {
@@ -578,7 +581,7 @@ export async function transcribeAudioWithGemini(
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
-    const modelsToTry = await getModelCandidatesForTask(currentKey, 'multimodal');
+    const modelsToTry = await getModelsForKeyAndTask(currentKey, 'multimodal');
     let allModels429OnKey = true;
 
     for (const model of modelsToTry) {
@@ -596,7 +599,7 @@ export async function transcribeAudioWithGemini(
                 }
               },
               {
-                text: 'قم بتفريغ هذا التسجيل الصوتي بدقة عالية إلى نص عربي منظم، حافظ على جميع الكلمات والتفاصيل دون حذف أو اختصار، وأضف علامات الترقيم المناسبة دون أي مقدمات أو خاتمة.'
+                text: 'VERBATIM HIGH-ACCURACY TRANSCRIPTION ONLY: transcribe every spoken word exactly as heard, without summarizing, paraphrasing, inventing, correcting meaning, or omitting repetitions. Support Egyptian Arabic, Modern Standard Arabic, English, and mixed speech in the same recording. Preserve the speaker\'s wording, code-switching, names, numbers, and natural punctuation. Return only the transcript, with no introduction or conclusion.'
               }
             ]
           }
@@ -629,6 +632,7 @@ export async function transcribeAudioWithGemini(
         const rawError = data?.error?.message || `HTTP ${res.status}`;
         lastAudioError = rawError;
         const errType = classifyGeminiError(res.status, rawError);
+        if ([400, 403, 429, 503].includes(res.status)) cooldownKey(currentKey, res.status, rawError);
 
         if (errType === 'invalid_key') {
           rotateToNextKey(currentKey, 'invalid_key');

@@ -30946,6 +30946,163 @@ export const HI_DICT: Record<string, any> = {
   resetConfirm: 'रीसेट करें?',
   chatAdvisorLabel: "Hayat AI सलाहकार:",};
 
+Object.assign(AR_DICT, {
+  "geminiModelModeTitle": "وضع نماذج Gemini",
+  "geminiModelModeAuto": "تلقائي ذكي",
+  "geminiModelModeFast": "سريع",
+  "geminiModelModePrecision": "دقة عالية",
+  "geminiScanKeys": "فحص الـ 5 مفاتيح وتحديث النماذج",
+  "geminiHealthyKeysSummary": "المفاتيح السليمة الجاهزة: {count} من {total}",
+  "geminiKeyActivePill": "نشط الآن",
+  "geminiKeyStandbyPill": "احتياطي جاهز",
+  "geminiKeyCooldownPill": "في فترة تهدئة - ينتقل تلقائيًا",
+  "geminiKeyEmptyPill": "فارغ",
+  "geminiModelsUpdated": "تم تحديث نماذج Gemini بنجاح"
+});
+Object.assign(EN_DICT, {
+  "geminiModelModeTitle": "Gemini model mode",
+  "geminiModelModeAuto": "Smart auto",
+  "geminiModelModeFast": "Fast",
+  "geminiModelModePrecision": "High precision",
+  "geminiScanKeys": "Scan 5 keys and refresh models",
+  "geminiHealthyKeysSummary": "Healthy ready keys: {count} of {total}",
+  "geminiKeyActivePill": "Active now",
+  "geminiKeyStandbyPill": "Standby ready",
+  "geminiKeyCooldownPill": "Cooling down - automatic failover",
+  "geminiKeyEmptyPill": "Empty",
+  "geminiModelsUpdated": "Gemini models updated successfully"
+});
+Object.assign(FR_DICT, {
+  "geminiModelModeTitle": "Mode des modèles Gemini",
+  "geminiModelModeAuto": "Automatique intelligent",
+  "geminiModelModeFast": "Rapide",
+  "geminiModelModePrecision": "Haute précision",
+  "geminiScanKeys": "Analyser 5 clés et actualiser les modèles",
+  "geminiHealthyKeysSummary": "Clés saines prêtes : {count} sur {total}",
+  "geminiKeyActivePill": "Active maintenant",
+  "geminiKeyStandbyPill": "Secours prêt",
+  "geminiKeyCooldownPill": "En pause - basculement automatique",
+  "geminiKeyEmptyPill": "Vide",
+  "geminiModelsUpdated": "Modèles Gemini actualisés"
+});
+Object.assign(DE_DICT, {
+  "geminiModelModeTitle": "Gemini-Modus",
+  "geminiModelModeAuto": "Intelligente Automatik",
+  "geminiModelModeFast": "Schnell",
+  "geminiModelModePrecision": "Hohe Präzision",
+  "geminiScanKeys": "5 Schlüssel prüfen und Modelle aktualisieren",
+  "geminiHealthyKeysSummary": "Gesunde Schlüssel: {count} von {total}",
+  "geminiKeyActivePill": "Jetzt aktiv",
+  "geminiKeyStandbyPill": "Bereit als Ersatz",
+  "geminiKeyCooldownPill": "Abkühlung - automatischer Wechsel",
+  "geminiKeyEmptyPill": "Leer",
+  "geminiModelsUpdated": "Gemini-Modelle aktualisiert"
+});
+Object.assign(ES_DICT, {
+  "geminiModelModeTitle": "Modo de modelos Gemini",
+  "geminiModelModeAuto": "Automático inteligente",
+  "geminiModelModeFast": "Rápido",
+  "geminiModelModePrecision": "Alta precisión",
+  "geminiScanKeys": "Comprobar 5 claves y actualizar modelos",
+  "geminiHealthyKeysSummary": "Claves sanas: {count} de {total}",
+  "geminiKeyActivePill": "Activa ahora",
+  "geminiKeyStandbyPill": "Respaldo listo",
+  "geminiKeyCooldownPill": "En pausa - cambio automático",
+  "geminiKeyEmptyPill": "Vacía",
+  "geminiModelsUpdated": "Modelos Gemini actualizados"
+});
+Object.assign(IT_DICT, {
+  "geminiModelModeTitle": "Modalità modelli Gemini",
+  "geminiModelModeAuto": "Automatico intelligente",
+  "geminiModelModeFast": "Veloce",
+  "geminiModelModePrecision": "Alta precisione",
+  "geminiScanKeys": "Controlla 5 chiavi e aggiorna i modelli",
+  "geminiHealthyKeysSummary": "Chiavi sane: {count} di {total}",
+  "geminiKeyActivePill": "Attiva ora",
+  "geminiKeyStandbyPill": "Backup pronto",
+  "geminiKeyCooldownPill": "In pausa - passaggio automatico",
+  "geminiKeyEmptyPill": "Vuota",
+  "geminiModelsUpdated": "Modelli Gemini aggiornati"
+});
+Object.assign(TR_DICT, {
+  "geminiModelModeTitle": "Gemini model modu",
+  "geminiModelModeAuto": "Akıllı otomatik",
+  "geminiModelModeFast": "Hızlı",
+  "geminiModelModePrecision": "Yüksek hassasiyet",
+  "geminiScanKeys": "5 anahtarı tara ve modelleri güncelle",
+  "geminiHealthyKeysSummary": "Sağlıklı anahtarlar: {count}/{total}",
+  "geminiKeyActivePill": "Şimdi etkin",
+  "geminiKeyStandbyPill": "Yedek hazır",
+  "geminiKeyCooldownPill": "Beklemede - otomatik geçiş",
+  "geminiKeyEmptyPill": "Boş",
+  "geminiModelsUpdated": "Gemini modelleri güncellendi"
+});
+Object.assign(PT_DICT, {
+  "geminiModelModeTitle": "Modo dos modelos Gemini",
+  "geminiModelModeAuto": "Automático inteligente",
+  "geminiModelModeFast": "Rápido",
+  "geminiModelModePrecision": "Alta precisão",
+  "geminiScanKeys": "Verificar 5 chaves e atualizar modelos",
+  "geminiHealthyKeysSummary": "Chaves saudáveis: {count} de {total}",
+  "geminiKeyActivePill": "Ativa agora",
+  "geminiKeyStandbyPill": "Backup pronto",
+  "geminiKeyCooldownPill": "Em espera - troca automática",
+  "geminiKeyEmptyPill": "Vazia",
+  "geminiModelsUpdated": "Modelos Gemini atualizados"
+});
+Object.assign(RU_DICT, {
+  "geminiModelModeTitle": "Режим моделей Gemini",
+  "geminiModelModeAuto": "Умный автоматический",
+  "geminiModelModeFast": "Быстрый",
+  "geminiModelModePrecision": "Высокая точность",
+  "geminiScanKeys": "Проверить 5 ключей и обновить модели",
+  "geminiHealthyKeysSummary": "Готовых ключей: {count} из {total}",
+  "geminiKeyActivePill": "Активен сейчас",
+  "geminiKeyStandbyPill": "Резерв готов",
+  "geminiKeyCooldownPill": "Пауза - автоматическое переключение",
+  "geminiKeyEmptyPill": "Пусто",
+  "geminiModelsUpdated": "Модели Gemini обновлены"
+});
+Object.assign(JA_DICT, {
+  "geminiModelModeTitle": "Gemini モデルモード",
+  "geminiModelModeAuto": "スマート自動",
+  "geminiModelModeFast": "高速",
+  "geminiModelModePrecision": "高精度",
+  "geminiScanKeys": "5つのキーを確認してモデルを更新",
+  "geminiHealthyKeysSummary": "正常なキー: {count}/{total}",
+  "geminiKeyActivePill": "現在アクティブ",
+  "geminiKeyStandbyPill": "予備準備完了",
+  "geminiKeyCooldownPill": "クールダウン中 - 自動切替",
+  "geminiKeyEmptyPill": "空",
+  "geminiModelsUpdated": "Gemini モデルを更新しました"
+});
+Object.assign(ZH_DICT, {
+  "geminiModelModeTitle": "Gemini 模型模式",
+  "geminiModelModeAuto": "智能自动",
+  "geminiModelModeFast": "快速",
+  "geminiModelModePrecision": "高精度",
+  "geminiScanKeys": "检查 5 个密钥并更新模型",
+  "geminiHealthyKeysSummary": "健康可用密钥：{count}/{total}",
+  "geminiKeyActivePill": "当前活跃",
+  "geminiKeyStandbyPill": "备用就绪",
+  "geminiKeyCooldownPill": "冷却中 - 自动切换",
+  "geminiKeyEmptyPill": "空",
+  "geminiModelsUpdated": "Gemini 模型已更新"
+});
+Object.assign(HI_DICT, {
+  "geminiModelModeTitle": "Gemini मॉडल मोड",
+  "geminiModelModeAuto": "स्मार्ट ऑटो",
+  "geminiModelModeFast": "तेज़",
+  "geminiModelModePrecision": "उच्च सटीकता",
+  "geminiScanKeys": "5 कुंजियों की जाँच और मॉडल अपडेट करें",
+  "geminiHealthyKeysSummary": "स्वस्थ तैयार कुंजियाँ: {count}/{total}",
+  "geminiKeyActivePill": "अभी सक्रिय",
+  "geminiKeyStandbyPill": "बैकअप तैयार",
+  "geminiKeyCooldownPill": "कूलडाउन - स्वचालित बदलाव",
+  "geminiKeyEmptyPill": "खाली",
+  "geminiModelsUpdated": "Gemini मॉडल अपडेट हो गए"
+});
+
 export const BASELINE_DICTIONARIES: Record<string, Record<string, any>> = {
   ar: AR_DICT,
   en: EN_DICT,

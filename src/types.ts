@@ -198,6 +198,8 @@ export interface ApiKeyPoolEntry {
   name: string;
   key: string;
   status: ApiKeyStatus;
+  cooldownUntil?: number;
+  cooldownReason?: string;
   isEnabled: boolean;
   priority: number; // 1 to 5
   requestsToday: number;

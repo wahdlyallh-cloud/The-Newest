@@ -13,8 +13,10 @@ import {
   markModelUnavailableForKey,
   markModelFailedForKey,
   markModelVerifiedForKey,
-  invalidateModelCacheAndRefresh
+  invalidateModelCacheAndRefresh,
+  cooldownKey
 } from './apiKeyManager';
+import { getModelsForKeyAndTask } from './geminiModelRouter';
 import {
   buildUnifiedKnowledgeIndex,
   retrieveRelevantKnowledge,
@@ -101,7 +103,7 @@ async function generateWithGeminiREST(
 
   for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
     const currentKey = candidateKeys[keyIdx];
-    const modelsToTry = await getModelCandidatesForTask(currentKey, taskType);
+    const modelsToTry = await getModelsForKeyAndTask(currentKey, taskType);
     let allModels429OnThisKey = true;
 
     for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
@@ -196,6 +198,7 @@ async function generateWithGeminiREST(
         lastErrorMsg = errMessage;
 
         const errType = classifyGeminiError(res.status, errMessage);
+        if ([400, 403, 429, 503].includes(res.status)) cooldownKey(currentKey, res.status, errMessage);
         console.warn(`[REST] Model: ${model} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
 
         // True key invalidity -> rotate key away
@@ -1175,7 +1178,7 @@ ${getAILanguageInstruction(reqLang)}`;
 
         keyLoop: for (let keyIdx = 0; keyIdx < candidateKeys.length; keyIdx++) {
           const currentKey = candidateKeys[keyIdx];
-          const modelsToTry = await getModelCandidatesForTask(currentKey, 'multimodal');
+          const modelsToTry = await getModelsForKeyAndTask(currentKey, 'multimodal');
           let allModels429OnKey = true;
 
           for (let modelIdx = 0; modelIdx < modelsToTry.length; modelIdx++) {
@@ -1189,7 +1192,7 @@ ${getAILanguageInstruction(reqLang)}`;
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modName}:generateContent?key=${currentKey.trim()}`;
             const promptText = `You are an expert audio transcription specialist and speech emotion recognition analyst.
 Listen to the attached audio recording and do the following:
-1. قم بتفريغ هذا التسجيل الصوتي بدقة عالية إلى نص عربي منظم، حافظ على جميع الكلمات والتفاصيل دون حذف أو اختصار، صحح الأخطاء الواضحة الناتجة عن التعرف الصوتي، وأضف علامات الترقيم المناسبة مع الحفاظ على المعنى الأصلي وعدم اختلاق أي كلام غير موجود في التسجيل.
+1. VERBATIM HIGH-ACCURACY TRANSCRIPTION: transcribe every spoken word exactly as heard. Support Egyptian Arabic, Modern Standard Arabic, English, and mixed speech. Preserve exact wording, code-switching, names, numbers, repetitions, and natural punctuation. Never summarize, paraphrase, invent, or silently correct words.
 2. Analyze speech emotion and vocal tone accurately based on pitch, cadence, and expression.
 3. Determine primary emotion.
 4. Rate emotion intensity score from 0 to 100%.
@@ -1273,6 +1276,7 @@ Return pure JSON only in the following format:
                 const errJson = await res.json().catch(() => ({}));
                 lastError = errJson?.error?.message || res.statusText || `HTTP ${res.status}`;
                 const errType = classifyGeminiError(res.status, lastError);
+                if ([400, 403, 429, 503].includes(res.status)) cooldownKey(currentKey, res.status, lastError);
                 console.warn(`[AudioTranscription] Model: ${modName} | Key #${keyIdx + 1} | Status: ${res.status} | ErrType: ${errType} | Time: ${elapsed}ms`);
 
                 if (errType === 'invalid_key') {

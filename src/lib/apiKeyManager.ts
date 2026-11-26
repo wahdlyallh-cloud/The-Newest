@@ -183,6 +183,7 @@ export function classifyGeminiError(status: number, message: string): Classified
   // Fix false-positive "Invalid Key" detection: NEVER classify 404, model restrictions, or general errors as invalid_key!
   if (
     status === 401 ||
+    status === 400 ||
     msg.includes('api_key_invalid') ||
     msg.includes('api key not valid') ||
     msg.includes('key not valid') ||
@@ -212,6 +213,8 @@ export function classifyGeminiError(status: number, message: string): Classified
     return 'quota_exhausted';
   }
 
+  if (status === 403) return 'invalid_key';
+
   // 3. Transient / High Demand Server-side Overload (does NOT blame or exhaust the key)
   if (
     status === 503 ||
@@ -229,6 +232,28 @@ export function classifyGeminiError(status: number, message: string): Classified
   }
 
   return 'unknown';
+}
+
+/** Persist a short cooldown so all Gemini endpoints share the same failover state. */
+export function cooldownKey(keyStr: string, status: number, reason: string): void {
+  if (!keyStr || typeof localStorage === 'undefined') return;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const settings: AppSettings = migrateSettingsApiKeys(JSON.parse(saved));
+    const until = Date.now() + (status === 400 || status === 403 ? 5 * 60 * 1000 : status === 503 ? 30 * 1000 : 60 * 1000);
+    settings.apiKeys = (settings.apiKeys || []).map(entry => entry.key.trim() === keyStr.trim()
+      ? { ...entry, status: status === 400 || status === 403 ? 'invalid' as ApiKeyStatus : 'rate_limited' as ApiKeyStatus, cooldownUntil: until, cooldownReason: reason, rateLimitResetAt: until, lastErrorMsg: reason }
+      : entry);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('yawmiyati_settings_updated', { detail: settings }));
+  } catch (_) {}
+}
+
+export function getApiKeyDiagnostics(settings?: AppSettings): Array<{ id: string; key: string; status: ApiKeyStatus; cooldownUntil?: number; reason?: string; isActive: boolean }> {
+  const resolved = settings || (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; } })();
+  const migrated = migrateSettingsApiKeys(resolved as AppSettings);
+  return (migrated.apiKeys || []).slice(0, 5).map(entry => ({ id: entry.id, key: entry.key, status: entry.status, cooldownUntil: entry.cooldownUntil || entry.rateLimitResetAt, reason: entry.cooldownReason || entry.lastErrorMsg, isActive: entry.id === migrated.activeKeyId }));
 }
 
 /**
