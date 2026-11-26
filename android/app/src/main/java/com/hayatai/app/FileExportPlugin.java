@@ -45,24 +45,54 @@ public class FileExportPlugin extends Plugin {
         final String finalMimeType = mimeType;
         final String rawBase64 = base64Data;
 
-        // Perform decoding and file writing on a background thread
+        // Perform decoding, validation and file writing on a background thread
         new Thread(() -> {
             try {
-                // 1. Strip any data:...;base64, prefix safely
-                String cleanBase64 = rawBase64;
-                int commaIndex = cleanBase64.indexOf(",");
-                if (commaIndex != -1 && cleanBase64.substring(0, commaIndex).contains("base64")) {
-                    cleanBase64 = cleanBase64.substring(commaIndex + 1);
+                // 1. Strip ANY Data-URI prefix reliably by slicing after the first comma and trimming whitespace
+                String cleanBase64 = rawBase64.trim();
+                int commaIdx = cleanBase64.indexOf(',');
+                if (commaIdx != -1) {
+                    cleanBase64 = cleanBase64.substring(commaIdx + 1);
                 }
                 cleanBase64 = cleanBase64.trim().replaceAll("\\s+", "");
 
-                byte[] fileBytes = Base64.decode(cleanBase64, Base64.DEFAULT);
+                byte[] fileBytes;
+                try {
+                    fileBytes = Base64.decode(cleanBase64, Base64.DEFAULT);
+                } catch (IllegalArgumentException e) {
+                    call.reject("Invalid Base64 payload: " + e.getMessage());
+                    return;
+                }
+
+                // 2. Validate binary integrity BEFORE writing or sharing
                 if (fileBytes == null || fileBytes.length == 0) {
                     call.reject("Decoded file byte array is empty");
                     return;
                 }
 
-                // 2. Write file to cache/exports directory
+                if ("image/png".equalsIgnoreCase(finalMimeType)) {
+                    if (fileBytes.length < 8) {
+                        call.reject("Invalid PNG file: file is too small");
+                        return;
+                    }
+                    if (fileBytes[0] != (byte) 0x89 || fileBytes[1] != (byte) 0x50 ||
+                        fileBytes[2] != (byte) 0x4E || fileBytes[3] != (byte) 0x47) {
+                        call.reject("Invalid PNG signature: corrupted file data");
+                        return;
+                    }
+                } else if ("application/pdf".equalsIgnoreCase(finalMimeType)) {
+                    if (fileBytes.length < 4) {
+                        call.reject("Invalid PDF file: file is too small");
+                        return;
+                    }
+                    if (fileBytes[0] != (byte) 0x25 || fileBytes[1] != (byte) 0x50 ||
+                        fileBytes[2] != (byte) 0x44 || fileBytes[3] != (byte) 0x46) {
+                        call.reject("Invalid PDF signature: missing %PDF header");
+                        return;
+                    }
+                }
+
+                // 3. Write file to cache/exports directory ensuring it is flushed & closed via try-with-resources
                 File exportDir = new File(getContext().getCacheDir(), "exports");
                 if (!exportDir.exists()) {
                     exportDir.mkdirs();
@@ -74,16 +104,18 @@ public class FileExportPlugin extends Plugin {
                     fos.flush();
                 }
 
-                // 3. On Android 10+ (Q+), also save a permanent copy to public Downloads
+                // 4. On Android 10+ (Q+), also save a copy to public Downloads with MediaStore IS_PENDING handling
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    Uri downloadUri = null;
+                    ContentResolver resolver = getContext().getContentResolver();
                     try {
-                        ContentResolver resolver = getContext().getContentResolver();
                         ContentValues contentValues = new ContentValues();
                         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, finalFileName);
                         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, finalMimeType);
                         contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/HayatAI");
+                        contentValues.put(MediaStore.MediaColumns.IS_PENDING, 1);
 
-                        Uri downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
+                        downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues);
                         if (downloadUri != null) {
                             try (OutputStream out = resolver.openOutputStream(downloadUri)) {
                                 if (out != null) {
@@ -91,13 +123,21 @@ public class FileExportPlugin extends Plugin {
                                     out.flush();
                                 }
                             }
+                            ContentValues completedValues = new ContentValues();
+                            completedValues.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                            resolver.update(downloadUri, completedValues, null, null);
                         }
                     } catch (Throwable mediaEx) {
-                        // Safe catch so sharing proceeds even if MediaStore copy throws
+                        // Safe cleanup if pending write failed
+                        if (downloadUri != null) {
+                            try {
+                                resolver.delete(downloadUri, null, null);
+                            } catch (Throwable ignored) {}
+                        }
                     }
                 }
 
-                // 4. Generate FileProvider URI and launch share chooser
+                // 5. Generate FileProvider URI and launch share chooser
                 String authority = getContext().getPackageName() + ".fileprovider";
                 Uri contentUri = FileProvider.getUriForFile(getContext(), authority, exportFile);
 
@@ -107,9 +147,9 @@ public class FileExportPlugin extends Plugin {
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, finalFileName);
                 shareIntent.setClipData(ClipData.newRawUri(finalFileName, contentUri));
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                 Intent chooser = Intent.createChooser(shareIntent, finalFileName);
+                chooser.setClipData(ClipData.newRawUri(finalFileName, contentUri));
                 chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 

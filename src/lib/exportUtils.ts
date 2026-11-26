@@ -21,25 +21,27 @@ export interface ExportFileOptions {
 }
 
 /**
- * Helper to convert a Blob into a base64 string
+ * Robust conversion of a Blob into a clean raw Base64 string.
+ * Uses chunked Uint8Array conversion for binary reliability across platforms.
  */
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      resolve(result);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+export async function blobToBase64(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const CHUNK_SIZE = 0x8000; // 32KB chunks to prevent call-stack overflow
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+    const chunk = bytes.subarray(i, i + CHUNK_SIZE);
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+  }
+  return btoa(binary);
 }
 
 /**
  * Universal safe exporter for generated images (PNG/JPEG) and PDFs.
  * Supports Android Capacitor Native, Mobile Web, and Desktop browsers cleanly:
  * - On Capacitor Native Platform:
- *   Validates blob, converts to Base64 and invokes native FileExportPlugin (save to cache + MediaStore Downloads + native share sheet).
+ *   Validates blob, converts to raw Base64 and invokes native FileExportPlugin (save to cache + MediaStore Downloads + native share sheet).
+ *   Never falls back to broken <a> download stub on native Android.
  * - On Mobile Web when navigator.canShare({ files }) is supported:
  *   Converts the Blob into a File and invokes navigator.share().
  * - On Desktop browsers or when native sharing is unavailable:
@@ -56,15 +58,16 @@ export async function exportBlobSafe(options: ExportFileOptions): Promise<boolea
     onError
   } = options;
 
-  if (!blob || blob.size === 0) {
-    console.error('[exportBlobSafe] Received empty or invalid blob');
-    onError?.(new Error('Empty export blob'));
+  if (!blob || blob.size < 100) {
+    const errMsg = 'ملف التصدير فارغ أو غير مكتمل (حجمه غير صالح)';
+    console.error('[exportBlobSafe] Received invalid or truncated blob, size:', blob?.size);
+    onError?.(new Error(errMsg));
     return false;
   }
 
   const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
 
-  // 1. If running on native Capacitor (Android / iOS), use Native FileExport plugin
+  // 1. If running on native Capacitor (Android / iOS), ALWAYS use Native FileExport plugin
   if (isNative) {
     try {
       const base64Data = await blobToBase64(blob);
@@ -76,8 +79,10 @@ export async function exportBlobSafe(options: ExportFileOptions): Promise<boolea
       onSuccess?.();
       return true;
     } catch (pluginErr: any) {
-      console.warn('[exportBlobSafe] Native FileExport plugin error, falling back to navigator/download:', pluginErr);
-      // If plugin fails, continue to mobile/desktop fallbacks
+      console.error('[exportBlobSafe] Native FileExport plugin error:', pluginErr);
+      const message = pluginErr?.message || pluginErr?.errorMessage || 'تعذر حفظ ومشاركة الملف عبر النظام';
+      onError?.(new Error(message));
+      return false;
     }
   }
 

@@ -146,11 +146,22 @@ npm run build
 
 ---
 
-## 11. Native Android File Export Plugin (`FileExportPlugin.java`)
+## 11. Native Android File Export Plugin (`FileExportPlugin.java`) & Bulletproof Diary Exporter
 
 - Capacitor native plugin (`FileExportPlugin.java`) registered in `MainActivity.java` and wired in `exportUtils.ts`.
-- Handles PNG/PDF exports by decoding Base64 on a background thread, writing to `cache/exports`, mirroring permanently to `MediaStore.Downloads/HayatAI` on Android 10+ (Q+), and launching `Intent.ACTION_SEND` with `FileProvider` (`com.hayatai.app.fileprovider`).
-- All PNG and PDF exporters (`ExportDiaryModal.tsx`, `MonthlyMentalHealthPDFReportModal.tsx`, `ShareableGratitudeCardModal.tsx`, `DailyProsConsModal.tsx`, `SmartAdvisor.tsx`) route safely through `exportBlobSafe`.
+- **Corrupted File Error Root-Cause Resolution:**
+  - Strips any Data-URI prefix safely by slicing after the first comma (`commaIdx = raw.indexOf(',')`) and trimming whitespace.
+  - Validates binary integrity before writing or sharing: rejects empty payloads, verifies PNG signature (`0x89, 0x50, 0x4E, 0x47`) and PDF header (`%PDF` / `0x25, 0x50, 0x44, 0x46`).
+  - Cache file (`cache/exports/<safeFileName>`) written, flushed, and closed via `try-with-resources`.
+  - Android 10+ (`Q+`) `MediaStore.Downloads` saving marks `IS_PENDING = 1` during write and resets to `0` upon flush & close, with auto-delete on failure.
+  - Native share intent configured with `ACTION_SEND`, `ClipData`, and `FLAG_GRANT_READ_URI_PERMISSION` on both intent and chooser (+ `FLAG_ACTIVITY_NEW_TASK`).
+  - Web/desktop fallback cleanly separated; Capacitor native always invokes native plugin with user-friendly Arabic/localized error surfacing.
+- **Export Diary Modal (`ExportDiaryModal.tsx`):**
+  - **Offline-Safe Image Pre-inlining:** Resolves diary images and drawings from IndexedDB / `attachmentStore` into inline Base64 data-uris and awaits full element decoding prior to canvas capture.
+  - **Safe Solid Hex Styling:** Renders inside an offscreen visible container (`position: fixed; left: -10000px; width: 794px`) avoiding CSS variable / `oklch()` rendering crashes in mobile WebView.
+  - **Dynamic Scale Protection:** Computes safe `html2canvas` scaling (`1-2x`) based on element height to protect against GPU canvas overflow on tall entries.
+  - **Multi-page A4 PDF Slicing:** Neat canvas height slicing with top/bottom margins in `jsPDF`.
+  - **Toggleable Attached Images & Tasks (To-Do List):** Interactive checkboxes with live preview, rendering attached images at the bottom of the diary and formatted tasks with completion badges and strike-throughs across both PNG and PDF exports.
 
 ---
 

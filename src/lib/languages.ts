@@ -47,6 +47,14 @@ export function getBcp47Tag(code?: AppLanguage | string | null): string {
 export type TranslationKey = string;
 
 export const AR_DICT: Record<string, any> = {
+  includeAttachedImages: "تضمين الصور المرفقة",
+  includeTasks: "تضمين قائمة المهام",
+  tasksCompletedCount: "تم إنجاز {completed} من {total}",
+  tasksEmpty: "لا توجد مهام مدونة",
+  exportTasksTitle: "قائمة المهام والواجبات",
+  taskStatusDone: "مكتملة",
+  taskStatusPending: "قيد الانتظار",
+
   voiceVentReviewTitle: "مراجعة وتأكيد الفضفضة الصوتية",
   voiceVentSavedSuccess: "تم حفظ التسجيل والمرفق الصوتي بنجاح 🎉",
   voiceVentAddToDiaryBtn: "إضافة إلى اليوميات",
@@ -2942,6 +2950,14 @@ export const AR_DICT: Record<string, any> = {
 };
 
 export const EN_DICT: Record<string, any> = {
+  includeAttachedImages: "Include Attached Images",
+  includeTasks: "Include Tasks / To-Do List",
+  tasksCompletedCount: "{completed} of {total} completed",
+  tasksEmpty: "No tasks recorded",
+  exportTasksTitle: "Tasks & To-Do List",
+  taskStatusDone: "Completed",
+  taskStatusPending: "Pending",
+
   voiceVentReviewTitle: "Review & Confirm Voice Vent",
   voiceVentSavedSuccess: "Audio recording and attachment saved successfully 🎉",
   voiceVentAddToDiaryBtn: "Add to Diary",
@@ -5477,6 +5493,14 @@ export const EN_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI Advisor:",};
 
 export const FR_DICT: Record<string, any> = {
+  includeAttachedImages: "Inclure les images jointes",
+  includeTasks: "Inclure la liste des tâches",
+  tasksCompletedCount: "{completed} sur {total} terminées",
+  tasksEmpty: "Aucune tâche enregistrée",
+  exportTasksTitle: "Liste des tâches",
+  taskStatusDone: "Terminée",
+  taskStatusPending: "En attente",
+
   voiceVentReviewTitle: "Examiner et confirmer le message vocal",
   voiceVentSavedSuccess: "Enregistrement audio et pièce jointe enregistrés avec succès 🎉",
   voiceVentAddToDiaryBtn: "Ajouter au journal",
@@ -8012,6 +8036,14 @@ export const FR_DICT: Record<string, any> = {
   chatAdvisorLabel: "Conseiller Hayat AI :",};
 
 export const DE_DICT: Record<string, any> = {
+  includeAttachedImages: "Angehängte Bilder einfügen",
+  includeTasks: "Aufgabenliste einfügen",
+  tasksCompletedCount: "{completed} von {total} erledigt",
+  tasksEmpty: "Keine Aufgaben aufgezeichnet",
+  exportTasksTitle: "Aufgaben & To-Do-Liste",
+  taskStatusDone: "Erledigt",
+  taskStatusPending: "Ausstehend",
+
   voiceVentReviewTitle: "Sprachnachricht überprüfen und bestätigen",
   voiceVentSavedSuccess: "Audioaufnahme und Anhang erfolgreich gespeichert 🎉",
   voiceVentAddToDiaryBtn: "Zum Tagebuch hinzufügen",
@@ -10547,6 +10579,14 @@ export const DE_DICT: Record<string, any> = {
 };
 
 export const ES_DICT: Record<string, any> = {
+  includeAttachedImages: "Incluir imágenes adjuntas",
+  includeTasks: "Incluir lista de tareas",
+  tasksCompletedCount: "{completed} de {total} completadas",
+  tasksEmpty: "No hay tareas registradas",
+  exportTasksTitle: "Lista de tareas",
+  taskStatusDone: "Completada",
+  taskStatusPending: "Pendiente",
+
   voiceVentReviewTitle: "Revisar y confirmar desahogo de voz",
   voiceVentSavedSuccess: "Grabación de audio y adjunto guardados con éxito 🎉",
   voiceVentAddToDiaryBtn: "Agregar al diario",
@@ -13082,6 +13122,14 @@ export const ES_DICT: Record<string, any> = {
   chatAdvisorLabel: "Asesor Hayat AI:",};
 
 export const IT_DICT: Record<string, any> = {
+  includeAttachedImages: "Includi immagini allegate",
+  includeTasks: "Includi lista delle attività",
+  tasksCompletedCount: "{completed} su {total} completate",
+  tasksEmpty: "Nessuna attività registrata",
+  exportTasksTitle: "Elenco attività",
+  taskStatusDone: "Completata",
+  taskStatusPending: "In sospeso",
+
   voiceVentReviewTitle: "Rivedi e conferma lo sfogo vocale",
   voiceVentSavedSuccess: "Registrazione audio e allegato salvati con successo 🎉",
   voiceVentAddToDiaryBtn: "Aggiungi al diario",
@@ -15617,6 +15665,14 @@ export const IT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consulente Hayat AI:",};
 
 export const TR_DICT: Record<string, any> = {
+  includeAttachedImages: "Ekli Resimleri Dahil Et",
+  includeTasks: "Görev Listesini Dahil Et",
+  tasksCompletedCount: "{total} görevden {completed} tanesi tamamlandı",
+  tasksEmpty: "Kayıtlı görev yok",
+  exportTasksTitle: "Görevler ve Yapılacaklar",
+  taskStatusDone: "Tamamlandı",
+  taskStatusPending: "Beklemede",
+
   voiceVentReviewTitle: "Sesli İç Dökümünü İncele ve Onayla",
   voiceVentSavedSuccess: "Ses kaydı ve eki başarıyla kaydedildi 🎉",
   voiceVentAddToDiaryBtn: "Günlüğe Ekle",
@@ -18152,6 +18208,14 @@ export const TR_DICT: Record<string, any> = {
 };
 
 export const PT_DICT: Record<string, any> = {
+  includeAttachedImages: "Incluir imagens anexadas",
+  includeTasks: "Incluir lista de tarefas",
+  tasksCompletedCount: "{completed} de {total} concluídas",
+  tasksEmpty: "Nenhuma tarefa registrada",
+  exportTasksTitle: "Lista de tarefas",
+  taskStatusDone: "Concluída",
+  taskStatusPending: "Pendente",
+
   voiceVentReviewTitle: "Revisar e confirmar desabafo de voz",
   voiceVentSavedSuccess: "Gravação de áudio e anexo salvos com sucesso 🎉",
   voiceVentAddToDiaryBtn: "Adicionar ao diário",
@@ -20687,6 +20751,14 @@ export const PT_DICT: Record<string, any> = {
   chatAdvisorLabel: "Consultor Hayat AI:",};
 
 export const RU_DICT: Record<string, any> = {
+  includeAttachedImages: "Включить прикрепленные изображения",
+  includeTasks: "Включить список задач",
+  tasksCompletedCount: "{completed} из {total} выполнено",
+  tasksEmpty: "Нет записанных задач",
+  exportTasksTitle: "Список задач и дел",
+  taskStatusDone: "Выполнено",
+  taskStatusPending: "В ожидании",
+
   voiceVentReviewTitle: "Просмотр и подтверждение голосовой записи",
   voiceVentSavedSuccess: "Аудиозапись и вложение успешно сохранены 🎉",
   voiceVentAddToDiaryBtn: "Добавить в дневник",
@@ -23222,6 +23294,14 @@ export const RU_DICT: Record<string, any> = {
   chatAdvisorLabel: "Консультант Hayat AI:",};
 
 export const JA_DICT: Record<string, any> = {
+  includeAttachedImages: "添付画像を含める",
+  includeTasks: "タスクリストを含める",
+  tasksCompletedCount: "{total}件中{completed}件完了",
+  tasksEmpty: "記録されたタスクはありません",
+  exportTasksTitle: "タスク・ToDoリスト",
+  taskStatusDone: "完了",
+  taskStatusPending: "未完了",
+
   voiceVentReviewTitle: "音声ベントの確認と確定",
   voiceVentSavedSuccess: "音声録音と添付ファイルが正常に保存されました 🎉",
   voiceVentAddToDiaryBtn: "日記に追加",
@@ -25757,6 +25837,14 @@ export const JA_DICT: Record<string, any> = {
 };
 
 export const ZH_DICT: Record<string, any> = {
+  includeAttachedImages: "包含附件图片",
+  includeTasks: "包含任务清单",
+  tasksCompletedCount: "已完成 {completed} / {total}",
+  tasksEmpty: "暂无记录的任务",
+  exportTasksTitle: "任务与待办清单",
+  taskStatusDone: "已完成",
+  taskStatusPending: "待办",
+
   voiceVentReviewTitle: "审阅并确认语音倾诉",
   voiceVentSavedSuccess: "录音和附件已成功保存 🎉",
   voiceVentAddToDiaryBtn: "添加到日记",
@@ -28292,6 +28380,14 @@ export const ZH_DICT: Record<string, any> = {
   chatAdvisorLabel: "Hayat AI 顾问:",};
 
 export const HI_DICT: Record<string, any> = {
+  includeAttachedImages: "संलग्न चित्र शामिल करें",
+  includeTasks: "कार्य सूची शामिल करें",
+  tasksCompletedCount: "{total} में से {completed} पूर्ण",
+  tasksEmpty: "कोई कार्य दर्ज नहीं",
+  exportTasksTitle: "कार्य और कार्य सूची",
+  taskStatusDone: "पूर्ण",
+  taskStatusPending: "लंबित",
+
   voiceVentReviewTitle: "वॉयस वेंट की समीक्षा और पुष्टि करें",
   voiceVentSavedSuccess: "ऑडियो रिकॉर्डिंग और अनुलग्नक सफलतापूर्वक सहेजा गया 🎉",
   voiceVentAddToDiaryBtn: "डायरी में जोड़ें",
