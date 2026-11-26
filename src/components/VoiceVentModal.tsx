@@ -18,6 +18,8 @@ import {
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
 import { transcribeAudioWithGemini } from '../lib/gemini';
+import { LiveAudioChunker } from '../lib/liveAudioChunker';
+import { Capacitor } from '@capacitor/core';
 import { AudioRecording, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 
@@ -118,6 +120,13 @@ export default function VoiceVentModal({
   const liveTranscriptRef = useRef<string>('');
   const fileFallbackInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Live Audio Chunker for Android Capacitor & SpeechRecognition fallback
+  const audioChunkerRef = useRef<LiveAudioChunker | null>(null);
+  const chunkQueueRef = useRef<Blob[]>([]);
+  const isProcessingChunkRef = useRef<boolean>(false);
+  const hasReceivedSpeechRecognitionOutputRef = useRef<boolean>(false);
+  const [isChunkTranscribing, setIsChunkTranscribing] = useState(false);
+
   // Native SpeechRecognition instance tracking for pause-safe auto-restarts
   const nativeSpeechRecRef = useRef<any>(null);
   const speechAccumulatedPrefixRef = useRef<string>('');
@@ -155,6 +164,7 @@ export default function VoiceVentModal({
     setIsRecording(false);
     isRecordingRef.current = false;
     setIsTranscribing(false);
+    setIsChunkTranscribing(false);
     setRecordingSeconds(0);
     setLiveTranscript('');
     setEditableTranscript('');
@@ -168,6 +178,9 @@ export default function VoiceVentModal({
     audioChunksRef.current = [];
     liveTranscriptRef.current = '';
     speechAccumulatedPrefixRef.current = '';
+    chunkQueueRef.current = [];
+    isProcessingChunkRef.current = false;
+    hasReceivedSpeechRecognitionOutputRef.current = false;
   };
 
   /**
@@ -183,6 +196,95 @@ export default function VoiceVentModal({
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  };
+
+  /**
+   * Sequential queue worker for audio chunk transcription
+   */
+  const processNextChunkInQueue = async () => {
+    if (isProcessingChunkRef.current || chunkQueueRef.current.length === 0) {
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      // Offline: do not waste network calls
+      return;
+    }
+
+    isProcessingChunkRef.current = true;
+    setIsChunkTranscribing(true);
+
+    const chunkBlob = chunkQueueRef.current.shift();
+    if (!chunkBlob) {
+      isProcessingChunkRef.current = false;
+      setIsChunkTranscribing(false);
+      return;
+    }
+
+    try {
+      const base64Wav = await convertBlobToBase64(chunkBlob);
+      const text = await transcribeAudioWithGemini(
+        base64Wav,
+        'audio/wav',
+        undefined,
+        appLanguage
+      );
+
+      if (
+        text &&
+        !text.includes('__AI_CHECK_API_KEY__') &&
+        !text.includes('RESOURCE_EXHAUSTED') &&
+        !text.includes('وضع المعالجة الصوتية')
+      ) {
+        const cleaned = text.trim();
+        if (cleaned) {
+          const currentText = liveTranscriptRef.current;
+          const nextText = currentText ? `${currentText} ${cleaned}` : cleaned;
+          liveTranscriptRef.current = nextText;
+          setLiveTranscript(nextText);
+        }
+      }
+    } catch (err) {
+      console.warn('[VoiceVent] Chunk transcription error (non-fatal):', err);
+    } finally {
+      isProcessingChunkRef.current = false;
+      setIsChunkTranscribing(chunkQueueRef.current.length > 0);
+      if (chunkQueueRef.current.length > 0) {
+        processNextChunkInQueue();
+      }
+    }
+  };
+
+  /**
+   * Starts the 16kHz audio chunker on the exact active stream
+   */
+  const startAudioChunker = (stream: MediaStream) => {
+    try {
+      if (audioChunkerRef.current) {
+        audioChunkerRef.current.stop();
+        audioChunkerRef.current = null;
+      }
+
+      const chunker = new LiveAudioChunker({
+        chunkDurationMs: 4000,
+        energyThreshold: 0.010,
+        onChunkReady: (wavBlob) => {
+          // If native speech recognition is producing output, skip sending chunks to save API quota
+          if (hasReceivedSpeechRecognitionOutputRef.current) {
+            return;
+          }
+          chunkQueueRef.current.push(wavBlob);
+          processNextChunkInQueue();
+        }
+      });
+
+      const started = chunker.start(stream);
+      if (started) {
+        audioChunkerRef.current = chunker;
+      }
+    } catch (err) {
+      console.warn('[VoiceVent] startAudioChunker error:', err);
+    }
   };
 
   /**
@@ -233,8 +335,11 @@ export default function VoiceVentModal({
         }
 
         const fullSpoken = (speechAccumulatedPrefixRef.current + ' ' + currentSessionFinal + ' ' + interim).trim();
-        liveTranscriptRef.current = fullSpoken;
-        setLiveTranscript(fullSpoken);
+        if (fullSpoken) {
+          hasReceivedSpeechRecognitionOutputRef.current = true;
+          liveTranscriptRef.current = fullSpoken;
+          setLiveTranscript(fullSpoken);
+        }
       };
 
       recognition.onerror = (event: any) => {
@@ -369,8 +474,15 @@ export default function VoiceVentModal({
       return;
     }
 
-    // 3. Start parallel live SpeechRecognition with auto-restart
-    startParallelSpeechRecognition();
+    // 3. Start parallel live transcription:
+    // On native Capacitor, WebSpeech is unreliable/unavailable, so audioChunker provides direct live Gemini streaming.
+    // On desktop web, WebSpeech runs first; if no output within 3 seconds, audioChunker acts as transparent fallback.
+    const isCapacitorNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+    if (!isCapacitorNative) {
+      startParallelSpeechRecognition();
+    }
+
+    startAudioChunker(stream);
   };
 
   const stopRecordingInternal = (): string => {
@@ -381,6 +493,15 @@ export default function VoiceVentModal({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+
+    // Teardown live audio chunker and flush remaining tail audio
+    if (audioChunkerRef.current) {
+      try {
+        audioChunkerRef.current.stop();
+      } catch (_) {}
+      audioChunkerRef.current = null;
+    }
+    setIsChunkTranscribing(false);
 
     // Teardown native speech recognition
     if (nativeSpeechRecRef.current) {
@@ -688,9 +809,17 @@ export default function VoiceVentModal({
                     <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
                     <span>{t.liveTranscription || (isAr ? 'التفريغ والنص الحي المباشر:' : 'Live Transcript:')}</span>
                   </span>
-                  <span className="text-[10px] text-gray-400 font-bold">
-                    {isAr ? 'تحديث تلقائي مستمر' : 'Continuous live updates'}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {isChunkTranscribing && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                        <span>{isAr ? 'يتم التفريغ المباشر...' : 'Transcribing live...'}</span>
+                      </span>
+                    )}
+                    <span className="text-[10px] text-gray-400 font-bold">
+                      {isAr ? 'تحديث تلقائي مستمر' : 'Continuous live updates'}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-4 bg-white border border-[#E2DCC8] rounded-2xl min-h-[140px] max-h-56 overflow-y-auto shadow-inner text-xs leading-relaxed text-[#3A3A3A] font-medium whitespace-pre-wrap select-text">

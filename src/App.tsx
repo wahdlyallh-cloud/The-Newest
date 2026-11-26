@@ -6628,7 +6628,7 @@ export default function App() {
 
 
       {/* Main Content Area */}
-      <main className={`max-w-4xl mx-auto px-4 pb-nav-safe md:pb-12 space-y-6 transition-all ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
+      <main className={`max-w-4xl mx-auto px-0 md:px-6 pb-nav-safe md:pb-12 space-y-6 transition-all w-full max-w-full overflow-x-hidden ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
 
         {/* Offline & Cloud Background Sync Status Banner */}
         <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
@@ -7739,7 +7739,7 @@ export default function App() {
 
             {/* Editor Container if editing or creating a diary */}
             {editingDiary ? (
-              <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6 w-full max-w-full overflow-hidden">
+              <div className="bg-white border-y sm:border border-[#E2DCC8] rounded-none sm:rounded-3xl p-3 sm:p-6 shadow-xs space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden mx-0">
 
                 {/* Editor Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-[#E2DCC8]/55 flex-wrap gap-2">
@@ -8112,11 +8112,11 @@ export default function App() {
                       minHeight: '280px',
                       lineHeight: '1.85'
                     }}
-                    className={`w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto shadow-inner select-text selectable-text whitespace-pre-wrap ${fontDrawerFamily}`}
+                    className={`w-full max-w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none px-3 py-3 sm:p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto overflow-x-hidden shadow-inner select-text selectable-text whitespace-pre-wrap ${fontDrawerFamily}`}
                   />
 
                   {/* Attachment & Features Toolbar directly attached to textarea (Image 4 format) */}
-                  <div className="bg-[#EAE5D9] border border-t-0 border-[#E2DCC8] rounded-b-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="bg-[#EAE5D9] border border-t-0 border-[#E2DCC8] rounded-b-xl sm:rounded-b-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 text-xs w-full max-w-full overflow-x-hidden">
                     <div className="flex flex-wrap items-center gap-1.5">
                       {/* Font Effect Toggle (Aa) */}
                       <button
@@ -8326,9 +8326,9 @@ export default function App() {
                 )}
 
                 {/* Tags input bar */}
-                <div>
+                <div className="w-full max-w-full overflow-x-hidden">
                   <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.tagsLabel}</label>
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl">
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl w-full max-w-full overflow-x-hidden">
                     {editingDiary.tags.map((tag, idx) => (
                       <span key={idx} className="bg-[#F0EDE4] text-[#5A5A40] text-xs py-1 px-2.5 rounded-lg border border-[#E2DCC8] flex items-center space-x-1 space-x-reverse">
                         <span>#{tag}</span>

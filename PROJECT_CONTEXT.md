@@ -131,3 +131,26 @@ npm run build
 - Strict idempotency per local date key (`yawmiyati_daily_report_done_<DATE>`) prevents duplicate reports.
 - Background execution routed through `backgroundAIManager` guarantees uninterrupted generation across navigation.
 
+---
+
+## 10. Native Android File Export Plugin (`FileExportPlugin.java`)
+
+- Capacitor native plugin (`FileExportPlugin.java`) registered in `MainActivity.java` and wired in `exportUtils.ts`.
+- Handles PNG/PDF exports by decoding Base64 on a background thread, writing to `cache/exports`, mirroring permanently to `MediaStore.Downloads/HayatAI` on Android 10+ (Q+), and launching `Intent.ACTION_SEND` with `FileProvider` (`com.hayatai.app.fileprovider`).
+- All PNG and PDF exporters (`ExportDiaryModal.tsx`, `MonthlyMentalHealthPDFReportModal.tsx`, `ShareableGratitudeCardModal.tsx`, `DailyProsConsModal.tsx`, `SmartAdvisor.tsx`) route safely through `exportBlobSafe`.
+
+---
+
+## 11. Zero-Conflict Live Voice Vent Streaming Transcription (`liveAudioChunker.ts`)
+
+- Overcomes Android WebView `webkitSpeechRecognition` limitations and mic sharing blocks by tapping the active `MediaStream` via `AudioContext` and downsampling PCM to 16kHz mono WAV chunks.
+- Every 4 seconds, voice energy (RMS) is evaluated; speech chunks are queued sequentially and transcribed live via `gemini-3.5-flash-lite`, surfacing real-time spoken text alongside an active streaming indicator.
+- Recording runs continuously until the user explicitly taps Stop, with full Review & Save steps before any diary insertion.
+
+---
+
+## 12. Mobile Edge-to-Edge Diary Editor Layout (< 768px)
+
+- Maximizes writing area on mobile viewports: eliminates redundant outer padding (`px-0 md:px-6` on main container), renders the composer card edge-to-edge (`rounded-none sm:rounded-3xl border-y sm:border mx-0 w-full`), and provides full-width internal padding (`px-3 py-3 sm:p-5`) with zero horizontal overflow.
+
+
