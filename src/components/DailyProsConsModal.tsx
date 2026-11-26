@@ -18,6 +18,10 @@ import {
   DEFAULT_AI_MEDIA_ACCESS,
   extractAvailableAttachments
 } from '../lib/aiMediaAccess';
+import {
+  filterDiaryMetricsForAI,
+  loadAllTouchedMetrics
+} from '../lib/dailyMetricsFilter';
 
 export interface DailyProsConsEntry {
   dayKey: string; // 'YYYY-MM-DD'
@@ -172,8 +176,13 @@ export default function DailyProsConsModal({
         if (d.aiMoodAnalysis && d.aiMoodAnalysis.length > 0) {
           contextLines.push(`- تحليل المشاعر الذكي: ${d.aiMoodAnalysis.map(m => `${m.mood} (${m.percentage}%)`).join(', ')}`);
         }
-        if (d.fastMoodScore) {
-          contextLines.push(`- تقييم المزاج السريع: ${d.fastMoodScore}/10`);
+        const touchedStore = loadAllTouchedMetrics();
+        const filteredMetrics = filterDiaryMetricsForAI(d, touchedStore, appLanguage);
+
+        if (filteredMetrics.isMoodTouched && filteredMetrics.fastMoodScore !== null) {
+          contextLines.push(`- تقييم المزاج السريع: ${filteredMetrics.fastMoodScore}/10`);
+        } else {
+          contextLines.push(`- تقييم المزاج السريع: لم يُسجّل اليوم (لا تفترض قيمة المزاج)`);
         }
         if (d.tags && d.tags.length > 0) {
           contextLines.push(`- الوسوم والأنشطة: ${d.tags.join(', ')}`);
@@ -215,15 +224,35 @@ export default function DailyProsConsModal({
           });
         }
 
-        // Health, Sleep, Sports, Water, Symptoms
+        // Health, Sleep, Sports, Water, Symptoms (Strictly Filtered against unmodified defaults)
         const healthDetails: string[] = [];
-        if (d.sleepHours) healthDetails.push(`النوم: ${d.sleepHours} ساعة`);
-        if (d.sportsDuration) healthDetails.push(`الرياضة: ${d.sportsDuration} دقيقة`);
-        if (d.waterCups) healthDetails.push(`شرب الماء: ${d.waterCups} كوب`);
-        if (d.symptomsChecklist && d.symptomsChecklist.length > 0) healthDetails.push(`الأعراض الجسدية/النفسية: ${d.symptomsChecklist.join(', ')}`);
+        if (filteredMetrics.isSleepTouched && filteredMetrics.sleepHours !== null) {
+          healthDetails.push(`النوم: ${filteredMetrics.sleepHours} ساعة`);
+        } else {
+          healthDetails.push(`النوم: لم يُسجّل اليوم`);
+        }
+
+        if (filteredMetrics.isExerciseTouched && filteredMetrics.sportsDuration !== null) {
+          healthDetails.push(`الرياضة: ${filteredMetrics.sportsDuration} دقيقة`);
+        } else {
+          healthDetails.push(`الرياضة: لم يُسجّل اليوم`);
+        }
+
+        if (filteredMetrics.isWaterTouched && filteredMetrics.waterCups !== null) {
+          healthDetails.push(`شرب الماء: ${filteredMetrics.waterCups} كوب`);
+        } else {
+          healthDetails.push(`شرب الماء: لم يُسجّل اليوم`);
+        }
+
+        if (filteredMetrics.isSymptomsTouched && filteredMetrics.symptomsChecklist.length > 0) {
+          healthDetails.push(`الأعراض الجسدية/النفسية: ${filteredMetrics.symptomsChecklist.join(', ')}`);
+        } else if (!filteredMetrics.isSymptomsTouched) {
+          healthDetails.push(`الأعراض: لم تُسجّل اليوم`);
+        }
         
         if (healthDetails.length > 0) {
           contextLines.push(`- المؤشرات الصحية والبدنية: ${healthDetails.join(' | ')}`);
+          contextLines.push(`  * ملاحظة للأمان: المؤشرات الموسومة بـ "لم يُسجّل اليوم" لم يقم المستخدم بتعديلها، فلا تحسبها في الإيجابيات أو السلبيات.`);
         }
 
         if (d.medications && d.medications.length > 0) {

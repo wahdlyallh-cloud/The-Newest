@@ -71,6 +71,15 @@ import {
   extractAvailableAttachments,
   encodePermittedMediaParts
 } from './lib/aiMediaAccess';
+import {
+  loadAllTouchedMetrics,
+  isMetricTouched,
+  markMetricTouched,
+  getNotRecordedTodayLabel,
+  filterDiaryMetricsForAI,
+  TrackedMetricKey,
+  TouchedStore
+} from './lib/dailyMetricsFilter';
 import AppSettingsUpdatesSection from './components/AppSettingsUpdatesSection';
 import { normalizeMoodDistribution } from './lib/emotionNormalization';
 import { initializeDailyReportScheduler } from './lib/dailyReportScheduler';
@@ -1176,6 +1185,21 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     return new Date().toISOString().split('T')[0];
   });
+
+  // Daily Metrics Touched Interaction State (Tracked per YYYY-MM-DD date)
+  const [dailyTouchedMetrics, setDailyTouchedMetrics] = useState<TouchedStore>(() => {
+    return loadAllTouchedMetrics();
+  });
+
+  useEffect(() => {
+    const handleMetricTouchedEvent = () => {
+      setDailyTouchedMetrics(loadAllTouchedMetrics());
+    };
+    window.addEventListener('yawmiyati-metric-touched', handleMetricTouchedEvent);
+    return () => {
+      window.removeEventListener('yawmiyati-metric-touched', handleMetricTouchedEvent);
+    };
+  }, []);
 
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving'>('saved');
   const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string>('');
@@ -5223,6 +5247,8 @@ export default function App() {
 
       const { parts: extraParts } = await encodePermittedMediaParts(rawAttachmentsForPerm, diaryChatMediaPermission);
 
+      const filteredMetricsForChat = filterDiaryMetricsForAI(editingDiary, dailyTouchedMetrics, settings.appLanguage || 'ar');
+
       const res = await fetch('/api/gemini/diary-chat', {
         method: 'POST',
         headers: {
@@ -5248,6 +5274,13 @@ export default function App() {
           aiMoodAnalysis: editingDiary.aiMoodAnalysis || [],
           tags: editingDiary.tags || [],
           pastDiariesContext,
+          metricsSummary: {
+            sleep: filteredMetricsForChat.sleepHoursFormatted,
+            exercise: filteredMetricsForChat.exerciseFormatted,
+            water: filteredMetricsForChat.waterCupsFormatted,
+            moodScore: filteredMetricsForChat.moodFormatted,
+            symptoms: filteredMetricsForChat.symptomsFormatted
+          },
           extraParts,
           mediaAccessPermission: diaryChatMediaPermission,
           appLanguage: settings.appLanguage || 'ar'
@@ -5786,23 +5819,31 @@ export default function App() {
       };
     }
 
-    // Update fields
+    // Update fields & mark metric as explicitly touched for today
     if (type === 'sleep') {
       targetDiary.sleepHours = Number(value);
+      markMetricTouched(selectedDate, 'sleep');
     } else if (type === 'sports') {
       targetDiary.sportsDuration = Number(value);
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'sportsType') {
       targetDiary.sportsType = String(value);
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'sportsIntensity') {
       targetDiary.sportsIntensity = value;
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'sportsCalories') {
       targetDiary.sportsCalories = Number(value);
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'sportsEnergyBefore') {
       targetDiary.sportsEnergyBefore = Number(value);
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'sportsEnergyAfter') {
       targetDiary.sportsEnergyAfter = Number(value);
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'sportsNotes') {
       targetDiary.sportsNotes = String(value);
+      markMetricTouched(selectedDate, 'exercise');
     } else if (type === 'medication') {
       if (Array.isArray(value)) {
         targetDiary.medications = value;
@@ -5813,10 +5854,13 @@ export default function App() {
       }
     } else if (type === 'water') {
       targetDiary.waterCups = Number(value);
+      markMetricTouched(selectedDate, 'water');
     } else if (type === 'fastMood') {
       targetDiary.fastMoodScore = Number(value);
+      markMetricTouched(selectedDate, 'mood');
     } else if (type === 'symptoms') {
       targetDiary.symptomsChecklist = value as string[];
+      markMetricTouched(selectedDate, 'anxietySymptoms');
     } else if (type === 'cbt') {
       targetDiary.cbtWorksheets = value as any[];
     }
@@ -7185,10 +7229,17 @@ export default function App() {
               {/* Column 1: Fast Mood Slider with visual feedback */}
               <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                    <Smile className="w-4 h-4 text-[#8B9D83]" />
-                    <span>{t.moodScaleTitle}</span>
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
+                      <Smile className="w-4 h-4 text-[#8B9D83]" />
+                      <span>{t.moodScaleTitle}</span>
+                    </h3>
+                    {!isMetricTouched(selectedDate, 'mood', dailyTouchedMetrics) && (
+                      <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200/80 px-2 py-0.5 rounded-full font-bold">
+                        {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-gray-500 font-medium">
                     {t.moodScaleDesc}
                   </p>
@@ -7247,10 +7298,17 @@ export default function App() {
               {/* Column 2: Interactive Water Bottle Tracker */}
               <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                    <span className="text-[#89CFF0] text-base">💧</span>
-                    <span>{t.waterTrackerTitle}</span>
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
+                      <span className="text-[#89CFF0] text-base">💧</span>
+                      <span>{t.waterTrackerTitle}</span>
+                    </h3>
+                    {!isMetricTouched(selectedDate, 'water', dailyTouchedMetrics) && (
+                      <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200/80 px-2 py-0.5 rounded-full font-bold">
+                        {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-gray-500 font-medium">
                     {t.waterTrackerDesc}
                   </p>
@@ -7329,10 +7387,17 @@ export default function App() {
             {/* 🩺 Physical Symptoms Tracker Panel */}
             <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
               <div className="space-y-1">
-                <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                  <Activity className="w-4 h-4 text-red-400" />
-                  <span>{t.symptomsTitle}</span>
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
+                    <Activity className="w-4 h-4 text-red-400" />
+                    <span>{t.symptomsTitle}</span>
+                  </h3>
+                  {!isMetricTouched(selectedDate, 'anxietySymptoms', dailyTouchedMetrics) && (
+                    <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200/80 px-2 py-0.5 rounded-full font-bold">
+                      {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                    </span>
+                  )}
+                </div>
                 <p className="text-[10px] text-gray-500 font-medium">
                   {t.symptomsDesc}
                 </p>
@@ -7466,9 +7531,16 @@ export default function App() {
                       <Moon className="w-4 h-4 text-blue-500" />
                       <span>{t('sleepHoursLabel')}</span>
                     </span>
-                    <span className="text-xs font-mono font-bold text-[#5A5A40]">
-                      {activeDiaryForSelectedDate?.sleepHours || 8} {t('hoursUnit')}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {!isMetricTouched(selectedDate, 'sleep', dailyTouchedMetrics) && (
+                        <span className="text-[9px] bg-indigo-50 text-indigo-700 border border-indigo-200/80 px-1.5 py-0.5 rounded-md font-bold">
+                          {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                        </span>
+                      )}
+                      <span className="text-xs font-mono font-bold text-[#5A5A40]">
+                        {activeDiaryForSelectedDate?.sleepHours || 8} {t('hoursUnit')}
+                      </span>
+                    </div>
                   </div>
                   <input
                     type="range"
@@ -7488,9 +7560,16 @@ export default function App() {
                       <Activity className="w-4 h-4 text-[#8B9D83]" />
                       <span>{t('sportsDurationLabel')}</span>
                     </span>
-                    <span className="text-xs font-mono font-bold text-[#8B9D83]">
-                      {activeDiaryForSelectedDate?.sportsDuration || 0} {t('minutesUnit')}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {!isMetricTouched(selectedDate, 'exercise', dailyTouchedMetrics) && (
+                        <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-1.5 py-0.5 rounded-md font-bold">
+                          {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                        </span>
+                      )}
+                      <span className="text-xs font-mono font-bold text-[#8B9D83]">
+                        {activeDiaryForSelectedDate?.sportsDuration || 0} {t('minutesUnit')}
+                      </span>
+                    </div>
                   </div>
                   <input
                     type="range"

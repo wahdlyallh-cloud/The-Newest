@@ -14,6 +14,12 @@ import {
   DEFAULT_AI_MEDIA_ACCESS,
   extractAvailableAttachments
 } from '../lib/aiMediaAccess';
+import {
+  loadAllTouchedMetrics,
+  isMetricTouched,
+  getLocalTodayYMD,
+  filterDiaryMetricsForAI
+} from '../lib/dailyMetricsFilter';
 
 interface IntegratedTherapyReportProps {
   diaries: DiaryEntry[];
@@ -170,17 +176,36 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
     return entryDate >= startDate && entryDate <= endDate;
   });
 
-  // Calculate statistics
+  // Calculate statistics filtering untouched metrics
   const totalEntries = filteredDiaries.length;
-  const averageSleep = filteredDiaries.length > 0 
-    ? (filteredDiaries.reduce((sum, d) => sum + (d.sleepHours || 0), 0) / (filteredDiaries.filter(d => d.sleepHours).length || 1)).toFixed(1)
-    : "8.0";
+  const touchedStore = loadAllTouchedMetrics();
+
+  const touchedSleepDiaries = filteredDiaries.filter(d =>
+    isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore) && (d.sleepHours || 0) > 0
+  );
+  const averageSleep = touchedSleepDiaries.length > 0 
+    ? (touchedSleepDiaries.reduce((sum, d) => sum + (d.sleepHours || 0), 0) / touchedSleepDiaries.length).toFixed(1)
+    : (t.notRecorded || "غير مسجل");
   
-  const totalSports = filteredDiaries.reduce((sum, d) => sum + (d.sportsDuration || 0), 0);
+  const totalSports = filteredDiaries
+    .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'exercise', touchedStore))
+    .reduce((sum, d) => sum + (d.sportsDuration || 0), 0);
 
   const generateReport = async () => {
     setLoading(true);
     try {
+      const sanitizedDiariesForAI = filteredDiaries.map(d => {
+        const fm = filterDiaryMetricsForAI(d, touchedStore, appLanguage);
+        return {
+          ...d,
+          sleepHours: fm.sleepHours,
+          sportsDuration: fm.sportsDuration,
+          waterCups: fm.waterCups,
+          fastMoodScore: fm.fastMoodScore,
+          symptomsChecklist: fm.symptomsChecklist
+        };
+      });
+
       const response = await fetch('/api/gemini/smart-advisor', {
         method: 'POST',
         headers: {
@@ -188,7 +213,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           'x-gemini-key': userApiKey || ''
         },
         body: JSON.stringify({
-          diaries: filteredDiaries,
+          diaries: sanitizedDiariesForAI,
           habits,
           gratitudeCards,
           books,

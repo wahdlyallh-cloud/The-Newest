@@ -987,6 +987,7 @@ ${getAILanguageInstruction(reqLang)}`;
       tasks,
       createdAt,
       pastDiariesContext,
+      metricsSummary,
       extraParts,
       mediaAccessPermission
     } = requestBody;
@@ -1030,6 +1031,15 @@ ${audioTranscriptions ? (Array.isArray(audioTranscriptions) ? audioTranscription
 
 - المرفقات والصور والروابط المتاحة:
 ${attachments ? (Array.isArray(attachments) ? attachments.join(', ') : attachments) : 'لا يوجد مرفقات'}
+${metricsSummary ? `
+- مؤشرات العناية بالذات والأنشطة اليومية الموثقة:
+  * النوم: ${metricsSummary.sleep || 'لم يُسجّل اليوم'}
+  * الرياضة/النشاط: ${metricsSummary.exercise || 'لم يُسجّل اليوم'}
+  * شرب الماء: ${metricsSummary.water || 'لم يُسجّل اليوم'}
+  * المزاج السريع: ${metricsSummary.moodScore || 'لم يُسجّل اليوم'}
+  * الأعراض الجسدية: ${metricsSummary.symptoms || 'لم يُسجّل اليوم'}
+  * تنبيه صارم: أي مؤشر يحمل وسم "لم يُسجّل اليوم" هو افتراضي ولم يحدث فعلياً، لا تفترض حدوثه أو تحسبه في تحليلك!
+` : ''}
 ${pastContextBlock}
 
 سجل الحوار السابق في هذه الجلسة:

@@ -1,13 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mic, Sparkles, Square, Save, RefreshCw, Activity, Clock, ChevronRight, AlertCircle } from 'lucide-react';
+import {
+  Mic,
+  Sparkles,
+  Square,
+  Save,
+  RefreshCw,
+  Activity,
+  Clock,
+  ChevronRight,
+  AlertCircle,
+  Volume2
+} from 'lucide-react';
 import { DiaryEntry, JournalEntryType, AudioRecording } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
-import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from '../lib/journalTypes';
-import { SpeechRecognitionManager } from '../lib/speechRecognition';
-import { generateGeminiContentDirect } from '../lib/gemini';
+import {
+  ALL_JOURNAL_TYPES,
+  JOURNAL_TYPES_CONFIG,
+  getJournalTypeConfig,
+  getJournalTypeLabel,
+  getJournalTypeDescription
+} from '../lib/journalTypes';
+import { generateGeminiContentDirect, transcribeAudioWithGemini } from '../lib/gemini';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
+import { LiveAudioChunker } from '../lib/liveAudioChunker';
+import { Capacitor } from '@capacitor/core';
 
 interface AIVoiceJournalModalProps {
   isOpen: boolean;
@@ -15,6 +33,29 @@ interface AIVoiceJournalModalProps {
   onSaveDiary: (entry: Partial<DiaryEntry>) => Promise<void> | void;
   appLanguage?: AppLanguage;
   apiKey?: string;
+}
+
+/**
+ * Detect the best supported MediaRecorder MIME type safely across Android WebView, iOS WebKit, and desktop browsers.
+ */
+function getBestSupportedAudioMimeType(): string | undefined {
+  if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') {
+    return undefined;
+  }
+  const candidateTypes = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+    'audio/ogg',
+    'audio/aac'
+  ];
+  for (const candidate of candidateTypes) {
+    if (MediaRecorder.isTypeSupported(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
 }
 
 export default function AIVoiceJournalModal({
@@ -31,6 +72,7 @@ export default function AIVoiceJournalModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChunkTranscribing, setIsChunkTranscribing] = useState(false);
 
   const [processedResult, setProcessedResult] = useState<{
     title: string;
@@ -41,23 +83,35 @@ export default function AIVoiceJournalModal({
     sportsDuration?: number;
   } | null>(null);
 
+  const isRecordingRef = useRef<boolean>(false);
   const timerRef = useRef<any>(null);
   const transcriptRef = useRef<string>('');
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const audioBlobRef = useRef<Blob | null>(null);
+  const resolvedMimeTypeRef = useRef<string>('audio/webm');
   const recordingStartTimeRef = useRef<number | null>(null);
   const recordingEndTimeRef = useRef<number | null>(null);
 
+  // Live Audio Chunker for Android WebView zero-mic-conflict sequential speech streaming
+  const audioChunkerRef = useRef<LiveAudioChunker | null>(null);
+  const chunkQueueRef = useRef<Blob[]>([]);
+  const isProcessingChunkRef = useRef<boolean>(false);
+  const hasReceivedSpeechRecognitionOutputRef = useRef<boolean>(false);
+
+  // Desktop SpeechRecognition instance tracking for auto-restarting
+  const nativeSpeechRecRef = useRef<any>(null);
+  const speechAccumulatedPrefixRef = useRef<string>('');
+
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+  const isAr = (appLanguage || 'ar') === 'ar';
 
   useRegisterBackStep('modal_ai_voice_journal', 'modal', isOpen, onClose, t.voiceJournalTitle);
 
   useEffect(() => {
     if (!isOpen) {
-      stopRecordingSession();
-      SpeechRecognitionManager.getInstance().abortSession();
+      stopRecordingInternal();
       setTranscript('');
       transcriptRef.current = '';
       setRecordingSeconds(0);
@@ -66,18 +120,223 @@ export default function AIVoiceJournalModal({
       setIsSaving(false);
       setMicPermissionError(null);
       audioChunksRef.current = [];
-      audioBlobRef.current = null;
       recordingStartTimeRef.current = null;
       recordingEndTimeRef.current = null;
+      chunkQueueRef.current = [];
+      isProcessingChunkRef.current = false;
+      hasReceivedSpeechRecognitionOutputRef.current = false;
+      speechAccumulatedPrefixRef.current = '';
     }
   }, [isOpen]);
 
-  const stopRecordingSession = () => {
+  /**
+   * Helper to convert an Audio Blob to Base64 safely
+   */
+  const convertBlobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') resolve(reader.result);
+        else reject(new Error('Failed to read audio blob as Base64'));
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  /**
+   * Sequential worker for processing live audio WAV chunks via Gemini
+   */
+  const processNextChunkInQueue = async () => {
+    if (isProcessingChunkRef.current || chunkQueueRef.current.length === 0) {
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return;
+    }
+
+    isProcessingChunkRef.current = true;
+    setIsChunkTranscribing(true);
+
+    const chunkBlob = chunkQueueRef.current.shift();
+    if (!chunkBlob) {
+      isProcessingChunkRef.current = false;
+      setIsChunkTranscribing(false);
+      return;
+    }
+
+    try {
+      const base64Wav = await convertBlobToBase64(chunkBlob);
+      const text = await transcribeAudioWithGemini(
+        base64Wav,
+        'audio/wav',
+        apiKey,
+        appLanguage
+      );
+
+      if (
+        text &&
+        !text.includes('__AI_CHECK_API_KEY__') &&
+        !text.includes('RESOURCE_EXHAUSTED') &&
+        !text.includes('وضع المعالجة الصوتية')
+      ) {
+        const cleaned = text.trim();
+        if (cleaned) {
+          const currentText = transcriptRef.current;
+          const nextText = currentText ? `${currentText} ${cleaned}` : cleaned;
+          transcriptRef.current = nextText;
+          setTranscript(nextText);
+        }
+      }
+    } catch (err) {
+      console.warn('[AIVoiceJournal] Live chunk transcription note (non-fatal):', err);
+    } finally {
+      isProcessingChunkRef.current = false;
+      setIsChunkTranscribing(chunkQueueRef.current.length > 0);
+      if (chunkQueueRef.current.length > 0) {
+        processNextChunkInQueue();
+      }
+    }
+  };
+
+  /**
+   * Starts the 16kHz audio chunker on the exact active stream without mic collisions
+   */
+  const startAudioChunker = (stream: MediaStream) => {
+    try {
+      if (audioChunkerRef.current) {
+        audioChunkerRef.current.stop();
+        audioChunkerRef.current = null;
+      }
+
+      const chunker = new LiveAudioChunker({
+        chunkDurationMs: 4000,
+        energyThreshold: 0.010,
+        onChunkReady: (wavBlob) => {
+          if (hasReceivedSpeechRecognitionOutputRef.current) {
+            return;
+          }
+          chunkQueueRef.current.push(wavBlob);
+          processNextChunkInQueue();
+        }
+      });
+
+      const started = chunker.start(stream);
+      if (started) {
+        audioChunkerRef.current = chunker;
+      }
+    } catch (err) {
+      console.warn('[AIVoiceJournal] startAudioChunker error:', err);
+    }
+  };
+
+  /**
+   * Desktop browser SpeechRecognition runner with auto-restart across pauses
+   */
+  const startParallelSpeechRecognition = () => {
+    try {
+      const SpeechClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechClass) return;
+
+      if (nativeSpeechRecRef.current) {
+        try {
+          nativeSpeechRecRef.current.onend = null;
+          nativeSpeechRecRef.current.onerror = null;
+          nativeSpeechRecRef.current.abort();
+        } catch (_) {}
+        nativeSpeechRecRef.current = null;
+      }
+
+      const recognition = new SpeechClass();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.lang = langInfo.speechLang || (isAr ? 'ar-EG' : 'en-US');
+
+      let currentSessionFinal = '';
+
+      recognition.onresult = (event: any) => {
+        let interim = '';
+        let newlyFinalized = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          const text = res[0]?.transcript || '';
+          if (res.isFinal) {
+            newlyFinalized += text + ' ';
+          } else {
+            interim += text;
+          }
+        }
+
+        if (newlyFinalized) {
+          currentSessionFinal += newlyFinalized;
+        }
+
+        const fullSpoken = (speechAccumulatedPrefixRef.current + ' ' + currentSessionFinal + ' ' + interim).trim();
+        if (fullSpoken) {
+          hasReceivedSpeechRecognitionOutputRef.current = true;
+          transcriptRef.current = fullSpoken;
+          setTranscript(fullSpoken);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('[AIVoiceJournal] SpeechRecognition non-fatal event:', event?.error);
+      };
+
+      recognition.onend = () => {
+        if (currentSessionFinal.trim()) {
+          speechAccumulatedPrefixRef.current = (speechAccumulatedPrefixRef.current + ' ' + currentSessionFinal).trim();
+          currentSessionFinal = '';
+        }
+
+        if (isRecordingRef.current) {
+          try {
+            recognition.start();
+          } catch (_) {
+            setTimeout(() => {
+              if (isRecordingRef.current) {
+                try { recognition.start(); } catch (_) {}
+              }
+            }, 150);
+          }
+        }
+      };
+
+      nativeSpeechRecRef.current = recognition;
+      recognition.start();
+    } catch (e) {
+      console.warn('[AIVoiceJournal] SpeechRecognition unavailable:', e);
+    }
+  };
+
+  const stopRecordingInternal = (): string => {
+    isRecordingRef.current = false;
     setIsRecording(false);
     recordingEndTimeRef.current = Date.now();
+
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+
+    if (audioChunkerRef.current) {
+      try {
+        audioChunkerRef.current.stop();
+      } catch (_) {}
+      audioChunkerRef.current = null;
+    }
+    setIsChunkTranscribing(false);
+
+    if (nativeSpeechRecRef.current) {
+      try {
+        nativeSpeechRecRef.current.onend = null;
+        nativeSpeechRecRef.current.onerror = null;
+        nativeSpeechRecRef.current.stop();
+      } catch (_) {}
+      nativeSpeechRecRef.current = null;
     }
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -87,94 +346,154 @@ export default function AIVoiceJournalModal({
       } catch (_) {}
     }
 
-    const manager = SpeechRecognitionManager.getInstance();
-    const finalTxt = manager.finalize();
-    if (finalTxt) {
-      setTranscript(finalTxt);
-      transcriptRef.current = finalTxt;
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (_) {}
+      mediaStreamRef.current = null;
     }
+
+    return (transcriptRef.current || transcript).trim();
   };
 
-  const startRecording = () => {
+  const startRecording = async () => {
     // Reset state
     setTranscript('');
     transcriptRef.current = '';
     setProcessedResult(null);
     setShowCategoryPicker(false);
     setMicPermissionError(null);
-    setIsRecording(true);
-    setRecordingSeconds(0);
     audioChunksRef.current = [];
-    audioBlobRef.current = null;
     recordingStartTimeRef.current = Date.now();
     recordingEndTimeRef.current = null;
+    chunkQueueRef.current = [];
+    isProcessingChunkRef.current = false;
+    hasReceivedSpeechRecognitionOutputRef.current = false;
+    speechAccumulatedPrefixRef.current = '';
 
-    // Timer
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setRecordingSeconds(prev => prev + 1);
-    }, 1000);
-
-    // Concurrently capture MediaRecorder audio stream for persistent playback
-    if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        try {
-          const mime = (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm')) ? 'audio/webm' : 'audio/mp4';
-          const mr = new MediaRecorder(stream, { mimeType: mime });
-          mr.ondataavailable = (e) => {
-            if (e.data && e.data.size > 0) {
-              audioChunksRef.current.push(e.data);
-            }
-          };
-          mr.onstop = () => {
-            if (audioChunksRef.current.length > 0) {
-              const blob = new Blob(audioChunksRef.current, { type: mime });
-              audioBlobRef.current = blob;
-            }
-            try {
-              stream.getTracks().forEach((t) => t.stop());
-            } catch (_) {}
-          };
-          mediaRecorderRef.current = mr;
-          mr.start(250);
-        } catch (e) {
-          console.warn('MediaRecorder init note:', e);
-        }
-      }).catch((err) => {
-        console.warn('getUserMedia note for audio recording:', err);
-      });
+    // Release any previous tracks
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      } catch (_) {}
+      mediaStreamRef.current = null;
     }
 
-    // Shared Speech Engine (Protected)
-    const manager = SpeechRecognitionManager.getInstance();
-    if (manager.isSupported()) {
-      manager.startSession({
-        lang: langInfo.speechLang || 'ar-SA',
-        continuous: true,
-        callbacks: {
-          onTranscriptChange: (state) => {
-            setTranscript(state.displayTranscript);
-            transcriptRef.current = state.displayTranscript;
-          },
-          onError: (e) => {
-            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-              setMicPermissionError(t.micPermissionDenied);
+    let stream: MediaStream;
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('navigator.mediaDevices.getUserMedia is not supported');
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (firstErr: any) {
+        const firstErrName = firstErr?.name || '';
+        if (firstErrName === 'NotReadableError' || firstErrName === 'TrackStartError' || firstErrName === 'AbortError') {
+          await new Promise((r) => setTimeout(r, 250));
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
             }
-          }
+          });
+        } else {
+          throw firstErr;
         }
-      });
-    } else {
+      }
+      mediaStreamRef.current = stream;
+    } catch (err: any) {
+      console.warn('[AIVoiceJournal] getUserMedia error:', err);
+      setMicPermissionError(t.micPermissionDenied);
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      return;
+    }
+
+    try {
+      const bestMime = getBestSupportedAudioMimeType();
+      const options: MediaRecorderOptions = bestMime ? { mimeType: bestMime } : {};
+      const mediaRecorder = options.mimeType ? new MediaRecorder(stream, options) : new MediaRecorder(stream);
+
+      resolvedMimeTypeRef.current = mediaRecorder.mimeType || bestMime || 'audio/webm';
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.start(250);
+      setIsRecording(true);
+      isRecordingRef.current = true;
+      setRecordingSeconds(0);
+
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds(prev => prev + 1);
+      }, 1000);
+    } catch (mrErr: any) {
+      console.warn('[AIVoiceJournal] MediaRecorder start issue:', mrErr);
       setMicPermissionError(t.speechNotSupported);
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      return;
     }
+
+    // Parallel Speech Engine: Capacitor native uses AudioChunker streaming; Desktop web runs WebSpeech first
+    const isCapacitorNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform();
+    if (!isCapacitorNative) {
+      startParallelSpeechRecognition();
+    }
+
+    startAudioChunker(stream);
   };
 
   const handleAnalyzeAudio = async () => {
-    stopRecordingSession();
+    const rawSpeechText = stopRecordingInternal();
     setIsAnalyzing(true);
 
-    const rawSpeechText = (SpeechRecognitionManager.getInstance().getFinalTranscript() || transcriptRef.current || transcript).trim();
+    // Wait slightly for MediaRecorder stop flush
+    await new Promise(r => setTimeout(r, 140));
 
-    if (!rawSpeechText) {
+    let audioBlob: Blob;
+    if (audioChunksRef.current.length > 0) {
+      audioBlob = new Blob(audioChunksRef.current, {
+        type: resolvedMimeTypeRef.current || 'audio/webm'
+      });
+    } else {
+      audioBlob = new Blob([], { type: resolvedMimeTypeRef.current || 'audio/webm' });
+    }
+
+    let finalSpokenText = rawSpeechText;
+
+    // If live text was sparse but we have full recorded audio, run full Gemini multimodal transcription
+    if ((!finalSpokenText || finalSpokenText.length < 5) && audioBlob.size > 0) {
+      try {
+        const base64Audio = await convertBlobToBase64(audioBlob);
+        const fullTranscription = await transcribeAudioWithGemini(
+          base64Audio,
+          resolvedMimeTypeRef.current || 'audio/webm',
+          apiKey,
+          appLanguage
+        );
+        if (
+          fullTranscription &&
+          !fullTranscription.includes('__AI_CHECK_API_KEY__') &&
+          !fullTranscription.includes('RESOURCE_EXHAUSTED') &&
+          !fullTranscription.includes('وضع المعالجة الصوتية')
+        ) {
+          finalSpokenText = fullTranscription.trim();
+          transcriptRef.current = finalSpokenText;
+          setTranscript(finalSpokenText);
+        }
+      } catch (gemErr) {
+        console.warn('[AIVoiceJournal] Post-stop full audio transcription error:', gemErr);
+      }
+    }
+
+    if (!finalSpokenText) {
       alert(t.noSpeechDetected);
       setIsAnalyzing(false);
       return;
@@ -182,14 +501,13 @@ export default function AIVoiceJournalModal({
 
     try {
       const now = new Date();
-      const isAr = (appLanguage || 'ar') === 'ar';
       const dayName = now.toLocaleDateString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47, { weekday: 'long' });
       const timeStr = now.toLocaleTimeString(langInfo.code === 'ar' ? 'ar-EG' : langInfo.bcp47, { hour: '2-digit', minute: '2-digit' });
 
-      const analysisPrompt = `نسّق هذه المذكرة الصوتية باللغة العربية مع الحفاظ الكامل على معناها وكلماتها، ثم استخرج المشاعر والحالة المزاجية والوسوم المناسبة دون اختلاق أي معلومات:
+      const analysisPrompt = `نسّق هذه المذكرة الصوتية بلغة المتحدث مع الحفاظ الكامل على معناها وكلماتها الحقيقية، ثم استخرج المشاعر والحالة المزاجية دون اختلاق أي معلومات:
 
 """
-${rawSpeechText}
+${finalSpokenText}
 """
 
 Return pure JSON only in the following schema:
@@ -219,7 +537,7 @@ Return pure JSON only in the following schema:
       }
 
       const finalTitle = parsed?.title || `${t.voiceJournalTitle} - ${dayName} ${timeStr}`;
-      const finalCleanContent = parsed?.content || rawSpeechText;
+      const finalCleanContent = parsed?.content || finalSpokenText;
       const finalMoods = Array.isArray(parsed?.moods) && parsed.moods.length > 0
         ? parsed.moods
         : [t.mood_calm, t.mood_productive];
@@ -227,7 +545,7 @@ Return pure JSON only in the following schema:
       setProcessedResult({
         title: finalTitle,
         content: finalCleanContent,
-        rawTranscript: rawSpeechText,
+        rawTranscript: finalSpokenText,
         moods: finalMoods,
         sleepHours: typeof parsed?.sleepHours === 'number' ? parsed.sleepHours : undefined,
         sportsDuration: typeof parsed?.sportsDuration === 'number' ? parsed.sportsDuration : undefined
@@ -236,8 +554,8 @@ Return pure JSON only in the following schema:
       console.error('Error during voice analysis:', err);
       setProcessedResult({
         title: `${t.voiceJournalTitle} - ${new Date().toLocaleTimeString(langInfo.bcp47, { hour: '2-digit', minute: '2-digit' })}`,
-        content: rawSpeechText,
-        rawTranscript: rawSpeechText,
+        content: finalSpokenText,
+        rawTranscript: finalSpokenText,
         moods: [t.mood_reflective],
       });
     } finally {
@@ -256,30 +574,34 @@ Return pure JSON only in the following schema:
 
     try {
       const now = new Date();
-      const isAr = (appLanguage || 'ar') === 'ar';
       const dayName = now.toLocaleDateString(t.voiceJournalTitle, { weekday: 'long' });
       const timeStr = now.toLocaleTimeString(t.voiceJournalTitle, { hour: '2-digit', minute: '2-digit' });
       const typeConfig = getJournalTypeConfig(chosenType);
 
       const voiceBadge = t.voiceJournalTitle;
-
       const formattedContent = `${voiceBadge}\n\n${processedResult.content}`;
 
-      // Calculate exact real recording duration
       const startTime = recordingStartTimeRef.current || Date.now();
       const endTime = recordingEndTimeRef.current || Date.now();
       const exactDuration = Math.max(1, Math.round((endTime - startTime) / 1000), recordingSeconds || 0);
 
-      // Save raw audio blob to IndexedDB for persistent audio playback across reloads
+      // Persist full recorded audio blob permanently in IndexedDB
       const attachmentId = `att-vj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       let audioRecordingsList: AudioRecording[] = [];
 
-      if (audioBlobRef.current) {
-        await saveAttachmentBlob(attachmentId, audioBlobRef.current, audioBlobRef.current.type);
-        const blobUrl = URL.createObjectURL(audioBlobRef.current);
+      let finalAudioBlob: Blob | null = null;
+      if (audioChunksRef.current.length > 0) {
+        finalAudioBlob = new Blob(audioChunksRef.current, {
+          type: resolvedMimeTypeRef.current || 'audio/webm'
+        });
+      }
+
+      if (finalAudioBlob && finalAudioBlob.size > 0) {
+        await saveAttachmentBlob(attachmentId, finalAudioBlob, finalAudioBlob.type);
+        const blobUrl = URL.createObjectURL(finalAudioBlob);
         const newAudioRec: AudioRecording = {
           id: `rec-${Date.now()}`,
-          name: `${t.voiceRecordingPrefix} ${timeStr}.webm`,
+          name: `${t.voiceRecordingPrefix || 'تسجيل صوتي'} ${timeStr}.webm`,
           dataUrl: blobUrl,
           blobUrl: blobUrl,
           duration: exactDuration,
@@ -423,7 +745,7 @@ Return pure JSON only in the following schema:
                   )}
                   <button
                     type="button"
-                    onClick={isRecording ? stopRecordingSession : startRecording}
+                    onClick={isRecording ? handleAnalyzeAudio : startRecording}
                     className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-all transform shadow-md cursor-pointer ${
                       isRecording
                         ? 'bg-rose-600 hover:bg-rose-700 scale-105'
@@ -441,9 +763,17 @@ Return pure JSON only in the following schema:
                       : (t.voiceRecordBtn)}
                   </p>
                   {isRecording && (
-                    <p className="text-xs font-mono font-black text-rose-600 mt-1">
-                      ⏱️ 00:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
-                    </p>
+                    <div className="flex items-center justify-center gap-2 mt-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                      <p className="text-xs font-mono font-black text-rose-600">
+                        ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
+                      </p>
+                      {isChunkTranscribing && (
+                        <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full font-bold animate-pulse">
+                          {isAr ? 'جاري التحليل الحي...' : 'Streaming...'}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -528,12 +858,23 @@ Return pure JSON only in the following schema:
               {!processedResult ? (
                 <button
                   type="button"
-                  onClick={handleAnalyzeAudio}
-                  disabled={isAnalyzing || (!isRecording && !transcript)}
-                  className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
+                  onClick={isRecording ? handleAnalyzeAudio : startRecording}
+                  disabled={isAnalyzing}
+                  className={`px-4 py-2.5 text-white text-xs font-black rounded-xl shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all ${
+                    isRecording ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#6D5D6E] hover:bg-[#4F3B51]'
+                  }`}
                 >
-                  <Sparkles className={`w-4 h-4 text-purple-200 ${isAnalyzing ? 'animate-spin' : ''}`} />
-                  <span>{isAnalyzing ? (t.analyzingVoice) : (t.voiceStopBtn)}</span>
+                  {isRecording ? (
+                    <>
+                      <Square className="w-4 h-4 fill-current" />
+                      <span>{isAnalyzing ? t.analyzingVoice : (t.voiceStopBtn || 'إيقاف وتحليل')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-4 h-4" />
+                      <span>{t.startRecording || 'بدء التسجيل'}</span>
+                    </>
+                  )}
                 </button>
               ) : (
                 <button

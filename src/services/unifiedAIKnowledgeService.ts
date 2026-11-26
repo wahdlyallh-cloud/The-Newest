@@ -7,6 +7,12 @@ import { DiaryEntry, Habit, GratitudeCard, Book, MultimodalAttachment } from '..
 import { getAttachmentBlob } from '../lib/attachmentStore';
 import { getTranslation } from '../lib/languages';
 import { AIMediaAccessPermission, isAttachmentAllowed, DEFAULT_AI_MEDIA_ACCESS, MAX_SAFE_PAYLOAD_BYTES } from '../lib/aiMediaAccess';
+import {
+  isMetricTouched,
+  loadAllTouchedMetrics,
+  getLocalTodayYMD,
+  UNRECORDED_AI_DIRECTIVE
+} from '../lib/dailyMetricsFilter';
 
 /**
  * Universal canonical entity types supported in the Knowledge Layer.
@@ -307,11 +313,25 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
       }
 
       const metrics: Record<string, any> = {};
-      if (d.sleepHours !== undefined) metrics.sleepHours = d.sleepHours;
-      if (d.sportsDuration !== undefined) metrics.sportsDuration = d.sportsDuration;
-      if (d.sportsType) metrics.sportsType = d.sportsType;
-      if (d.waterCups !== undefined) metrics.waterCups = d.waterCups;
-      if (d.fastMoodScore !== undefined) metrics.fastMoodScore = d.fastMoodScore;
+      const touchedStore = loadAllTouchedMetrics();
+      const isSleepTouched = isMetricTouched(dateStr, 'sleep', touchedStore);
+      const isExerciseTouched = isMetricTouched(dateStr, 'exercise', touchedStore);
+      const isWaterTouched = isMetricTouched(dateStr, 'water', touchedStore);
+      const isMoodTouched = isMetricTouched(dateStr, 'mood', touchedStore);
+
+      if (d.sleepHours !== undefined) {
+        metrics.sleepHours = isSleepTouched ? d.sleepHours : `لم يُسجّل اليوم (${UNRECORDED_AI_DIRECTIVE})`;
+      }
+      if (d.sportsDuration !== undefined) {
+        metrics.sportsDuration = isExerciseTouched ? d.sportsDuration : `لم يُسجّل اليوم (${UNRECORDED_AI_DIRECTIVE})`;
+      }
+      if (d.sportsType && isExerciseTouched) metrics.sportsType = d.sportsType;
+      if (d.waterCups !== undefined) {
+        metrics.waterCups = isWaterTouched ? d.waterCups : `لم يُسجّل اليوم (${UNRECORDED_AI_DIRECTIVE})`;
+      }
+      if (d.fastMoodScore !== undefined) {
+        metrics.fastMoodScore = isMoodTouched ? d.fastMoodScore : `لم يُسجّل اليوم (${UNRECORDED_AI_DIRECTIVE})`;
+      }
       if (d.importance !== undefined) metrics.importance = d.importance;
       if (d.isFavorite !== undefined) metrics.isFavorite = d.isFavorite;
 

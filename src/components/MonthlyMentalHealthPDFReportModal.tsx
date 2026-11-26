@@ -18,6 +18,12 @@ import {
   DEFAULT_AI_MEDIA_ACCESS,
   extractAvailableAttachments
 } from '../lib/aiMediaAccess';
+import {
+  loadAllTouchedMetrics,
+  isMetricTouched,
+  getLocalTodayYMD,
+  filterDiaryMetricsForAI
+} from '../lib/dailyMetricsFilter';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
 
@@ -468,21 +474,28 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
     });
   }, [diaries, startDateStr, endDateStr]);
 
-  // Period Statistics
+  // Period Statistics strictly filtering untouched baseline defaults
   const stats = useMemo(() => {
     const totalDiaries = filteredDiaries.length;
+    const touchedStore = loadAllTouchedMetrics();
     
-    const validSleepDiaries = filteredDiaries.filter(d => (d.sleepHours || 0) > 0);
+    const validSleepDiaries = filteredDiaries.filter(d => 
+      isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore) && (d.sleepHours || 0) > 0
+    );
     const avgSleep = validSleepDiaries.length > 0
       ? (validSleepDiaries.reduce((acc, d) => acc + (d.sleepHours || 0), 0) / validSleepDiaries.length).toFixed(1)
-      : '7.5';
+      : (t.notRecorded || 'غير مسجل');
 
-    const validMoodDiaries = filteredDiaries.filter(d => (d.fastMoodScore || 0) > 0);
+    const validMoodDiaries = filteredDiaries.filter(d => 
+      isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore) && (d.fastMoodScore || 0) > 0
+    );
     const avgMood = validMoodDiaries.length > 0
       ? (validMoodDiaries.reduce((acc, d) => acc + (d.fastMoodScore || 0), 0) / validMoodDiaries.length).toFixed(1)
-      : '7.8';
+      : (t.notRecorded || 'غير مسجل');
 
-    const totalSportsMinutes = filteredDiaries.reduce((acc, d) => acc + (d.sportsDuration || 0), 0);
+    const totalSportsMinutes = filteredDiaries
+      .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'exercise', touchedStore))
+      .reduce((acc, d) => acc + (d.sportsDuration || 0), 0);
 
     // Mood counts distribution normalized strictly to 100%
     const allMoods = filteredDiaries.flatMap(d => (d.moods && Array.isArray(d.moods)) ? d.moods : []);
@@ -540,13 +553,16 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
         ? `${d.getMonth() + 1}/${d.getFullYear()}`
         : `${d.getMonth() + 1}/${d.getDate()}`;
 
-      const sleep = entry?.sleepHours ?? (6.5 + Math.sin(i * 0.8) * 1.2);
-      const mood = entry?.fastMoodScore ?? Math.min(10, Math.max(3, sleep * 1.05 + Math.cos(i * 0.6) * 1.1));
+      const isSleepTouched = entry ? isMetricTouched(dateKey, 'sleep') : false;
+      const isMoodTouched = entry ? isMetricTouched(dateKey, 'mood') : false;
+
+      const sleep = (entry && isSleepTouched) ? entry.sleepHours : null;
+      const mood = (entry && isMoodTouched) ? entry.fastMoodScore : null;
 
       days.push({
         date: displayDate,
-        sleepHours: Number(Number(sleep).toFixed(1)),
-        moodScore: Number(Number(mood).toFixed(1))
+        sleepHours: sleep !== null && sleep !== undefined ? Number(Number(sleep).toFixed(1)) : 0,
+        moodScore: mood !== null && mood !== undefined ? Number(Number(mood).toFixed(1)) : 0
       });
     }
 
@@ -557,6 +573,19 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   const generateAiReport = async () => {
     setLoadingAi(true);
     try {
+      const touchedStore = loadAllTouchedMetrics();
+      const sanitizedDiariesForAI = filteredDiaries.map(d => {
+        const fm = filterDiaryMetricsForAI(d, touchedStore, appLanguage);
+        return {
+          ...d,
+          sleepHours: fm.sleepHours,
+          sportsDuration: fm.sportsDuration,
+          waterCups: fm.waterCups,
+          fastMoodScore: fm.fastMoodScore,
+          symptomsChecklist: fm.symptomsChecklist
+        };
+      });
+
       const response = await fetch('/api/gemini/smart-advisor', {
         method: 'POST',
         headers: {
@@ -564,7 +593,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           'x-gemini-key': userApiKey || ''
         },
         body: JSON.stringify({
-          diaries: filteredDiaries,
+          diaries: sanitizedDiariesForAI,
           habits,
           gratitudeCards,
           books,

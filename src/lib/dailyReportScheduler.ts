@@ -7,6 +7,11 @@ import { DiaryEntry, AppLanguage } from '../types';
 import { normalizeMoodDistribution, MoodPercentageEntry } from './emotionNormalization';
 import { PROS_CONS_STORAGE_KEY, DailyProsConsEntry } from '../components/DailyProsConsModal';
 import { DEFAULT_AI_MEDIA_ACCESS } from './aiMediaAccess';
+import {
+  filterDiaryMetricsForAI,
+  loadAllTouchedMetrics,
+  isMetricTouched
+} from './dailyMetricsFilter';
 
 /**
  * Returns strictly the local device date string formatted as YYYY-MM-DD.
@@ -170,9 +175,29 @@ export async function generateDailyReportForDate(
     // 2) Dual Auto-Generated Output: Daily Pros & Cons
     // Generate Pros/Cons for targetDateYMD and persist alongside mood breakdown
     try {
+      const touchedStore = loadAllTouchedMetrics();
+      const filteredDiariesWithSafeMetrics = targetDiaries.map(d => {
+        const fm = filterDiaryMetricsForAI(d, touchedStore, appLanguage);
+        return {
+          title: d.title || 'تدوينة',
+          content: d.content || '',
+          metrics: {
+            sleep: fm.sleepHoursFormatted,
+            exercise: fm.exerciseFormatted,
+            water: fm.waterCupsFormatted,
+            symptoms: fm.symptomsFormatted,
+            moodScore: fm.moodFormatted
+          }
+        };
+      });
+
       const fullContextParts: string[] = [
         `=== اليوميات والملاحظات (${targetDiaries.length}) ===`,
-        ...targetDiaries.map(d => `- ${d.title || 'تدوينة'}: ${d.content || ''}`),
+        ...filteredDiariesWithSafeMetrics.map(d => 
+          `- ${d.title}: ${d.content} | المؤشرات الصحية المسجلة: نوم (${d.metrics.sleep}) | رياضة (${d.metrics.exercise}) | ماء (${d.metrics.water}) | مزاج (${d.metrics.moodScore}) | أعراض (${d.metrics.symptoms})`
+        ),
+        `=== تنبيه الأمان لمنع الهلوسة ===`,
+        `أي مؤشر يحمل وسم "لم يُسجّل اليوم" هو افتراضي ولم يحدث للمستخدم إطلاقاً، تجنب اعتباره إنجازاً أو نقداً!`,
         `=== العادات والأنشطة (${habits.length}) ===`,
         ...habits.map(h => `- ${h.name || 'عادة'}: ${h.completedToday ? 'مكتملة ✅' : 'غير مكتملة ❌'}`)
       ];
@@ -253,6 +278,7 @@ export async function generateDailyReportForDate(
 
     // Save into saved reports history
     try {
+      const touchedStore = loadAllTouchedMetrics();
       const storedHistory = localStorage.getItem(REPORTS_HISTORY_KEY);
       let historyList: any[] = [];
       if (storedHistory) {
@@ -286,9 +312,21 @@ export async function generateDailyReportForDate(
         aiAnalysisText: reportText,
         statsSnapshot: {
           totalDiaries: targetDiaries.length,
-          avgSleep: '7.5',
-          avgMood: '8.0',
-          totalSportsMinutes: targetDiaries.reduce((acc, curr) => acc + (curr.sportsDuration || 0), 0)
+          avgSleep: targetDiaries.some(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore))
+            ? (targetDiaries
+                .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore))
+                .reduce((acc, curr) => acc + (curr.sleepHours || 0), 0) /
+              (targetDiaries.filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore)).length || 1)).toFixed(1)
+            : (isAr ? 'لم يُسجّل اليوم' : 'Not logged today'),
+          avgMood: targetDiaries.some(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore))
+            ? (targetDiaries
+                .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore))
+                .reduce((acc, curr) => acc + (curr.fastMoodScore || 0), 0) /
+              (targetDiaries.filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore)).length || 1)).toFixed(1)
+            : (isAr ? 'لم يُسجّل اليوم' : 'Not logged today'),
+          totalSportsMinutes: targetDiaries
+            .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'exercise', touchedStore))
+            .reduce((acc, curr) => acc + (curr.sportsDuration || 0), 0)
         }
       };
 
