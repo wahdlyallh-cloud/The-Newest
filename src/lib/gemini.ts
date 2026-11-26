@@ -16,6 +16,7 @@ import {
   markModelUnavailableForKey,
   markModelFailedForKey,
   markModelVerifiedForKey,
+  invalidateModelCacheAndRefresh,
   testGeminiApiKey
 } from './apiKeyManager';
 
@@ -507,6 +508,9 @@ export async function generateGeminiContentDirect(
         allModels429OnThisKey = false;
 
         // Model-specific failure: 404 NOT_FOUND, deprecated, or restricted
+        if (res.status === 404 || rawError.toLowerCase().includes('not_found') || rawError.toLowerCase().includes('not found')) {
+          invalidateModelCacheAndRefresh(currentKey).catch(() => {});
+        }
         markModelFailedForKey(currentKey, model, res.status, rawError);
         continue; // try next candidate model on SAME key
       } catch (err: any) {
@@ -514,6 +518,9 @@ export async function generateGeminiContentDirect(
         lastError = err?.message || String(err);
       }
     }
+
+    // When all candidate models on this key are exhausted, trigger background discovery refresh
+    invalidateModelCacheAndRefresh(currentKey).catch(() => {});
 
     // Only mark the entire key as quota_exhausted if ALL candidate models failed with 429
     if (allModels429OnThisKey) {

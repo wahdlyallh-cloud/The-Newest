@@ -392,13 +392,45 @@ export const EXCLUDED_SPECIALIZED_KEYWORDS = [
   'nano-banana'
 ];
 
-// In-memory cache for live discovered models per API key (6 hours TTL)
+// In-memory & localStorage cache for live discovered models per API key (24 hours TTL)
 interface DiscoveredCacheEntry {
   models: string[];
   timestamp: number;
 }
 const discoveryCache = new Map<string, DiscoveredCacheEntry>();
-const DISCOVERY_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+export const DISCOVERY_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const MODEL_CACHE_KEY = 'yawmiyati_gemini_models_cache';
+
+function loadDiscoveryCache(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = localStorage.getItem(MODEL_CACHE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    const now = Date.now();
+    for (const [k, val] of Object.entries(parsed)) {
+      if ((val as any)?.timestamp && (now - (val as any).timestamp < DISCOVERY_TTL_MS) && Array.isArray((val as any).models)) {
+        discoveryCache.set(k, val as DiscoveredCacheEntry);
+      }
+    }
+  } catch (_) {}
+}
+
+function saveDiscoveryCache(): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const obj: Record<string, DiscoveredCacheEntry> = {};
+    const now = Date.now();
+    for (const [k, val] of discoveryCache.entries()) {
+      if (now - val.timestamp < DISCOVERY_TTL_MS) {
+        obj[k] = val;
+      }
+    }
+    localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify(obj));
+  } catch (_) {}
+}
+
+loadDiscoveryCache();
 
 // Model availability and cooldown entry per (key, model)
 export interface ModelAvailabilityEntry {
@@ -661,7 +693,7 @@ export async function discoverGoogleModels(key: string, forceRefresh = false): P
     const data = await res.json().catch(() => ({}));
     const rawList: any[] = Array.isArray(data?.models) ? data.models : [];
 
-    const discovered = rawList
+    const candidateModels = rawList
       .filter(m => {
         const rawName = String(m?.name || '').replace(/^models\//, '').trim();
         const lower = rawName.toLowerCase();
@@ -673,21 +705,28 @@ export async function discoverGoogleModels(key: string, forceRefresh = false): P
         const methods: string[] = Array.isArray(m?.supportedGenerationMethods) ? m.supportedGenerationMethods : [];
         if (methods.length > 0 && !methods.includes('generateContent')) return false;
 
-        // Exclude retired/restricted models
-        if (RETIRED_LEGACY_MODELS.some(r => lower.includes(r))) return false;
-
-        // Exclude non-general specialized endpoints
+        // Exclude non-general specialized endpoints (embedding, imagen, veo, tts, audio, robotics, etc.)
         if (EXCLUDED_SPECIALIZED_KEYWORDS.some(k => lower.includes(k))) return false;
 
         return true;
       })
       .map(m => String(m.name).replace(/^models\//, '').trim());
 
+    // Exclude retired 1.x / 2.0 / 2.5 models unless no newer models exist
+    const isLegacy = (name: string) => {
+      const lower = name.toLowerCase();
+      return /gemini-(1\.|2\.0|2\.5)/i.test(lower) || RETIRED_LEGACY_MODELS.some(r => lower.includes(r));
+    };
+
+    const modernModels = candidateModels.filter(m => !isLegacy(m));
+    const discovered = modernModels.length > 0 ? modernModels : candidateModels;
+
     if (discovered.length > 0) {
       discoveryCache.set(cleanKey, {
         models: discovered,
         timestamp: now
       });
+      saveDiscoveryCache();
     }
 
     return discovered;
@@ -698,42 +737,54 @@ export async function discoverGoogleModels(key: string, forceRefresh = false): P
 }
 
 /**
+ * Triggers an immediate cache invalidation and background model re-discovery for key.
+ */
+export async function invalidateModelCacheAndRefresh(key: string): Promise<string[]> {
+  if (!key) return [];
+  const cleanKey = key.trim();
+  discoveryCache.delete(cleanKey);
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem(MODEL_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        delete parsed[cleanKey];
+        localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify(parsed));
+      }
+    }
+  } catch (_) {}
+  return discoverGoogleModels(cleanKey, true).catch(() => []);
+}
+
+/**
  * Future-proof dynamic scorer for models beyond the static preference list.
- * Ranks higher version numbers appropriately by tier (lite for light, flash/hydrogen for multimodal, carbon/argon/pro for deep).
+ * Automatically ranks newest lightweight models first:
+ * newest flash-lite -> newest flash -> newest active general model.
  */
 export function scoreModelForTask(model: string, taskType: 'light' | 'multimodal' | 'deep'): number {
   const clean = model.replace(/^models\//, '').toLowerCase();
   let score = 0;
 
-  // 1. Version extraction (e.g. gemini-3.5 => 350, gemini-3.8 => 380, gemini-4 => 400, gemini-5 => 500)
+  // 1. Version extraction (e.g. gemini-3.5 => 3500, gemini-3.8 => 3800, gemini-4 => 4000, gemini-5 => 5000)
   const match = clean.match(/gemini-(\d+(?:\.\d+)?)/);
   const version = match ? parseFloat(match[1]) : 3.0;
-  score += version * 100;
+  score += version * 1000;
 
-  // 2. Tier affinity bonuses
-  if (taskType === 'light') {
-    if (clean.includes('lite') || clean.includes('flash-lite')) score += 500;
-    else if (clean.includes('flash') || clean.includes('hydrogen')) score += 250;
-    else score += 50;
-  } else if (taskType === 'multimodal') {
-    if (clean.includes('flash') || clean.includes('hydrogen')) score += 400;
-    else if (clean.includes('lite')) score += 150;
-    else if (clean.includes('carbon') || clean.includes('argon') || clean.includes('pro')) score += 100;
-    else score += 50;
+  // 2. Rank newest lightweight models first:
+  // newest flash-lite (+5000) -> newest flash (+3000) -> general model (+1000)
+  if (clean.includes('flash-lite') || clean.includes('lite')) {
+    score += 5000;
+  } else if (clean.includes('flash') || clean.includes('hydrogen')) {
+    score += 3000;
   } else {
-    // deep
-    if (clean.includes('carbon') || clean.includes('argon') || clean.includes('pro') || clean.includes('ultra')) score += 600;
-    else if (clean.includes('hydrogen')) score += 400;
-    else if (clean.includes('flash')) score += 200;
-    else if (clean.includes('lite')) score += 100;
-    else score += 50;
+    score += 1000;
   }
 
-  // 3. Static preference bonus to preserve proven ranked hierarchy
-  const staticList = STATIC_TASK_MODELS[taskType];
+  // 3. Fallback tier alignment bonus
+  const staticList = STATIC_TASK_MODELS[taskType] || STATIC_TASK_MODELS.light;
   const staticIdx = staticList.indexOf(clean);
   if (staticIdx !== -1) {
-    score += (staticList.length - staticIdx) * 30;
+    score += (staticList.length - staticIdx) * 50;
   }
 
   return score;

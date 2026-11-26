@@ -166,6 +166,9 @@ export async function storeMediaAttachment(
   type: 'image' | 'video' | 'audio' | 'document' = 'image',
   customIdPrefix?: string
 ): Promise<{ attachmentId: string; objectUrl: string; mimeType: string; size: number }> {
+  if (!file || file.size === 0) {
+    throw new Error('Cannot store empty file or attachment');
+  }
   const prefix = customIdPrefix || (type === 'image' ? 'att-img' : type === 'video' ? 'att-vid' : type === 'audio' ? 'att-audio' : 'att-file');
   const attachmentId = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -229,4 +232,16 @@ export function revokeMediaUrl(urlOrAttachmentId: string): void {
     URL.revokeObjectURL(url);
     objectUrlCache.delete(urlOrAttachmentId);
   }
+}
+
+/**
+ * Clears and revokes all active in-memory media Object URLs.
+ */
+export function clearAllMediaUrls(): void {
+  for (const url of objectUrlCache.values()) {
+    try {
+      URL.revokeObjectURL(url);
+    } catch (_) {}
+  }
+  objectUrlCache.clear();
 }

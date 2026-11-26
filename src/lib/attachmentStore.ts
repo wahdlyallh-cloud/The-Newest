@@ -74,10 +74,18 @@ export const saveAttachmentBlob = async (
       blob = blobOrDataUrl;
     }
 
+    if (!blob || blob.size === 0) {
+      console.warn('[AttachmentStore] Refusing to persist empty (0-byte) attachment for ID:', attachmentId);
+      return false;
+    }
+
+    const detectedMime = blob.type || mimeType || 'application/octet-stream';
+    const finalBlob = blob.type !== detectedMime ? new Blob([blob], { type: detectedMime }) : blob;
+
     const record: StoredAttachmentRecord = {
       attachmentId,
-      blob,
-      mimeType: blob.type || mimeType || 'application/octet-stream',
+      blob: finalBlob,
+      mimeType: detectedMime,
       updatedAt: Date.now()
     };
 
@@ -108,7 +116,7 @@ export const getAttachmentBlob = async (attachmentId: string): Promise<Blob | nu
 
       req.onsuccess = () => {
         const record = req.result as StoredAttachmentRecord | undefined;
-        if (record && record.blob) {
+        if (record && record.blob && record.blob.size > 0) {
           const mime = record.mimeType || record.blob.type;
           if (mime && record.blob.type !== mime) {
             resolve(new Blob([record.blob], { type: mime }));
@@ -181,4 +189,66 @@ export const cleanOrphanAttachments = async (activeAttachmentIds: string[]): Pro
     console.warn('Failed to clean orphan attachments:', err);
     return 0;
   }
+};
+
+/**
+ * Sanitizes diary records before writing to localStorage:
+ * NEVER persists ephemeral blob: URLs which become invalid upon Android app restart.
+ * Heavy binaries (>2MB) or records backed by IndexedDB attachment IDs are marked with '#' safely.
+ */
+export const sanitizeDiariesForLocalStorage = (diaries: any[]): any[] => {
+  if (!Array.isArray(diaries)) return [];
+  return diaries.map((d) => ({
+    ...d,
+    images: (d.images || [])
+      .map((img: string, idx: number) => {
+        if (img && img.startsWith('blob:')) {
+          return d.imageAttachmentIds?.[idx] ? '#' : '';
+        }
+        return img && img.length > 2000000 ? '#' : img;
+      })
+      .filter(Boolean),
+
+    videos: (d.videos || [])
+      .map((vid: string, idx: number) => {
+        if (vid && vid.startsWith('blob:')) {
+          return d.videoAttachmentIds?.[idx] ? '#' : '';
+        }
+        return vid && vid.length > 2000000 ? '#' : vid;
+      })
+      .filter(Boolean),
+
+    files: (d.files || []).map((f: any) => ({
+      ...f,
+      dataUrl:
+        f.dataUrl && (f.dataUrl.startsWith('blob:') || f.dataUrl.length > 2000000)
+          ? f.attachmentId
+            ? '#'
+            : ''
+          : f.dataUrl || ''
+    })),
+
+    audioRecordings: (d.audioRecordings || []).map((rec: any) => ({
+      ...rec,
+      dataUrl:
+        rec.dataUrl && rec.dataUrl.startsWith('blob:')
+          ? rec.attachmentId
+            ? '#'
+            : ''
+          : rec.dataUrl,
+      blobUrl: undefined
+    })),
+
+    drawings: (d.drawings || []).map((drawItem: string, dIdx: number) => {
+      const aId = d.drawingAttachmentIds?.[dIdx];
+      return aId || (drawItem && (drawItem.startsWith('blob:') || drawItem.length > 200000))
+        ? '#'
+        : drawItem;
+    }),
+    drawing:
+      d.drawingAttachmentId ||
+      (d.drawing && (d.drawing.startsWith('blob:') || d.drawing.length > 200000))
+        ? '#'
+        : d.drawing
+  }));
 };

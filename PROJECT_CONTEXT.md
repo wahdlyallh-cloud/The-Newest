@@ -85,12 +85,49 @@ npm run build
    - Every build uses this exact keystore signature, enabling seamless **in-place updates** on Android devices without requiring uninstallation or losing local IndexedDB/localStorage data.
    - `android/app/build.gradle` dynamically reads `versionCode` from `APP_VERSION_CODE` (default 100) and `versionName` from `APP_VERSION_NAME` (default "1.0.0").
 
-3. **In-App Update Checker (`AppUpdateBanner.tsx`)**:
-   - Mounts cleanly in `App.tsx` and activates **strictly** on native platforms via `Capacitor.isNativePlatform()` (never displayed on standard browsers).
-   - Silently checks `https://api.github.com/repos/wahdlyallh-cloud/The-Newest/releases/latest` on launch and when network connection returns.
-   - Compares remote `versionCode` marker against `VITE_APP_VERSION_CODE`. When an update is detected, presents an RTL-friendly banner allowing direct one-tap `.apk` download and in-place installation.
+3. **Native In-App Android Updater (`AppUpdaterPlugin.java`, `src/lib/appUpdater.ts`, `AppSettingsUpdatesSection.tsx`)**:
+   - True native Capacitor plugin (`AppUpdaterPlugin.java`) reading installed `versionCode` and `versionName` directly from Android `PackageManager`.
+   - In-app download with background `HttpURLConnection` explicitly following HTTP 301/302/303/307/308 redirects across hosts to GitHub Release asset storage.
+   - Checks `REQUEST_INSTALL_PACKAGES` permission on Android 8+ and triggers `Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES` if needed.
+   - Emits throttled `downloadProgress` events with live progress bar and launches native `FileProvider` package installer directly without browser redirects.
+   - App Settings features a dedicated **التحديثات (Updates)** card directly below the API Key section.
 
 4. **Automated GitHub Actions CI/CD**:
    - `.github/workflows/build-android-apk.yml` triggers on push to `main` and `workflow_dispatch`.
    - Builds web bundle with dynamic version code (`100 + GITHUB_RUN_NUMBER`), compiles signed release APK using Gradle with the fixed keystore, uploads the `.apk` as a workflow artifact, and creates a tagged GitHub Release with the APK attached.
+
+---
+
+## 6. Dynamic Gemini Model Discovery & Adaptive Scoring
+
+- `discoverGoogleModels` queries `GET /v1beta/models` and caches discovered models in `localStorage` with a 24-hour TTL (`yawmiyati_gemini_models_cache`).
+- Automatic background invalidation and re-discovery triggered upon encountering `404` / `NOT_FOUND` or exhausting the active candidate list.
+- Filters keep strictly `generateContent`-capable endpoints, excluding specialized non-chat endpoints and retired legacy `1.x`/`2.0`/`2.5` models when modern models exist.
+- `scoreModelForTask` prioritizes newest lightweight models: newest `flash-lite` -> newest `flash` -> active general models, backed by offline fallback chain (`gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-4-hydrogen`, `gemini-3.8-flash`).
+- Gemini 3.5+/4 payload compatibility ensures sampling params (`temperature`, `top_p`, `top_k`) are stripped and trailing `model` turns are removed.
+
+---
+
+## 7. Emotion Percentages Accuracy & Normalization
+
+- `src/lib/emotionNormalization.ts` implements Largest-Remainder Rounding (Hare-Niemeyer method).
+- Canonical mood mapper prevents split buckets caused by Arabic/English variations and mixed casing.
+- Guarantees all non-empty distributions sum strictly to `100%` across diary badges, analytics charts, and therapist reports with zero `NaN` or rounding overflow.
+
+---
+
+## 8. Attachment Validity, Persistence & Offline Rehydration
+
+- `sanitizeDiariesForLocalStorage` strips ephemeral `blob:` URLs before writing to `localStorage`, preventing broken links after Android app restart.
+- Binary media assets are persisted in `IndexedDB` (`attachmentStore`) with non-zero size validation and explicit MIME types.
+- Startup rehydration pass automatically resolves fresh Object URLs for images, audio, and drawings on app boot.
+
+---
+
+## 9. Reliable Local-Midnight (12:00 AM) Daily Report Scheduler
+
+- `src/lib/dailyReportScheduler.ts` calculates date keys strictly in device's local timezone (preventing the 2-hour shift in UTC+2).
+- Schedules clean local 12:00 AM rollover triggers with automatic catch-up on app startup, visibility change (`document.visibilityState === 'visible'`), and `online` event.
+- Strict idempotency per local date key (`yawmiyati_daily_report_done_<DATE>`) prevents duplicate reports.
+- Background execution routed through `backgroundAIManager` guarantees uninterrupted generation across navigation.
 

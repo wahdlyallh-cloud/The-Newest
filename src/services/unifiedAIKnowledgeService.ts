@@ -689,7 +689,8 @@ export function buildUnifiedKnowledgeIndex(options: KnowledgeIndexOptions): Unif
   if (options.athkarContext) {
     const stats = options.athkarContext.dailyStats || {};
     const active = options.athkarContext.activeDhikrDetail || {};
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayDate = new Date();
+    const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
 
     const dhikrSummary = [
       `${t.dhikrTodayTotal}: ${stats.todayTotal || 0} ${t.outOfTarget} ${stats.targetGoal || 300} (${stats.completionRatePercentage || 0}%)`,
@@ -817,10 +818,11 @@ export function analyzeQueryIntent(rawQuery: string, appLanguage = 'ar'): QueryI
     /^(هو|هي|ده|دي|تلك|ذلك|ليه|لماذا|طيب وبعدين|وبعدين|what about|how about|why did that|is it)/i.test(cleaned) ||
     (words.length <= 4 && (cleaned.includes('ده') || cleaned.includes('دي') || cleaned.includes('هو') || cleaned.includes('هي')));
 
-  // Detect Temporal Scope
+  // Detect Temporal Scope using device's local timezone date
   let temporalScope: QueryIntentAnalysis['temporalScope'];
   const now = new Date();
-  const todayYMD = now.toISOString().split('T')[0];
+  const formatLocalYMD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const todayYMD = formatLocalYMD(now);
 
   // Specific ISO Date Match (e.g. 2026-08-10 or 2026/08/10)
   const isoMatch = cleaned.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
@@ -841,14 +843,14 @@ export function analyzeQueryIntent(rawQuery: string, appLanguage = 'ar'): QueryI
       labelAr: 'اليوم'
     };
   } else if (cleaned.includes('أمس') || cleaned.includes('امبارح') || cleaned.includes('yesterday')) {
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const yesterday = formatLocalYMD(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
     temporalScope = {
       type: 'exact_date',
       targetDate: yesterday,
       labelAr: 'أمس'
     };
   } else if (cleaned.includes('الأسبوع الماضي') || cleaned.includes('الاسبوع اللي فات') || cleaned.includes('last week')) {
-    const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const start = formatLocalYMD(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
     temporalScope = {
       type: 'date_range',
       startDate: start,
@@ -856,7 +858,7 @@ export function analyzeQueryIntent(rawQuery: string, appLanguage = 'ar'): QueryI
       labelAr: 'خلال الأسبوع الماضي'
     };
   } else if (cleaned.includes('الشهر الماضي') || cleaned.includes('الشهر اللي فات') || cleaned.includes('من شهر') || cleaned.includes('last month')) {
-    const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const start = formatLocalYMD(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30));
     temporalScope = {
       type: 'date_range',
       startDate: start,

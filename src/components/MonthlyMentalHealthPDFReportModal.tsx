@@ -11,6 +11,7 @@ import { exportBlobSafe } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
+import { normalizeMoodDistribution } from '../lib/emotionNormalization';
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend } from 'recharts';
 
 export interface SavedPDFReport {
@@ -473,20 +474,15 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
     const totalSportsMinutes = filteredDiaries.reduce((acc, d) => acc + (d.sportsDuration || 0), 0);
 
-    // Mood counts distribution
+    // Mood counts distribution normalized strictly to 100%
+    const allMoods = filteredDiaries.flatMap(d => (d.moods && Array.isArray(d.moods)) ? d.moods : []);
+    const normalizedMoods = normalizeMoodDistribution(allMoods, appLanguage === 'ar' ? 'ar' : 'en');
     const moodCounts: Record<string, number> = {};
-    filteredDiaries.forEach(d => {
-      if (d.moods && Array.isArray(d.moods)) {
-        d.moods.forEach(m => {
-          moodCounts[m] = (moodCounts[m] || 0) + 1;
-        });
-      }
+    normalizedMoods.forEach(item => {
+      moodCounts[item.mood] = item.percentage;
     });
 
-    const topMoods = Object.entries(moodCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4)
-      .map(([m]) => m);
+    const topMoods = normalizedMoods.slice(0, 4).map(item => `${item.mood} (${item.percentage}%)`);
 
     // Habit completion rate
     const totalHabits = habits.length;

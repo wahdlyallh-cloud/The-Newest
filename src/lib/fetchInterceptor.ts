@@ -1,5 +1,6 @@
 import { getAISystemLanguageContract, getAILanguageInstruction, getLocalizedAIFallback, getLocalizedAIError, normalizeAppLanguage, getCurrentAppLanguage } from '../services/aiLanguageContract';
 import { t, getTranslation } from '../lib/languages';
+import { normalizeMoodDistribution } from './emotionNormalization';
 import {
   getActiveApiKeyFromSettings,
   getCandidateApiKeys,
@@ -11,7 +12,8 @@ import {
   getModelCandidatesForTask,
   markModelUnavailableForKey,
   markModelFailedForKey,
-  markModelVerifiedForKey
+  markModelVerifiedForKey,
+  invalidateModelCacheAndRefresh
 } from './apiKeyManager';
 import {
   buildUnifiedKnowledgeIndex,
@@ -207,6 +209,9 @@ async function generateWithGeminiREST(
         allModels429OnThisKey = false;
 
         // Model-specific failure: 404 NOT_FOUND, deprecated, no longer available, or restricted
+        if (res.status === 404 || errMessage.toLowerCase().includes('not_found') || errMessage.toLowerCase().includes('not found')) {
+          invalidateModelCacheAndRefresh(currentKey).catch(() => {});
+        }
         markModelFailedForKey(currentKey, model, res.status, errMessage);
         continue; // try next model in loop with same key
       } catch (e: any) {
@@ -218,6 +223,9 @@ async function generateWithGeminiREST(
         console.warn(`[REST] Model: ${model} | Key #${keyIdx + 1} | Exception: ${lastErrorMsg} | Time: ${elapsed}ms`);
       }
     }
+
+    // When candidate models are exhausted on this key, trigger background discovery refresh
+    invalidateModelCacheAndRefresh(currentKey).catch(() => {});
 
     // Only mark the entire key as quota_exhausted if ALL candidate models failed with 429
     if (allModels429OnThisKey) {
@@ -353,14 +361,19 @@ Return JSON array format:
 
       const text = await generateWithGeminiREST(prompt, "You are an expert psychological mood analyst.", true, keyToUse);
       const cleanJson = extractJsonArray(text);
-      return createSuccessResponse({ success: true, analysis: cleanJson });
-    } catch (err: any) {
+      const normalized = normalizeMoodDistribution(cleanJson, appLanguage === 'ar' ? 'ar' : 'en');
       return createSuccessResponse({
         success: true,
-        analysis: [
-          { mood: "Normal", percentage: 70 },
-          { mood: "Relaxed", percentage: 30 }
-        ],
+        analysis: normalized.length > 0 ? normalized : [{ mood: appLanguage === 'ar' ? 'طبيعي' : 'Normal', percentage: 100 }]
+      });
+    } catch (err: any) {
+      const fallbackList = [
+        { mood: appLanguage === 'ar' ? "طبيعي" : "Normal", percentage: 70 },
+        { mood: appLanguage === 'ar' ? "مرتاح" : "Relaxed", percentage: 30 }
+      ];
+      return createSuccessResponse({
+        success: true,
+        analysis: normalizeMoodDistribution(fallbackList, appLanguage === 'ar' ? 'ar' : 'en'),
         source: "local-simulation"
       });
     }

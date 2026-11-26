@@ -51,7 +51,8 @@ import {
   getAttachmentBlob,
   getAttachmentObjectUrl,
   deleteAttachmentBlob,
-  cleanOrphanAttachments
+  cleanOrphanAttachments,
+  sanitizeDiariesForLocalStorage
 } from './lib/attachmentStore';
 import DailyProsConsModal from './components/DailyProsConsModal';
 import ProsConsHistoryLog from './components/ProsConsHistoryLog';
@@ -62,6 +63,9 @@ import ShareableGratitudeCardModal, { CardExportData } from './components/Sharea
 import BehavioralCorrelationCard from './components/BehavioralCorrelationCard';
 import OfflineSyncBanner from './components/OfflineSyncBanner';
 import AppUpdateBanner from './components/AppUpdateBanner';
+import AppSettingsUpdatesSection from './components/AppSettingsUpdatesSection';
+import { normalizeMoodDistribution } from './lib/emotionNormalization';
+import { initializeDailyReportScheduler } from './lib/dailyReportScheduler';
 import PredictiveHealthInsightsModal from './components/PredictiveHealthInsightsModal';
 import AIVoiceJournalModal from './components/AIVoiceJournalModal';
 import MarkdownMessage from './components/MarkdownMessage';
@@ -1305,19 +1309,7 @@ export default function App() {
 
     diariesSaveDebounceRef.current = setTimeout(() => {
       try {
-        const safeDiaries = (diaries || []).map(d => ({
-          ...d,
-          audioRecordings: (d.audioRecordings || []).map(r => ({
-            ...r,
-            dataUrl: (r.dataUrl && r.dataUrl.length > 5000000) ? '#' : r.dataUrl
-          })),
-          images: (d.images || []).map(img => (img && img.length > 3000000) ? '' : img).filter(Boolean),
-          files: (d.files || []).map(f => ({
-            ...f,
-            dataUrl: (f.dataUrl && f.dataUrl.length > 5000000) ? '#' : f.dataUrl
-          })),
-          videos: (d.videos || []).map(v => (v && v.length > 5000000) ? '#' : v).filter(Boolean)
-        }));
+        const safeDiaries = sanitizeDiariesForLocalStorage(diaries || []);
         localStorage.setItem('yawmiyati_diaries', JSON.stringify(safeDiaries));
         triggerAutoSaveFeedback();
       } catch (e) {
@@ -1338,6 +1330,69 @@ export default function App() {
       triggerAutoSaveFeedback();
     } catch (e) { console.warn(e); }
   }, [settings]);
+
+  // Global rehydration of attachments from IndexedDB on startup:
+  // Rehydrates fresh object URLs for images and audio files so cards and players display cleanly offline
+  useEffect(() => {
+    let isCancelled = false;
+    const rehydrateAllDiaries = async () => {
+      let anyRehydrated = false;
+      const updatedDiaries = await Promise.all(
+        diaries.map(async (d) => {
+          let modified = false;
+          let newImages = [...(d.images || [])];
+          let newAudio = [...(d.audioRecordings || [])];
+
+          // Check images
+          if (d.imageAttachmentIds && d.imageAttachmentIds.length > 0) {
+            for (let i = 0; i < d.imageAttachmentIds.length; i++) {
+              const aid = d.imageAttachmentIds[i];
+              if (aid && (!newImages[i] || newImages[i] === '#' || newImages[i].startsWith('blob:'))) {
+                const fresh = await getAttachmentObjectUrl(aid);
+                if (fresh) {
+                  newImages[i] = fresh;
+                  modified = true;
+                }
+              }
+            }
+          }
+
+          // Check audio recordings
+          if (d.audioRecordings && d.audioRecordings.length > 0) {
+            for (let i = 0; i < d.audioRecordings.length; i++) {
+              const rec = d.audioRecordings[i];
+              if (rec.attachmentId && (!rec.dataUrl || rec.dataUrl === '#' || rec.dataUrl.startsWith('blob:'))) {
+                const fresh = await getAttachmentObjectUrl(rec.attachmentId);
+                if (fresh) {
+                  newAudio[i] = { ...rec, dataUrl: fresh, blobUrl: fresh };
+                  modified = true;
+                }
+              }
+            }
+          }
+
+          if (modified) {
+            anyRehydrated = true;
+            return {
+              ...d,
+              images: newImages,
+              audioRecordings: newAudio
+            };
+          }
+          return d;
+        })
+      );
+
+      if (!isCancelled && anyRehydrated) {
+        setDiaries(updatedDiaries);
+      }
+    };
+
+    rehydrateAllDiaries();
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   // --- Active Diary Editing State ---
   const [previewMedia, setPreviewMedia] = useState<{ type: 'image' | 'video' | 'audio' | 'pdf', url: string, name?: string } | null>(null);
@@ -1469,23 +1524,20 @@ export default function App() {
     } catch (e) { console.warn(e); }
   }, [dailyQuote]);
 
+  // Reliable Local-Midnight (12:00 AM) Daily Report Scheduler (Catch-up, Idempotent & Background Task Safe)
+  useEffect(() => {
+    const cleanupScheduler = initializeDailyReportScheduler(
+      () => settings.userApiKey,
+      () => settings.appLanguage || 'ar'
+    );
+    return cleanupScheduler;
+  }, [settings.userApiKey, settings.appLanguage]);
+
   // Window beforeunload fail-safe auto-saver
   useEffect(() => {
     const performFullSave = () => {
       try {
-        const safeDiaries = (diaries || []).map(d => ({
-          ...d,
-          audioRecordings: (d.audioRecordings || []).map(r => ({
-            ...r,
-            dataUrl: (r.dataUrl && r.dataUrl.length > 5000000) ? '#' : r.dataUrl
-          })),
-          images: (d.images || []).map(img => (img && img.length > 3000000) ? '' : img).filter(Boolean),
-          files: (d.files || []).map(f => ({
-            ...f,
-            dataUrl: (f.dataUrl && f.dataUrl.length > 5000000) ? '#' : f.dataUrl
-          })),
-          videos: (d.videos || []).map(v => (v && v.length > 5000000) ? '#' : v).filter(Boolean)
-        }));
+        const safeDiaries = sanitizeDiariesForLocalStorage(diaries || []);
         localStorage.setItem('yawmiyati_diaries', JSON.stringify(safeDiaries));
         localStorage.setItem('yawmiyati_settings', JSON.stringify(settings));
         localStorage.setItem('yawmiyati_habits', JSON.stringify(habits));
@@ -3178,24 +3230,7 @@ export default function App() {
 
       // Instant persist to localStorage without waiting for debounce
       try {
-        const safeDiaries = next.map(d => ({
-          ...d,
-          audioRecordings: (d.audioRecordings || []).map(r => ({
-            ...r,
-            dataUrl: (r.attachmentId || (r.dataUrl && r.dataUrl.length > 500000)) ? '#' : r.dataUrl
-          })),
-          images: (d.images || []).map(img => (img && img.length > 500000) ? '' : img).filter(Boolean),
-          files: (d.files || []).map(f => ({
-            ...f,
-            dataUrl: (f.attachmentId || (f.dataUrl && f.dataUrl.length > 500000)) ? '#' : f.dataUrl
-          })),
-          videos: (d.videos || []).map(v => (v && v.length > 500000) ? '#' : v).filter(Boolean),
-          drawing: (d.drawingAttachmentId || (d.drawing && d.drawing.length > 200000)) ? '#' : d.drawing,
-          drawings: (d.drawings || []).map((drawItem, dIdx) => {
-            const aId = d.drawingAttachmentIds?.[dIdx];
-            return (aId || (drawItem && drawItem.length > 200000)) ? '#' : drawItem;
-          })
-        }));
+        const safeDiaries = sanitizeDiariesForLocalStorage(next);
         localStorage.setItem('yawmiyati_diaries', JSON.stringify(safeDiaries));
         localStorage.removeItem('yawmiyati_draft_editing_diary');
       } catch (err) {
@@ -3236,14 +3271,15 @@ export default function App() {
         .then(res => res.json())
         .then(data => {
           if (data.success && Array.isArray(data.analysis) && data.analysis.length > 0) {
+            const normalizedAnalysis = normalizeMoodDistribution(data.analysis, isAr ? 'ar' : 'en');
             setDiaries(prev => {
-              const updated = prev.map(d => d.id === updatedEntry.id ? { ...d, aiMoodAnalysis: data.analysis } : d);
+              const updated = prev.map(d => d.id === updatedEntry.id ? { ...d, aiMoodAnalysis: normalizedAnalysis } : d);
               try {
-                localStorage.setItem('yawmiyati_diaries', JSON.stringify(updated));
+                localStorage.setItem('yawmiyati_diaries', JSON.stringify(sanitizeDiariesForLocalStorage(updated)));
               } catch (_) {}
               return updated;
             });
-            backgroundAIManager.completeTask(taskId, data.analysis);
+            backgroundAIManager.completeTask(taskId, normalizedAnalysis);
           } else {
             backgroundAIManager.failTask(taskId, data.error || 'No analysis returned');
           }
@@ -7871,7 +7907,7 @@ export default function App() {
                       <span>{t.autoAiMoodAnalysisTitle}</span>
                     </span>
                     <div className="flex flex-wrap gap-2 pt-1">
-                      {editingDiary.aiMoodAnalysis.map((analysis, idx) => {
+                      {normalizeMoodDistribution(editingDiary.aiMoodAnalysis, isRtl ? 'ar' : 'en').map((analysis, idx) => {
                         const scoreColor = analysis.percentage >= 60 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : analysis.percentage >= 30 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-purple-50 text-purple-700 border-purple-100';
                         return (
                           <div
@@ -10293,7 +10329,7 @@ export default function App() {
                                         {/* AI Mood percentages */}
                                         {diary.aiMoodAnalysis && diary.aiMoodAnalysis.length > 0 && (
                                           <div className="flex flex-wrap gap-1 max-w-full overflow-hidden">
-                                            {diary.aiMoodAnalysis.slice(0, 2).map((analysis, idx) => (
+                                            {normalizeMoodDistribution(diary.aiMoodAnalysis, isRtl ? 'ar' : 'en').slice(0, 2).map((analysis, idx) => (
                                               <span
                                                 key={idx}
                                                 className="bg-purple-50 text-purple-700 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg font-black border border-purple-100 shadow-3xs flex items-center space-x-1 space-x-reverse max-w-full overflow-hidden"
@@ -10567,12 +10603,10 @@ export default function App() {
                     <span className="block text-xs font-bold text-[#5A5A40]">🧠 {t.recordedMoodsDistribution}</span>
                     <div className="h-60">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={Object.entries(
-                          diaries.flatMap(d => d.moods).reduce((acc, m) => {
-                            acc[m] = (acc[m] || 0) + 1;
-                            return acc;
-                          }, {} as Record<string, number>)
-                        ).map(([mood, count]) => ({ mood, frequency: count }))}>
+                        <BarChart data={normalizeMoodDistribution(
+                          diaries.flatMap(d => Array.isArray(d.moods) ? d.moods : []),
+                          isRtl ? 'ar' : 'en'
+                        ).map(item => ({ mood: item.mood, frequency: item.percentage }))}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#E2DCC8" />
                           <XAxis dataKey="mood" stroke="#5A5A40" style={{ fontSize: '11px' }} />
                           <YAxis stroke="#5A5A40" style={{ fontSize: '10px' }} />
@@ -10636,6 +10670,9 @@ export default function App() {
                 </div>
                 <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${isRtl ? 'rotate-180' : 'rotate-0'}`} />
               </div>
+
+              {/* SECTION: IN-APP UPDATES (DIRECTLY BELOW GEMINI API KEY) */}
+              <AppSettingsUpdatesSection appLanguage={settings?.appLanguage || 'ar'} />
 
               {/* CARD 2: FLOATING BALL TOGGLE */}
               <div className="bg-white border border-[#E2DCC8] rounded-[24px] p-5 shadow-3xs flex items-center justify-between transition-all hover:border-[#8B9D83]/30">
