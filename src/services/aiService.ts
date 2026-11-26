@@ -96,6 +96,7 @@ export const aiService = {
     appLanguage?: string;
     athkarContext?: any;
     athkarPromptText?: string;
+    mediaAccessPermission?: any;
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/smart-advisor', payload, {
       customKey,

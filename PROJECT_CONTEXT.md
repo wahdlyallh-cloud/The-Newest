@@ -124,16 +124,29 @@ npm run build
 
 ---
 
-## 9. Reliable Local-Midnight (12:00 AM) Daily Report Scheduler
+## 9. Reliable Local-Midnight (12:00 AM) Daily Report Scheduler & Full-Day Mood Breakdown
 
 - `src/lib/dailyReportScheduler.ts` calculates date keys strictly in device's local timezone (preventing the 2-hour shift in UTC+2).
 - Schedules clean local 12:00 AM rollover triggers with automatic catch-up on app startup, visibility change (`document.visibilityState === 'visible'`), and `online` event.
 - Strict idempotency per local date key (`yawmiyati_daily_report_done_<DATE>`) prevents duplicate reports.
-- Background execution routed through `backgroundAIManager` guarantees uninterrupted generation across navigation.
+- In a single midnight job, automatically generates BOTH:
+  1. **Daily Pros & Cons (الإيجابيات والسلبيات)** persisted into `yawmiyati_pros_cons_history`.
+  2. **Full-Day Mood Percentage Breakdown** combining entry moods and AI emotion analysis, strictly normalized to `100%` via `emotionNormalization.ts`.
+- Rendered side-by-side next to the «الإيجابيات والسلبيات» button and in `DailyProsConsModal.tsx`.
+- Background execution routed through `backgroundAIManager` guarantees uninterrupted generation across navigation with quota-saving `text-only` default.
 
 ---
 
-## 10. Native Android File Export Plugin (`FileExportPlugin.java`)
+## 10. Granular Per-Chat & Per-Report AI Media Access Control (Quota & Token Saver)
+
+- `src/lib/aiMediaAccess.ts` and `AIMediaAccessSelector.tsx` provide granular permission control (`text-only`, `by-type`, `selected`).
+- **Quota-Saving Default:** Every new chat and report defaults strictly to `text-only`, sending diary text and audio transcripts with ZERO raw binary media blobs unless explicitly allowed by the user.
+- **Memory Cap:** Enforces a 20MB payload limit per request on mobile WebView to prevent OOM crashes, skipping oversized items cleanly.
+- Integrated into `unifiedAIKnowledgeService.ts`, `aiService.ts`, `fetchInterceptor.ts`, `SmartAdvisor.tsx`, `App.tsx` diary chat, `DailyProsConsModal.tsx`, `MonthlyMentalHealthPDFReportModal.tsx`, and `TherapistReportModal.tsx`.
+
+---
+
+## 11. Native Android File Export Plugin (`FileExportPlugin.java`)
 
 - Capacitor native plugin (`FileExportPlugin.java`) registered in `MainActivity.java` and wired in `exportUtils.ts`.
 - Handles PNG/PDF exports by decoding Base64 on a background thread, writing to `cache/exports`, mirroring permanently to `MediaStore.Downloads/HayatAI` on Android 10+ (Q+), and launching `Intent.ACTION_SEND` with `FileProvider` (`com.hayatai.app.fileprovider`).

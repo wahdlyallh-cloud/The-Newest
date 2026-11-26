@@ -13,6 +13,12 @@ import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
 import { normalizeMoodDistribution } from '../lib/emotionNormalization';
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend } from 'recharts';
+import AIMediaAccessSelector from './AIMediaAccessSelector';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  extractAvailableAttachments
+} from '../lib/aiMediaAccess';
 
 export interface SavedPDFReport {
   id: string;
@@ -258,6 +264,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   const [loadingAi, setLoadingAi] = useState(false);
   const [aiAnalysisText, setAiAnalysisText] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
 
   // Pre-Session & Post-Session Therapy Session State
   const [preSessionMood, setPreSessionMood] = useState<number>(40);
@@ -560,7 +567,9 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
           books,
           startDate: startDateStr,
           endDate: endDateStr,
-          reportType: 'therapist'
+          reportType: 'therapist',
+          appLanguage,
+          mediaAccessPermission
         })
       });
       const data = await response.json();
@@ -1058,6 +1067,17 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
             {/* Action Buttons Group */}
             <div className="flex items-center gap-1.5 flex-wrap justify-end">
+              {/* AIMediaAccessSelector for Report */}
+              <div className="w-full sm:w-auto mb-1">
+                <AIMediaAccessSelector
+                  permission={mediaAccessPermission}
+                  onChange={setMediaAccessPermission}
+                  availableAttachments={extractAvailableAttachments(filteredDiaries)}
+                  appLanguage={appLanguage}
+                  compact={true}
+                />
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowHistoryDrawer(true)}

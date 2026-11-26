@@ -63,6 +63,13 @@ import ShareableGratitudeCardModal, { CardExportData } from './components/Sharea
 import BehavioralCorrelationCard from './components/BehavioralCorrelationCard';
 import OfflineSyncBanner from './components/OfflineSyncBanner';
 import AppUpdateBanner from './components/AppUpdateBanner';
+import AIMediaAccessSelector from './components/AIMediaAccessSelector';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  extractAvailableAttachments,
+  encodePermittedMediaParts
+} from './lib/aiMediaAccess';
 import AppSettingsUpdatesSection from './components/AppSettingsUpdatesSection';
 import { normalizeMoodDistribution } from './lib/emotionNormalization';
 import { initializeDailyReportScheduler } from './lib/dailyReportScheduler';
@@ -1109,6 +1116,7 @@ export default function App() {
   const [diaryTypeFilter, setDiaryTypeFilter] = useState<'all' | JournalEntryType | 'favorites'>('all');
   const [diaryChatMessage, setDiaryChatMessage] = useState('');
   const [diaryChatLoading, setDiaryChatLoading] = useState(false);
+  const [diaryChatMediaPermission, setDiaryChatMediaPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
 
   // States for Daily Pros & Cons Modal (الإيجابيات والسلبيات)
   const [isProsConsModalOpen, setIsProsConsModalOpen] = useState(false);
@@ -5081,25 +5089,50 @@ export default function App() {
         })
         .join('\n');
 
-      // 4. Safe compressed extra inline image parts for multimodal reasoning
-      const extraParts: any[] = [];
+      // 4. Safe compressed extra inline image parts for multimodal reasoning (strictly governed by diaryChatMediaPermission)
+      const rawAttachmentsForPerm: any[] = [];
       if (editingDiary.images && editingDiary.images.length > 0) {
-        for (const img of editingDiary.images.slice(0, 2)) {
-          if (img && img.startsWith('data:image/') && img.includes(';base64,')) {
-            const parts = img.split(';base64,');
-            if (parts[1] && parts[1].length < 1500000) {
-              const mime = parts[0].replace('data:', '');
-              extraParts.push({ inlineData: { mimeType: mime, data: parts[1] } });
-            }
-          }
-        }
+        editingDiary.images.forEach((img, idx) => {
+          rawAttachmentsForPerm.push({
+            id: editingDiary.imageAttachmentIds && editingDiary.imageAttachmentIds[idx] ? editingDiary.imageAttachmentIds[idx] : `img-${idx}`,
+            attachmentId: editingDiary.imageAttachmentIds && editingDiary.imageAttachmentIds[idx],
+            type: 'image',
+            mimeType: 'image/jpeg',
+            dataUrl: img
+          });
+        });
       }
-      if (editingDiary.drawing && editingDiary.drawing.startsWith('data:image/') && editingDiary.drawing.includes(';base64,')) {
-        const parts = editingDiary.drawing.split(';base64,');
-        if (parts[1] && parts[1].length < 1500000) {
-          extraParts.push({ inlineData: { mimeType: 'image/png', data: parts[1] } });
-        }
+      if (editingDiary.drawing) {
+        rawAttachmentsForPerm.push({
+          id: editingDiary.drawingAttachmentId || 'draw-0',
+          attachmentId: editingDiary.drawingAttachmentId,
+          type: 'image',
+          mimeType: 'image/png',
+          dataUrl: editingDiary.drawing
+        });
       }
+      if (editingDiary.audioRecordings && editingDiary.audioRecordings.length > 0) {
+        editingDiary.audioRecordings.forEach((rec, idx) => {
+          rawAttachmentsForPerm.push({
+            id: rec.attachmentId || rec.id || `audio-${idx}`,
+            attachmentId: rec.attachmentId || rec.id,
+            type: 'audio',
+            mimeType: rec.mimeType || 'audio/webm'
+          });
+        });
+      }
+      if (editingDiary.files && editingDiary.files.length > 0) {
+        editingDiary.files.forEach((f, idx) => {
+          rawAttachmentsForPerm.push({
+            id: f.attachmentId || f.id || `file-${idx}`,
+            attachmentId: f.attachmentId || f.id,
+            type: 'file',
+            mimeType: f.type || 'application/pdf'
+          });
+        });
+      }
+
+      const { parts: extraParts } = await encodePermittedMediaParts(rawAttachmentsForPerm, diaryChatMediaPermission);
 
       const res = await fetch('/api/gemini/diary-chat', {
         method: 'POST',
@@ -5127,6 +5160,7 @@ export default function App() {
           tags: editingDiary.tags || [],
           pastDiariesContext,
           extraParts,
+          mediaAccessPermission: diaryChatMediaPermission,
           appLanguage: settings.appLanguage || 'ar'
         })
       });
@@ -9821,6 +9855,15 @@ export default function App() {
                     )}
                   </div>
 
+                  {/* AIMediaAccessSelector: Per-Chat Quota & Token Saver */}
+                  <AIMediaAccessSelector
+                    permission={diaryChatMediaPermission}
+                    onChange={setDiaryChatMediaPermission}
+                    availableAttachments={editingDiary ? extractAvailableAttachments([editingDiary]) : []}
+                    appLanguage={settings?.appLanguage || 'ar'}
+                    compact={true}
+                  />
+
                   {/* Input Chat Messages */}
                   <div className="flex w-full max-w-full overflow-hidden flex-nowrap gap-2 items-center">
                     <input
@@ -10169,6 +10212,63 @@ export default function App() {
                                   <Scale className="w-3.5 h-3.5 text-[#FEFAE0]" />
                                   <span>⚖️ {t.prosConsBtnLabel}</span>
                                 </button>
+
+                                {/* Side-by-Side: Full-Day Mood Percentage Breakdown (Strictly 100% Normalized) */}
+                                {(() => {
+                                  // Compute day mood distribution across entry moods and AI analysis
+                                  const moodInputs: Array<{ mood: string; count?: number; percentage?: number }> = [];
+                                  dayEntries.forEach(d => {
+                                    if (d.moods && Array.isArray(d.moods)) {
+                                      d.moods.forEach(m => moodInputs.push({ mood: m, count: 1 }));
+                                    }
+                                    if (d.aiMoodAnalysis && Array.isArray(d.aiMoodAnalysis)) {
+                                      d.aiMoodAnalysis.forEach(item => {
+                                        if (item && item.mood) {
+                                          moodInputs.push({ mood: item.mood, percentage: item.percentage });
+                                        }
+                                      });
+                                    }
+                                  });
+                                  if (moodInputs.length === 0) {
+                                    moodInputs.push({ mood: (settings?.appLanguage || 'ar') === 'ar' ? 'مرتاح' : 'Relaxed', percentage: 100 });
+                                  }
+                                  const dayBreakdown = normalizeMoodDistribution(moodInputs, (settings?.appLanguage || 'ar') === 'ar' ? 'ar' : 'en');
+                                  const pillColors = [
+                                    'bg-emerald-50 text-emerald-800 border-emerald-200',
+                                    'bg-blue-50 text-blue-800 border-blue-200',
+                                    'bg-purple-50 text-purple-800 border-purple-200',
+                                    'bg-amber-50 text-amber-800 border-amber-200',
+                                    'bg-rose-50 text-rose-800 border-rose-200'
+                                  ];
+                                  const barColors = [
+                                    'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 'bg-amber-500', 'bg-rose-500'
+                                  ];
+                                  return (
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      {/* Slim proportional color bar */}
+                                      <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden flex shadow-inner border border-gray-200 shrink-0 hidden sm:flex">
+                                        {dayBreakdown.map((item, idx) => (
+                                          <div
+                                            key={item.mood}
+                                            style={{ width: `${item.percentage}%` }}
+                                            className={`${barColors[idx % barColors.length]} h-full`}
+                                            title={`${item.mood}: ${item.percentage}%`}
+                                          />
+                                        ))}
+                                      </div>
+                                      {/* Pills */}
+                                      {dayBreakdown.slice(0, 3).map((item, idx) => (
+                                        <span
+                                          key={item.mood}
+                                          className={`px-2 py-0.5 rounded-lg text-[10.5px] font-black border flex items-center gap-1 shadow-3xs ${pillColors[idx % pillColors.length]}`}
+                                        >
+                                          <span>{item.percentage}%</span>
+                                          <span>{item.mood}</span>
+                                        </span>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               <span className="text-[10px] md:text-xs font-bold text-[#5A5A40] bg-[#F9F7F2] border border-[#E2DCC8]/60 px-3 py-1 rounded-xl self-start sm:self-auto">

@@ -19,6 +19,12 @@ import {
   analyzeQueryIntent,
   getGroundedSystemDirectives
 } from '../services/unifiedAIKnowledgeService';
+import AIMediaAccessSelector from './AIMediaAccessSelector';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  extractAvailableAttachments
+} from '../lib/aiMediaAccess';
 
 export interface AdvisorPermissions {
   diaries: boolean;
@@ -154,6 +160,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const [fileErrorToast, setFileErrorToast] = useState<string | null>(null);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
   const [input, setInput] = useState(() => {
     return localStorage.getItem('yawmiyati_chat_input') || '';
   });
@@ -442,7 +449,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           permissions: advisorPermissions
         });
 
-        const retrieved = await retrieveRelevantKnowledge(contextualQuery, index, { maxEntities: 8, requireMediaBlobs: true });
+        const retrieved = await retrieveRelevantKnowledge(contextualQuery, index, {
+          maxEntities: 8,
+          requireMediaBlobs: mediaAccessPermission.mode !== 'text-only',
+          mediaAccessPermission
+        });
         const groundedPrompt = `سؤال المستخدم: "${contextualQuery}"\n\n${retrieved.formattedContextText}\n\n${getGroundedSystemDirectives(appLanguage)}`;
 
         answerText = await generateGeminiContentDirect(
@@ -746,6 +757,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             books: (hasConsent && advisorPermissions.books) ? books : [],
             athkarContext: getAthkarContextForAI(),
             athkarPromptText: getFormattedAthkarPromptContext(),
+            mediaAccessPermission,
             customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
             prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
             permissions: advisorPermissions,
@@ -880,7 +892,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           athkarPromptText: getFormattedAthkarPromptContext(),
           customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
           prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
-          permissions: advisorPermissions
+          permissions: advisorPermissions,
+          mediaAccessPermission
         })
       });
 
@@ -907,7 +920,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           permissions: advisorPermissions
         });
 
-        const retrieved = await retrieveRelevantKnowledge(textWithAttachments, index, { maxEntities: 10, requireMediaBlobs: true });
+        const retrieved = await retrieveRelevantKnowledge(textWithAttachments, index, {
+          maxEntities: 10,
+          requireMediaBlobs: mediaAccessPermission.mode !== 'text-only',
+          mediaAccessPermission
+        });
         const groundedPrompt = `سؤال المستخدم: "${textWithAttachments}"\n\n${retrieved.formattedContextText}\n\n${getGroundedSystemDirectives(appLanguage)}`;
 
         finalAnswer = await generateGeminiContentDirect(
@@ -1465,6 +1482,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* Bottom Input Area */}
       <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0 relative z-20">
+        {/* Granular Per-Chat AI Media Access Control */}
+        <AIMediaAccessSelector
+          permission={mediaAccessPermission}
+          onChange={setMediaAccessPermission}
+          availableAttachments={extractAvailableAttachments(diaries || [])}
+          appLanguage={appLanguage}
+          compact={true}
+        />
         {/* Attachment Options Popover Menu */}
         {showAttachmentMenu && (
           <div className="absolute bottom-full start-3 mb-2 z-50 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 w-56 space-y-1 animate-fade-in text-xs font-sans">

@@ -10,6 +10,14 @@ import { DiaryEntry, Habit, GratitudeCard, Book, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
 
+import { normalizeMoodDistribution, MoodPercentageEntry } from '../lib/emotionNormalization';
+import AIMediaAccessSelector from './AIMediaAccessSelector';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  extractAvailableAttachments
+} from '../lib/aiMediaAccess';
+
 export interface DailyProsConsEntry {
   dayKey: string; // 'YYYY-MM-DD'
   displayDate: string; // e.g. "الثلاثاء، 4 أغسطس 2026"
@@ -19,6 +27,7 @@ export interface DailyProsConsEntry {
   userPositives: string[];
   userNegatives: string[];
   updatedAt?: string;
+  moodBreakdown?: MoodPercentageEntry[]; // Full-Day Mood Breakdown strictly normalized to 100%
 }
 
 // Safe Cross-Browser Rounded Rectangle Canvas Drawer (Supports older Mobile Safari / WebKit)
@@ -110,6 +119,8 @@ export default function DailyProsConsModal({
 
   const [userPositives, setUserPositives] = useState<string[]>([]);
   const [userNegatives, setUserNegatives] = useState<string[]>([]);
+  const [moodBreakdown, setMoodBreakdown] = useState<MoodPercentageEntry[]>([]);
+  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
 
   const [newUserPositive, setNewUserPositive] = useState('');
   const [newUserNegative, setNewUserNegative] = useState('');
@@ -322,13 +333,51 @@ export default function DailyProsConsModal({
       setAiNegatives(existing.aiNegatives || []);
       setUserPositives(existing.userPositives || []);
       setUserNegatives(existing.userNegatives || []);
+      if (existing.moodBreakdown && existing.moodBreakdown.length > 0) {
+        setMoodBreakdown(existing.moodBreakdown);
+      } else {
+        computeLocalMoodBreakdown();
+      }
     } else {
       // Auto trigger AI generation if no existing record
       setUserPositives([]);
       setUserNegatives([]);
+      computeLocalMoodBreakdown();
       generateAiAnalysis();
     }
   }, [isOpen, dayKey]);
+
+  // Compute normalized mood distribution across all entries of the day
+  const computeLocalMoodBreakdown = () => {
+    const targetDiaries = (allDiaries && allDiaries.length > 0)
+      ? allDiaries.filter(d => {
+          const entryDate = d.createdAt ? d.createdAt.split('T')[0] : '';
+          return entryDate === dayKey || (dayDiaries && dayDiaries.some(dd => dd.id === d.id));
+        })
+      : dayDiaries;
+
+    const moodInputs: Array<{ mood: string; count?: number; percentage?: number }> = [];
+    (targetDiaries || []).forEach(d => {
+      if (d.moods && Array.isArray(d.moods)) {
+        d.moods.forEach(m => moodInputs.push({ mood: m, count: 1 }));
+      }
+      if (d.aiMoodAnalysis && Array.isArray(d.aiMoodAnalysis)) {
+        d.aiMoodAnalysis.forEach(item => {
+          if (item && item.mood) {
+            moodInputs.push({ mood: item.mood, percentage: item.percentage });
+          }
+        });
+      }
+    });
+
+    if (moodInputs.length === 0) {
+      moodInputs.push({ mood: isAr ? 'مرتاح' : 'Relaxed', percentage: 100 });
+    }
+
+    const normalized = normalizeMoodDistribution(moodInputs, isAr ? 'ar' : 'en');
+    setMoodBreakdown(normalized);
+    return normalized;
+  };
 
   // AI Generation Logic with Strict Structured JSON (Zero System Prompt Leakage)
   const generateAiAnalysis = async () => {
@@ -355,7 +404,8 @@ export default function DailyProsConsModal({
           fullCompiledContext,
           displayDate,
           userApiKey,
-          appLanguage
+          appLanguage,
+          mediaAccessPermission
         })
       });
 
@@ -476,7 +526,8 @@ export default function DailyProsConsModal({
       aiGeneratedAt: new Date().toISOString(),
       userPositives,
       userNegatives,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      moodBreakdown: moodBreakdown.length > 0 ? moodBreakdown : computeLocalMoodBreakdown()
     };
 
     if (existingIndex >= 0) {
@@ -1150,22 +1201,93 @@ ${t.generatedByHayatAiNotice}`;
         {/* Modal Middle Content Scrollable Area */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-gray-800">
 
-          {/* Quick Action Bar (Regenerate AI + Quick Stats) */}
-          <div data-html2canvas-ignore="true" className="bg-white border border-[#E2DCC8] rounded-2xl p-3 shadow-3xs flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-[#5A5A40] font-extrabold">
-              <Brain className="w-4 h-4 text-[#8B9D83]" />
-              <span>{t.prosConsAnalyzeAll}</span>
+          {/* Side-by-Side Top Section: Full-Day Mood Percentage Breakdown (Strict 100% Normalized) */}
+          <div className="bg-gradient-to-r from-[#FAF8F5] via-white to-[#FAF8F5] border-2 border-[#E2DCC8] rounded-2xl p-4 shadow-3xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2DCC8]/60 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🌈</span>
+                <span className="text-xs sm:text-sm font-black text-[#2B3E50]">
+                  {isAr ? 'توزيع المزاج على مدار اليوم كامل (100%)' : 'Full-Day Mood Percentage Breakdown (100%)'}
+                </span>
+              </div>
+              <span className="text-[10.5px] font-bold text-gray-500 bg-[#EFECE6] px-2.5 py-0.5 rounded-full self-start sm:self-auto">
+                {isAr ? 'تجميع المشاعر وتحليل الذكاء الاصطناعي' : 'Entry Moods + AI Emotion Analysis'}
+              </span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => generateAiAnalysis()}
-              disabled={isGeneratingAi}
-              className="px-3.5 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-black shadow-3xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isGeneratingAi ? 'animate-spin' : ''}`} />
-              <span>{isGeneratingAi ? (t.analyzing) : (t.regenerateAll)}</span>
-            </button>
+            {/* Slim Proportional Color Bar */}
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden flex shadow-inner border border-gray-200">
+              {moodBreakdown.map((item, idx) => {
+                const colors = [
+                  'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 'bg-amber-500', 
+                  'bg-rose-500', 'bg-teal-500', 'bg-indigo-500', 'bg-cyan-500'
+                ];
+                const colorClass = colors[idx % colors.length];
+                return (
+                  <div
+                    key={item.mood}
+                    style={{ width: `${item.percentage}%` }}
+                    className={`${colorClass} h-full transition-all duration-500`}
+                    title={`${item.mood}: ${item.percentage}%`}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Percentage Pills Side-by-Side */}
+            <div className="flex flex-wrap gap-2 items-center">
+              {moodBreakdown.map((item, idx) => {
+                const colors = [
+                  'bg-emerald-50 text-emerald-800 border-emerald-200',
+                  'bg-blue-50 text-blue-800 border-blue-200',
+                  'bg-purple-50 text-purple-800 border-purple-200',
+                  'bg-amber-50 text-amber-800 border-amber-200',
+                  'bg-rose-50 text-rose-800 border-rose-200',
+                  'bg-teal-50 text-teal-800 border-teal-200'
+                ];
+                const pillColor = colors[idx % colors.length];
+                return (
+                  <span
+                    key={item.mood}
+                    className={`px-2.5 py-1 rounded-xl text-xs font-black border flex items-center gap-1.5 shadow-3xs ${pillColor}`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-current opacity-70"></span>
+                    <span>{item.percentage}% {item.mood}</span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick Action Bar (Regenerate AI + Quick Stats & Media Access Control) */}
+          <div data-html2canvas-ignore="true" className="space-y-2">
+            <AIMediaAccessSelector
+              permission={mediaAccessPermission}
+              onChange={setMediaAccessPermission}
+              availableAttachments={extractAvailableAttachments(allDiaries || dayDiaries || [])}
+              appLanguage={appLanguage}
+              compact={true}
+            />
+
+            <div className="bg-white border border-[#E2DCC8] rounded-2xl p-3 shadow-3xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs text-[#5A5A40] font-extrabold">
+                <Brain className="w-4 h-4 text-[#8B9D83]" />
+                <span>{t.prosConsAnalyzeAll}</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  computeLocalMoodBreakdown();
+                  generateAiAnalysis();
+                }}
+                disabled={isGeneratingAi}
+                className="px-3.5 py-2 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-black shadow-3xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isGeneratingAi ? 'animate-spin' : ''}`} />
+                <span>{isGeneratingAi ? (t.analyzing) : (t.regenerateAll)}</span>
+              </button>
+            </div>
           </div>
 
           {/* SECTION 1: AI Generated Positives (Right) vs Negatives (Left) */}

@@ -20,6 +20,12 @@ import {
   retrieveRelevantKnowledge,
   getGroundedSystemDirectives
 } from '../services/unifiedAIKnowledgeService';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  isAttachmentAllowed,
+  MAX_SAFE_PAYLOAD_BYTES
+} from './aiMediaAccess';
 
 function cleanModelIdentifier(modelName?: string): string {
   if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
@@ -603,8 +609,11 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       athkarPromptText,
       prosConsRecords,
       customCopingCards,
-      permissions
+      permissions,
+      mediaAccessPermission
     } = requestBody;
+
+    const activeMediaPerm: AIMediaAccessPermission = mediaAccessPermission || DEFAULT_AI_MEDIA_ACCESS;
 
     // Build Unified Knowledge Index from all provided app data sources
     const knowledgeIndex = buildUnifiedKnowledgeIndex({
@@ -623,7 +632,8 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
     try {
       retrievedContext = await retrieveRelevantKnowledge(userQuery, knowledgeIndex, {
         maxEntities: 12,
-        requireMediaBlobs: true
+        requireMediaBlobs: activeMediaPerm.mode !== 'text-only',
+        mediaAccessPermission: activeMediaPerm
       });
     } catch (retrievalErr) {
       console.warn('[fetchInterceptor] Knowledge retrieval warning:', retrievalErr);
@@ -644,9 +654,9 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
       }
 
       let extraParts: any[] = [];
-      if (attachments && Array.isArray(attachments)) {
+      if (activeMediaPerm.mode !== 'text-only' && attachments && Array.isArray(attachments)) {
         extraParts = attachments
-          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType)
+          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType && isAttachmentAllowed(att, activeMediaPerm))
           .map((att: any) => {
             if (att.fileUri) {
               return {
@@ -738,9 +748,9 @@ ${retrievedContext ? retrievedContext.formattedContextText : 'لا توجد بي
       }
 
       let extraParts: any[] = [];
-      if (attachments && Array.isArray(attachments)) {
+      if (activeMediaPerm.mode !== 'text-only' && attachments && Array.isArray(attachments)) {
         extraParts = attachments
-          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType)
+          .filter((att: any) => att && (att.base64Data || att.fileUri) && att.mimeType && isAttachmentAllowed(att, activeMediaPerm))
           .map((att: any) => {
             if (att.fileUri) {
               return {
@@ -977,8 +987,12 @@ ${getAILanguageInstruction(reqLang)}`;
       tasks,
       createdAt,
       pastDiariesContext,
-      extraParts
+      extraParts,
+      mediaAccessPermission
     } = requestBody;
+
+    const chatMediaPerm: AIMediaAccessPermission = mediaAccessPermission || DEFAULT_AI_MEDIA_ACCESS;
+    const filteredExtraParts = chatMediaPerm.mode === 'text-only' ? undefined : extraParts;
 
     const formattedLogs = (chatLogs || []).map((msg: any) => `${msg.sender === 'user' ? 'المستخدم' : 'المعالج النفسي الذكي'}: ${msg.text}`).join("\n");
     const tasksSummary = (tasks && Array.isArray(tasks) && tasks.length > 0)
@@ -1036,7 +1050,7 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
         systemPrompt, 
         false, 
         keyToUse, 
-        extraParts,
+        filteredExtraParts,
         'reasoning',
         reqLang
       );

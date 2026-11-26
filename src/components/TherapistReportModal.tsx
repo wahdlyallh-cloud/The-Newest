@@ -3,6 +3,12 @@ import { Calendar, Brain, FileText, CheckCircle, AlertTriangle, Sparkles, Printe
 import { DiaryEntry } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
+import AIMediaAccessSelector from './AIMediaAccessSelector';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  extractAvailableAttachments
+} from '../lib/aiMediaAccess';
 
 interface TherapistReportModalProps {
   isOpen: boolean;
@@ -28,6 +34,7 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   const [reportText, setReportText] = useState<string>('');
   const [reportSource, setReportSource] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
 
   if (!isOpen) return null;
 
@@ -69,7 +76,8 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
           endDate,
           reportType: 'therapist',
           appLanguage: appLanguage,
-          langCode: appLanguage
+          langCode: appLanguage,
+          mediaAccessPermission
         })
       });
       const data = await response.json();
@@ -266,6 +274,15 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
               <span className="text-base sm:text-lg font-extrabold text-[#D4A373]">{totalSports} {t.minutesUnit}</span>
             </div>
           </div>
+
+          {/* Granular Per-Report AI Media Access Control */}
+          <AIMediaAccessSelector
+            permission={mediaAccessPermission}
+            onChange={setMediaAccessPermission}
+            availableAttachments={extractAvailableAttachments(filteredDiaries)}
+            appLanguage={appLanguage}
+            compact={true}
+          />
 
           {/* Generate Action Button */}
           {filteredDiaries.length === 0 ? (

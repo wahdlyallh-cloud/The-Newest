@@ -8,6 +8,12 @@ import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
 import MonthlyMentalHealthPDFReportModal, { SavedPDFReport, INITIAL_SAVED_REPORTS } from './MonthlyMentalHealthPDFReportModal';
+import AIMediaAccessSelector from './AIMediaAccessSelector';
+import {
+  AIMediaAccessPermission,
+  DEFAULT_AI_MEDIA_ACCESS,
+  extractAvailableAttachments
+} from '../lib/aiMediaAccess';
 
 interface IntegratedTherapyReportProps {
   diaries: DiaryEntry[];
@@ -37,6 +43,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   const [reportText, setReportText] = useState<string>('');
   const [reportSource, setReportSource] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
 
   // Saved Reports History State
   const [savedReports, setSavedReports] = useState<SavedPDFReport[]>(() => {
@@ -187,7 +194,9 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
           books,
           startDate,
           endDate,
-          reportType: 'therapist'
+          reportType: 'therapist',
+          appLanguage,
+          mediaAccessPermission
         })
       });
       const data = await response.json();
@@ -342,14 +351,25 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
         </div>
 
         {/* Master Single Unified Button */}
-        <button
-          type="button"
-          onClick={() => setIsPdfModalOpen(true)}
-          className="relative z-10 px-5 py-3.5 bg-gradient-to-r from-[#FEFAE0] to-[#E2DCC8] hover:from-white hover:to-[#FEFAE0] text-[#2B3E50] rounded-2xl font-black text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer shrink-0 hover:scale-102 active:scale-98 border border-white/40 group"
-        >
-          <Sparkles className="w-4 h-4 text-[#8B9D83] group-hover:rotate-12 transition-transform" />
-          <span>{t.generateAndPreviewClinicalReport}</span>
-        </button>
+        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="w-full sm:w-auto">
+            <AIMediaAccessSelector
+              permission={mediaAccessPermission}
+              onChange={setMediaAccessPermission}
+              availableAttachments={extractAvailableAttachments(filteredDiaries)}
+              appLanguage={appLanguage}
+              compact={true}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsPdfModalOpen(true)}
+            className="px-5 py-3.5 bg-gradient-to-r from-[#FEFAE0] to-[#E2DCC8] hover:from-white hover:to-[#FEFAE0] text-[#2B3E50] rounded-2xl font-black text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer shrink-0 hover:scale-102 active:scale-98 border border-white/40 group"
+          >
+            <Sparkles className="w-4 h-4 text-[#8B9D83] group-hover:rotate-12 transition-transform" />
+            <span>{t.generateAndPreviewClinicalReport}</span>
+          </button>
+        </div>
       </div>
 
       {/* Date Range Selection & Local Stats */}

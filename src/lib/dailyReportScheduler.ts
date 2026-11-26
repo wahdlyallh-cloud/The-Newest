@@ -4,6 +4,9 @@
 
 import { backgroundAIManager } from './backgroundAIManager';
 import { DiaryEntry, AppLanguage } from '../types';
+import { normalizeMoodDistribution, MoodPercentageEntry } from './emotionNormalization';
+import { PROS_CONS_STORAGE_KEY, DailyProsConsEntry } from '../components/DailyProsConsModal';
+import { DEFAULT_AI_MEDIA_ACCESS } from './aiMediaAccess';
 
 /**
  * Returns strictly the local device date string formatted as YYYY-MM-DD.
@@ -127,7 +130,8 @@ export async function generateDailyReportForDate(
         diaries: targetDiaries,
         habits,
         gratitudeCards,
-        appLanguage
+        appLanguage,
+        mediaAccessPermission: DEFAULT_AI_MEDIA_ACCESS
       })
     });
 
@@ -137,6 +141,115 @@ export async function generateDailyReportForDate(
         ? `تقرير يوم ${targetDateYMD}: تم تسجيل وتلخيص أنشطتك بنجاح، ونتمنى لك يوماً جديداً مليئاً بالسكينة والإنجاز.`
         : `Daily Report for ${targetDateYMD}: Your daily reflections and activities have been successfully logged.`
     );
+
+    // 1) Compute Full-Day Mood Breakdown across all entries of that day
+    // Combines recorded entry moods + AI entry emotion analysis, strictly normalized to 100%
+    const moodInputs: Array<{ mood: string; count?: number; percentage?: number }> = [];
+    targetDiaries.forEach(d => {
+      if (d.moods && Array.isArray(d.moods)) {
+        d.moods.forEach(m => moodInputs.push({ mood: m, count: 1 }));
+      }
+      if (d.aiMoodAnalysis && Array.isArray(d.aiMoodAnalysis)) {
+        d.aiMoodAnalysis.forEach(item => {
+          if (item && item.mood) {
+            moodInputs.push({ mood: item.mood, percentage: item.percentage });
+          }
+        });
+      }
+    });
+
+    if (moodInputs.length === 0) {
+      moodInputs.push({ mood: isAr ? 'مرتاح' : 'Relaxed', percentage: 100 });
+    }
+
+    const normalizedBreakdown: MoodPercentageEntry[] = normalizeMoodDistribution(
+      moodInputs,
+      isAr ? 'ar' : 'en'
+    );
+
+    // 2) Dual Auto-Generated Output: Daily Pros & Cons
+    // Generate Pros/Cons for targetDateYMD and persist alongside mood breakdown
+    try {
+      const fullContextParts: string[] = [
+        `=== اليوميات والملاحظات (${targetDiaries.length}) ===`,
+        ...targetDiaries.map(d => `- ${d.title || 'تدوينة'}: ${d.content || ''}`),
+        `=== العادات والأنشطة (${habits.length}) ===`,
+        ...habits.map(h => `- ${h.name || 'عادة'}: ${h.completedToday ? 'مكتملة ✅' : 'غير مكتملة ❌'}`)
+      ];
+      const compiledContext = fullContextParts.join('\n');
+
+      let prosList: string[] = [];
+      let consList: string[] = [];
+
+      try {
+        const pcRes = await fetch('/api/gemini/pros-cons-report', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-gemini-key': userApiKey || '',
+            'x-app-language': appLanguage
+          },
+          body: JSON.stringify({
+            fullCompiledContext: compiledContext,
+            displayDate: targetDateYMD,
+            appLanguage,
+            mediaAccessPermission: DEFAULT_AI_MEDIA_ACCESS
+          })
+        });
+        const pcData = await pcRes.json().catch(() => ({}));
+        if (pcData.success && Array.isArray(pcData.pros) && Array.isArray(pcData.cons)) {
+          prosList = pcData.pros;
+          consList = pcData.cons;
+        }
+      } catch (_) {}
+
+      if (prosList.length === 0) {
+        prosList = [
+          isAr ? 'تسجيل ومتابعة أنشطة اليوم والالتزام بالتدوين الواعي.' : 'Consistent journaling and mindful reflection.',
+          isAr ? 'الحفاظ على توازن اليوم والمضي قدماً في الأهداف.' : 'Maintaining balance and progressing on daily goals.'
+        ];
+      }
+      if (consList.length === 0) {
+        consList = [
+          isAr ? 'الحاجة لمزيد من الاسترخاء والنوم المنتظم غداً.' : 'Prioritize deeper relaxation and consistent sleep tomorrow.'
+        ];
+      }
+
+      // Save or update in Pros & Cons history store
+      const storedPC = localStorage.getItem(PROS_CONS_STORAGE_KEY);
+      let pcRecords: DailyProsConsEntry[] = [];
+      if (storedPC) {
+        try { pcRecords = JSON.parse(storedPC); } catch (_) {}
+      }
+
+      const existingIdx = pcRecords.findIndex(r => r.dayKey === targetDateYMD);
+      const newProsConsRecord: DailyProsConsEntry = {
+        dayKey: targetDateYMD,
+        displayDate: targetDateYMD,
+        aiPositives: prosList,
+        aiNegatives: consList,
+        aiGeneratedAt: new Date().toISOString(),
+        userPositives: [],
+        userNegatives: [],
+        updatedAt: new Date().toISOString(),
+        moodBreakdown: normalizedBreakdown
+      };
+
+      if (existingIdx >= 0) {
+        pcRecords[existingIdx] = {
+          ...pcRecords[existingIdx],
+          aiPositives: prosList,
+          aiNegatives: consList,
+          moodBreakdown: normalizedBreakdown,
+          updatedAt: new Date().toISOString()
+        };
+      } else {
+        pcRecords.unshift(newProsConsRecord);
+      }
+      localStorage.setItem(PROS_CONS_STORAGE_KEY, JSON.stringify(pcRecords));
+    } catch (pcErr) {
+      console.warn('[DailyReportScheduler] Error auto-generating Pros & Cons:', pcErr);
+    }
 
     // Save into saved reports history
     try {

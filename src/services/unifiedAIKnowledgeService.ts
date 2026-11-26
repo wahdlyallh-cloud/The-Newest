@@ -6,6 +6,7 @@
 import { DiaryEntry, Habit, GratitudeCard, Book, MultimodalAttachment } from '../types';
 import { getAttachmentBlob } from '../lib/attachmentStore';
 import { getTranslation } from '../lib/languages';
+import { AIMediaAccessPermission, isAttachmentAllowed, DEFAULT_AI_MEDIA_ACCESS, MAX_SAFE_PAYLOAD_BYTES } from '../lib/aiMediaAccess';
 
 /**
  * Universal canonical entity types supported in the Knowledge Layer.
@@ -1017,6 +1018,7 @@ export interface RetrievalOptions {
   minScoreThreshold?: number;
   requireMediaBlobs?: boolean;
   appLanguage?: string;
+  mediaAccessPermission?: AIMediaAccessPermission;
 }
 
 export async function retrieveRelevantKnowledge(
@@ -1169,22 +1171,41 @@ export async function retrieveRelevantKnowledge(
 
   // --------------------------------------------------------------------------
   // Multimodal Media Loader (Loads drawings, images, audio from IndexedDB)
+  // Quota & Memory Protected: Requires explicit mediaAccessPermission allowing media.
+  // Defaults to text-only (zero blobs) with 20MB total payload cap.
   // --------------------------------------------------------------------------
   const multimodalParts: Array<{ mimeType: string; data?: string; fileUri?: string; description?: string }> = [];
+  const mediaPerm = options.mediaAccessPermission || DEFAULT_AI_MEDIA_ACCESS;
+  let totalMediaBytes = 0;
 
-  if (options.requireMediaBlobs !== false) {
+  if (options.requireMediaBlobs !== false && mediaPerm.mode !== 'text-only') {
     for (const ent of topMatches) {
       if (ent.mediaPayload) {
+        const attToCheck = {
+          id: ent.id,
+          attachmentId: ent.mediaPayload.attachmentId,
+          type: ent.sourceType === 'audio_recording' ? 'audio' : (ent.sourceType === 'pdf_document' ? 'file' : (ent.sourceType === 'video_attachment' ? 'video' : 'image')),
+          mimeType: ent.mediaPayload.mimeType
+        };
+
+        if (!isAttachmentAllowed(attToCheck, mediaPerm)) {
+          continue;
+        }
+
         // 1. Direct Base64 dataUrl (Drawings, small images)
         if (ent.mediaPayload.dataUrl && ent.mediaPayload.dataUrl.startsWith('data:')) {
           const parts = ent.mediaPayload.dataUrl.split(';base64,');
           if (parts.length === 2) {
             const mime = ent.mediaPayload.mimeType || parts[0].replace('data:', '') || 'image/png';
-            multimodalParts.push({
-              mimeType: mime,
-              data: parts[1],
-              description: `[${t.visualAttachment} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
-            });
+            const estBytes = Math.round((parts[1].length * 3) / 4);
+            if (totalMediaBytes + estBytes <= MAX_SAFE_PAYLOAD_BYTES) {
+              totalMediaBytes += estBytes;
+              multimodalParts.push({
+                mimeType: mime,
+                data: parts[1],
+                description: `[${t.visualAttachment} - ${options.appLanguage === 'ar' ? ent.sourceLabelAr : ent.sourceLabelEn}]`
+              });
+            }
           }
         }
         // 2. Gemini File URI
@@ -1197,11 +1218,10 @@ export async function retrieveRelevantKnowledge(
         }
         // 3. Blob in IndexedDB
         else if (ent.mediaPayload.attachmentId) {
-            try {
-              const blob = await getAttachmentBlob(ent.mediaPayload.attachmentId);
-              // Increased inline payload limit to 19MB for Gemini limits
-              if (blob && blob.size <= 19 * 1024 * 1024) {
- // Safe inline threshold
+          try {
+            const blob = await getAttachmentBlob(ent.mediaPayload.attachmentId);
+            if (blob && (totalMediaBytes + blob.size <= MAX_SAFE_PAYLOAD_BYTES)) {
+              totalMediaBytes += blob.size;
               const base64 = await new Promise<string>((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
