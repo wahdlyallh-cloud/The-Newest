@@ -1,4 +1,5 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
+import html2canvasPro from 'html2canvas-pro';
 
 export interface FileExportPluginInterface {
   saveAndShareFile(options: {
@@ -9,6 +10,44 @@ export interface FileExportPluginInterface {
 }
 
 const FileExport = registerPlugin<FileExportPluginInterface>('FileExport');
+
+/**
+ * Universal safe capture helper wrapping html2canvas-pro.
+ * Natively supports CSS Color 4 formats (oklch, oklab, lch, lab, color-mix) from Tailwind v4.
+ * Safeguards @font-face rules and ensures safe background color handling while chaining any caller onclone logic.
+ */
+export async function captureElementToCanvas(
+  element: HTMLElement,
+  options: Record<string, any> = {}
+): Promise<HTMLCanvasElement> {
+  const { onclone: callerOnClone, backgroundColor = '#ffffff', scale = 2, useCORS = true, ...restOptions } = options;
+
+  return await (html2canvasPro as any)(element, {
+    scale,
+    useCORS,
+    backgroundColor,
+    ...restOptions,
+    onclone: (clonedDoc: Document, clonedElement: HTMLElement) => {
+      try {
+        // Ensure cloned element root has an explicit safe background if transparent
+        if (!clonedElement.style.backgroundColor && backgroundColor) {
+          clonedElement.style.backgroundColor = backgroundColor;
+        }
+      } catch (err) {
+        console.warn('[captureElementToCanvas] onclone style safeguard warning:', err);
+      }
+
+      // Chain caller-provided onclone callback if defined
+      if (typeof callerOnClone === 'function') {
+        try {
+          callerOnClone(clonedDoc, clonedElement);
+        } catch (chainErr) {
+          console.warn('[captureElementToCanvas] caller onclone callback warning:', chainErr);
+        }
+      }
+    }
+  });
+}
 
 export interface ExportFileOptions {
   blob: Blob;

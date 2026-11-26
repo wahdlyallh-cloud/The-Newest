@@ -179,20 +179,23 @@ npm run build
 
 ---
 
-## 13. Full-App Native Android Mobile UX & Step-by-Step Back Navigation
+## 14. Top Header Action Bar Polish & html2canvas-pro Modern Color Migration
 
-- **Native App Bar Headers (`NativeModalHeader.tsx`):**
-  - Replaces web-style corner `X` close buttons across all major modals (Export Diary, Daily Pros & Cons, Voice Vent, Gemini Keys, Languages, Smart Reminders, Therapist Report, Mental Health PDF Report, Attachments, AI Voice Journal, Gratitude Import, Contact Developer, Rating, and Habit Form) with touch-friendly App Bar headers (`min-w-[44px] min-h-[44px]`).
-  - Automatically flips the back arrow appropriately for RTL/LTR layouts (pointing rightwards in Arabic RTL, leftwards in LTR).
-  - Converts full-feature modals on mobile (`< 768px`) to full-screen native app views (`h-[100dvh] rounded-none border-0`) with independent scrollable bodies (`overscroll-contain`) while preserving centered card framing on desktop (`sm:rounded-3xl`).
-- **Unified Step-by-Step Navigation History Stack (`src/lib/navigationStack.ts`):**
-  - Defines a unified navigation manager tracking open modals, drawers, sheets, and tab history chronologically.
-  - One shared handler `handleStepBack()` coordinates:
-    1. **Priority 1:** Closes the topmost active modal, sheet, or overlay.
-    2. **Priority 2:** Steps back one screen/tab in internal navigation history.
-    3. **Priority 3 (Home root):** Shows a localized toast (`"اضغط مرة أخرى للخروج من التطبيق"`) and exits cleanly only upon a second Back press within 2 seconds.
-  - **Movable Floating Back Arrow:** Preserves the existing draggable mobile back arrow 100% intact, wired to the unified navigation handler with a dynamic badge indicating combined stack depth.
-  - **Zero-Failure Android Integration:** Evaluates `window.__hayatHandleBackPress()` via `evaluateJavascript` inside `MainActivity.java`'s `OnBackPressedCallback`, backed by `@capacitor/app` `backButton` listener in JS.
+- **Decluttered Top Action Bar (`src/App.tsx`):**
+  - Streamlined the mobile top expandable header bar (accessed via `+` / `X` toggle button next to the "حياة AI" logo).
+  - Removed duplicate shortcuts already accessible from primary bottom tabs or dedicated screens: المستشار الذكي (Advisor tab), جلسة دعم نفسي (Therapy Report session), and خواطري (Diary sub-tab).
+  - Arranged remaining essential items in RTL order with uniform height (`h-10 min-h-[40px]`), clean spacing (`gap-2`), crisp typography (`whitespace-nowrap shrink-0`), and smooth hidden horizontal scrolling:
+    1. **الأذكار** (Athkar)
+    2. **جدار الامتنان** (Gratitude Wall)
+    3. **تمارين العلاج المعرفي** (CBT Exercises)
+    4. **التنبيهات / الإشعارات** (Smart Reminders with active count badge)
+    5. **تسجيل الدخول / الحساب** (Login / Account status button)
+- **Universal html2canvas-pro Migration (`exportUtils.ts`):**
+  - Fully resolved `Attempting to parse an unsupported color function "oklch"` errors stemming from Tailwind CSS v4 color formats (`oklch()`, `oklab()`, `lch()`, `color-mix()`).
+  - Added `captureElementToCanvas(element, options)` helper in `src/lib/exportUtils.ts` wrapping `html2canvas-pro` with safe background chaining and `@font-face` preservation.
+  - Migrated all direct `html2canvas` calls across the codebase (`ExportDiaryModal.tsx`, `DailyProsConsModal.tsx`, `MonthlyMentalHealthPDFReportModal.tsx`, `ShareableGratitudeCardModal.tsx`, `SmartAdvisor.tsx`, and `App.tsx`) to `captureElementToCanvas`.
+  - Upgraded `ExportDiaryModal.tsx` media detection to inspect all visual attachments (including image-typed files and drawings) and preload them into inline Base64 data URIs from `IndexedDB` prior to capture.
+
 
 
 

@@ -5,9 +5,8 @@ import {
   Copy, Check, FileCode, History, Save, Trash2, Stethoscope, UserCheck, ArrowRightLeft,
   Plus, MessageSquare, ListTodo, Search, ArrowLeftRight, BookOpen, Award
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { exportBlobSafe } from '../lib/exportUtils';
+import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
@@ -771,7 +770,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
       await new Promise(resolve => setTimeout(resolve, 400));
 
       const element = reportRef.current;
-      const canvas = await html2canvas(element, {
+      const canvas = await captureElementToCanvas(element, {
         scale: 2,
         useCORS: true,
         allowTaint: true,

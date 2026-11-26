@@ -5,9 +5,8 @@ import MarkdownMessage from './MarkdownMessage';
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download, Check } from 'lucide-react';
 import { copyTextSafe } from '../lib/clipboard';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { exportBlobSafe } from '../lib/exportUtils';
+import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
@@ -1081,7 +1080,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     const chatEl = document.getElementById('smart-advisor-chat-box');
     if (!chatEl || activeMessages.length === 0) return;
     try {
-      const canvas = await html2canvas(chatEl, {
+      const canvas = await captureElementToCanvas(chatEl, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#FFFFFF',

@@ -1,11 +1,11 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
 import { X, Image as ImageIcon, FileText, Calendar, Clock, Tag, Smile, User, Sparkles, RefreshCw, CheckSquare, Check, Circle } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { exportBlobSafe } from '../lib/exportUtils';
+import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage, TaskItem } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { getAttachmentBlob } from '../lib/attachmentStore';
+import { getOrHydrateMediaUrl } from '../lib/mediaStorage';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
 
@@ -35,12 +35,24 @@ function blobToDataUrl(blob: Blob): Promise<string> {
  */
 async function resolveImageToDataUri(src: string, attachmentId?: string): Promise<string | null> {
   try {
-    // 1. Check IndexedDB if attachmentId is provided or if src is '#'
+    // 1. Check IndexedDB via getAttachmentBlob if attachmentId is provided
     if (attachmentId && attachmentId !== '#') {
       const blob = await getAttachmentBlob(attachmentId);
       if (blob && blob.size > 0) {
         return await blobToDataUrl(blob);
       }
+      // Try resolving through mediaStorage hydration if available
+      try {
+        const hydratedUrl = await getOrHydrateMediaUrl(attachmentId);
+        if (hydratedUrl && hydratedUrl !== '#') {
+          if (hydratedUrl.startsWith('data:image/')) return hydratedUrl;
+          const res = await fetch(hydratedUrl);
+          if (res.ok) {
+            const hBlob = await res.blob();
+            if (hBlob && hBlob.size > 0) return await blobToDataUrl(hBlob);
+          }
+        }
+      } catch (_) {}
     }
 
     if (!src || src === '#') {
@@ -111,11 +123,15 @@ export default function ExportDiaryModal({
   const [showUsername, setShowUsername] = useState(true);
 
   // Toggleable images and tasks
+  const hasImageFiles = Boolean(
+    diary?.files && diary.files.some(f => f.type?.startsWith('image/') || /\.(jpe?g|png|webp|gif|bmp|svg)$/i.test(f.name || ''))
+  );
   const hasImages = Boolean(
     (diary?.images && diary.images.length > 0) ||
     (diary?.imageAttachmentIds && diary.imageAttachmentIds.length > 0) ||
     (diary?.drawings && diary.drawings.length > 0) ||
-    diary?.drawing
+    diary?.drawing ||
+    hasImageFiles
   );
   const hasTasks = Boolean(diary?.tasks && diary.tasks.length > 0);
 
@@ -155,6 +171,21 @@ export default function ExportDiaryModal({
           const dataUri = await resolveImageToDataUri(src, attId);
           if (dataUri) {
             resolvedImgs.push(dataUri);
+          }
+        }
+
+        // Also resolve any image-typed file attachments
+        if (diary.files && Array.isArray(diary.files)) {
+          for (const f of diary.files) {
+            const isImg = f.type?.startsWith('image/') || /\.(jpe?g|png|webp|gif|bmp|svg)$/i.test(f.name || '');
+            if (isImg) {
+              const fSrc = f.dataUrl || '';
+              const fAttId = f.attachmentId || f.id;
+              const dataUri = await resolveImageToDataUri(fSrc, fAttId);
+              if (dataUri && !resolvedImgs.includes(dataUri)) {
+                resolvedImgs.push(dataUri);
+              }
+            }
           }
         }
 
@@ -255,7 +286,7 @@ export default function ExportDiaryModal({
     const targetHeight = element.scrollHeight || element.offsetHeight || 1000;
     const safeScale = Math.min(2, Math.max(1, Math.floor(10000 / Math.max(1, targetHeight))));
 
-    const canvas = await html2canvas(element, {
+    const canvas = await captureElementToCanvas(element, {
       scale: safeScale,
       useCORS: true,
       allowTaint: true,

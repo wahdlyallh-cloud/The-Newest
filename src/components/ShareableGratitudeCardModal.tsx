@@ -1,8 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, Share2, Sparkles, Copy, Check, Heart, Quote, Image as ImageIcon, Layout, Palette } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { exportBlobSafe } from '../lib/exportUtils';
+import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
 import { AppLanguage, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
 
@@ -244,7 +243,7 @@ export default function ShareableGratitudeCardModal({
           try { await document.fonts.ready; } catch (_) {}
         }
 
-        const canvas = await html2canvas(cardRef.current, {
+        const canvas = await captureElementToCanvas(cardRef.current, {
           scale: 2.5,
           useCORS: true,
           allowTaint: true,

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import {
   Plus, Search, Calendar, Heart, BookOpen, Brain, Scale,
   Settings as SettingsIcon, Sparkles, LogOut, CheckSquare,
@@ -24,7 +23,7 @@ import BackupSyncModal from './components/BackupSyncModal';
 import LanguagesModal from './components/LanguagesModal';
 import TypographySettingsSection from './components/TypographySettingsSection';
 import { getFontCss, getLineHeightCss } from './lib/fonts';
-import { exportBlobSafe } from './lib/exportUtils';
+import { exportBlobSafe, captureElementToCanvas } from './lib/exportUtils';
 import { backgroundAIManager } from './lib/backgroundAIManager';
 import { BackgroundAIStatus } from './components/BackgroundAIStatus';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
@@ -3403,7 +3402,7 @@ export default function App() {
       }
 
       // Convert HTML element to high-DPI canvas
-      const canvas = await html2canvas(element, {
+      const canvas = await captureElementToCanvas(element, {
         scale: 2, // 2x zoom for ultra-sharp print resolution
         useCORS: true,
         allowTaint: true,
@@ -5375,7 +5374,7 @@ export default function App() {
     const chatEl = document.getElementById('diary-chat-log-box');
     if (!chatEl || !editingDiary?.chatLogs || editingDiary.chatLogs.length === 0) return;
     try {
-      const canvas = await html2canvas(chatEl, {
+      const canvas = await captureElementToCanvas(chatEl, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#FFFFFF',
@@ -6187,89 +6186,22 @@ export default function App() {
             </button>
 
             {/* Full-width Horizontal Scrollable Action Drawer */}
-            <div className="flex-1 flex items-center space-x-1.5 space-x-reverse overflow-x-auto scrollbar-none py-1 px-1 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {/* ── APP UTILITIES ── */}
-              {/* 1. Notifications / Smart Reminders */}
+            <div className="flex-1 flex items-center space-x-2 space-x-reverse overflow-x-auto scrollbar-none py-1 px-1 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {/* 1. الأذكار (Athkar) */}
               <button
                 type="button"
                 onClick={() => {
-                  setShowSmartRemindersModal(true);
+                  setIsFullAthkarModalOpen(true);
                   setIsTopDrawerOpen(false);
                 }}
-                className="relative flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/90 rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
-                title={t('nav.smart_reminders')}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#F3E8FF] hover:bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
+                title={t('nav.dhikr_title')}
               >
-                <BellRing className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                <span>{t('nav.smart_reminders')}</span>
-                {(settings.reminders?.length || 0) > 0 && (
-                  <span className="text-[9px] bg-amber-600 text-white px-1.5 py-0.2 rounded-full font-bold">
-                    {settings.reminders.length}
-                  </span>
-                )}
+                <Sparkles className="w-4 h-4 text-[#7C3AED] animate-pulse shrink-0" />
+                <span>{t('nav.dhikr')}</span>
               </button>
 
-              {/* 2. Account / Profile */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAuthModalOpen(true);
-                  setIsTopDrawerOpen(false);
-                }}
-                className={`flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 border rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px] ${
-                  currentUser
-                    ? 'bg-teal-700 text-white border-teal-800'
-                    : 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                }`}
-                title={t('nav.account_title')}
-              >
-                {currentUser ? (
-                  <>
-                    <Cloud className="w-3.5 h-3.5 text-teal-200 shrink-0" />
-                    <span className="truncate max-w-[80px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>{t('nav.sign_in')}</span>
-                  </>
-                )}
-              </button>
-
-              {/* 3. AI Sparkle */}
-              <button
-                type="button"
-                onClick={() => {
-                  switchTab('advisor');
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-900 border border-purple-200 rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
-                title={t.aiAdvisor}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse shrink-0" />
-                <span>{t.aiAdvisor}</span>
-              </button>
-
-              {/* 4. Menu ⋮ */}
-              <div className="relative shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setShowNavMoreMenu(prev => !prev)}
-                  className={`p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[36px] min-w-[36px] ${
-                    showNavMoreMenu
-                      ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
-                      : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
-                  }`}
-                  title={t('nav.more_options')}
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* ── CLEAN SUBTLE VERTICAL DIVIDER ── */}
-              <div className="h-6 w-px bg-[#E2DCC8] shrink-0 mx-1" />
-
-              {/* ── SECONDARY SECTIONS (Icon + Clear Short Label) ── */}
-              {/* 1. Gratitude Wall (الامتنان) */}
+              {/* 2. جدار الامتنان (Gratitude Wall) */}
               <button
                 type="button"
                 onClick={() => {
@@ -6278,14 +6210,14 @@ export default function App() {
                   setEditingDiary(null);
                   setIsTopDrawerOpen(false);
                 }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#FAF0F4] text-[#9D4E6B] border border-[#F3D7E2] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#FAF0F4] hover:bg-[#FCE8F0] text-[#9D4E6B] border border-[#F3D7E2] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
                 title={t.gratitudeSubtab}
               >
-                <span className="text-sm">🌸</span>
+                <span className="text-base shrink-0">🌸</span>
                 <span>{t.gratitudeSubtab || 'الامتنان'}</span>
               </button>
 
-              {/* 2. CBT Therapy Exercises (التمارين) */}
+              {/* 3. تمارين العلاج المعرفي (CBT Exercises) */}
               <button
                 type="button"
                 onClick={() => {
@@ -6294,76 +6226,57 @@ export default function App() {
                   setEditingDiary(null);
                   setIsTopDrawerOpen(false);
                 }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#F0F4FA] text-[#3E5C76] border border-[#D3E0EA] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#F0F4FA] hover:bg-[#E5EEF8] text-[#3E5C76] border border-[#D3E0EA] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
                 title={t.cbtSubtabLabel}
               >
-                <span className="text-sm">🧠</span>
+                <span className="text-base shrink-0">🧠</span>
                 <span>{t.cbtSubtabLabel || 'التمارين'}</span>
               </button>
 
-              {/* 3. Daily Tasks (المهام) */}
+              {/* 4. التنبيهات / الإشعارات (Smart Reminders with unread/active count badge) */}
               <button
                 type="button"
                 onClick={() => {
-                  switchTab('diaries', { subTab: 'tasks' });
-                  setActiveDiariesSubTab('tasks');
-                  setEditingDiary(null);
+                  setShowSmartRemindersModal(true);
                   setIsTopDrawerOpen(false);
                 }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
-                title={t.dailyTasksSubtabLabel}
+                className="relative flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/90 rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
+                title={t('nav.smart_reminders')}
               >
-                <span className="flex items-center justify-center bg-[#C5221F] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
-                  {incompleteTasksCount}
-                </span>
-                <span>{t.dailyTasksSubtabLabel || 'المهام'}</span>
+                <BellRing className="w-4 h-4 text-amber-700 shrink-0" />
+                <span>{t('nav.smart_reminders')}</span>
+                {(settings.reminders?.length || 0) > 0 && (
+                  <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded-full font-black">
+                    {settings.reminders.length}
+                  </span>
+                )}
               </button>
 
-              {/* 4. Athkar (الأذكار) */}
+              {/* 5. تسجيل الدخول / الحساب (Login / Account status) */}
               <button
                 type="button"
                 onClick={() => {
-                  setIsFullAthkarModalOpen(true);
+                  setIsAuthModalOpen(true);
                   setIsTopDrawerOpen(false);
                 }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
-                title={t('nav.dhikr_title')}
+                className={`flex items-center space-x-1.5 space-x-reverse px-3 py-2 border rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px] ${
+                  currentUser
+                    ? 'bg-teal-700 hover:bg-teal-800 text-white border-teal-800'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+                }`}
+                title={t('nav.account_title')}
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
-                <span>{t('nav.dhikr')}</span>
-              </button>
-
-              {/* 5. Therapy Report Session (جلسة العلاج) */}
-              <button
-                type="button"
-                onClick={() => {
-                  switchTab('analytics', { subTab: 'report' });
-                  setAnalyticsSubTab('report');
-                  setEditingDiary(null);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#446A5E] text-white rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
-                title={t('nav.therapy_session')}
-              >
-                <span className="text-sm">🎓</span>
-                <span>{t('nav.therapy_session')}</span>
-              </button>
-
-              {/* 6. Thoughts (خواطري) */}
-              <button
-                type="button"
-                onClick={() => {
-                  switchTab('diaries', { subTab: 'journal' });
-                  setActiveDiariesSubTab('journal');
-                  setDiaryTypeFilter('thought');
-                  setEditingDiary(null);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap min-h-[36px]"
-                title={t('nav.my_thoughts')}
-              >
-                <span className="text-sm">💭</span>
-                <span>{t('nav.my_thoughts')}</span>
+                {currentUser ? (
+                  <>
+                    <Cloud className="w-4 h-4 text-teal-200 shrink-0" />
+                    <span className="truncate max-w-[90px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{t('nav.sign_in')}</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

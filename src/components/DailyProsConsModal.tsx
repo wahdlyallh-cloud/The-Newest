@@ -4,8 +4,7 @@ import {
   X, RefreshCw, FileText, CheckCircle2, XCircle, Edit3, Save, FileCheck2, Clock, Calendar,
   Image as ImageIcon
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { exportBlobSafe } from '../lib/exportUtils';
+import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
 import { DiaryEntry, Habit, GratitudeCard, Book, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
@@ -1125,7 +1124,7 @@ ${t.generatedByHayatAiNotice}`;
 
       await new Promise(r => setTimeout(r, 150));
 
-      const canvas = await html2canvas(container, {
+      const canvas = await captureElementToCanvas(container, {
         scale: 2, // Ultra Crisp High DPI
         useCORS: true,
         allowTaint: true,
