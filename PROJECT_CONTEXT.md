@@ -252,3 +252,8 @@ npm run build
 - `SmartReminderPlugin.java` exposes `setLockScreenNotification()` and `getPendingQuickAction()`; `MainActivity.java` captures and clears action intents safely.
 - App lock supports the legacy PIN path plus locally hashed alphanumeric passwords through `passwordSecurity.ts`; native biometrics remain an optional fallback and all React hooks stay before early returns.
 - Quality gates passed on 2026-11-27: TypeScript, strict 12-locale i18n audit, localization validator, and production build. Gradle was intentionally not run locally.
+
+## 21. Native Six-Group Settings Redesign (2026-11-27)
+- Replaced the sprawling Settings tab with `src/components/SettingsPanel.tsx`, a compact RTL-aware native mobile surface built from six expandable groups: الأمان والخصوصية، الذكاء الاصطناعي والمفاتيح، الإشعارات وشاشة القفل، المزامنة والنسخ الاحتياطي، المظهر واللغة، والتطبيق والتحديثات.
+- Preserved live wiring for PIN/password and biometric security, five-key Gemini diagnostics, media/token-saving guidance, lock-screen notification, smart reminders, email/account sync, WriteDiary import, backup/export, theme, 12-language selection, in-app updater, and onboarding tour.
+- Normalized settings rows and switches to compact `py-3 px-4` grouped-list styling with no browser alerts in the redesigned surface; localized new labels across all 12 supported locales.
