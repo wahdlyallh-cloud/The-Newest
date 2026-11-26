@@ -18,6 +18,8 @@ import {
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
 import { transcribeAudioWithGemini } from '../lib/gemini';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 import { LiveAudioChunker } from '../lib/liveAudioChunker';
 import { Capacitor } from '@capacitor/core';
 import { AudioRecording, AppLanguage } from '../types';
@@ -87,6 +89,8 @@ export default function VoiceVentModal({
   const t = getTranslation(appLanguage);
   const langInfo = getLanguageInfo(appLanguage);
   const isAr = appLanguage === 'ar';
+
+  useRegisterBackStep('modal_voice_vent', 'modal', isOpen, onClose, t.voiceQuickVent);
 
   // Step 1: Recording, Step 2: Review (Editable & Tone Analysis), Step 3: Saved Choices
   const [modalStep, setModalStep] = useState<'recording' | 'review' | 'saved'>('recording');
@@ -725,17 +729,31 @@ export default function VoiceVentModal({
 
   if (!isOpen) return null;
 
+  const ventTitle = modalStep === 'recording'
+    ? (t.voiceQuickVent || (isAr ? 'فضفضة صوتية غير محدودة' : 'Continuous Voice Vent'))
+    : modalStep === 'review'
+    ? (t.voiceVentReviewTitle || (isAr ? 'مراجعة وتأكيد الفضفضة الصوتية' : 'Review & Confirm Voice Vent'))
+    : (t.voiceVentSavedSuccess || (isAr ? 'تم حفظ المرفق الصوتي' : 'Saved Audio Attachment'));
+
+  const ventSubtitle = modalStep === 'recording'
+    ? (isAr ? 'سجل بحرية دون توقف تلقائي... يتوقف فقط عند نقر إيقاف' : 'Speak continuously without timeouts; stops only on tapping stop')
+    : modalStep === 'review'
+    ? (isAr ? 'استمع للتسجيل، عدل النص، واحفظ المرفق بأمان' : 'Listen, edit transcript, and save attachment securely')
+    : (isAr ? 'اختر إضافة النص إلى اليوميات أو الإبقاء عليه كمرفق صوتي' : 'Choose to add to diary or keep as audio attachment only');
+
   return (
     <div
-      className="fixed inset-0 z-[125] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[125] bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 overflow-y-auto animate-fadeIn"
       dir={langInfo.dir}
     >
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
-        {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#E2DCC8]/70 flex items-center justify-between bg-gradient-to-r from-red-50/50 via-[#F9F7F2] to-amber-50/50">
-          <div className="flex items-center space-x-2.5 space-x-reverse">
+      <div className="bg-white border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]">
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={ventTitle}
+          subtitle={ventSubtitle}
+          icon={
             <div
-              className={`p-2.5 rounded-2xl ${
+              className={`p-1.5 rounded-xl ${
                 isRecording
                   ? 'bg-red-500 text-white animate-pulse'
                   : modalStep === 'saved'
@@ -743,36 +761,13 @@ export default function VoiceVentModal({
                   : 'bg-red-100 text-red-700'
               }`}
             >
-              {modalStep === 'saved' ? <CheckCircle2 className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              {modalStep === 'saved' ? <CheckCircle2 className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </div>
-            <div>
-              <h3 className="font-black text-sm sm:text-base text-[#3A3A3A] flex items-center gap-1.5">
-                <span>
-                  {modalStep === 'recording'
-                    ? (t.voiceQuickVent || (isAr ? 'فضفضة صوتية غير محدودة' : 'Continuous Voice Vent'))
-                    : modalStep === 'review'
-                    ? (t.voiceVentReviewTitle || (isAr ? 'مراجعة وتأكيد الفضفضة الصوتية' : 'Review & Confirm Voice Vent'))
-                    : (t.voiceVentSavedSuccess || (isAr ? 'تم حفظ المرفق الصوتي' : 'Saved Audio Attachment'))}
-                </span>
-              </h3>
-              <p className="text-[11px] text-gray-500 font-medium">
-                {modalStep === 'recording'
-                  ? (isAr ? 'سجل بحرية دون توقف تلقائي... يتوقف فقط عند نقر إيقاف' : 'Speak continuously without timeouts; stops only on tapping stop')
-                  : modalStep === 'review'
-                  ? (isAr ? 'استمع للتسجيل، عدل النص، واحفظ المرفق بأمان' : 'Listen, edit transcript, and save attachment securely')
-                  : (isAr ? 'اختر إضافة النص إلى اليوميات أو الإبقاء عليه كمرفق صوتي' : 'Choose to add to diary or keep as audio attachment only')}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 border border-[#E2DCC8] flex items-center justify-center transition-all cursor-pointer shadow-3xs"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="rose"
+        />
 
         {/* Modal Body */}
         <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs">

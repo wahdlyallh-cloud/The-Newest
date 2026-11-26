@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Check, ArrowRight, HelpCircle, Calendar, Clock, Bell, FileText, ChevronDown } from 'lucide-react';
 import { Habit } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface HabitFormModalProps {
   isOpen: boolean;
@@ -37,6 +39,14 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
 }) => {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_habit_form', 'modal', isOpen, () => {
+    if (step === 'form' && !initialHabit) {
+      setStep('type_selection');
+    } else {
+      onClose();
+    }
+  }, t['habit.create'] || 'إنشاء العادة');
   // Step 1: 'type_selection' (Image 3) or 'form' (Image 4 & 5)
   const [step, setStep] = useState<'type_selection' | 'form'>(initialHabit ? 'form' : 'type_selection');
   
@@ -108,47 +118,39 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
     onClose();
   };
 
+  const modalTitle = step === 'type_selection' ? (t['habit.choose_type'] || 'اختر نوع العادة') : initialHabit ? (t.editHabitModalTitle || t['habit.edit'] || 'Edit Habit') : (t['habit.create'] || 'إنشاء العادة');
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[55] font-sans" dir={langInfo.dir}>
-      <div className="bg-white border border-gray-200 rounded-[28px] w-full max-w-lg overflow-hidden shadow-2xl transition-all max-h-[88dvh] sm:max-h-[90vh] flex flex-col my-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[55] font-sans" dir={langInfo.dir}>
+      <div className="bg-white border-0 sm:border sm:border-gray-200 rounded-none sm:rounded-[28px] w-full max-w-lg overflow-hidden shadow-2xl transition-all h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col">
         
-        {/* Header Bar */}
-        <div className="bg-[#2B529A] text-white p-4 px-5 flex items-center justify-between shadow-xs">
-          <div className="flex items-center space-x-2 space-x-reverse">
-            {step === 'form' && !initialHabit && (
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={modalTitle}
+          onBack={() => {
+            if (step === 'form' && !initialHabit) {
+              setStep('type_selection');
+            } else {
+              onClose();
+            }
+          }}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="dark"
+          rightAction={
+            step === 'form' ? (
               <button
                 type="button"
-                onClick={() => setStep('type_selection')}
-                className="p-1 hover:bg-white/10 rounded-full transition-all cursor-pointer ms-1"
-                title={t.back_btn}
+                onClick={handleSubmit}
+                className="bg-white/20 hover:bg-white/30 text-white font-bold text-xs px-4 py-1.5 rounded-xl transition-all cursor-pointer border border-white/30"
               >
-                <ArrowRight className="w-5 h-5 text-white" />
+                {t.save_btn}
               </button>
-            )}
-            <h3 className="font-bold text-base md:text-lg">
-              {step === 'type_selection' ? (t['habit.choose_type'] || 'اختر نوع العادة') : initialHabit ? (t.editHabitModalTitle || t['habit.edit'] || 'Edit Habit') : (t['habit.create'] || 'إنشاء العادة')}
-            </h3>
-          </div>
-
-          {step === 'form' ? (
-            <button
-              onClick={handleSubmit}
-              className="bg-white/20 hover:bg-white/30 text-white font-bold text-xs px-4 py-1.5 rounded-xl transition-all cursor-pointer border border-white/30"
-            >
-              {t.save_btn}
-            </button>
-          ) : (
-            <button
-              onClick={onClose}
-              className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-full cursor-pointer transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+            ) : null
+          }
+        />
 
         {/* Content Body */}
-        <div className="p-5 md:p-6 overflow-y-auto flex-1 space-y-6 pb-12 sm:pb-6">
+        <div className="p-5 md:p-6 overflow-y-auto overscroll-contain flex-1 space-y-6 pb-12 sm:pb-6">
           
           {/* STEP 1: TYPE SELECTION MODAL */}
           {step === 'type_selection' && (

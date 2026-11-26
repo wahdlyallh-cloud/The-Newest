@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { AppReminder, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface SmartRemindersModalProps {
   isOpen: boolean;
@@ -34,6 +36,8 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
 }) => {
   const langInfo = getLanguageInfo(appLanguage as AppLanguage);
   const t = getTranslation(appLanguage as AppLanguage);
+
+  useRegisterBackStep('modal_smart_reminders', 'modal', isOpen, onClose, t.smartRemindersCardTitle);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -180,43 +184,38 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-3xl w-full max-w-2xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-2xl h-[100dvh] sm:h-auto sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
         
-        {/* Header */}
-        <div className="p-5 bg-[#EEF1EB] border-b border-[#DCE4D8] flex items-center justify-between shrink-0">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="p-2.5 bg-[#4E685B] text-white rounded-2xl shadow-xs">
-              <Bell className="w-6 h-6" />
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.smartRemindersCardTitle}
+          subtitle={t.smartRemindersModalSub}
+          icon={
+            <div className="p-1.5 bg-[#4E685B] text-white rounded-xl shadow-xs">
+              <Bell className="w-4 h-4" />
             </div>
-            <div>
-              <h2 className="text-lg font-black text-[#2C3E35] flex items-center gap-2">
-                <span>{t.smartRemindersCardTitle}</span>
-                <span className="text-xs bg-[#D4A373] text-white px-2 py-0.5 rounded-full font-bold">{t.behavioralAiBadge}</span>
-              </h2>
-              <p className="text-[11px] text-[#556E4F] font-bold">
-                {t.smartRemindersModalSub}
-              </p>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+          rightAction={
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] bg-[#D4A373] text-white px-2 py-0.5 rounded-full font-bold hidden sm:inline">
+                {t.behavioralAiBadge}
+              </span>
+              <button
+                type="button"
+                onClick={playTestChime}
+                title={t.testSoundTitle}
+                className="p-2 bg-white text-[#4E685B] border border-[#DCE4D8] rounded-xl hover:bg-[#F2F5F0] transition-all text-xs font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <Volume2 className="w-4 h-4 text-[#D4A373]" />
+                <span className="hidden sm:inline">{t.testSoundBtn}</span>
+              </button>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={playTestChime}
-              title={t.testSoundTitle}
-              className="p-2 bg-white text-[#4E685B] border border-[#DCE4D8] rounded-xl hover:bg-[#F2F5F0] transition-all text-xs font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <Volume2 className="w-4 h-4 text-[#D4A373]" />
-              <span className="hidden sm:inline">{t.testSoundBtn}</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-700 bg-white/80 hover:bg-white rounded-xl transition-all cursor-pointer border border-gray-200"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Content Area */}
         <div className="p-5 overflow-y-auto space-y-6 grow scrollbar-thin">

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Copy, Mail, Check, Heart } from 'lucide-react';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface ContactOwnerModalProps {
   isOpen: boolean;
@@ -15,6 +17,8 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_contact_owner', 'modal', isOpen, onClose, t.contactTitle);
 
   if (!isOpen) return null;
 
@@ -35,28 +39,24 @@ export default function ContactOwnerModal({ isOpen, onClose, appLanguage = 'ar' 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[55] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 transform scale-100">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[55] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 h-[100dvh] sm:h-auto flex flex-col">
         
-        {/* Header */}
-        <div className="p-5 pb-3 border-b border-[#E2DCC8]/60 flex items-center justify-between bg-[#F0EDE4]/40">
-          <h4 className="font-black text-[#2B3E50] text-base sm:text-lg flex items-center gap-2">
-            <span className="p-2 bg-[#4E685B] text-white rounded-xl shadow-3xs">
-              <Mail className="w-5 h-5" />
-            </span>
-            <span>{t.contactDeveloperTitle}</span>
-          </h4>
-          <button 
-            type="button"
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-200/60 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4E685B]"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.contactDeveloperTitle}
+          icon={
+            <div className="p-1.5 bg-[#4E685B] text-white rounded-xl shadow-3xs">
+              <Mail className="w-4 h-4" />
+            </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+        />
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 space-y-4">
+        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1">
 
           {/* Developer Personal Note Card */}
           <div className="bg-[#FEFBF3] border-2 border-[#D4A373]/40 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-2.5">

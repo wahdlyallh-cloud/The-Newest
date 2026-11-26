@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X, CheckSquare, Square, Sparkles, Calendar, Layers, Plus } from 'lucide-react';
 import { GratitudeCard, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface GratitudeImportModalProps {
   isOpen: boolean;
@@ -40,6 +42,8 @@ export default function GratitudeImportModal({
   const t = getTranslation(appLanguage);
   const langInfo = getLanguageInfo(appLanguage);
   const isAr = appLanguage === 'ar';
+
+  useRegisterBackStep('modal_gratitude_import', 'modal', isOpen, onClose, t.importGratitudeModalTitle || 'استيراد من جدار الامتنان');
 
   const todayCards = useMemo(() => {
     return (gratitudeCards || [])
@@ -120,36 +124,23 @@ export default function GratitudeImportModal({
 
   return (
     <div
-      className="fixed inset-0 z-[130] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[130] bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 overflow-y-auto animate-fadeIn"
       dir={langInfo.dir}
     >
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh]">
-        {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#E2DCC8]/70 flex items-center justify-between bg-gradient-to-r from-emerald-50/60 via-[#F9F7F2] to-amber-50/60">
-          <div className="flex items-center space-x-2.5 space-x-reverse">
-            <div className="p-2.5 rounded-2xl bg-[#8B9D83]/15 text-[#5A5A40]">
-              <Sparkles className="w-5 h-5 text-[#8B9D83]" />
+      <div className="bg-white border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[90vh]">
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.importGratitudeModalTitle || (isAr ? 'استيراد من جدار الامتنان' : 'Import from Gratitude Wall')}
+          subtitle={isAr ? 'اختر بطاقات الامتنان التي ترغب في إضافتها إلى يوميتك الحالية' : 'Select gratitude cards to cleanly add to your current diary entry'}
+          icon={
+            <div className="p-1 rounded-lg bg-[#8B9D83]/15 text-[#5A5A40]">
+              <Sparkles className="w-4 h-4 text-[#8B9D83]" />
             </div>
-            <div>
-              <h3 className="font-black text-sm sm:text-base text-[#3A3A3A]">
-                {t.importGratitudeModalTitle || (isAr ? 'استيراد من جدار الامتنان' : 'Import from Gratitude Wall')}
-              </h3>
-              <p className="text-[11px] text-gray-500 font-medium">
-                {isAr
-                  ? 'اختر بطاقات الامتنان التي ترغب في إضافتها إلى يوميتك الحالية'
-                  : 'Select gratitude cards to cleanly add to your current diary entry'}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 border border-[#E2DCC8] flex items-center justify-center transition-all cursor-pointer shadow-3xs"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+        />
 
         {/* Filter Tabs: Today vs All Days */}
         <div className="px-4 sm:px-6 pt-3 pb-2 bg-[#FBF9F5] border-b border-[#E2DCC8]/50 flex items-center justify-between gap-2">

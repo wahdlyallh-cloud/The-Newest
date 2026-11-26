@@ -25,6 +25,8 @@ import {
   DEFAULT_AI_MEDIA_ACCESS,
   extractAvailableAttachments
 } from '../lib/aiMediaAccess';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 export interface AdvisorPermissions {
   diaries: boolean;
@@ -287,6 +289,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   useEffect(() => {
     voiceStatusRef.current = voiceStatus;
   }, [voiceStatus]);
+
+  useRegisterBackStep('advisor_voice_modal', 'modal', showVoiceModal, () => {
+    endVoiceChatSession();
+  }, 'المحادثة الصوتية');
+
+  useRegisterBackStep('advisor_permissions_modal', 'modal', showPermissionsModal, () => {
+    setShowPermissionsModal(false);
+  }, t.smartAdvisorPermissionsTitle);
 
   const stopVoiceChatSpeech = () => {
     if ('speechSynthesis' in window) {
@@ -1756,29 +1766,24 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* 🛡️ Advisor Access Permissions Modal */}
       {showPermissionsModal && (
-        <div className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" dir={langInfo.dir}>
-          <div className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl p-6 max-w-xl w-full text-right shadow-2xl space-y-4 max-h-[90vh] flex flex-col animate-in zoom-in-95">
+        <div className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200" dir={langInfo.dir}>
+          <div className="bg-[#FAF8F5] border-0 sm:border-2 sm:border-[#E2DCC8] rounded-none sm:rounded-3xl p-0 sm:p-6 max-w-xl w-full text-right shadow-2xl space-y-0 sm:space-y-4 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col animate-in zoom-in-95">
             
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#E2DCC8] pb-3 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-amber-100 text-amber-800 rounded-2xl border border-amber-200">
-                  <ShieldCheck className="w-6 h-6 text-amber-600" />
+            {/* Native App Bar Header */}
+            <NativeModalHeader
+              title={t.smartAdvisorPermissionsTitle}
+              subtitle={t.smartAdvisorPermissionsSubtitle}
+              icon={
+                <div className="p-1.5 bg-amber-100 text-amber-800 rounded-xl border border-amber-200">
+                  <ShieldCheck className="w-4 h-4 text-amber-600" />
                 </div>
-                <div>
-                  <h3 className="text-base font-black text-[#2B3E50]">{t.smartAdvisorPermissionsTitle}</h3>
-                  <p className="text-xs text-gray-500 font-bold">{t.smartAdvisorPermissionsSubtitle}</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPermissionsModal(false)}
-                className="p-2 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+              }
+              onBack={() => setShowPermissionsModal(false)}
+              isRtl={langInfo.dir === 'rtl'}
+              theme="light"
+            />
 
+            <div className="p-4 sm:p-0 flex-1 overflow-y-auto overscroll-contain space-y-4">
             {/* Master Toggle (Enable All) */}
             <div className="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 flex items-center justify-between shrink-0 shadow-xs">
               <div className="flex items-center gap-3">
@@ -1855,6 +1860,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               >
                 {t.smartAdvisorSaveApplyBtn}
               </button>
+            </div>
             </div>
 
           </div>

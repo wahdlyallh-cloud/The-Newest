@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Star, Check } from 'lucide-react';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface RatingModalProps {
   isOpen: boolean;
@@ -18,6 +20,8 @@ export default function RatingModal({ isOpen, onClose, appLanguage = 'ar' }: Rat
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
 
+  useRegisterBackStep('modal_rating', 'modal', isOpen, onClose, t.rateAppModalTitle);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,25 +37,20 @@ export default function RatingModal({ isOpen, onClose, appLanguage = 'ar' }: Rat
   };
 
   return (
-    <div className="fixed inset-0 bg-[#3A3A3A]/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 font-sans" dir={langInfo.dir}>
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-all duration-300 transform scale-100">
+    <div className="fixed inset-0 bg-[#3A3A3A]/40 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-50 font-sans" dir={langInfo.dir}>
+      <div className="bg-white border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 h-[100dvh] sm:h-auto flex flex-col">
         
-        {/* Header */}
-        <div className="p-5 border-b border-[#E2DCC8]/50 flex items-center justify-between bg-[#F9F7F2]/50">
-          <h4 className="font-extrabold text-[#3A3A3A] text-sm md:text-base">
-            ⭐ {t.rateAppModalTitle}
-          </h4>
-          <button 
-            type="button"
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8B9D83]"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.rateAppModalTitle}
+          icon={<span className="text-base">⭐</span>}
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+        />
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto overscroll-contain flex-1 flex flex-col justify-center">
           {isSubmitted ? (
             <div className="py-8 text-center space-y-4">
               <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto animate-bounce">

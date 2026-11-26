@@ -6,6 +6,8 @@ import { exportBlobSafe } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage, TaskItem } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { getAttachmentBlob } from '../lib/attachmentStore';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface ExportDiaryModalProps {
   isOpen: boolean;
@@ -124,6 +126,8 @@ export default function ExportDiaryModal({
   const [inlinedImages, setInlinedImages] = useState<string[]>([]);
   const [inlinedDrawings, setInlinedDrawings] = useState<string[]>([]);
   const [isPreloadingMedia, setIsPreloadingMedia] = useState(false);
+
+  useRegisterBackStep('modal_export_diary', 'modal', isOpen, onClose, t.exportDiary);
 
   const [isExportingImage, setIsExportingImage] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -414,27 +418,20 @@ export default function ExportDiaryModal({
   const drawingsToRender = inlinedDrawings.length > 0 ? inlinedDrawings : (Array.isArray(diary.drawings) ? diary.drawings : diary.drawing ? [diary.drawing] : []).filter(d => d && d !== '#');
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn" dir={langInfo.dir}>
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
-        {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-[#E2DCC8]/70 flex items-center justify-between bg-[#F9F7F2]">
-          <div className="flex items-center space-x-2 space-x-reverse">
-            <span className="p-2 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl text-base">📤</span>
-            <div>
-              <h3 className="font-extrabold text-sm sm:text-base text-[#3A3A3A]">{t.exportDiary || (isAr ? 'تصدير التدوينة' : 'Export Diary')}</h3>
-              <p className="text-[11px] text-gray-500">{t.exportOptions || (isAr ? 'اختر العناصر التي تريد إظهارها في الصورة أو PDF' : 'Select elements to include')}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 border border-[#E2DCC8] flex items-center justify-center transition-all cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 overflow-y-auto animate-fadeIn" dir={langInfo.dir}>
+      <div className="bg-white border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]">
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.exportDiary || (isAr ? 'تصدير التدوينة' : 'Export Diary')}
+          subtitle={t.exportOptions || (isAr ? 'اختر العناصر التي تريد إظهارها في الصورة أو PDF' : 'Select elements to include')}
+          icon={<span className="text-base">📤</span>}
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+        />
 
         {/* Modal Body: Options & Live Preview */}
-        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs">
           {/* Metadata Toggles */}
           <div className="space-y-2">
             <span className="font-extrabold text-xs text-[#5A5A40] block">

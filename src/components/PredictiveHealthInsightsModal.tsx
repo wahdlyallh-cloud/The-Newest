@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Brain, Sparkles, AlertTriangle, ShieldCheck, Moon, Activity, RefreshCw, CheckCircle, ArrowRight, Zap, TrendingUp, Calendar } from 'lucide-react';
 import { DiaryEntry } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface PredictiveHealthInsightsModalProps {
   isOpen: boolean;
@@ -24,6 +26,8 @@ export default function PredictiveHealthInsightsModal({
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
   const isEn = appLanguage === 'en';
+
+  useRegisterBackStep('modal_predictive_health', 'modal', isOpen, onClose, t.predictiveTitle);
 
   if (!isOpen) return null;
 
@@ -85,34 +89,25 @@ export default function PredictiveHealthInsightsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[65] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-xl overflow-hidden shadow-2xl transition-all duration-300 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[65] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-[32px] w-full max-w-xl overflow-hidden shadow-2xl transition-all duration-300 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col">
         
-        {/* Modal Header */}
-        <div className="bg-gradient-to-r from-[#2B3E50] to-[#3B5266] p-5 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
-              <Brain className="w-6 h-6 text-amber-300" />
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.predictiveTitle}
+          subtitle={t.predictiveSub}
+          icon={
+            <div className="p-1.5 bg-white/10 rounded-xl">
+              <Brain className="w-4 h-4 text-amber-300" />
             </div>
-            <div>
-              <h3 className="font-black text-base sm:text-lg flex items-center gap-2">
-                <span>{t.predictiveTitle}</span>
-              </h3>
-              <p className="text-xs text-blue-100/80 font-medium">
-                {t.predictiveSub}
-              </p>
-            </div>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="slate"
+        />
 
         {/* Modal Content Scroll Area */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-5 flex-1">
           
           {/* Status Badge */}
           <div className={`p-4 rounded-2xl border flex items-center justify-between ${

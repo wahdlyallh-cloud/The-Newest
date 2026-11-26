@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { updateAthkarContextOnTap } from '../services/aiAthkarSync';
 import { getTranslation } from '../lib/languages';
 import type { AppLanguage } from '../types';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 export interface AthkarItem {
   id: string;
@@ -439,6 +440,8 @@ interface FullAthkarModalProps {
 
 export default function FullAthkarModal({ isOpen, onClose, initialTab = 'morning', appLanguage = 'ar' }: FullAthkarModalProps) {
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_full_athkar', 'modal', isOpen, onClose, 'حصن المسلم');
   const [activeTab, setActiveTab] = useState<string>(() => {
     return localStorage.getItem('yawmiyaty_dhikr_active_tab') || initialTab;
   });

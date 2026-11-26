@@ -9,6 +9,8 @@ import {
   DEFAULT_AI_MEDIA_ACCESS,
   extractAvailableAttachments
 } from '../lib/aiMediaAccess';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface TherapistReportModalProps {
   isOpen: boolean;
@@ -21,6 +23,8 @@ interface TherapistReportModalProps {
 export default function TherapistReportModal({ isOpen, onClose, diaries, userApiKey, appLanguage = 'ar' }: TherapistReportModalProps) {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_therapist_report', 'modal', isOpen, onClose, t.prepareTherapyReportTitle);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 14); // default 2 weeks ago
@@ -206,30 +210,25 @@ export default function TherapistReportModal({ isOpen, onClose, diaries, userApi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={langInfo.dir}>
-      <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94vh] md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6 bg-[#5A5A40]/40 backdrop-blur-sm font-sans" dir={langInfo.dir}>
+      <div className="bg-white rounded-none sm:rounded-2xl md:rounded-3xl w-full max-w-3xl h-[100dvh] sm:h-auto sm:max-h-[94vh] md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col border-0 sm:border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center space-x-3 space-x-reverse min-w-0">
-            <div className="p-2 sm:p-2.5 bg-white/10 rounded-2xl shrink-0">
-              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#FEFAE0]" />
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.prepareTherapyReportTitle}
+          subtitle={t.prepareTherapyReportSub}
+          icon={
+            <div className="p-1.5 bg-white/10 rounded-xl">
+              <FileText className="w-4 h-4 text-[#FEFAE0]" />
             </div>
-            <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold truncate">{t.prepareTherapyReportTitle}</h2>
-              <p className="text-[11px] sm:text-xs text-[#E2DCC8] truncate">{t.prepareTherapyReportSub}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer shrink-0"
-          >
-            <ArrowRight className="w-5 h-5 rotate-180" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="emerald"
+        />
 
         {/* Single Scroll Container for Form & Content */}
-        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-6">
+        <div className="p-3.5 sm:p-6 overflow-y-auto overscroll-contain flex-1 space-y-4 sm:space-y-6">
           
           {/* Step 1: Select Date Range */}
           <div className="bg-[#F9F7F2] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E2DCC8] grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

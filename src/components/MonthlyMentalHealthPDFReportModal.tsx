@@ -19,6 +19,8 @@ import {
   DEFAULT_AI_MEDIA_ACCESS,
   extractAvailableAttachments
 } from '../lib/aiMediaAccess';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 export interface SavedPDFReport {
   id: string;
@@ -245,6 +247,8 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   const t = getTranslation(appLanguage);
   const isEn = appLanguage === 'en';
   const reportRef = useRef<HTMLDivElement>(null);
+
+  useRegisterBackStep('modal_monthly_report', 'modal', isOpen, onClose, t.exportMentalHealthReport);
 
   // Period Type: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semi-annually' | 'yearly' | 'custom'
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semi-annually' | 'yearly' | 'custom'>('monthly');
@@ -917,36 +921,27 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#2B3E50]/70 backdrop-blur-md font-sans" dir={langInfo.dir}>
-      <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-5xl h-full max-h-[96vh] md:max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6 bg-[#2B3E50]/70 backdrop-blur-md font-sans" dir={langInfo.dir}>
+      <div className="bg-white rounded-none sm:rounded-2xl md:rounded-3xl w-full max-w-5xl h-[100dvh] sm:h-full sm:max-h-[96vh] md:max-h-[92vh] overflow-hidden shadow-2xl flex flex-col border-0 sm:border border-[#E2DCC8] animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Modal Top Header Bar */}
-        <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-gradient-to-l from-[#5A5A40] via-[#6B7C62] to-[#8B9D83] text-white flex items-center justify-between shrink-0 shadow-xs">
-          <div className="flex items-center space-x-3 space-x-reverse min-w-0">
-            <div className="p-2 sm:p-2.5 bg-white/15 rounded-2xl border border-white/20 shadow-3xs shrink-0">
-              <FileCheck2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#FEFAE0]" />
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.exportMentalHealthReport}
+          subtitle={t.exportReportSub}
+          icon={
+            <div className="p-1.5 bg-white/15 rounded-xl border border-white/20 shadow-3xs shrink-0">
+              <FileCheck2 className="w-4 h-4 text-[#FEFAE0]" />
             </div>
-            <div className="min-w-0">
-              <h2 className="text-sm sm:text-base font-black text-white flex items-center gap-2 flex-wrap truncate">
-                <span>{t.exportMentalHealthReport}</span>
-                <span className="bg-[#FEFAE0] text-[#5A5A40] text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">
-                  {t.customPeriod}
-                </span>
-              </h2>
-              <p className="text-[11px] text-[#E2DCC8] font-medium truncate hidden sm:block">
-                {t.exportReportSub}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 sm:p-2 hover:bg-white/20 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer shrink-0"
-            title={t.closeBtn}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="emerald"
+          rightAction={
+            <span className="bg-[#FEFAE0] text-[#5A5A40] text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0">
+              {t.customPeriod}
+            </span>
+          }
+        />
 
         {/* Dynamic Period Selector Control Panel */}
         <div className="px-3.5 py-2.5 sm:px-5 sm:py-3 bg-[#F9F7F2] border-b border-[#E2DCC8] space-y-2.5 shrink-0">

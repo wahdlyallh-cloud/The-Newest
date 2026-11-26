@@ -3,6 +3,8 @@ import { X, Globe, Check, Sparkles, Search, Type, AlignLeft } from 'lucide-react
 import { AppLanguage, AppFontFamily, AppLineHeight } from '../types';
 import { SUPPORTED_LANGUAGES, MULTI_TRANSLATIONS, getLanguageInfo } from '../lib/languages';
 import { APP_FONTS, LINE_HEIGHT_OPTIONS } from '../lib/fonts';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface LanguagesModalProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ export default function LanguagesModal({
   const t = MULTI_TRANSLATIONS[appLanguage] || MULTI_TRANSLATIONS.ar;
   const isArabic = appLanguage === 'ar';
 
+  useRegisterBackStep('modal_languages', 'modal', isOpen && !isFirstTime, onClose, t.languagesTitle);
+
   const filteredLanguages = SUPPORTED_LANGUAGES.filter((lang) =>
     lang.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     lang.nativeName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -46,48 +50,54 @@ export default function LanguagesModal({
     onChangeLanguage(langCode);
   };
 
+  const headerTitle = activeTab === 'languages' ? (isFirstTime ? t.selectLanguageTitle : t.languagesTitle) : (t.typographyTabTitle);
+  const headerSubtitle = activeTab === 'languages' ? (isFirstTime ? t.selectLanguageSubtitle : t.languagesSub) : (t.typographyTabSub);
+
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-[55] font-sans animate-fadeIn" 
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 z-[55] font-sans animate-fadeIn" 
       dir={currentInfo.dir}
     >
-      <div className="bg-[#FAF8F5] border-2 border-[#D4A373]/40 rounded-[32px] w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden shadow-2xl transition-all duration-300">
+      <div className="bg-[#FAF8F5] border-0 sm:border-2 sm:border-[#D4A373]/40 rounded-none sm:rounded-[32px] w-full max-w-lg h-[100dvh] sm:h-auto sm:max-h-[92vh] flex flex-col overflow-hidden shadow-2xl transition-all duration-300">
         
-        {/* Header */}
-        <div className="p-5 sm:p-6 pb-3 border-b border-[#E2DCC8]/60 bg-gradient-to-r from-[#FAF8F5] via-amber-50/40 to-[#FAF8F5]">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[#4E685B] text-white rounded-2xl shadow-xs">
+        {/* Native App Bar Header */}
+        {!isFirstTime ? (
+          <NativeModalHeader
+            title={headerTitle}
+            subtitle={headerSubtitle}
+            icon={
+              <div className="p-1.5 bg-[#4E685B] text-white rounded-xl shadow-xs">
                 {activeTab === 'languages' ? (
-                  <Globe className="w-5 h-5 text-amber-300 animate-spin-slow" />
+                  <Globe className="w-4 h-4 text-amber-300" />
                 ) : (
-                  <Type className="w-5 h-5 text-amber-300" />
+                  <Type className="w-4 h-4 text-amber-300" />
                 )}
               </div>
-              <div>
-                <h4 className="font-extrabold text-[#2B3E50] text-base sm:text-lg flex items-center gap-2">
-                  <span>{activeTab === 'languages' ? (isFirstTime ? t.selectLanguageTitle : t.languagesTitle) : (t.typographyTabTitle)}</span>
-                </h4>
-                <p className="text-[11px] text-gray-500 font-bold mt-0.5">
-                  {activeTab === 'languages' ? (isFirstTime ? t.selectLanguageSubtitle : t.languagesSub) : (t.typographyTabSub)}
-                </p>
-              </div>
+            }
+            onBack={onClose}
+            isRtl={currentInfo.dir === 'rtl'}
+            theme="light"
+          />
+        ) : (
+          <div className="p-5 pb-3 border-b border-[#E2DCC8]/60 bg-gradient-to-r from-[#FAF8F5] via-amber-50/40 to-[#FAF8F5] flex items-center gap-3">
+            <div className="p-2.5 bg-[#4E685B] text-white rounded-2xl shadow-xs">
+              <Globe className="w-5 h-5 text-amber-300 animate-spin-slow" />
             </div>
-
-            {!isFirstTime && (
-              <button 
-                type="button"
-                onClick={onClose}
-                className="p-2 hover:bg-gray-200/60 rounded-full transition-colors text-gray-400 hover:text-gray-700 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            )}
+            <div>
+              <h4 className="font-extrabold text-[#2B3E50] text-base sm:text-lg">
+                {headerTitle}
+              </h4>
+              <p className="text-[11px] text-gray-500 font-bold mt-0.5">
+                {headerSubtitle}
+              </p>
+            </div>
           </div>
+        )}
 
-          {/* Sub Navigation Tabs */}
-          {!isFirstTime && (
-            <div className="flex items-center bg-[#E2DCC8]/50 p-1 rounded-2xl gap-1 mt-2">
+        {/* Sub Navigation Tabs */}
+        {!isFirstTime && (
+          <div className="px-4 py-2 border-b border-[#E2DCC8]/40 bg-white/50">
+            <div className="flex items-center bg-[#E2DCC8]/50 p-1 rounded-2xl gap-1">
               <button
                 type="button"
                 onClick={() => setActiveTab('languages')}
@@ -98,9 +108,8 @@ export default function LanguagesModal({
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span>{t.languageTabLabel}</span>
+                <span>{t.languageTabLabel || t.languagesTitle}</span>
               </button>
-
               <button
                 type="button"
                 onClick={() => setActiveTab('typography')}
@@ -111,25 +120,25 @@ export default function LanguagesModal({
                 }`}
               >
                 <Type className="w-3.5 h-3.5" />
-                <span>{t.fontAndSpacingTabLabel}</span>
+                <span>{t.fontAndSpacingTabLabel || t.typographyTabTitle}</span>
               </button>
             </div>
-          )}
 
-          {/* Search bar for language tab */}
-          {activeTab === 'languages' && (
-            <div className="relative mt-3">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t.searchLanguagePlaceholder}
-                className="w-full px-9 py-2.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#4E685B] shadow-3xs"
-              />
-              <Search className="w-4 h-4 text-gray-400 absolute end-3 top-3" />
-            </div>
-          )}
-        </div>
+            {/* Search bar for language tab */}
+            {activeTab === 'languages' && (
+              <div className="relative mt-2">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t.searchLanguagePlaceholder}
+                  className="w-full px-9 py-2.5 bg-white border border-[#E2DCC8] rounded-2xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#4E685B] shadow-3xs"
+                />
+                <Search className="w-4 h-4 text-gray-400 absolute end-3 top-3" />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* TAB 1: Language Options List */}
         {activeTab === 'languages' && (

@@ -3,6 +3,8 @@ import { X, Upload, Check, AlertTriangle, FileText, Calendar, CheckSquare, Squar
 import { DiaryEntry, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { cleanDiaryText } from '../lib/gemini';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface WriteDiaryImporterProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ export default function WriteDiaryImporter({
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_write_diary_importer', 'modal', isOpen, onClose, t.writeDiaryImporterTitle);
 
   if (!isOpen) return null;
 
@@ -450,32 +454,22 @@ export default function WriteDiaryImporter({
   const selectedCount = parsedEntries.filter(e => e.selected).length;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[60] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FCFAF7] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[60] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FCFAF7] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col">
         
-        {/* Header with Pink Accent referencing WriteDiary old pink theme */}
-        <div className="p-6 pb-4 border-b border-rose-100 flex items-center justify-between bg-gradient-to-r from-rose-50/50 to-amber-50/30">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-rose-500 text-white rounded-2xl shadow-sm animate-pulse">
-              <FileText className="w-5 h-5" />
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.writeDiaryImporterTitle}
+          subtitle={t.writeDiaryImporterSub}
+          icon={
+            <div className="p-1.5 bg-rose-500 text-white rounded-xl shadow-xs">
+              <FileText className="w-4 h-4" />
             </div>
-            <div>
-              <h4 className="font-black text-[#2B3E50] text-sm md:text-base flex items-center gap-1.5">
-                <span>{t.writeDiaryImporterTitle}</span>
-              </h4>
-              <p className="text-[10px] text-gray-500 mt-0.5 font-bold">
-                {t.writeDiaryImporterSub}
-              </p>
-            </div>
-          </div>
-          <button 
-            type="button"
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="rose"
+        />
 
         {/* Content Body */}
         <div className="p-6 flex-1 overflow-y-auto space-y-4">

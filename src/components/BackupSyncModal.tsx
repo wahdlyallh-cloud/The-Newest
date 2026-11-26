@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { X, RefreshCw, Mail, Send, Cloud, Settings, FolderOpen, Download, BookOpen, Plug, ShieldCheck, Key, FileText, Lock, Smartphone } from 'lucide-react';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface BackupSyncModalProps {
   isOpen: boolean;
@@ -58,29 +60,25 @@ export default function BackupSyncModal({
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
 
+  useRegisterBackStep('modal_backup_sync', 'modal', isOpen, onClose, t.backupSyncTitle);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[55] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[55] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col">
         
-        {/* Header */}
-        <div className="p-6 pb-2 flex items-center justify-between">
-          <h4 className="font-black text-[#2B3E50] text-base md:text-lg flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-sky-500" />
-            <span>{t.backupSyncTitle}</span>
-          </h4>
-          <button 
-            type="button"
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.backupSyncTitle}
+          icon={<Cloud className="w-5 h-5 text-sky-500" />}
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+        />
 
         {/* Content Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto overscroll-contain flex-1">
           <p className="text-xs text-gray-600 font-extrabold leading-relaxed text-justify">
             {t.backupSyncDesc}
           </p>

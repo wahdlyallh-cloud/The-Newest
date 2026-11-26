@@ -6,6 +6,8 @@ import {
 import { DiaryEntry, AppLanguage, FileAttachment, AudioRecording } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { getAttachmentObjectUrl, getAttachmentBlob } from '../lib/attachmentStore';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface AttachmentsPageProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ export default function AttachmentsPage({
   const t = getTranslation(appLanguage);
   const langInfo = getLanguageInfo(appLanguage);
   const isAr = appLanguage === 'ar';
+
+  useRegisterBackStep('modal_attachments', 'modal', isOpen, onClose, t.attachmentsPageTitle || 'الملحقات والوسائط');
 
   if (!isOpen || !diary) return null;
 
@@ -134,34 +138,26 @@ export default function AttachmentsPage({
   const totalCount = imagesCount + videosCount + audioCount + filesCount + drawingsCount;
 
   return (
-    <div className="fixed inset-0 z-[115] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn" dir={langInfo.dir}>
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
-        {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#E2DCC8]/70 flex items-center justify-between bg-[#F9F7F2]">
-          <div className="flex items-center space-x-2.5 space-x-reverse">
-            <div className="p-2.5 bg-[#8B9D83]/15 text-[#8B9D83] rounded-2xl text-lg">
-              <Folder className="w-5 h-5" />
+    <div className="fixed inset-0 z-[115] bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 overflow-y-auto animate-fadeIn" dir={langInfo.dir}>
+      <div className="bg-white border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]">
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.attachmentsPageTitle || (isAr ? 'الملحقات والوسائط' : 'Attachments & Media')}
+          subtitle={diary.title ? `"${diary.title}"` : (isAr ? 'مرفقات التدوينة الحالية' : 'Current diary attachments')}
+          icon={
+            <div className="p-1 bg-[#8B9D83]/15 text-[#8B9D83] rounded-lg">
+              <Folder className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="font-black text-sm sm:text-base text-[#3A3A3A] flex items-center gap-2">
-                <span>{t.attachmentsPageTitle || (isAr ? 'الملحقات والوسائط' : 'Attachments & Media')}</span>
-                <span className="text-xs bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full font-bold">
-                  {totalCount}
-                </span>
-              </h3>
-              <p className="text-[11px] text-gray-500 font-medium">
-                {diary.title ? `"${diary.title}"` : (isAr ? 'مرفقات التدوينة الحالية' : 'Current diary attachments')}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 border border-[#E2DCC8] flex items-center justify-center transition-all cursor-pointer shadow-3xs"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+          rightAction={
+            <span className="text-xs bg-[#8B9D83] text-white px-2.5 py-0.5 rounded-full font-bold">
+              {totalCount}
+            </span>
+          }
+        />
 
         {/* Content Body */}
         <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1 text-xs">

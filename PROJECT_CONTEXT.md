@@ -177,4 +177,22 @@ npm run build
 
 - Maximizes writing area on mobile viewports: eliminates redundant outer padding (`px-0 md:px-6` on main container), renders the composer card edge-to-edge (`rounded-none sm:rounded-3xl border-y sm:border mx-0 w-full`), and provides full-width internal padding (`px-3 py-3 sm:p-5`) with zero horizontal overflow.
 
+---
+
+## 13. Full-App Native Android Mobile UX & Step-by-Step Back Navigation
+
+- **Native App Bar Headers (`NativeModalHeader.tsx`):**
+  - Replaces web-style corner `X` close buttons across all major modals (Export Diary, Daily Pros & Cons, Voice Vent, Gemini Keys, Languages, Smart Reminders, Therapist Report, Mental Health PDF Report, Attachments, AI Voice Journal, Gratitude Import, Contact Developer, Rating, and Habit Form) with touch-friendly App Bar headers (`min-w-[44px] min-h-[44px]`).
+  - Automatically flips the back arrow appropriately for RTL/LTR layouts (pointing rightwards in Arabic RTL, leftwards in LTR).
+  - Converts full-feature modals on mobile (`< 768px`) to full-screen native app views (`h-[100dvh] rounded-none border-0`) with independent scrollable bodies (`overscroll-contain`) while preserving centered card framing on desktop (`sm:rounded-3xl`).
+- **Unified Step-by-Step Navigation History Stack (`src/lib/navigationStack.ts`):**
+  - Defines a unified navigation manager tracking open modals, drawers, sheets, and tab history chronologically.
+  - One shared handler `handleStepBack()` coordinates:
+    1. **Priority 1:** Closes the topmost active modal, sheet, or overlay.
+    2. **Priority 2:** Steps back one screen/tab in internal navigation history.
+    3. **Priority 3 (Home root):** Shows a localized toast (`"اضغط مرة أخرى للخروج من التطبيق"`) and exits cleanly only upon a second Back press within 2 seconds.
+  - **Movable Floating Back Arrow:** Preserves the existing draggable mobile back arrow 100% intact, wired to the unified navigation handler with a dynamic badge indicating combined stack depth.
+  - **Zero-Failure Android Integration:** Evaluates `window.__hayatHandleBackPress()` via `evaluateJavascript` inside `MainActivity.java`'s `OnBackPressedCallback`, backed by `@capacitor/app` `backButton` listener in JS.
+
+
 

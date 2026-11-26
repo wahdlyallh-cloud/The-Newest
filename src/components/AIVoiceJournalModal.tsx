@@ -6,6 +6,8 @@ import { ALL_JOURNAL_TYPES, JOURNAL_TYPES_CONFIG, getJournalTypeConfig, getJourn
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { generateGeminiContentDirect } from '../lib/gemini';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface AIVoiceJournalModalProps {
   isOpen: boolean;
@@ -49,6 +51,8 @@ export default function AIVoiceJournalModal({
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_ai_voice_journal', 'modal', isOpen, onClose, t.voiceJournalTitle);
 
   useEffect(() => {
     if (!isOpen) {
@@ -314,34 +318,25 @@ Return pure JSON only in the following schema:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-[65] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 max-h-[92vh] flex flex-col relative">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[65] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 h-[100dvh] sm:h-auto sm:max-h-[92vh] flex flex-col relative">
 
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
-              <Mic className="w-6 h-6 text-purple-200" />
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.voiceJournalTitle}
+          subtitle={t.voiceJournalSub}
+          icon={
+            <div className="p-1.5 bg-white/10 rounded-xl">
+              <Mic className="w-4 h-4 text-purple-200" />
             </div>
-            <div>
-              <h3 className="font-black text-base sm:text-lg flex items-center gap-2">
-                <span>{t.voiceJournalTitle}</span>
-              </h3>
-              <p className="text-xs text-purple-100/80 font-medium">
-                {t.voiceJournalSub}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/80 hover:text-white cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          }
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="dark"
+        />
 
         {/* Content Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4 sm:space-y-5 flex-1">
 
           {/* Permission Error State */}
           {micPermissionError && (

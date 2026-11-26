@@ -58,6 +58,8 @@ import DailyProsConsModal from './components/DailyProsConsModal';
 import ProsConsHistoryLog from './components/ProsConsHistoryLog';
 import FullAthkarModal from './components/FullAthkarModal';
 import LockScreenAthkarOverlay from './components/LockScreenAthkarOverlay';
+import { navigationStack } from './lib/navigationStack';
+import { App as CapApp } from '@capacitor/app';
 import PsychologicalGrowthTree from './components/PsychologicalGrowthTree';
 import ShareableGratitudeCardModal, { CardExportData } from './components/ShareableGratitudeCardModal';
 import BehavioralCorrelationCard from './components/BehavioralCorrelationCard';
@@ -2355,6 +2357,13 @@ export default function App() {
   }
 
   const [navHistory, setNavHistory] = useState<NavState[]>([]);
+  const [navStackCount, setNavStackCount] = useState(0);
+
+  useEffect(() => {
+    return navigationStack.subscribe(() => {
+      setNavStackCount(navigationStack.size());
+    });
+  }, []);
   const isNavigatingBackRef = useRef(false);
   const prevNavStateRef = useRef<NavState>({
     activeTab,
@@ -2387,6 +2396,17 @@ export default function App() {
   }, [activeTab, activeDiariesSubTab, analyticsSubTab, editingDiary?.id, diaryTypeFilter]);
 
   const handleGoBack = useCallback(() => {
+    // If navigationStack has steps (e.g. modals, overlays, sub-views), step it back first
+    if (navigationStack.size() > 0) {
+      const res = navigationStack.handleStepBack();
+      if (res === 'handled') return;
+      if (res === 'exit') {
+        CapApp.exitApp().catch(() => {});
+        return;
+      }
+      if (res === 'warn_exit') return;
+    }
+
     if (editingDiary) {
       setEditingDiary(null);
       return;
@@ -2409,8 +2429,78 @@ export default function App() {
     } else if (activeTab !== 'dashboard') {
       setActiveTab('dashboard');
       setEditingDiary(null);
+    } else {
+      // At root dashboard with empty history
+      const res = navigationStack.handleStepBack();
+      if (res === 'exit') {
+        CapApp.exitApp().catch(() => {});
+      }
     }
   }, [editingDiary, navHistory, activeTab, diaries]);
+
+  // Wire navigation stack exit toast callback to global toast system
+  useEffect(() => {
+    navigationStack.setExitToastCallback(() => {
+      const exitMsg = t.press_again_to_exit || (settings?.appLanguage === 'ar' ? 'اضغط مرة أخرى للخروج من التطبيق' : 'Press back again to exit');
+      showGlobalCopyToast(exitMsg, 'success');
+    });
+  }, [settings?.appLanguage, showGlobalCopyToast, t]);
+
+  // Expose universal back handler globally for native Android WebView (MainActivity.java)
+  useEffect(() => {
+    (window as any).__hayatHandleBackPress = () => {
+      if (navigationStack.size() > 0) {
+        const res = navigationStack.handleStepBack();
+        return res;
+      }
+
+      if (editingDiary) {
+        setEditingDiary(null);
+        return 'handled';
+      }
+
+      if (navHistory.length > 0) {
+        handleGoBack();
+        return 'handled';
+      }
+
+      if (activeTab !== 'dashboard') {
+        setActiveTab('dashboard');
+        return 'handled';
+      }
+
+      // At dashboard root with empty stack
+      const res = navigationStack.handleStepBack();
+      return res;
+    };
+
+    return () => {
+      delete (window as any).__hayatHandleBackPress;
+    };
+  }, [editingDiary, navHistory, activeTab, handleGoBack]);
+
+  // Capacitor hardware back button event listener
+  useEffect(() => {
+    let removeListener: (() => void) | null = null;
+    try {
+      CapApp.addListener('backButton', () => {
+        if ((window as any).__hayatHandleBackPress) {
+          const res = (window as any).__hayatHandleBackPress();
+          if (res === 'exit') {
+            CapApp.exitApp().catch(() => {});
+          }
+        } else {
+          handleGoBack();
+        }
+      }).then(handle => {
+        removeListener = () => handle.remove();
+      }).catch(() => {});
+    } catch (_) {}
+
+    return () => {
+      if (removeListener) removeListener();
+    };
+  }, [handleGoBack]);
 
   useEffect(() => {
     if (backupEmail) {
@@ -6600,7 +6690,7 @@ export default function App() {
       </header>
 
       {/* 🔙 Universal Back Navigation: Desktop Sticky Bar vs Mobile Draggable Floating Pill */}
-      {(activeTab !== 'dashboard' || editingDiary !== null || navHistory.length > 0) && (
+      {(activeTab !== 'dashboard' || editingDiary !== null || navHistory.length > 0 || navStackCount > 0) && (
         <>
           {/* Mobile Floating Draggable Back Button */}
           <motion.div
@@ -6616,9 +6706,9 @@ export default function App() {
               title={t('nav.back_mobile_title')}
             >
               <ArrowRight className={`w-5 h-5 text-[#FEFAE0] group-hover:-translate-x-0.5 transition-transform shrink-0 ${isRtl ? '' : 'rotate-180'}`} />
-              {navHistory.length > 0 && (
+              {(navHistory.length + navStackCount) > 0 && (
                 <span className="text-[11px] bg-white text-[#4E685B] px-2 py-0.5 rounded-full font-black leading-none shadow-xs">
-                  {navHistory.length}
+                  {navHistory.length + navStackCount}
                 </span>
               )}
             </button>
@@ -6635,9 +6725,9 @@ export default function App() {
               >
                 <ArrowRight className={`w-4 h-4 text-[#8B9D83] group-hover:text-white group-hover:-translate-x-1 transition-transform ${isRtl ? '' : 'rotate-180'}`} />
                 <span>{t('nav.back_btn')}</span>
-                {navHistory.length > 0 && (
+                {(navHistory.length + navStackCount) > 0 && (
                   <span className="text-[10px] bg-[#EEF1EB] group-hover:bg-white/20 text-[#556E4F] group-hover:text-white px-1.5 py-0.5 rounded-full font-black">
-                    {navHistory.length}
+                    {navHistory.length + navStackCount}
                   </span>
                 )}
               </button>

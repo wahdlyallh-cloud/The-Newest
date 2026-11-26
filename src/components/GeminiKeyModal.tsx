@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, Globe, Plus, CheckCircle, AlertTriangle, ShieldCheck, ArrowUp, ArrowDown, Trash2, Key } from 'lucide-react';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
 import { ApiKeyPoolEntry, ApiKeyStatus } from '../types';
-import { maskApiKey, testGeminiApiKey } from '../lib/apiKeyManager';
+import { maskApiKey, testGeminiApiKey, discoverGoogleModels } from '../lib/apiKeyManager';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 
 interface GeminiKeyModalProps {
   isOpen: boolean;
@@ -42,6 +44,8 @@ export default function GeminiKeyModal({
 
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_gemini_key', 'modal', isOpen, onClose, t.geminiPoolTitle);
 
   // Sync settings when external event fires
   useEffect(() => {
@@ -269,29 +273,26 @@ export default function GeminiKeyModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[55] font-sans" dir={langInfo.dir}>
-      <div className="bg-[#FAF8F5] border border-[#E2DCC8] rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 max-h-[88dvh] sm:max-h-[90vh] flex flex-col my-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 z-[55] font-sans" dir={langInfo.dir}>
+      <div className="bg-[#FAF8F5] border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl transition-all duration-300 transform scale-100 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col">
         
-        {/* Header */}
-        <div className="p-6 pb-2 flex items-center justify-between border-b border-[#E2DCC8]/40">
-          <h4 className="font-black text-[#2B3E50] text-base md:text-lg flex items-center gap-2">
-            <span>🔑</span>
-            <span>{t.geminiPoolTitle}</span>
-            <span className="text-xs bg-amber-100 text-amber-900 font-extrabold px-2 py-0.5 rounded-full">
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.geminiPoolTitle}
+          subtitle={`${keysList.length}/5`}
+          icon={<span className="text-base">🔑</span>}
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="light"
+          rightAction={
+            <span className="text-xs bg-amber-100 text-amber-900 font-extrabold px-2.5 py-1 rounded-full">
               {keysList.length}/5
             </span>
-          </h4>
-          <button 
-            type="button"
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600 cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          }
+        />
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-4 pb-12 sm:pb-6">
+        <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain flex-1 space-y-4 pb-12 sm:pb-6">
           <p className="text-xs text-gray-600 font-extrabold leading-relaxed text-justify">
             {t.geminiPoolDesc}
           </p>

@@ -12,6 +12,8 @@ import { copyTextSafe } from '../lib/clipboard';
 
 import { normalizeMoodDistribution, MoodPercentageEntry } from '../lib/emotionNormalization';
 import AIMediaAccessSelector from './AIMediaAccessSelector';
+import NativeModalHeader from './NativeModalHeader';
+import { useRegisterBackStep } from '../lib/navigationStack';
 import {
   AIMediaAccessPermission,
   DEFAULT_AI_MEDIA_ACCESS,
@@ -113,6 +115,8 @@ export default function DailyProsConsModal({
   const isAr = appLanguage === "ar";
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
+
+  useRegisterBackStep('modal_daily_pros_cons', 'modal', isOpen, onClose, t.prosConsReportTitle);
   const [aiPositives, setAiPositives] = useState<string[]>([]);
   const [aiNegatives, setAiNegatives] = useState<string[]>([]);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -1165,41 +1169,28 @@ ${t.generatedByHayatAiNotice}`;
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
       
       {/* Printable Area Wrapper */}
-      <div id="pros-cons-modal-printable-card" className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-start font-sans my-auto" dir={langInfo.dir}>
+      <div id="pros-cons-modal-printable-card" className="bg-[#FAF8F5] border-0 sm:border-2 sm:border-[#E2DCC8] rounded-none sm:rounded-3xl shadow-2xl w-full max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[92vh] flex flex-col overflow-hidden text-start font-sans" dir={langInfo.dir}>
         
-        {/* Modal Top Header Bar */}
-        <div className="bg-gradient-to-r from-[#2B3E50] via-[#3B5066] to-[#5A5A40] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#E2DCC8]/30 shrink-0">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="p-2.5 bg-white/10 rounded-2xl border border-white/15">
-              <Scale className="w-6 h-6 text-[#FEFAE0]" />
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                {t.prosConsReportTitle}
-                <span className="bg-[#8B9D83] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                  {t.prosConsAiManual}
-                </span>
-              </h3>
-              <p className="text-xs text-[#E2DCC8] mt-0.5 font-medium flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{displayDate}</span>
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all cursor-pointer no-print-capture"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Native App Bar Header */}
+        <NativeModalHeader
+          title={t.prosConsReportTitle}
+          subtitle={displayDate}
+          icon={<Scale className="w-5 h-5 text-amber-200" />}
+          onBack={onClose}
+          isRtl={langInfo.dir === 'rtl'}
+          theme="slate"
+          rightAction={
+            <span className="bg-[#8B9D83] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+              {t.prosConsAiManual}
+            </span>
+          }
+        />
 
         {/* Modal Middle Content Scrollable Area */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-gray-800">
+        <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 text-gray-800">
 
           {/* Side-by-Side Top Section: Full-Day Mood Percentage Breakdown (Strict 100% Normalized) */}
           <div className="bg-gradient-to-r from-[#FAF8F5] via-white to-[#FAF8F5] border-2 border-[#E2DCC8] rounded-2xl p-4 shadow-3xs space-y-3">
