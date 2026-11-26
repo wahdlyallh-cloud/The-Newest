@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bell, Plus, Trash2, Edit3, Check, X, Clock, Calendar, Sparkles, 
-  Volume2, Heart, ShieldCheck, Zap
+  Volume2, Heart, ShieldCheck, Zap, Smartphone, ExternalLink, HelpCircle
 } from 'lucide-react';
 import { AppReminder, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
+import SmartReminder, { isNativeAndroid, syncReminderNative } from '../lib/smartReminderBridge';
 
 interface SmartRemindersModalProps {
   isOpen: boolean;
@@ -48,8 +49,57 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
   const [selectedDays, setSelectedDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [motivationalNote, setMotivationalNote] = useState('');
   const [categoryIcon, setCategoryIcon] = useState('🔔');
+  const [isQuestion, setIsQuestion] = useState(false);
+  const [yesLabel, setYesLabel] = useState('نعم');
+  const [noLabel, setNoLabel] = useState('لا');
+  const [showOverlay, setShowOverlay] = useState(true);
+
+  // Permissions state for Android
+  const [permissions, setPermissions] = useState<{ notificationsGranted: boolean; overlayGranted: boolean }>({
+    notificationsGranted: true,
+    overlayGranted: false
+  });
+  const [testSent, setTestSent] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && isNativeAndroid) {
+      SmartReminder.checkPermissions()
+        .then(res => setPermissions(res))
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleRequestNotificationPerm = async () => {
+    try {
+      const res = await SmartReminder.requestNotificationPermission();
+      setPermissions(prev => ({ ...prev, notificationsGranted: res.notificationsGranted }));
+    } catch {}
+  };
+
+  const handleOpenOverlaySettings = async () => {
+    try {
+      await SmartReminder.openOverlayPermissionSettings();
+    } catch {}
+  };
+
+  const handleTriggerTest = async () => {
+    try {
+      await SmartReminder.triggerTestReminder({
+        title: t('waterReminderSampleTitle') || 'هل شربت الماء الآن؟ 💧',
+        body: t('waterReminderSampleBody') || 'تذكير صحي عائم من حياة AI (اضغط نعم أو لا)',
+        isQuestion: true,
+        yesLabel: t('yesActionLabel') || 'نعم، شربت',
+        noLabel: t('noActionLabel') || 'ليس بعد',
+        showOverlay: true
+      });
+      setTestSent(true);
+      setTimeout(() => setTestSent(false), 5000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const getDayName = (dayId: number, format: 'short' | 'long' = 'short') => {
     try {
@@ -76,6 +126,10 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     setSelectedDays([0, 1, 2, 3, 4, 5, 6]);
     setMotivationalNote('');
     setCategoryIcon('🔔');
+    setIsQuestion(false);
+    setYesLabel(t('yesActionLabel') || 'نعم');
+    setNoLabel(t('noActionLabel') || 'لا');
+    setShowOverlay(true);
     setEditingId(null);
     setShowForm(false);
   };
@@ -93,6 +147,10 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     setSelectedDays(reminder.selectedDays || [0, 1, 2, 3, 4, 5, 6]);
     setMotivationalNote(reminder.motivationalNote || '');
     setCategoryIcon(reminder.categoryIcon || '🔔');
+    setIsQuestion(!!reminder.isQuestion);
+    setYesLabel(reminder.yesLabel || t('yesActionLabel') || 'نعم');
+    setNoLabel(reminder.noLabel || t('noActionLabel') || 'لا');
+    setShowOverlay(reminder.showOverlay ?? true);
     setShowForm(true);
   };
 
@@ -118,6 +176,10 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
       selectedDays: frequency === 'custom_days' ? selectedDays : (frequency === 'daily' ? [0, 1, 2, 3, 4, 5, 6] : [new Date().getDay()]),
       motivationalNote: motivationalNote.trim(),
       categoryIcon,
+      isQuestion,
+      yesLabel: isQuestion ? yesLabel.trim() : undefined,
+      noLabel: isQuestion ? noLabel.trim() : undefined,
+      showOverlay,
       createdAt: new Date().toISOString()
     };
 
@@ -129,16 +191,28 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     }
 
     onSaveReminders(updated);
+    syncReminderNative(newReminder);
     resetForm();
   };
 
   const handleToggleActive = (id: string) => {
-    const updated = reminders.map(r => r.id === id ? { ...r, active: !r.active } : r);
+    const updated = reminders.map(r => {
+      if (r.id === id) {
+        const toggled = { ...r, active: !r.active };
+        syncReminderNative(toggled);
+        return toggled;
+      }
+      return r;
+    });
     onSaveReminders(updated);
   };
 
   const handleDelete = (id: string) => {
     if (confirm(t.confirmDeleteReminder)) {
+      const target = reminders.find(r => r.id === id);
+      if (target) {
+        syncReminderNative({ ...target, active: false });
+      }
       const updated = reminders.filter(r => r.id !== id);
       onSaveReminders(updated);
     }
@@ -220,6 +294,70 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
         {/* Content Area */}
         <div className="p-5 overflow-y-auto space-y-6 grow scrollbar-thin">
 
+          {/* Android Native Permissions & Live Overlay Test Card */}
+          {isNativeAndroid && (
+            <div className="bg-gradient-to-r from-[#2B3E50] to-[#3B5266] text-white p-4 rounded-2xl space-y-3 shadow-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-amber-300" />
+                  <h4 className="font-extrabold text-xs sm:text-sm">{t('nativeRemindersCardTitle') || 'إشعارات النظام والبطاقة العائمة'}</h4>
+                </div>
+                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">Android</span>
+              </div>
+
+              <p className="text-[11px] text-blue-100/90 leading-relaxed font-semibold">
+                {t('nativeRemindersCardDesc') || 'تظهر التذكيرات كإشعارات في النظام وبطاقات عائمة تفاعلية حتى أثناء استخدامك لتطبيقات أخرى.'}
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                {/* 1. Notification Permission */}
+                <button
+                  type="button"
+                  onClick={handleRequestNotificationPerm}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between border cursor-pointer transition-all ${
+                    permissions.notificationsGranted
+                      ? 'bg-emerald-600/30 border-emerald-400 text-emerald-100'
+                      : 'bg-amber-500/20 border-amber-300 text-amber-100 hover:bg-amber-500/30'
+                  }`}
+                >
+                  <span className="truncate">{t('systemNotifsBtn') || 'إشعارات النظام الخارجية'}</span>
+                  <span>{permissions.notificationsGranted ? '✅' : '⚠️ ' + (t('enableBtn') || 'تفعيل')}</span>
+                </button>
+
+                {/* 2. Overlay Permission */}
+                <button
+                  type="button"
+                  onClick={handleOpenOverlaySettings}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between border cursor-pointer transition-all ${
+                    permissions.overlayGranted
+                      ? 'bg-emerald-600/30 border-emerald-400 text-emerald-100'
+                      : 'bg-cyan-500/20 border-cyan-300 text-cyan-100 hover:bg-cyan-500/30'
+                  }`}
+                >
+                  <span className="truncate">{t('floatingOverlayBtn') || 'البطاقة العائمة فوق التطبيقات'}</span>
+                  <span>{permissions.overlayGranted ? '✅' : '⚡ ' + (t('permissionBtn') || 'إذن')}</span>
+                </button>
+              </div>
+
+              {/* 3. Live 5-Second Test */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={handleTriggerTest}
+                  disabled={testSent}
+                  className="w-full py-2 px-3 bg-amber-400 hover:bg-amber-300 active:scale-95 text-[#1E2D3B] font-black text-xs rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>
+                    {testSent
+                      ? (t('testOverlaySentToast') || 'تم جدولة التنبيه بعد 5 ثوانٍ! اخرج من التطبيق للتجربة 🚀')
+                      : (t('testOverlayPromptBtn') || 'اختبار تنبيه عائم تفاعلي بعد 5 ثوانٍ')}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Add / Edit Form Modal inside */}
           {showForm ? (
             <form onSubmit={handleSaveReminder} className="bg-white border border-[#E2DCC8] p-5 rounded-2xl space-y-4 shadow-sm animate-fadeIn">
@@ -267,8 +405,63 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                 </div>
               </div>
 
+              {/* Reminder Type Selection (Plain Alert vs Interactive Yes/No Question) */}
+              <div className="p-3 bg-[#EEF1EB]/40 border border-[#DCE4D8] rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black text-[#2C3E35] flex items-center gap-1.5">
+                    <HelpCircle className="w-4 h-4 text-[#4E685B]" />
+                    <span>{t('reminderTypeLabel') || 'نوع التنبيه والتفاعل'}</span>
+                  </label>
+                  <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-[#DCE4D8]">
+                    <button
+                      type="button"
+                      onClick={() => setIsQuestion(false)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        !isQuestion ? 'bg-[#4E685B] text-white' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {t('plainReminderOption') || 'تنبيه عادي'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuestion(true)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        isQuestion ? 'bg-[#4E685B] text-white' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {t('questionReminderOption') || 'سؤال تفاعلي (نعم / لا)'}
+                    </button>
+                  </div>
+                </div>
+
+                {isQuestion && (
+                  <div className="grid grid-cols-2 gap-2 pt-1 animate-fadeIn">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-gray-600 block">{t('yesBtnLabelPrompt') || 'نص زر الموافقة'}</label>
+                      <input
+                        type="text"
+                        value={yesLabel}
+                        onChange={e => setYesLabel(e.target.value)}
+                        placeholder="نعم"
+                        className="w-full px-3 py-1.5 border border-[#DCE4D8] rounded-lg text-xs font-bold bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-gray-600 block">{t('noBtnLabelPrompt') || 'نص زر الرفض'}</label>
+                      <input
+                        type="text"
+                        value={noLabel}
+                        onChange={e => setNoLabel(e.target.value)}
+                        placeholder="لا"
+                        className="w-full px-3 py-1.5 border border-[#DCE4D8] rounded-lg text-xs font-bold bg-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Time & Frequency */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-[#5A5A40] flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-[#4E685B]" />
@@ -438,6 +631,11 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                         <div>
                           <h4 className="font-extrabold text-sm text-[#2C3E35] flex items-center gap-2">
                             <span>{reminder.title}</span>
+                            {reminder.isQuestion && (
+                              <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold">
+                                {t('questionReminderBadge') || 'سؤال'}
+                              </span>
+                            )}
                             {!reminder.active && (
                               <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md font-bold">
                                 {t.disabledBadge}
@@ -542,4 +740,3 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
 };
 
 export default SmartRemindersModal;
-

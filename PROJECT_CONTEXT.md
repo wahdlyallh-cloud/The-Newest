@@ -186,10 +186,25 @@ npm run build
   - Removed duplicate shortcuts already accessible from primary bottom tabs or dedicated screens: المستشار الذكي (Advisor tab), جلسة دعم نفسي (Therapy Report session), and خواطري (Diary sub-tab).
   - Arranged remaining essential items in RTL order with uniform height (`h-10 min-h-[40px]`), clean spacing (`gap-2`), crisp typography (`whitespace-nowrap shrink-0`), and smooth hidden horizontal scrolling:
     1. **الأذكار** (Athkar)
-    2. **جدار الامتنان** (Gratitude Wall)
-    3. **تمارين العلاج المعرفي** (CBT Exercises)
-    4. **التنبيهات / الإشعارات** (Smart Reminders with active count badge)
-    5. **تسجيل الدخول / الحساب** (Login / Account status button)
+    2. **قائمة المهام اليومية** (Daily Tasks Checklist + active count badge)
+    3. **جدار الامتنان** (Gratitude Wall)
+    4. **تمارين العلاج المعرفي** (CBT Exercises)
+    5. **التنبيهات / الإشعارات** (Smart Reminders with active count badge)
+    6. **تسجيل الدخول / الحساب** (Login / Account status button)
+
+---
+
+## 15. Native Smart Reminders, Cross-App Floating Card Overlay & Adaptive Icons
+
+- **Native Android Plugin (`SmartReminderPlugin.java`, `ReminderAlarmReceiver.java`, `ReminderOverlayHelper.java`, `ReminderActionReceiver.java`):**
+  - Schedules native `AlarmManager` exact alarms with safe Android 12+ `canScheduleExactAlarms()` fallback to avoid `SecurityException`.
+  - Dispatches high-importance heads-up system notifications (`hayat_smart_reminders` channel) with custom monochrome status bar icon `ic_stat_hayat`.
+  - When the user is outside the app and overlay permission is enabled, renders a floating interactive card via `WindowManager` (`TYPE_APPLICATION_OVERLAY`) with **نعم / لا** interactive actions and **✕** close button.
+  - Automatically records responses to `SharedPreferences` and syncs them back to `App.tsx` via `consumePendingResponses()`.
+- **In-App Floating Reminder Card (`InAppReminderOverlay.tsx`, `smartReminderBridge.ts`):**
+  - Displays top floating banner with instant question actions (`yes`/`no`) or plain alert dismiss inside the app.
+- **Adaptive Launcher Icon:**
+  - Auto-generated launcher icons across all mipmap densities (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) from `resources/icon.png` with comfortable 66% safe inner-zone padding for circular crops.
 - **Universal html2canvas-pro Migration (`exportUtils.ts`):**
   - Fully resolved `Attempting to parse an unsupported color function "oklch"` errors stemming from Tailwind CSS v4 color formats (`oklch()`, `oklab()`, `lch()`, `color-mix()`).
   - Added `captureElementToCanvas(element, options)` helper in `src/lib/exportUtils.ts` wrapping `html2canvas-pro` with safe background chaining and `@font-face` preservation.

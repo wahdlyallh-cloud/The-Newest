@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(AppUpdaterPlugin.class);
         registerPlugin(FileExportPlugin.class);
+        registerPlugin(SmartReminderPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Native step-by-step Android Back Button handling (Android 8 - 15)

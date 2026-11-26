@@ -165,6 +165,10 @@ export interface AppReminder {
   motivationalNote?: string;
   categoryIcon?: string;
   createdAt?: string;
+  isQuestion?: boolean; // whether to present as interactive question (Yes/No)
+  yesLabel?: string;
+  noLabel?: string;
+  showOverlay?: boolean; // whether to show cross-app overlay
 }
 
 export interface HabitSettings {

@@ -44,6 +44,8 @@ import IntegratedTherapyReport from './components/IntegratedTherapyReport';
 import WeeklyHabitsMoodChart from './components/WeeklyHabitsMoodChart';
 import SleepMoodCorrelationChart from './components/SleepMoodCorrelationChart';
 import SmartRemindersModal from './components/SmartRemindersModal';
+import InAppReminderOverlay, { InAppReminderData } from './components/InAppReminderOverlay';
+import SmartReminder, { syncAllRemindersNative } from './lib/smartReminderBridge';
 import { AuthModal } from './components/AuthModal';
 import {
   saveAttachmentBlob,
@@ -1981,6 +1983,51 @@ export default function App() {
   // --- Smart Reminders Logic ---
   const [showSmartRemindersModal, setShowSmartRemindersModal] = useState(false);
   const [triggeredReminder, setTriggeredReminder] = useState<AppReminder | null>(null);
+  const [activeInAppReminder, setActiveInAppReminder] = useState<InAppReminderData | null>(null);
+
+  // Sync reminders natively with Android AlarmManager
+  useEffect(() => {
+    if (settings.reminders) {
+      syncAllRemindersNative(settings.reminders);
+    }
+  }, [settings.reminders]);
+
+  // Handle answers to reminder prompts
+  const handleReminderResponse = useCallback((reminderId: string, answer: 'yes' | 'no' | 'dismissed') => {
+    if (answer === 'yes') {
+      setHabits(prev => prev.map(h => {
+        if (h.id === reminderId || (h.name && h.name.includes(reminderId))) {
+          return { ...h, isCompleted: true };
+        }
+        return h;
+      }));
+      showGlobalCopyToast('تم تسجيل الإجابة بنجاح! أحسنت 🌟', 'success');
+    }
+    setActiveInAppReminder(null);
+  }, [showGlobalCopyToast]);
+
+  // Sync pending responses on launch and visibilitychange
+  useEffect(() => {
+    const syncResponses = async () => {
+      try {
+        const res = await SmartReminder.consumePendingResponses();
+        if (res?.responses && res.responses.length > 0) {
+          for (const item of res.responses) {
+            handleReminderResponse(item.reminderId, item.answer);
+          }
+        }
+      } catch {}
+    };
+
+    syncResponses();
+    const handleVis = () => {
+      if (document.visibilityState === 'visible') {
+        syncResponses();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVis);
+    return () => document.removeEventListener('visibilitychange', handleVis);
+  }, [handleReminderResponse]);
   const lastFiredReminderRef = React.useRef<{ [id: string]: string }>({});
 
   useEffect(() => {
@@ -2011,6 +2058,14 @@ export default function App() {
         if (matchDay && lastFiredReminderRef.current[r.id] !== currentTimeStr) {
           lastFiredReminderRef.current[r.id] = currentTimeStr;
           setTriggeredReminder(r);
+          setActiveInAppReminder({
+            id: r.id,
+            title: `${r.categoryIcon || '🔔'} ${r.title}`,
+            body: r.motivationalNote || '',
+            isQuestion: !!r.isQuestion,
+            yesLabel: r.yesLabel,
+            noLabel: r.noLabel
+          });
 
           try {
             const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
@@ -6245,7 +6300,25 @@ export default function App() {
                 <span>{t('nav.dhikr')}</span>
               </button>
 
-              {/* 2. جدار الامتنان (Gratitude Wall) */}
+              {/* 2. قائمة المهام اليومية (Daily Tasks Checklist) */}
+              <button
+                type="button"
+                onClick={() => {
+                  switchTab('diaries', { subTab: 'tasks' });
+                  setActiveDiariesSubTab('tasks');
+                  setEditingDiary(null);
+                  setIsTopDrawerOpen(false);
+                }}
+                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#EEF1EB] hover:bg-[#E2E9DF] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
+                title={t.dailyTasksSubtabLabel}
+              >
+                <span className="flex items-center justify-center bg-[#C5221F] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
+                  {incompleteTasksCount}
+                </span>
+                <span>{t.dailyTasksSubtabLabel || 'المهام'}</span>
+              </button>
+
+              {/* 3. جدار الامتنان (Gratitude Wall) */}
               <button
                 type="button"
                 onClick={() => {
@@ -6261,7 +6334,7 @@ export default function App() {
                 <span>{t.gratitudeSubtab || 'الامتنان'}</span>
               </button>
 
-              {/* 3. تمارين العلاج المعرفي (CBT Exercises) */}
+              {/* 4. تمارين العلاج المعرفي (CBT Exercises) */}
               <button
                 type="button"
                 onClick={() => {
@@ -6277,7 +6350,7 @@ export default function App() {
                 <span>{t.cbtSubtabLabel || 'التمارين'}</span>
               </button>
 
-              {/* 4. التنبيهات / الإشعارات (Smart Reminders with unread/active count badge) */}
+              {/* 5. التنبيهات / الإشعارات (Smart Reminders with unread/active count badge) */}
               <button
                 type="button"
                 onClick={() => {
@@ -6296,7 +6369,7 @@ export default function App() {
                 )}
               </button>
 
-              {/* 5. تسجيل الدخول / الحساب (Login / Account status) */}
+              {/* 6. تسجيل الدخول / الحساب (Login / Account status) */}
               <button
                 type="button"
                 onClick={() => {
@@ -6838,13 +6911,13 @@ export default function App() {
                 onClick={() => setShowPredictiveHealthModal(true)}
                 className="bg-gradient-to-r from-[#2B3E50] to-[#3B5266] hover:from-[#1E2D3B] hover:to-[#2B3E50] text-white p-3.5 rounded-2xl flex items-center justify-between text-start cursor-pointer shadow-md transition-all hover:scale-[1.01]"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div className="p-2 bg-white/10 rounded-xl shrink-0">
                     <Brain className="w-4 h-4 text-amber-300" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1 break-words">
                     <h4 className="font-extrabold text-xs truncate">{t.predictiveTitle}</h4>
-                    <p className="text-[10px] text-blue-100/80 truncate">{t.predictiveSub}</p>
+                    <p className="text-[10px] text-blue-100/80 line-clamp-1">{t.predictiveSub}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-amber-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -6855,13 +6928,13 @@ export default function App() {
                 onClick={() => setShowVoiceJournalModal(true)}
                 className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] hover:from-[#4F3B51] hover:to-[#38283A] text-white p-3.5 rounded-2xl flex items-center justify-between text-start cursor-pointer shadow-md transition-all hover:scale-[1.01]"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div className="p-2 bg-white/10 rounded-xl shrink-0">
                     <Mic className="w-4 h-4 text-purple-200" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1 break-words">
                     <h4 className="font-extrabold text-xs truncate">{t.voiceJournalTitle}</h4>
-                    <p className="text-[10px] text-purple-100/80 truncate">{t.voiceJournalSub}</p>
+                    <p className="text-[10px] text-purple-100/80 line-clamp-1">{t.voiceJournalSub}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-purple-200 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -6872,13 +6945,13 @@ export default function App() {
                 onClick={() => setShowOnboardingTour(true)}
                 className="bg-gradient-to-r from-[#3A506B] to-[#1C2541] hover:from-[#1C2541] hover:to-[#0B132B] text-white p-3.5 rounded-2xl flex items-center justify-between text-start cursor-pointer shadow-md transition-all hover:scale-[1.01]"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div className="p-2 bg-white/10 rounded-xl shrink-0">
                     <Sparkles className="w-4 h-4 text-cyan-300" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1 break-words">
                     <h4 className="font-extrabold text-xs truncate">{t('interactiveTourTitle')}</h4>
-                    <p className="text-[10px] text-cyan-100/80 truncate">{t('interactiveTourSub')}</p>
+                    <p className="text-[10px] text-cyan-100/80 line-clamp-1">{t('interactiveTourSub')}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-3.5 h-3.5 text-cyan-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
@@ -12123,6 +12196,13 @@ export default function App() {
         onClose={() => setShowGratitudeShareModal(false)}
         appLanguage={settings?.appLanguage || 'ar'}
         initialData={gratitudeShareData}
+      />
+
+      {/* 🌟 In-App Floating Reminder Overlay */}
+      <InAppReminderOverlay
+        reminder={activeInAppReminder}
+        onAnswer={handleReminderResponse}
+        appLanguage={settings?.appLanguage || 'ar'}
       />
 
       {/* 🔔 Smart Reminders Management Modal */}
