@@ -312,11 +312,22 @@ button,
   -webkit-user-select: none !important;
 }
 
-/* Touch target minimum size on interactive controls */
+/* Touch target minimum size on interactive controls.
+   Compact controls opt out explicitly so dots, swatches and switches stay crisp. */
 button,
 [role="button"],
 .touch-target-safe {
   min-height: 44px;
+}
+
+button[role="switch"],
+[role="switch"],
+[data-compact-control="true"],
+[data-pagination-dot="true"],
+[data-color-swatch="true"],
+.compact-control {
+  min-height: 0 !important;
+  min-width: 0;
 }
 
 

@@ -3,7 +3,7 @@ import { getActiveApiKeyFromSettings } from '../lib/apiKeyManager';
 import { getLocalizedAIError } from '../services/aiLanguageContract';
 import MarkdownMessage from './MarkdownMessage';
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download, Check } from 'lucide-react';
+import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download, Check, Maximize2, Minimize2 } from 'lucide-react';
 import { copyTextSafe } from '../lib/clipboard';
 import jsPDF from 'jspdf';
 import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
@@ -236,6 +236,8 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     });
   };
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useRegisterBackStep('advisor_fullscreen', 'modal', isFullscreen, () => setIsFullscreen(false), isAr ? 'المستشار الذكي' : 'Smart Advisor');
   const [activeAnalysisTopic, setActiveAnalysisTopic] = useState<'all' | 'mood' | 'habits' | 'cbt' | 'gratitude'>('all');
   const [selectedVoice, setSelectedVoice] = useState<'female_calm' | 'male_wise' | 'female_energetic'>('female_calm');
   const [isRecording, setIsRecording] = useState(false);
@@ -1116,10 +1118,11 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   };
 
   return (
-    <div className="bg-white border border-[#E2DCC8] rounded-3xl overflow-hidden shadow-sm h-[580px] sm:h-[620px] flex flex-col font-sans relative" dir={langInfo.dir}>
+    <div className={`${isFullscreen ? 'fixed inset-0 z-[9990] h-[100dvh] w-full rounded-none' : 'h-[580px] sm:h-[620px]'} bg-white border border-[#E2DCC8] overflow-hidden shadow-sm flex flex-col font-sans relative`} dir={langInfo.dir}>
       
       {/* Top Dual-Tab Switcher */}
       <div className="bg-[#FAF8F5] border-b border-[#E2DCC8] p-1.5 sm:p-2 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0 z-10">
+        <button type="button" data-compact-control="true" onClick={() => setIsFullscreen(v => !v)} className="absolute top-2 end-2 z-20 p-1.5 rounded-lg bg-white/80 border border-[#E2DCC8] text-[#2D6A4F]" aria-label={isFullscreen ? (isAr ? 'استعادة' : 'Restore') : (isAr ? 'ملء الشاشة' : 'Fullscreen')}>{isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}</button>
         <button
           type="button"
           onClick={() => setActiveAdvisorTab('diary')}
@@ -1188,13 +1191,13 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             <div className="flex items-center bg-white p-1 rounded-lg border border-[#E2DCC8] shadow-xs gap-1" title={t.smartAdvisorDiariesAccess}>
               <button
                 onClick={toggleDiariesConsent}
-                className={`w-8 h-4.5 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer flex items-center ${
-                  hasConsent && advisorPermissions.diaries ? 'bg-[#8B9D83]' : 'bg-[#E2DCC8]'
+                role="switch" aria-checked={hasConsent && advisorPermissions.diaries} data-compact-control="true" dir="ltr" className={`inline-flex items-center shrink-0 w-11 h-6 min-h-0 min-w-0 p-0.5 rounded-full transition-colors cursor-pointer ${
+                  hasConsent && advisorPermissions.diaries ? 'bg-[#2D6A4F]' : 'bg-slate-300 dark:bg-slate-600'
                 }`}
               >
                 <div
-                  className={`w-3.5 h-3.5 bg-white rounded-full shadow-md transform transition-transform ${
-                    hasConsent && advisorPermissions.diaries ? 'translate-x-0' : '-translate-x-3.5'
+                  className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                    hasConsent && advisorPermissions.diaries ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>

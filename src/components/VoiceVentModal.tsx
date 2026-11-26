@@ -13,7 +13,8 @@ import {
   BookOpen,
   Music,
   Trash2,
-  Edit3
+  Edit3,
+  Maximize2, Minimize2
 } from 'lucide-react';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { saveAttachmentBlob } from '../lib/attachmentStore';
@@ -93,6 +94,8 @@ export default function VoiceVentModal({
   useRegisterBackStep('modal_voice_vent', 'modal', isOpen, onClose, t.voiceQuickVent);
 
   // Step 1: Recording, Step 2: Review (Editable & Tone Analysis), Step 3: Saved Choices
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useRegisterBackStep('voice_vent_fullscreen', 'modal', isFullscreen, () => setIsFullscreen(false), isAr ? 'ملء الشاشة' : 'Fullscreen');
   const [modalStep, setModalStep] = useState<'recording' | 'review' | 'saved'>('recording');
 
   const [isRecording, setIsRecording] = useState(false);
@@ -743,10 +746,11 @@ export default function VoiceVentModal({
 
   return (
     <div
-      className="fixed inset-0 z-[125] bg-black/60 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 overflow-y-auto animate-fadeIn"
+      className={`${isFullscreen ? 'fixed inset-0 z-[125] p-0' : 'fixed inset-0 z-[125] p-0 sm:p-4'} bg-black/60 backdrop-blur-sm flex items-center justify-center overflow-y-auto animate-fadeIn`}
       dir={langInfo.dir}
     >
-      <div className="bg-white border-0 sm:border sm:border-[#E2DCC8] rounded-none sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]">
+      <div className={`${isFullscreen ? 'rounded-none max-w-none h-[100dvh]' : 'rounded-none sm:rounded-3xl max-w-lg h-[100dvh] sm:h-auto sm:max-h-[92vh]'} bg-white border-0 sm:border sm:border-[#E2DCC8] w-full shadow-2xl overflow-hidden flex flex-col`}>
+        <button type="button" data-compact-control="true" onClick={() => setIsFullscreen(v => !v)} className="absolute top-3 end-3 z-30 p-1.5 rounded-lg bg-white/90 border border-[#E2DCC8] text-[#2D6A4F]" aria-label={isFullscreen ? (isAr ? 'استعادة' : 'Restore') : (isAr ? 'ملء الشاشة' : 'Fullscreen')}>{isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}</button>
         {/* Native App Bar Header */}
         <NativeModalHeader
           title={ventTitle}

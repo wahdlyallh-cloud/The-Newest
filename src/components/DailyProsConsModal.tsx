@@ -1,3 +1,4 @@
+import jsPDF from 'jspdf';
 import React, { useState, useEffect } from 'react';
 import { 
   Scale, Brain, Sparkles, Plus, Trash2, Download, Printer, Copy, Check, 
@@ -602,40 +603,14 @@ ${t.generatedByHayatAiNotice}`;
     }
   };
 
-  // Export Word Document
-  const handleDownloadWord = () => {
-    const content = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><meta charset='utf-8'><title>${t.prosConsReportTitle} - ${displayDate}</title></head>
-      <body style="font-family: Arial, sans-serif; direction: ${isAr ? 'rtl' : 'ltr'}; text-align: ${isAr ? 'right' : 'left'}; padding: 20px;">
-        <h1 style="color: #2B3E50;">⚖️ ${t.dailyProsConsReportTitle}</h1>
-        <h3>${t.dateLabelColon} ${displayDate}</h3>
-        <hr/>
-        <h2 style="color: #2D5A27;">🧠 ${t.aiPositivesHeader}</h2>
-        <ul>${aiPositives.map(p => `<li>${p}</li>`).join('')}</ul>
-        
-        <h2 style="color: #902923;">🧠 ${t.aiNegativesHeader}</h2>
-        <ul>${aiNegatives.map(n => `<li>${n}</li>`).join('')}</ul>
-        <hr/>
-        <h2 style="color: #2D5A27;">✍️ ${t.userManualPositivesHeader}</h2>
-        <ul>${userPositives.map(p => `<li>${p}</li>`).join('')}</ul>
-
-        <h2 style="color: #902923;">✍️ ${t.userManualNegativesHeader}</h2>
-        <ul>${userNegatives.map(n => `<li>${n}</li>`).join('')}</ul>
-      </body>
-      </html>
-    `;
-
-    const blob = new Blob(['\ufeff' + content], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Pros_Cons_Report_${dayKey}.doc`;
-    link.click();
-    URL.revokeObjectURL(url);
-    showToast(t.exportedWordSuccess);
+  // Export Word-compatible HTML through the safe native/browser exporter.
+  const handleDownloadWord = async () => {
+    const esc = (value: string) => value.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+    const list = (items: string[]) => items.length ? items.map(item => `<li>${esc(item)}</li>`).join('') : `<li>${esc(t.prosConsNoManualPoints)}</li>`;
+    const html = `<!DOCTYPE html><html dir="${langInfo.dir}" lang="${langInfo.code}"><head><meta charset="utf-8"><title>${esc(t.prosConsReportTitle)} - ${esc(displayDate)}</title></head><body style="font-family:Arial,sans-serif;direction:${langInfo.dir};text-align:${isAr ? 'right' : 'left'};padding:24px"><h1>${esc(t.dailyProsConsReportTitle)}</h1><h3>${esc(t.dateLabelColon)} ${esc(displayDate)}</h3><h2>${esc(t.aiPositivesHeader)}</h2><ul>${list(aiPositives)}</ul><h2>${esc(t.aiNegativesHeader)}</h2><ul>${list(aiNegatives)}</ul><h2>${esc(t.userManualPositivesHeader)}</h2><ul>${list(userPositives)}</ul><h2>${esc(t.userManualNegativesHeader)}</h2><ul>${list(userNegatives)}</ul><h2>${isAr ? 'توزيع المزاج اليومي' : 'Daily mood distribution'}</h2><ul>${moodBreakdown.map(item => `<li>${esc(item.mood)}: ${item.percentage}%</li>`).join('')}</ul></body></html>`;
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+    await exportBlobSafe({ blob, filename: `Pros_Cons_Report_${dayKey}.doc`, title: t.prosConsReportTitle, mimeType: 'application/msword', onSuccess: () => showToast(t.exportedWordSuccess), onError: () => showToast(t.exportFailed || (isAr ? 'تعذر تصدير Word' : 'Word export failed')) });
   };
-
   // Helper to render formatted markdown text with **bold**
   const renderFormattedText = (text: string) => {
     if (!text) return '';
@@ -648,367 +623,39 @@ ${t.generatedByHayatAiNotice}`;
     });
   };
 
-  // Trigger Print / Save PDF with exact layout match
-  const handlePrintPdf = () => {
+  // Build a light RTL wrapper, capture it, and paginate it into A4 PDF pages.
+  const handlePrintPdf = async () => {
     handleSave();
-
-    const existingFrame = document.getElementById('yawmiyati-proscons-print-iframe');
-    if (existingFrame) {
-      existingFrame.remove();
-    }
-
-    const iframe = document.createElement('iframe');
-    iframe.id = 'yawmiyati-proscons-print-iframe';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    iframe.style.visibility = 'hidden';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document;
-    if (!doc) {
-      window.print();
-      return;
-    }
-
-    const formatBold = (str: string) => {
-      return str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    };
-
-    const aiPosHtml = aiPositives.length > 0 ? aiPositives.map(p => `
-      <div class="item-card">
-        <span class="bullet-dot">🟢</span>
-        ${formatBold(p)}
-      </div>
-    `).join('') : `<div class="empty-msg">${t.prosConsNoPositives}</div>`;
-
-    const aiNegHtml = aiNegatives.length > 0 ? aiNegatives.map(n => `
-      <div class="item-card">
-        <span class="bullet-dot">🔴</span>
-        ${formatBold(n)}
-      </div>
-    `).join('') : `<div class="empty-msg">${t.prosConsNoNegatives}</div>`;
-
-    const userPosHtml = userPositives.length > 0 ? userPositives.map(p => `
-      <div class="manual-item-card">
-        • ${formatBold(p)}
-      </div>
-    `).join('') : `<div class="empty-msg">${t.prosConsNoManualPoints}</div>`;
-
-    const userNegHtml = userNegatives.length > 0 ? userNegatives.map(n => `
-      <div class="manual-item-card">
-        • ${formatBold(n)}
-      </div>
-    `).join('') : `<div class="empty-msg">${t.prosConsNoManualPoints}</div>`;
-
-    const printContent = `
-      <!DOCTYPE html>
-      <html dir="${langInfo.dir}" lang="${langInfo.code}">
-      <head>
-        <meta charset="utf-8">
-        <title>${t.prosConsBtnLabel} - ${displayDate}</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body {
-            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
-            background-color: #ffffff;
-            color: #2D3748;
-            direction: ${langInfo.dir};
-            text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'};
-            padding: 15px;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          @page { size: A4 portrait; margin: 8mm; }
-          .report-container {
-            max-width: 820px;
-            margin: 0 auto;
-            border: 2px solid #E2DCC8;
-            border-radius: 20px;
-            overflow: hidden;
-            background-color: #FAF8F5;
-          }
-          .report-header {
-            background: linear-gradient(135deg, #2B3E50 0%, #3B5066 50%, #5A5A40 100%);
-            color: #ffffff;
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #E2DCC8;
-          }
-          .header-title-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-          }
-          .icon-box {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 12px;
-            padding: 8px 12px;
-            font-size: 22px;
-          }
-          .header-text h1 {
-            font-size: 17px;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
-          }
-          .badge-tag {
-            background-color: #8B9D83;
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 10px;
-          }
-          .header-date {
-            font-size: 12px;
-            color: #E2DCC8;
-            font-weight: 600;
-          }
-          .report-body {
-            padding: 20px;
-          }
-          .section-title-container {
-            border-bottom: 2px solid #E2DCC8;
-            padding-bottom: 8px;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
-          .section-title {
-            font-size: 13.5px;
-            font-weight: 900;
-            color: #2B3E50;
-          }
-          .section-subtitle {
-            font-size: 11px;
-            color: #718096;
-            font-weight: 700;
-          }
-          .two-columns {
-            display: flex;
-            gap: 14px;
-            margin-bottom: 20px;
-          }
-          .column-box {
-            flex: 1;
-            width: 50%;
-            border-radius: 16px;
-            padding: 14px;
-            border: 2px solid;
-          }
-          .positives-box {
-            background-color: #F2F7F2;
-            border-color: #C2DCBE;
-          }
-          .negatives-box {
-            background-color: #FDF3F2;
-            border-color: #F5C6C3;
-          }
-          .box-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
-          }
-          .positives-box .box-header { border-color: #C2DCBE; }
-          .negatives-box .box-header { border-color: #F5C6C3; }
-          .box-header-title {
-            font-size: 12px;
-            font-weight: 900;
-          }
-          .positives-box .box-header-title { color: #2D5A27; }
-          .negatives-box .box-header-title { color: #902923; }
-          .count-badge {
-            font-size: 10px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 6px;
-          }
-          .positives-box .count-badge { background-color: #D1E7DD; color: #0F5132; }
-          .negatives-box .count-badge { background-color: #F8D7DA; color: #842029; }
-          .item-cards-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-          }
-          .item-card {
-            background-color: #ffffff;
-            border-radius: 10px;
-            padding: 9px 11px;
-            font-size: 11.5px;
-            line-height: 1.6;
-            border: 1px solid;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-          }
-          .positives-box .item-card { border-color: #C2DCBE; color: #1A365D; }
-          .negatives-box .item-card { border-color: #F5C6C3; color: #1A365D; }
-          .bullet-dot { margin-left: 4px; }
-          .manual-box {
-            background-color: #ffffff;
-            border: 2px solid #E2DCC8;
-          }
-          .manual-box .box-header { border-color: #F0EDE4; }
-          .manual-box .box-header-title { color: #5A5A40; }
-          .manual-box .count-badge { background-color: #F0EDE4; color: #4A5568; }
-          .manual-item-card {
-            background-color: #FAF8F5;
-            border: 1px solid #E2DCC8;
-            border-radius: 10px;
-            padding: 8px 11px;
-            font-size: 11.5px;
-            color: #2D3748;
-            line-height: 1.5;
-          }
-          .empty-msg {
-            font-size: 11px;
-            color: #A0AEC0;
-            text-align: center;
-            padding: 8px;
-          }
-          .report-footer {
-            border-top: 1px solid #E2DCC8;
-            padding: 10px 18px;
-            background-color: #F0EDE4;
-            font-size: 10.5px;
-            color: #5A5A40;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 700;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="report-container">
-          <div class="report-header">
-            <div class="header-title-group">
-              <div class="icon-box">⚖️</div>
-              <div class="header-text">
-                <h1>
-                  <span>${t.prosConsReportTitle}</span>
-                  <span class="badge-tag">{t.prosConsAiManual}</span>
-                </h1>
-                <div class="header-date">📅 ${displayDate}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="report-body">
-            <!-- Section 1: AI Generated -->
-            <div class="section-title-container">
-              <div class="section-title">${t.prosConsAiSection}</div>
-              <div class="section-subtitle">${t.prosConsAiSubtitle}</div>
-            </div>
-
-            <div class="two-columns">
-              <!-- AI Positives (Right Column in RTL) -->
-              <div class="column-box positives-box">
-                <div class="box-header">
-                  <div class="box-header-title">
-                    <span>${t.prosConsAiPositives}</span>
-                  </div>
-                  <span class="count-badge">${aiPositives.length} {t.prosConsPoints}</span>
-                </div>
-                <div class="item-cards-list">
-                  ${aiPosHtml}
-                </div>
-              </div>
-
-              <!-- AI Negatives (Left Column in RTL) -->
-              <div class="column-box negatives-box">
-                <div class="box-header">
-                  <div class="box-header-title">
-                    <span>${t.prosConsAiNegatives}</span>
-                  </div>
-                  <span class="count-badge">${aiNegatives.length} {t.prosConsPoints}</span>
-                </div>
-                <div class="item-cards-list">
-                  ${aiNegHtml}
-                </div>
-              </div>
-            </div>
-
-            <!-- Section 2: User Manual Inputs -->
-            <div class="section-title-container">
-              <div class="section-title">${t.prosConsManualSection}</div>
-              <div class="section-subtitle">${t.prosConsManualSubtitle}</div>
-            </div>
-
-            <div class="two-columns">
-              <!-- Manual Positives (Right Column) -->
-              <div class="column-box manual-box">
-                <div class="box-header">
-                  <div class="box-header-title">
-                    {t.prosConsManualPositives}
-                  </div>
-                  <span class="count-badge">${userPositives.length} {t.prosConsPoints}</span>
-                </div>
-                <div class="item-cards-list">
-                  ${userPosHtml}
-                </div>
-              </div>
-
-              <!-- Manual Negatives (Left Column) -->
-              <div class="column-box manual-box">
-                <div class="box-header">
-                  <div class="box-header-title">
-                    {t.prosConsManualNegatives}
-                  </div>
-                  <span class="count-badge">${userNegatives.length} {t.prosConsPoints}</span>
-                </div>
-                <div class="item-cards-list">
-                  ${userNegHtml}
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="report-footer">
-            {t.prosConsFooterBrand}
-            {t.prosConsFooterPrivacy}
-          </div>
-        </div>
-
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.focus();
-              window.print();
-            }, 300);
-          };
-        </script>
-      </body>
-      </html>
-    `;
-
-    doc.open();
-    doc.write(printContent);
-    doc.close();
-
-    setTimeout(() => {
-      try {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-      } catch (e) {
-        window.print();
+    const esc = (value: string) => value.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+    const section = (title: string, items: string[], color: string) => `<section style="margin:18px 0;padding:16px;border:1px solid #E2DCC8;border-radius:16px;background:#fff"><h2 style="color:${color};margin:0 0 10px;font-size:18px">${esc(title)}</h2><ul style="margin:0;padding-inline-start:22px;line-height:1.8">${(items.length ? items : [t.prosConsNoManualPoints]).map(item => `<li>${esc(item)}</li>`).join('')}</ul></section>`;
+    const mood = moodBreakdown.map(item => `<span style="display:inline-block;margin:4px;padding:6px 10px;border-radius:999px;background:#EEF1EB;color:#1B4332;font-weight:700">${esc(item.mood)} ${item.percentage}%</span>`).join('');
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `position:fixed;left:-100000px;top:0;width:794px;background:#FAF8F5;color:#243B34;padding:36px;direction:${langInfo.dir};font-family:Arial,sans-serif;line-height:1.6`;
+    wrapper.innerHTML = `<h1 style="margin:0;color:#1B4332">${esc(t.dailyProsConsReportTitle)}</h1><p style="color:#64748B">${esc(t.dateLabelColon)} ${esc(displayDate)}</p><section style="margin:18px 0;padding:16px;border:1px solid #DCE4D8;border-radius:16px;background:#fff"><h2 style="margin:0 0 10px;color:#235D66">${isAr ? 'توزيع المزاج اليومي' : 'Daily mood distribution'}</h2><div>${mood}</div></section>${section(t.aiPositivesHeader, aiPositives, '#2D6A4F')}${section(t.aiNegativesHeader, aiNegatives, '#9B2C2C')}${section(t.userManualPositivesHeader, userPositives, '#2D6A4F')}${section(t.userManualNegativesHeader, userNegatives, '#9B2C2C')}`;
+    document.body.appendChild(wrapper);
+    try {
+      const canvas = await captureElementToCanvas(wrapper, { scale: 2, useCORS: true, backgroundColor: '#FAF8F5', logging: false });
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pageW = 595.28, pageH = 841.89, imgW = pageW, imgH = (canvas.height * imgW) / canvas.width;
+      const pageCanvasH = (canvas.width * pageH) / imgW;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      let rendered = 0, page = 0;
+      while (rendered < canvas.height) {
+        if (page > 0) pdf.addPage();
+        const slice = Math.min(pageCanvasH, canvas.height - rendered);
+        pdf.addImage(imgData, 'JPEG', 0, -(rendered * imgW / canvas.width), imgW, imgH);
+        rendered += slice;
+        page++;
       }
-    }, 400);
+      const blob = pdf.output('blob');
+      await exportBlobSafe({ blob, filename: `Pros_Cons_Report_${dayKey}.pdf`, title: t.prosConsReportTitle, mimeType: 'application/pdf', onSuccess: () => showToast(t.pdfSavedSuccess || (isAr ? 'تم حفظ PDF بنجاح' : 'PDF saved successfully')), onError: () => showToast(t.exportFailed || (isAr ? 'تعذر تصدير PDF' : 'PDF export failed')) });
+    } catch (err) {
+      console.error('Pros/cons PDF export failed:', err);
+      showToast(t.exportFailed || (isAr ? 'تعذر إنشاء ملف PDF' : 'Could not create the PDF'));
+    } finally {
+      wrapper.remove();
+    }
   };
-
   // Export report as high-resolution PNG image identical to report layout on all devices
   const handleSaveAsImage = async () => {
     handleSave();

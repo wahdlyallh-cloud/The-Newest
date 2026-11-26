@@ -740,12 +740,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   const handleDownloadTxt = () => {
     const fullText = `\uFEFF🎓 ${periodTitle}\nمنصة حياة AI | الفترة: ${periodLabel}\n\n📊 الإحصائيات السريعة:\n- عدد المذكرات: ${stats.totalDiaries}\n- متوسط النوم: ${stats.avgSleep} ساعة/ليلة\n- معدل المزاج: ${stats.avgMood} / 10\n- وقت الرياضة: ${stats.totalSportsMinutes} دقيقة\n\n📋 التقرير والتحليل السريري للمستشار الذكي:\n${aiAnalysisText || 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي للنوم.'}\n\n${patientNotes ? `📝 ملاحظات وأسئلة المعالج:\n${patientNotes}\n\n` : ''}تم إنشاء التقرير عبر منصة حياة AI بتاريخ ${new Date().toLocaleDateString('ar-EG')}`;
     const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `تقرير_الصحة_النفسية_${periodType}_${new Date().toISOString().split('T')[0]}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    void exportBlobSafe({ blob, filename: `تقرير_الصحة_النفسية_${periodType}_${new Date().toISOString().split('T')[0]}.txt`, title: periodTitle, mimeType: 'text/plain' });
   };
 
   // Download formatted Word document (.doc)
@@ -781,12 +776,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `تقرير_الصحة_النفسية_${periodType}_${new Date().toISOString().split('T')[0]}.doc`;
-    link.click();
-    URL.revokeObjectURL(url);
+    void exportBlobSafe({ blob, filename: `تقرير_الصحة_النفسية_${periodType}_${new Date().toISOString().split('T')[0]}.doc`, title: periodTitle, mimeType: 'application/msword' });
   };
 
   // Download PDF using html2canvas + jsPDF with smart fallback
@@ -877,73 +867,11 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
         }
       });
     } catch (err) {
-      console.error('PDF canvas export error, switching seamlessly to print fallback:', err);
-      // Fallback to iframe printing seamlessly without showing errors
-      handlePrintPdf();
+      console.error('PDF canvas export error:', err);
+      showToast(t.aiConnectionError);
     } finally {
       setIsExportingPdf(false);
     }
-  };
-
-  // Browser Print option using hidden iframe (bypasses mobile popup blockers)
-  const handlePrintPdf = () => {
-    if (!reportRef.current) return;
-
-    // Clean up any existing print frame
-    const existingFrame = document.getElementById('yawmiyati-print-iframe');
-    if (existingFrame) {
-      existingFrame.remove();
-    }
-
-    const iframe = document.createElement('iframe');
-    iframe.id = 'yawmiyati-print-iframe';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '-9999px';
-    iframe.style.bottom = '-9999px';
-    iframe.style.width = '0px';
-    iframe.style.height = '0px';
-    iframe.style.border = '0px';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document || iframe.contentDocument;
-    if (!doc) return;
-
-    const reportContentHtml = reportRef.current.innerHTML;
-
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html dir="${langInfo.dir}" lang="${langInfo.code}">
-        <head>
-          <meta charset="utf-8">
-          <title>${periodTitle} - Hayat AI</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
-            * { box-sizing: border-box; }
-            body { font-family: 'Cairo', sans-serif; padding: 20px; color: #1e293b; background: #fff; line-height: 1.6; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
-            svg { max-width: 100%; height: auto; }
-            @media print {
-              body { padding: 0; margin: 0; }
-              @page { size: A4; margin: 12mm; }
-              .pdf-card-block { page-break-inside: avoid; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="max-w-4xl mx-auto">
-            ${reportContentHtml}
-          </div>
-          <script>
-            setTimeout(function() {
-              window.focus();
-              window.print();
-            }, 500);
-          </script>
-        </body>
-      </html>
-    `);
-    doc.close();
   };
 
   if (!isOpen) return null;
@@ -1153,7 +1081,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
               <button
                 type="button"
-                onClick={handlePrintPdf}
+                onClick={handleDownloadPdf}
                 className="px-2 py-1 bg-white border border-[#E2DCC8] hover:bg-[#F0EDE4] text-gray-700 text-xs font-bold rounded-xl transition-all shadow-3xs flex items-center gap-1 cursor-pointer"
                 title={t.printReportTooltip}
               >

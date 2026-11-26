@@ -7,7 +7,7 @@ import {
   Trash2, Edit3, Trash, Star, Image, Paperclip, Mic, MicOff,
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
   User, Printer, ChevronRight, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
-  Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize,
+  Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize, Maximize2, Minimize2,
   MoreVertical, MoreHorizontal, Folder, FileText
 } from 'lucide-react';
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
@@ -59,7 +59,7 @@ import DailyProsConsModal from './components/DailyProsConsModal';
 import ProsConsHistoryLog from './components/ProsConsHistoryLog';
 import FullAthkarModal from './components/FullAthkarModal';
 import LockScreenAthkarOverlay from './components/LockScreenAthkarOverlay';
-import { navigationStack } from './lib/navigationStack';
+import { navigationStack, useRegisterBackStep } from './lib/navigationStack';
 import { App as CapApp } from '@capacitor/app';
 import PsychologicalGrowthTree from './components/PsychologicalGrowthTree';
 import ShareableGratitudeCardModal, { CardExportData } from './components/ShareableGratitudeCardModal';
@@ -2686,6 +2686,10 @@ export default function App() {
 
   // --- Drawing Sketchboard State ---
   const [showSketchboard, setShowSketchboard] = useState(false);
+  const [isDiaryEditorFullscreen, setIsDiaryEditorFullscreen] = useState(false);
+  const [isSketchboardFullscreen, setIsSketchboardFullscreen] = useState(false);
+  useRegisterBackStep('diary_editor_fullscreen', 'modal', isDiaryEditorFullscreen, () => setIsDiaryEditorFullscreen(false), isAr ? 'محرر اليوميات' : 'Diary editor');
+  useRegisterBackStep('drawing_pad_fullscreen', 'modal', isSketchboardFullscreen, () => setIsSketchboardFullscreen(false), isAr ? 'لوحة الرسم' : 'Drawing pad');
 
   // --- Therapist Report Modal State ---
   const [showTherapistModal, setShowTherapistModal] = useState(false);
@@ -3553,8 +3557,7 @@ export default function App() {
       });
     } catch (err) {
       console.error('Error exporting PDF:', err);
-      // Fallback print via iframe
-      window.print();
+      showGlobalCopyToast(t.exportFailed || (isAr ? 'تعذر إنشاء ملف PDF' : 'Could not create the PDF'), 'error');
     } finally {
       setIsExportingPdf(false);
     }
@@ -7928,7 +7931,7 @@ export default function App() {
 
             {/* Editor Container if editing or creating a diary */}
             {editingDiary ? (
-              <div className="bg-white border-y sm:border border-[#E2DCC8] rounded-none sm:rounded-3xl p-3 sm:p-6 shadow-xs space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden mx-0">
+              <div className={`${isDiaryEditorFullscreen ? 'fixed inset-0 z-[9990] h-[100dvh] w-full rounded-none p-3 sm:p-6 overflow-y-auto' : 'rounded-none sm:rounded-3xl p-3 sm:p-6'} bg-white border-y sm:border border-[#E2DCC8] shadow-xs space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden mx-0`}>
 
                 {/* Editor Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-[#E2DCC8]/55 flex-wrap gap-2">
@@ -7936,6 +7939,9 @@ export default function App() {
                     {isNewEntry ? t.newJournalHeader : t.editJournalHeader}
                   </h3>
                   <div className="flex items-center space-x-2 space-x-reverse">
+                    <button type="button" data-compact-control="true" onClick={() => setIsDiaryEditorFullscreen(v => !v)} className="inline-flex items-center justify-center w-9 h-9 min-h-0 min-w-0 rounded-lg bg-[#EEF1EB] text-[#2D6A4F] border border-[#DCE4D8]" aria-label={isDiaryEditorFullscreen ? (isAr ? 'استعادة المحرر' : 'Restore editor') : (isAr ? 'ملء شاشة المحرر' : 'Fullscreen editor')}>
+                      {isDiaryEditorFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
                     {!isNewEntry && (
                       <button
                         type="button"
@@ -8256,13 +8262,13 @@ export default function App() {
                         <span>{t.fontColorsBtn}:</span>
                       </span>
                       <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-5 h-5 rounded-full bg-amber-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorOrange} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorGreen} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-5 h-5 rounded-full bg-blue-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorBlue} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-5 h-5 rounded-full bg-red-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorRed} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-5 h-5 rounded-full bg-purple-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorPurple} />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#2B3E50">', '</span>')} className="w-5 h-5 rounded-full bg-[#2B3E50] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="كحلي" />
-                        <button type="button" onClick={() => insertFormatting('<span style="color:#3A3A3A">', '</span>')} className="w-5 h-5 rounded-full bg-[#3A3A3A] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="افتراضي" />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-5 h-5 rounded-full bg-amber-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorOrange} />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorGreen} />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-5 h-5 rounded-full bg-blue-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorBlue} />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-5 h-5 rounded-full bg-red-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorRed} />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-5 h-5 rounded-full bg-purple-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorPurple} />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#2B3E50">', '</span>')} className="w-5 h-5 rounded-full bg-[#2B3E50] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="كحلي" />
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#3A3A3A">', '</span>')} className="w-5 h-5 rounded-full bg-[#3A3A3A] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="افتراضي" />
                       </div>
                     </div>
                   )}
@@ -8331,12 +8337,12 @@ export default function App() {
                         </button>
                         {showBgColorPicker && (
                           <div className="absolute right-0 sm:right-auto left-auto sm:left-0 bottom-full mb-2 flex flex-wrap items-center gap-2 p-2.5 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl z-50 animate-fadeIn max-w-[92vw] sm:max-w-none">
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgDefault} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgWarmYellow} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSkyBlue} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSoftGreen} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgLavender} />
-                            <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgPink} />
+                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgDefault} />
+                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgWarmYellow} />
+                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSkyBlue} />
+                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSoftGreen} />
+                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgLavender} />
+                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgPink} />
                           </div>
                         )}
                       </div>
@@ -9391,8 +9397,11 @@ export default function App() {
 
                 {/* Custom Drawing Board Canvas Modal (Multi-Drawing Support) */}
                 {showSketchboard && (
-                  <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                    <div className="w-full max-w-2xl h-[450px]">
+                  <div className={`${isSketchboardFullscreen ? 'fixed inset-0 p-0' : 'fixed inset-0 p-4'} bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center`}>
+                    <div className={`${isSketchboardFullscreen ? 'w-full h-[100dvh]' : 'w-full max-w-2xl h-[450px]'} relative`}>
+                      <button type="button" data-compact-control="true" onClick={() => setIsSketchboardFullscreen(v => !v)} className="absolute top-2 end-2 z-20 inline-flex items-center justify-center w-9 h-9 min-h-0 min-w-0 rounded-lg bg-white/90 text-[#2D6A4F] border border-[#DCE4D8]" aria-label={isSketchboardFullscreen ? (isAr ? 'استعادة لوحة الرسم' : 'Restore drawing pad') : (isAr ? 'ملء شاشة لوحة الرسم' : 'Fullscreen drawing pad')}>
+                        {isSketchboardFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                      </button>
                       <DrawingCanvas
                         initialDataUrl={editingDrawingIndex !== null ? (editingDiary.drawings?.[editingDrawingIndex] || editingDiary.drawing || '') : ''}
                         appLanguage={settings?.appLanguage || 'ar'}
@@ -9566,12 +9575,12 @@ export default function App() {
                       <div className="pt-2 border-t border-gray-100 space-y-2">
                         <span className="text-xs font-extrabold text-[#5A5A40]">{t.chooseBgColor}</span>
                         <div className="flex items-center justify-around p-2 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]">
-                          <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer shadow-xs" title="افتراضي" />
-                          <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer shadow-xs" title="أصفر دافئ" />
-                          <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer shadow-xs" title="أزرق سماوي" />
-                          <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer shadow-xs" title="أخضر ناعم" />
-                          <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer shadow-xs" title="لافندر" />
-                          <button type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer shadow-xs" title="وردي" />
+                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer shadow-xs" title="افتراضي" />
+                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer shadow-xs" title="أصفر دافئ" />
+                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer shadow-xs" title="أزرق سماوي" />
+                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer shadow-xs" title="أخضر ناعم" />
+                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer shadow-xs" title="لافندر" />
+                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer shadow-xs" title="وردي" />
                         </div>
                       </div>
                     </div>
@@ -9603,22 +9612,22 @@ export default function App() {
 
                       {/* Font Formatting Icons Toolbar */}
                       <div className="flex items-center justify-around p-2.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]">
-                        <button type="button" onClick={() => insertFormatting('- ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarBulletList}>
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('- ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarBulletList}>
                           •≡
                         </button>
-                        <button type="button" onClick={() => insertFormatting('1. ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarNumberedList}>
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('1. ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarNumberedList}>
                           1≡
                         </button>
-                        <button type="button" onClick={() => insertFormatting('<u>', '</u>')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold underline text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarUnderline}>
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<u>', '</u>')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold underline text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarUnderline}>
                           U
                         </button>
-                        <button type="button" onClick={() => insertFormatting('~~', '~~')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold line-through text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarStrikethrough}>
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('~~', '~~')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold line-through text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarStrikethrough}>
                           S
                         </button>
-                        <button type="button" onClick={() => insertFormatting('*', '*')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl italic font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.formatItalic}>
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('*', '*')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl italic font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.formatItalic}>
                           I
                         </button>
-                        <button type="button" onClick={() => insertFormatting('**', '**')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-black text-sm text-[#3A3A3A] cursor-pointer" title={t.formatBold}>
+                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('**', '**')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-black text-sm text-[#3A3A3A] cursor-pointer" title={t.formatBold}>
                           B
                         </button>
                       </div>
@@ -12010,15 +12019,22 @@ export default function App() {
             isLocked: false
           };
 
-          // Save entry to memory state & persistence
-          setDiaries(prev => [fullEntry, ...prev]);
-
-          // Open directly in the full Diary Editor
+          // Save entry to memory state & persistence, then open it directly.
+          setDiaries(prev => {
+            const next = [fullEntry, ...prev.filter(item => item.id !== fullEntry.id)];
+            try {
+              localStorage.setItem('yawmiyati_diaries', JSON.stringify(sanitizeDiariesForLocalStorage(next)));
+            } catch (_) {}
+            return next;
+          });
           setEditingDiary(fullEntry);
           setIsNewEntry(false);
           setActiveTab('diaries');
+          setActiveDiariesSubTab(fullEntry.diaryType === 'gratitude' ? 'gratitude' : 'journal');
+          setDiaryTypeFilter(fullEntry.diaryType || 'diary');
           setDiaryAiAnswer('');
           triggerAutoSaveFeedback();
+          showGlobalCopyToast(`${t.voiceJournalTitle || 'التسجيل الصوتي'} ✓`);
         }}
         appLanguage={settings?.appLanguage || 'ar'}
         apiKey={settings.userApiKey}

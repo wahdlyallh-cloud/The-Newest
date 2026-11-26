@@ -143,7 +143,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       id: 'welcome',
       stepNum: 1,
       badgeText: (t.onboardingStepOf).replace('{step}', '1').replace('{total}', '7'),
-      heroGradient: 'from-emerald-600 via-teal-700 to-[#1b3b36]',
+      heroGradient: 'from-[#1B4332] via-[#2D6A4F] to-[#163A42]',
       glowColor: 'bg-emerald-400/20',
       icon: ShieldCheck,
       iconColor: 'text-emerald-300',
@@ -178,7 +178,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       id: 'diaries_voice',
       stepNum: 2,
       badgeText: (t.onboardingStepOf).replace('{step}', '2').replace('{total}', '7'),
-      heroGradient: 'from-violet-700 via-purple-800 to-[#2c124d]',
+      heroGradient: 'from-[#2D2A42] via-[#453F63] to-[#241F38]',
       glowColor: 'bg-violet-400/20',
       icon: Mic,
       iconColor: 'text-violet-300',
@@ -328,7 +328,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       id: 'export_import',
       stepNum: 5,
       badgeText: (t.onboardingStepOf).replace('{step}', '5').replace('{total}', '7'),
-      heroGradient: 'from-emerald-700 via-teal-800 to-[#0e3b32]',
+      heroGradient: 'from-[#1B4332] via-[#235D66] to-[#163A42]',
       glowColor: 'bg-emerald-400/20',
       icon: Download,
       iconColor: 'text-emerald-300',
@@ -374,7 +374,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       id: 'floating_reminders',
       stepNum: 6,
       badgeText: (t.onboardingStepOf).replace('{step}', '6').replace('{total}', '7'),
-      heroGradient: 'from-pink-700 via-rose-800 to-[#4d1020]',
+      heroGradient: 'from-[#2D2A42] via-[#453F63] to-[#243B34]',
       glowColor: 'bg-pink-400/20',
       icon: BellRing,
       iconColor: 'text-pink-300',
@@ -423,7 +423,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       id: 'ready',
       stepNum: 7,
       badgeText: (t.onboardingStepOf).replace('{step}', '7').replace('{total}', '7'),
-      heroGradient: 'from-[#1b3b36] via-[#244f46] to-[#0c1f1c]',
+      heroGradient: 'from-[#1B4332] via-[#2D6A4F] to-[#163A42]',
       glowColor: 'bg-emerald-400/30',
       icon: Sparkles,
       iconColor: 'text-emerald-300',
@@ -474,7 +474,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
       onTouchEnd={handleTouchEnd}
     >
       {/* Full-height Native Mobile Container */}
-      <div className="relative w-full h-[100dvh] max-w-md mx-auto flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300">
+      <div className="relative w-full h-[100dvh] max-w-md mx-auto flex flex-col overflow-hidden shadow-2xl transition-all duration-300">
 
         {/* Dynamic Animated Gradient Background */}
         <div className={`absolute inset-0 bg-gradient-to-b ${currentSlide.heroGradient} transition-colors duration-500`} />
@@ -482,7 +482,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         <div className={`absolute -bottom-24 -right-24 w-72 h-72 rounded-full ${currentSlide.glowColor} blur-3xl pointer-events-none transition-all duration-500`} />
 
         {/* Top Header Bar: Badge + Skip Button */}
-        <div className="relative z-10 flex items-center justify-between px-5 pt-4 pb-2">
+        <div className="relative z-10 shrink-0 flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-black px-3 py-1 rounded-full bg-white/15 text-white backdrop-blur-md border border-white/20 shadow-xs">
               {currentSlide.badgeText}
@@ -500,7 +500,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         </div>
 
         {/* Progress Bar Top Indicator */}
-        <div className="relative z-10 px-5 pt-1">
+        <div className="relative z-10 shrink-0 px-4 pt-1 pb-1">
           <div className="w-full bg-white/15 h-1.5 rounded-full overflow-hidden backdrop-blur-xs">
             <div
               className="bg-white h-full rounded-full transition-all duration-300 shadow-sm"
@@ -510,7 +510,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         </div>
 
         {/* Main Content Area */}
-        <div className="relative z-10 flex-1 px-5 py-3 flex flex-col justify-center space-y-3 overflow-y-auto scrollbar-none">
+        <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4 py-3 flex flex-col justify-start space-y-3 scrollbar-none">
 
           {/* Hero Icon with Subtle Floating Pulse */}
           <div className="flex items-center justify-start gap-3">
@@ -568,7 +568,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
         </div>
 
         {/* Bottom Controls Bar: Dots + Back + Next/Done */}
-        <div className="relative z-10 px-5 pt-2 pb-6 flex flex-col space-y-3 bg-gradient-to-t from-black/50 via-black/25 to-transparent">
+        <div className="relative z-10 shrink-0 pt-2 pb-4 px-4 flex flex-col space-y-3 bg-gradient-to-t from-black/50 via-black/25 to-transparent">
 
           {/* Animated Dots Indicator */}
           <div className="flex items-center justify-center gap-1.5" aria-label="Progress">
@@ -578,7 +578,7 @@ export const OnboardingTourModal: React.FC<OnboardingTourModalProps> = ({
                 type="button"
                 onClick={() => setCurrentStep(idx)}
                 aria-label={`Slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all cursor-pointer ${
+                data-pagination-dot="true" className={`h-2 min-h-0 rounded-full transition-all cursor-pointer ${
                   idx === currentStep
                     ? 'w-7 bg-white shadow-sm'
                     : 'w-2 bg-white/35 hover:bg-white/60'

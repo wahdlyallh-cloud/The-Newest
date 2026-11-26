@@ -223,3 +223,13 @@ npm run build
 
 
 
+
+## 17. UX, Export, Voice Flow, Fullscreen & Olive Adaptive Icon Hardening (2026-11-26)
+- Removed the global 44px minimum-height distortion from compact controls through explicit compact-control, switch, pagination-dot, and color-swatch opt-outs; normalized the Smart Advisor consent switch to an 11x6 RTL-safe pill with the Hayat AI olive-emerald active fill.
+- Fixed Smart Voice Journal category saving so the flow has no blocking browser alert, persists the full entry and IndexedDB audio attachment, closes cleanly, opens the saved entry in Diaries, applies its category filter, and shows a non-blocking confirmation toast.
+- Replaced Daily Pros/Cons Word raw-anchor export and print/iframe PDF fallback with UTF-8 BOM Word export and html2canvas-pro/jsPDF A4 pagination through exportBlobSafe; removed the active diary PDF window.print fallback.
+- Calmed the onboarding palette, separated header/progress, scrollable body, and footer zones, and protected pagination dots from touch-target stretching.
+- Added Android-back-aware fullscreen toggles to the diary editor, drawing pad, continuous voice vent, and Smart Advisor views.
+- Applied the uploaded olive-green artwork pixel-for-pixel as resources/icon.png; regenerated mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi launcher, round, and safe-zone foreground PNGs and switched Android 8-15 adaptive icons to the matching olive diagonal background.
+- Quality gates passed: `npx tsc --noEmit`, `node scripts/i18nAudit.cjs`, `node scripts/validate-localization.mjs`, and `npm run build`. No files under `.github/` were changed and Gradle was not run.
+- Extended the export audit to the therapist, integrated therapy, and monthly mental-health reports: removed popup/iframe printing and raw anchor downloads, routed HTML/TXT/Word exports through exportBlobSafe, and made PDF failure handling non-blocking.

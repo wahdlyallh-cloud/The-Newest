@@ -7,6 +7,7 @@ import {
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
+import { exportBlobSafe } from '../lib/exportUtils';
 import MonthlyMentalHealthPDFReportModal, { SavedPDFReport, INITIAL_SAVED_REPORTS } from './MonthlyMentalHealthPDFReportModal';
 import AIMediaAccessSelector from './AIMediaAccessSelector';
 import {
@@ -239,56 +240,10 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
     }
   };
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    printWindow.document.write(`
-      <html dir="${langInfo.dir}" lang="${langInfo.code}">
-        <head>
-          <title>${t.therapyReportTitle} - Hayat AI</title>
-          <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; direction: ${langInfo.dir}; text-align: ${langInfo.dir === 'rtl' ? 'right' : 'left'}; }
-            h1 { color: #5A5A40; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-            h2 { color: #0f172a; margin-top: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-            .meta { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-            .stat-box { border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; }
-            pre { white-space: pre-wrap; font-family: inherit; }
-            .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #94a3b8; }
-          </style>
-        </head>
-        <body>
-          <h1>🎓 ${t.therapyReportTitle}</h1>
-          <div class="meta">
-            <strong>${t.reportPeriodLabel}</strong> ${startDate} - ${endDate}<br/>
-            <strong>${t.totalEntriesCount}</strong> ${totalEntries}<br/>
-            <strong>${t.exportDateTitle}</strong> ${new Date().toLocaleString(langInfo.bcp47)}
-          </div>
-
-          <div class="grid">
-            <div class="stat-box">
-              <strong>💤 ${t.avgSleep}</strong> ${averageSleep} ${t.hoursUnit}
-            </div>
-            <div class="stat-box">
-              <strong>🏃 ${t.sportsTime}</strong> ${totalSports} ${t.minutesUnit}
-            </div>
-          </div>
-
-          <h2>📋 ${t.aiPsychAdvisor}</h2>
-          <div style="font-size: 15px;">
-            ${reportText.replace(/\n/g, '<br/>')}
-          </div>
-
-          <div class="footer">
-            Hayat AI
-          </div>
-          <script>window.print();</script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+  const handlePrint = async () => {
+    const htmlContent = `<!DOCTYPE html><html dir="${langInfo.dir}" lang="${langInfo.code}"><head><meta charset="UTF-8"><title>${t.therapyReportTitle}</title><style>body{font-family:Arial,sans-serif;padding:32px;line-height:1.7;color:#1e293b;direction:${langInfo.dir};text-align:${langInfo.dir === 'rtl' ? 'right' : 'left'};}h1{color:#5A5A40;border-bottom:2px solid #E2DCC8;padding-bottom:10px;} .meta{background:#F9F7F2;padding:14px;border:1px solid #E2DCC8;border-radius:8px;} .report-body{white-space:pre-wrap;margin-top:20px;} </style></head><body><h1>${t.therapyReportTitle}</h1><div class="meta">${t.reportPeriodLabel}: ${startDate} - ${endDate}<br>${t.totalEntriesCount}: ${totalEntries}</div><div class="report-body">${reportText.replace(/\n/g, '<br>')}</div></body></html>`;
+    await exportBlobSafe({ blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }), filename: `Therapy_Report_${startDate}_${endDate}.html`, title: t.therapyReportTitle, mimeType: 'text/html' });
   };
-
   const handleCopyText = async () => {
     try {
       const textToCopy = `${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
@@ -305,12 +260,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   const handleDownloadTxt = () => {
     const textContent = `\uFEFF${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n${reportText}`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Therapy_Report_${startDate}_${endDate}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    void exportBlobSafe({ blob, filename: `Therapy_Report_${startDate}_${endDate}.txt`, title: t.therapyReportTitle, mimeType: 'text/plain' });
   };
 
   const handleDownloadDoc = () => {
@@ -340,12 +290,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Therapy_Report_${startDate}_${endDate}.doc`;
-    link.click();
-    URL.revokeObjectURL(url);
+    void exportBlobSafe({ blob, filename: `Therapy_Report_${startDate}_${endDate}.doc`, title: t.therapyReportTitle, mimeType: 'application/msword' });
   };
 
   return (

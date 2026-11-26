@@ -494,7 +494,7 @@ export default function AIVoiceJournalModal({
     }
 
     if (!finalSpokenText) {
-      alert(t.noSpeechDetected);
+      setMicPermissionError(t.noSpeechDetected);
       setIsAnalyzing(false);
       return;
     }
@@ -631,7 +631,7 @@ Return pure JSON only in the following schema:
       onClose();
     } catch (err: any) {
       console.error('Error saving voice journal entry:', err);
-      alert(t.voiceSaveFailed);
+      setMicPermissionError(t.voiceSaveFailed);
     } finally {
       setIsSaving(false);
     }
