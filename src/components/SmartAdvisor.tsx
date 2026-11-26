@@ -1,9 +1,8 @@
-import { generateGeminiContentDirect } from '../lib/gemini';
-import { getActiveApiKeyFromSettings } from '../lib/apiKeyManager';
+import { getActiveApiKeyFromSettings, getCandidateApiKeys } from '../lib/apiKeyManager';
 import { getLocalizedAIError } from '../services/aiLanguageContract';
 import MarkdownMessage from './MarkdownMessage';
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download, Check, Maximize2, Minimize2 } from 'lucide-react';
+import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip, X, Plus, Image as ImageIcon, FileText, Music, Video, Upload, ExternalLink, Bookmark, Copy, Download, Check, Maximize2, Minimize2, MessageSquare, Pencil, RefreshCw } from 'lucide-react';
 import { copyTextSafe } from '../lib/clipboard';
 import jsPDF from 'jspdf';
 import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
@@ -11,7 +10,7 @@ import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
 import { getAthkarContextForAI, getFormattedAthkarPromptContext } from '../services/aiAthkarSync';
-import { processAttachmentUnified, sniffMimeType, getAttachmentTypeCategory } from '../services/attachmentService';
+import { sniffMimeType, getAttachmentTypeCategory } from '../services/attachmentService';
 import {
   buildUnifiedKnowledgeIndex,
   retrieveRelevantKnowledge,
@@ -26,6 +25,9 @@ import {
 } from '../lib/aiMediaAccess';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
+import LiveVoiceChatModal from './LiveVoiceChatModal';
+import { getSelectedModelMode, setSelectedModelMode, getDiscoveredModels, refreshDiscoveredModels, selectModelsForTask, type GeminiModelMode, type GeminiTask, type DiscoveredGeminiModel } from '../lib/geminiModelRouter';
+import { prepareGeminiMedia, type GeminiUploadResult } from '../lib/geminiFileUpload';
 
 export interface AdvisorPermissions {
   diaries: boolean;
@@ -79,6 +81,7 @@ interface SmartAdvisorProps {
   books?: any[];
   userApiKey?: string;
   appLanguage?: AppLanguage;
+  initialAdvisorTab?: 'diary' | 'general';
   onFilePickerOpen?: () => void;
   onFilePickerClose?: () => void;
 }
@@ -88,6 +91,70 @@ interface Message {
   sender: 'user' | 'ai';
   text: string;
   createdAt: string;
+}
+
+interface GeneralConversation {
+  id: string;
+  title: string;
+  updatedAt: string;
+  messages: Message[];
+  isRenamed?: boolean;
+}
+
+function loadGeneralConversations(): GeneralConversation[] {
+  try {
+    const value = localStorage.getItem('yawmiyati_general_chat_threads');
+    const parsed = value ? JSON.parse(value) : [];
+    return Array.isArray(parsed) ? parsed.filter(item => item && typeof item.id === 'string' && Array.isArray(item.messages)) : [];
+  } catch { return []; }
+}
+
+function conciseConversationTitle(messages: Message[], fallback: string): string {
+  const first = messages.find(message => message.sender === 'user')?.text || '';
+  const title = first.replace(/\s+/g, ' ').replace(/^📎\s*المرفقات:\s*/i, '').trim();
+  return title ? (title.length > 34 ? `${title.slice(0, 34).trim()}…` : title) : fallback;
+}
+
+async function requestGeminiDirect(options: {
+  apiKey: string;
+  query: string;
+  systemPrompt: string;
+  task: GeminiTask;
+  mode: GeminiModelMode;
+  files?: Array<{ geminiMedia?: GeminiUploadResult }>;
+  history?: Array<{ sender: 'user' | 'ai'; text: string }>;
+}): Promise<string> {
+  const media = (options.files || []).map(file => file.geminiMedia).filter((item): item is GeminiUploadResult => Boolean(item));
+  const keys = Array.from(new Set([media.find(item => item.uploadedWithKey)?.uploadedWithKey, options.apiKey, ...getCandidateApiKeys()].filter((key): key is string => Boolean(key && key.trim()))));
+  let lastError: unknown;
+  for (const key of keys) {
+    const models = await selectModelsForTask(options.task, key, options.mode);
+    for (const model of models.slice(0, 5)) {
+      try {
+        const prior = (options.history || []).map(item => ({ role: item.sender === 'user' ? 'user' : 'model', parts: [{ text: item.text }] }));
+        const parts: any[] = [];
+        if (options.query) parts.push({ text: options.query });
+        for (const item of media) {
+          if (item.fileUri) parts.push({ fileData: { mimeType: item.mimeType, fileUri: item.fileUri } });
+          else if (item.inlineData) parts.push({ inlineData: item.inlineData });
+        }
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: options.systemPrompt }] },
+            contents: [...prior, { role: 'user', parts: parts.length ? parts : [{ text: options.query || 'حلل الملف المرفق.' }] }],
+            generationConfig: { maxOutputTokens: 2048 }
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data?.error?.message || `Gemini request failed (${response.status})`);
+        const text = (data?.candidates?.[0]?.content?.parts || []).map((part: any) => part.text || '').join('').trim();
+        if (text) return text;
+        throw new Error('Gemini returned an empty response');
+      } catch (error) { lastError = error; }
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('No Gemini model or API key is available');
 }
 
 function sanitizeAdvisorText(text: string, lang: string): string {
@@ -101,7 +168,7 @@ function sanitizeAdvisorText(text: string, lang: string): string {
   return text;
 }
 
-export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar', onFilePickerOpen, onFilePickerClose }: SmartAdvisorProps) {
+export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar', initialAdvisorTab = 'diary', onFilePickerOpen, onFilePickerClose }: SmartAdvisorProps) {
   const effectiveKey = userApiKey || getActiveApiKeyFromSettings();
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
@@ -109,7 +176,26 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   const isAr = appLanguage === 'ar';
 
   // Dual Tab State
-  const [activeAdvisorTab, setActiveAdvisorTab] = useState<'diary' | 'general'>('diary');
+  const [activeAdvisorTab, setActiveAdvisorTab] = useState<'diary' | 'general'>(initialAdvisorTab);
+
+  const [generalThreads, setGeneralThreads] = useState<GeneralConversation[]>(() => loadGeneralConversations());
+  const [activeThreadId, setActiveThreadId] = useState(() => {
+    const saved = localStorage.getItem('yawmiyati_active_general_thread');
+    const threads = loadGeneralConversations();
+    return threads.some(thread => thread.id === saved) ? saved! : (threads[0]?.id || '');
+  });
+  const [showConversationDrawer, setShowConversationDrawer] = useState(false);
+  const [includeDiaryContext, setIncludeDiaryContext] = useState(() => localStorage.getItem('yawmiyati_general_diary_context') === 'true');
+  const [modelMode, setModelMode] = useState<GeminiModelMode>(() => getSelectedModelMode());
+  const [discoveredModels, setDiscoveredModels] = useState<DiscoveredGeminiModel[]>(() => getDiscoveredModels());
+  const [isRefreshingModels, setIsRefreshingModels] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [isRecordingVoiceMessage, setIsRecordingVoiceMessage] = useState(false);
+  const [voiceMessageProgress, setVoiceMessageProgress] = useState<number | null>(null);
+  const [voiceMessageError, setVoiceMessageError] = useState<string | null>(null);
+  const voiceMessageRecorderRef = useRef<MediaRecorder | null>(null);
+  const voiceMessageChunksRef = useRef<BlobPart[]>([]);
+  const voiceMessageStreamRef = useRef<MediaStream | null>(null);
 
   // Diary Pro Advisor Chat History
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -135,6 +221,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   // General AI Advisor Chat History (Independent Storage)
   const [generalMessages, setGeneralMessages] = useState<Message[]>(() => {
+    const savedThreadId = localStorage.getItem('yawmiyati_active_general_thread');
+    const selected = loadGeneralConversations().find(thread => thread.id === savedThreadId) || loadGeneralConversations()[0];
+    if (selected?.messages?.length) return selected.messages;
     const saved = localStorage.getItem('yawmiyati_general_chat_messages');
     if (saved) {
       try {
@@ -272,274 +361,64 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
       if (savedPerms) setAdvisorPermissions(JSON.parse(savedPerms));
       const savedTherapist = localStorage.getItem('yawmiyati_therapist_chat_history');
       if (savedTherapist) setMessages(JSON.parse(savedTherapist));
-      const savedGeneral = localStorage.getItem('yawmiyati_general_chat_history');
-      if (savedGeneral) setGeneralMessages(JSON.parse(savedGeneral));
+      if (!loadGeneralConversations().length) {
+        const savedGeneral = localStorage.getItem('yawmiyati_general_chat_history') || localStorage.getItem('yawmiyati_general_chat_messages');
+        if (savedGeneral) setGeneralMessages(JSON.parse(savedGeneral));
+      }
     } catch (e) {
       console.error(e);
     }
   }, []);
 
+  useEffect(() => {
+    if (!activeThreadId) {
+      const id = `general-${Date.now()}`;
+      setActiveThreadId(id);
+      return;
+    }
+    const firstUserMessage = generalMessages.find(message => message.sender === 'user');
+    const title = conciseConversationTitle(generalMessages, t.newChatTitle || 'محادثة جديدة');
+    const existing = loadGeneralConversations();
+    const current = existing.find(thread => thread.id === activeThreadId);
+    const updated: GeneralConversation = {
+      id: activeThreadId,
+      title: current?.isRenamed ? current.title : (firstUserMessage ? title : (current?.title || title)),
+      updatedAt: generalMessages[generalMessages.length - 1]?.createdAt || new Date().toISOString(),
+      messages: generalMessages,
+      isRenamed: current?.isRenamed
+    };
+    const next = [updated, ...existing.filter(thread => thread.id !== activeThreadId)];
+    try {
+      localStorage.setItem('yawmiyati_general_chat_threads', JSON.stringify(next));
+      localStorage.setItem('yawmiyati_active_general_thread', activeThreadId);
+      localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(generalMessages));
+    } catch (error) { console.warn('Unable to persist advisor conversations', error); }
+    setGeneralThreads(next);
+  }, [generalMessages, activeThreadId]);
+
+  useEffect(() => {
+    if (!effectiveKey) return;
+    setDiscoveredModels(getDiscoveredModels());
+    setIsRefreshingModels(true);
+    refreshDiscoveredModels().then(setDiscoveredModels).catch(() => undefined).finally(() => setIsRefreshingModels(false));
+  }, [effectiveKey]);
+
+  useEffect(() => {
+    return () => {
+      try {
+        if (voiceMessageRecorderRef.current && voiceMessageRecorderRef.current.state !== 'inactive') voiceMessageRecorderRef.current.stop();
+      } catch {}
+      voiceMessageStreamRef.current?.getTracks().forEach(track => track.stop());
+    };
+  }, []);
+
   // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
   const [showVoiceModal, setShowVoiceModal] = useState(false);
-  const [voiceTranscript, setVoiceTranscript] = useState('');
-  const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
-  const voiceStatusRef = useRef<'idle' | 'listening' | 'analyzing' | 'speaking'>('idle');
-
-  // Keep ref synchronized to prevent closure stale states in callbacks
-  useEffect(() => {
-    voiceStatusRef.current = voiceStatus;
-  }, [voiceStatus]);
-
-  useRegisterBackStep('advisor_voice_modal', 'modal', showVoiceModal, () => {
-    endVoiceChatSession();
-  }, 'المحادثة الصوتية');
 
   useRegisterBackStep('advisor_permissions_modal', 'modal', showPermissionsModal, () => {
     setShowPermissionsModal(false);
   }, t.smartAdvisorPermissionsTitle);
-
-  const stopVoiceChatSpeech = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-  };
-
-  const endVoiceChatSession = () => {
-    stopVoiceChatSpeech();
-    SpeechRecognitionManager.getInstance().abortSession();
-    setShowVoiceModal(false);
-    setVoiceStatus('idle');
-    setVoiceTranscript('');
-  };
-
-  // Clean up on component unmount
-  useEffect(() => {
-    return () => {
-      stopVoiceChatSpeech();
-      SpeechRecognitionManager.getInstance().abortSession();
-    };
-  }, []);
-
-  const startListeningVoiceChat = () => {
-    stopVoiceChatSpeech();
-
-    // Prevent starting listening while AI is speaking
-    if (voiceStatusRef.current === 'speaking' || voiceStatusRef.current === 'analyzing') {
-      return;
-    }
-
-    const manager = SpeechRecognitionManager.getInstance();
-    if (!manager.isSupported()) {
-      setVoiceStatus('idle');
-      setVoiceTranscript(appLanguage === 'ar'
-        ? (t?.speechNotSupported || 'Speech recognition not supported in this browser.')
-        : 'Browser does not support Speech Recognition.');
-      return;
-    }
-
-    setVoiceStatus('listening');
-    setVoiceTranscript(t.voiceListeningPrompt);
-
-    manager.startSession({
-      lang: langInfo.speechLang,
-      continuous: false,
-      callbacks: {
-        onTranscriptChange: (state) => {
-          if (voiceStatusRef.current === 'analyzing' || voiceStatusRef.current === 'speaking') return;
-          if (state.displayTranscript) {
-            setVoiceTranscript(state.displayTranscript);
-          }
-        },
-        onError: (err) => {
-          console.error('Voice chat speech recognition error:', err);
-          if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
-            setVoiceStatus('idle');
-            setVoiceTranscript(appLanguage === 'ar'
-              ? '⚠️ تم رفض إذن الميكروفون.'
-              : '⚠️ Microphone permission denied.');
-            return;
-          }
-          if (err.error !== 'no-speech' && voiceStatusRef.current === 'listening') {
-            setVoiceStatus('idle');
-          }
-        },
-        onSpeechEnd: () => {
-          setTimeout(() => {
-            if (voiceStatusRef.current === 'listening') {
-              const finalQuery = manager.finalize();
-              if (finalQuery && finalQuery.trim().length > 0) {
-                setVoiceTranscript(finalQuery);
-                handleVoiceChatSubmit(finalQuery);
-              }
-            }
-          }, 350);
-        }
-      }
-    });
-  };
-
-  const handleVoiceChatSubmit = async (queryText: string) => {
-    if (voiceStatusRef.current === 'analyzing') return;
-    setVoiceStatus('analyzing');
-    stopVoiceChatSpeech();
-
-    // Stop speech recognition while analyzing to prevent echo
-    SpeechRecognitionManager.getInstance().destroyActiveRecognition();
-
-    const isGeneralMode = activeAdvisorTab === 'general';
-
-    // Format recent conversation context (last 6 messages) to preserve voice conversation memory for follow-up questions
-    const activeHistory = (isGeneralMode ? generalMessages : messages).slice(-6);
-    let contextualQuery = queryText;
-    if (activeHistory.length > 0) {
-      const historySummary = activeHistory.map(m => `${m.sender === 'user' ? 'المستخدم' : 'المستشار'}: ${m.text}`).join('\n');
-      contextualQuery = `سياق المحادثة السابقة بينك وبين المستخدم:\n${historySummary}\n\nسؤال المستخدم الحالي:\n${queryText}`;
-    }
-
-    try {
-      let localCopingCards: any[] = [];
-      let localProsCons: any[] = [];
-      try {
-        const cRaw = localStorage.getItem('app_custom_coping_cards');
-        if (cRaw) localCopingCards = JSON.parse(cRaw);
-        const pRaw = localStorage.getItem('yawmiyati_pros_cons_records');
-        if (pRaw) localProsCons = JSON.parse(pRaw);
-      } catch {}
-
-      const diariesToPass = (hasConsent && advisorPermissions.diaries) ? diaries : [];
-      const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
-      const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
-      const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
-      const readyAttachments = (isGeneralMode ? generalMultimodalFiles : diaryMultimodalFiles).filter(f => !f.status || f.status === 'ready');
-
-      const bodyData = {
-        mode: isGeneralMode ? 'general' : 'diary',
-        diaries: diariesToPass,
-        habits: habitsToPass,
-        gratitudeCards: gratitudeCardsToPass,
-        books: booksToPass,
-        query: contextualQuery,
-        attachments: readyAttachments,
-        appLanguage,
-        athkarContext: getAthkarContextForAI(),
-        athkarPromptText: getFormattedAthkarPromptContext(),
-        customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
-        prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
-        permissions: advisorPermissions
-      };
-
-      const response = await fetch('/api/gemini/smart-advisor', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-gemini-key': effectiveKey,
-          'x-app-language': appLanguage
-        },
-        body: JSON.stringify(bodyData)
-      });
-
-      const responseText = await response.text();
-      let data: any = null;
-      if (responseText && responseText.trim()) {
-        try { data = JSON.parse(responseText); } catch (e) {}
-      }
-
-      let answerText = data?.answer || data?.text;
-
-      // Fail-proof direct REST call fallback for voice session
-      if (!answerText) {
-        const index = buildUnifiedKnowledgeIndex({
-          diaries: diariesToPass,
-          habits: habitsToPass,
-          gratitudeCards: gratitudeCardsToPass,
-          books: booksToPass,
-          athkarContext: getAthkarContextForAI(),
-          customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
-          prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
-          permissions: advisorPermissions
-        });
-
-        const retrieved = await retrieveRelevantKnowledge(contextualQuery, index, {
-          maxEntities: 8,
-          requireMediaBlobs: mediaAccessPermission.mode !== 'text-only',
-          mediaAccessPermission
-        });
-        const groundedPrompt = `سؤال المستخدم: "${contextualQuery}"\n\n${retrieved.formattedContextText}\n\n${getGroundedSystemDirectives(appLanguage)}`;
-
-        answerText = await generateGeminiContentDirect(
-          groundedPrompt,
-          isGeneralMode
-            ? `أنت مساعد ذكي ومتعاطف في تطبيق 'حياة AI'. أجب بلغة المستخدم بشكل مريح وداعم.`
-            : `أنت مساعد ذكي ومتعاطف في تطبيق 'حياة AI'. أجب بناءً على المذكرات بشكل داعم وملهم.`,
-          effectiveKey,
-          undefined,
-          appLanguage
-        );
-      }
-
-      if (!answerText) {
-        answerText = isGeneralMode
-          ? 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع عام أو معرفي.'
-          : 'أهلاً بك! أنا المستشار الذكي لليوميات.';
-      }
-
-      answerText = sanitizeAdvisorText(answerText, appLanguage);
-      setVoiceStatus('speaking');
-      setVoiceTranscript(answerText);
-
-      // Save user & AI messages into the active tab chat history
-      const userMsgId = Date.now().toString();
-      const aiMsgId = (Date.now() + 1).toString();
-      const userMsg = { id: userMsgId, sender: 'user' as const, text: queryText, createdAt: new Date().toISOString() };
-      const aiMsg = { id: aiMsgId, sender: 'ai' as const, text: answerText, createdAt: new Date().toISOString() };
-
-      if (isGeneralMode) {
-        setGeneralMessages(prev => {
-          const nextArr = [...prev, userMsg, aiMsg];
-          localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(nextArr));
-          return nextArr;
-        });
-      } else {
-        setMessages(prev => {
-          const nextArr = [...prev, userMsg, aiMsg];
-          localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(nextArr));
-          return nextArr;
-        });
-      }
-
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const cleanText = answerText.replace(/[*#_`~•]/g, '').replace(/🔗|🎥|📄/g, '');
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-
-        // Intelligent Bilingual Voice Detection: Use native English voice for English text and Arabic voice for Arabic text
-        const isArabicText = /[\u0600-\u06FF]/.test(cleanText);
-        utterance.lang = isArabicText ? langInfo.speechLang : 'en-US';
-        
-        const voices = window.speechSynthesis.getVoices();
-        const langVoice = voices.find(v => v.lang.toLowerCase().startsWith(utterance.lang.toLowerCase().substring(0, 2)));
-        if (langVoice) utterance.voice = langVoice;
-
-        utterance.onend = () => {
-          // Continuous Voice Conversation Loop: Automatically resume listening ONLY if modal is still active & speaking
-          if (voiceStatusRef.current === 'speaking') {
-            setVoiceStatus('listening');
-            startListeningVoiceChat();
-          }
-        };
-        utterance.onerror = () => {
-          setVoiceStatus('idle');
-        };
-        window.speechSynthesis.speak(utterance);
-      } else {
-        setVoiceStatus('idle');
-      }
-    } catch (e: any) {
-      setVoiceStatus('idle');
-      setVoiceTranscript(`⚠️ ${e?.message || 'يلزم إضافة مفتاح Gemini API الخاص بك أولاً في إعدادات التطبيق.'}`);
-    }
-  };
 
   const handleToggleSpeech = (msgId: string, text: string) => {
     if (currentlySpeakingId === msgId) {
@@ -659,26 +538,28 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         const pendingId = pendingAtts[i].id;
 
         try {
-          const att = await processAttachmentUnified(file, userApiKey, (status) => {
-            console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | id: ${pendingId} | stage: 12_ATTACHMENT_STATE_UPDATED -> ${status}`);
-            const updateFn = (prev: MultimodalAttachment[]) =>
-              prev.map(item => item.id === pendingId ? { ...item, status } : item);
-            if (currentTab === 'general') setGeneralMultimodalFiles(updateFn);
-            else setDiaryMultimodalFiles(updateFn);
-          });
+          const geminiMedia = await prepareGeminiMedia(file, (percent) => {
+            setUploadProgress(prev => ({ ...prev, [pendingId]: percent }));
+            const status = percent >= 100 ? 'processing' : 'uploading';
+            const updateFn = (prev: MultimodalAttachment[]) => prev.map(item => item.id === pendingId ? { ...item, status } : item);
+            if (currentTab === 'general') setGeneralMultimodalFiles(updateFn); else setDiaryMultimodalFiles(updateFn);
+          }, effectiveKey);
+          const att = { ...pendingAtts[i], geminiMedia } as any;
 
-          // Mark as ready
+          // Mark as ready after Gemini has accepted the inline or File API media.
           console.log(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | id: ${pendingId} | stage: 12_ATTACHMENT_STATE_UPDATED -> ready`);
           const updateFn = (prev: MultimodalAttachment[]) =>
             prev.map(item => item.id === pendingId ? { ...att, id: pendingId, status: 'ready' } : item);
           if (currentTab === 'general') setGeneralMultimodalFiles(updateFn);
           else setDiaryMultimodalFiles(updateFn);
+          setUploadProgress(prev => { const next = { ...prev }; delete next[pendingId]; return next; });
 
         } catch (err: any) {
           console.error(`[ATTACHMENT TRACE] timestamp: ${ts()} | filename: ${file.name} | id: ${pendingId} | stage: UPLOAD_ERROR ->`, err);
           const errMsg = err?.message || String(err);
           setFileErrorToast(`فشل رفع/تجهيز الملف "${file.name}": ${errMsg}`);
 
+          setUploadProgress(prev => { const next = { ...prev }; delete next[pendingId]; return next; });
           const updateFn = (prev: MultimodalAttachment[]) =>
             prev.map(item => item.id === pendingId ? { ...item, status: 'failed', errorMessage: errMsg } : item);
           if (currentTab === 'general') setGeneralMultimodalFiles(updateFn);
@@ -701,276 +582,131 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
     }
   };
 
-  const handleSend = async (textToSend: string) => {
-    // Mode Switcher Branching
-    if (activeAdvisorTab === 'general') {
-      const isUploadingOrProcessing = generalMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
-      if (isUploadingOrProcessing) {
-        setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn} الرسالة.');
-        return;
-      }
+  const handleSend = async (textToSend: string, extraFiles: MultimodalAttachment[] = []) => {
+    const isGeneral = activeAdvisorTab === 'general';
+    const activeFiles = isGeneral ? generalMultimodalFiles : diaryMultimodalFiles;
+    if (activeFiles.some(file => file.status === 'uploading' || file.status === 'processing')) {
+      setFileErrorToast(t.advisorWaitForUpload || 'جاري رفع الملف للتحليل الدقيق...');
+      return;
+    }
+    const readyFiles = [...activeFiles.filter(file => !file.status || file.status === 'ready'), ...extraFiles];
+    if (!textToSend.trim() && readyFiles.length === 0 && (isGeneral || (chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0))) return;
+    if (loading) return;
 
-      const readyFiles = generalMultimodalFiles.filter(f => !f.status || f.status === 'ready');
-      if (!textToSend.trim() && readyFiles.length === 0) {
-        if (generalMultimodalFiles.some(f => f.status === 'failed')) {
-          setFileErrorToast('تعذر {t.sendConsultationBtn} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
-        }
-        return;
-      }
-      if (loading) return;
-
-      let sendText = textToSend;
-      if (readyFiles.length > 0) {
-        sendText += `\n📎 المرفقات: ${readyFiles.map(f => f.name).join(' ، ')}`;
-      }
-
-      const userMsg: Message = {
-        id: Date.now().toString(),
-        sender: 'user',
-        text: sendText,
-        createdAt: new Date().toISOString()
-      };
-
-      const updatedMsgs = [...generalMessages, userMsg];
-      setGeneralMessages(updatedMsgs);
-      localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(updatedMsgs));
-
-      const filesToSend = [...readyFiles];
-      setInput('');
-      setGeneralMultimodalFiles([]);
-      setLoading(true);
-
-      try {
-        // Retrieve local app data if general query references internal items (Hybrid Support)
+    const fileNames = readyFiles.map(file => file.name).filter(Boolean);
+    const query = [textToSend.trim(), fileNames.length ? `المرفقات: ${fileNames.join('، ')}` : '', ...(!isGeneral ? chatAttachments.links.map(link => `رابط مرجعي: ${link}`) : []), ...(!isGeneral ? chatAttachments.videos.map(video => `فيديو مرجعي: ${video}`) : []), ...(!isGeneral ? chatAttachments.pdfs.map(file => `مستند ${file.name}: ${file.url}`) : [])].filter(Boolean).join('\n');
+    const userMsg: Message = { id: Date.now().toString(), sender: 'user', text: query || (t.voiceAttachmentLabel || 'رسالة صوتية'), createdAt: new Date().toISOString() };
+    if (isGeneral) {
+      setGeneralMessages(prev => { const next = [...prev, userMsg]; localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(next)); return next; });
+      if (activeFiles === generalMultimodalFiles) setGeneralMultimodalFiles([]);
+    } else {
+      setMessages(prev => [...prev, userMsg]);
+      setDiaryMultimodalFiles([]);
+      setChatAttachments({ links: [], videos: [], pdfs: [] });
+      setActiveAttachmentType('none');
+    }
+    setInput('');
+    setLoading(true);
+    try {
+      const canUseDiaryContext = isGeneral
+        ? includeDiaryContext && hasConsent && advisorPermissions.diaries
+        : hasConsent && advisorPermissions.diaries;
+      let diaryContextText = '';
+      if (canUseDiaryContext) {
         let localCopingCards: any[] = [];
         let localProsCons: any[] = [];
         try {
-          const cRaw = localStorage.getItem('app_custom_coping_cards');
-          if (cRaw) localCopingCards = JSON.parse(cRaw);
-          const pRaw = localStorage.getItem('yawmiyati_pros_cons_records');
-          if (pRaw) localProsCons = JSON.parse(pRaw);
+          const copingRaw = localStorage.getItem('app_custom_coping_cards');
+          const prosRaw = localStorage.getItem('yawmiyati_pros_cons_records');
+          if (copingRaw) localCopingCards = JSON.parse(copingRaw);
+          if (prosRaw) localProsCons = JSON.parse(prosRaw);
         } catch {}
-
-        const response = await fetch('/api/gemini/smart-advisor', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-gemini-key': effectiveKey,
-            'x-app-language': appLanguage
-          },
-          body: JSON.stringify({
-            mode: 'general',
-            query: textToSend,
-            attachments: filesToSend,
-            diaries: (hasConsent && advisorPermissions.diaries) ? diaries : [],
-            habits: (hasConsent && advisorPermissions.habits) ? habits : [],
-            gratitudeCards: (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [],
-            books: (hasConsent && advisorPermissions.books) ? books : [],
-            athkarContext: getAthkarContextForAI(),
-            athkarPromptText: getFormattedAthkarPromptContext(),
-            mediaAccessPermission,
-            customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
-            prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
-            permissions: advisorPermissions,
-            appLanguage
-          })
-        });
-
-        const responseText = await response.text();
-        let data: any = null;
-        if (responseText && responseText.trim()) {
-          try { data = JSON.parse(responseText); } catch (e) {}
-        }
-
-        let answerText = data?.answer || data?.text;
-        if (!answerText) {
-          answerText = await generateGeminiContentDirect(
-            textToSend || 'يرجى تقديم إجابة شاملة',
-            `أنت المستشار الذكي العام في تطبيق 'حياة AI'. أجب على جميع استفسارات المستخدم بوضوح، حكمة، وذكاء، سواء كانت في المعرفة العامة، البرمجة، الدراسة، العلوم، الترجمة، أو تحليل المرفقات.`,
-            effectiveKey,
-          undefined,
-          appLanguage
-        );
-        }
-
-        const cleanGeneralAnswer = sanitizeAdvisorText(
-          answerText || 'أهلاً بك! أنا المستشار العام في حياة AI. يسعدني الإجابة والمساعدة في أي موضوع تعبيري أو معرفي.',
-          appLanguage
-        );
-
-        const aiMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          sender: 'ai',
-          text: cleanGeneralAnswer,
-          createdAt: new Date().toISOString()
-        };
-
-        setGeneralMessages(prev => {
-          const finalArr = [...prev, aiMsg];
-          localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(finalArr));
-          return finalArr;
-        });
-      } catch (e: any) {
-        console.error('General Advisor Error:', e);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    // Diary Pro Advisor Mode Logic
-    const isUploadingOrProcessing = diaryMultimodalFiles.some(f => f.status === 'uploading' || f.status === 'processing');
-    if (isUploadingOrProcessing) {
-      setFileErrorToast('جاري رفع وتجهيز المرفقات، يرجى الانتظار لحين اكتمال الرفع قبل {t.sendConsultationBtn} الرسالة.');
-      return;
-    }
-
-    const readyFiles = diaryMultimodalFiles.filter(f => !f.status || f.status === 'ready');
-    if (!textToSend.trim() && chatAttachments.links.length === 0 && chatAttachments.videos.length === 0 && chatAttachments.pdfs.length === 0 && readyFiles.length === 0) {
-      if (diaryMultimodalFiles.some(f => f.status === 'failed')) {
-        setFileErrorToast('تعذر {t.sendConsultationBtn} الرسالة نظراً لفشل رفع المرفق. يرجى حذف المرفق المربك وإعادة رفعه.');
-      }
-      return;
-    }
-    if (loading) return;
-
-    // Format prompt text with active chat attachments to pass transparently to AI model
-    let textWithAttachments = textToSend;
-    const attachmentsText: string[] = [];
-    if (readyFiles.length > 0) {
-      attachmentsText.push(`\n📎 الملفات المرفقة: ${readyFiles.map(f => f.name).join(' ، ')}`);
-    }
-    if (chatAttachments.links.length > 0) {
-      attachmentsText.push(`\n🔗 الروابط المرفقة بالشات: ${chatAttachments.links.join(' ، ')}`);
-    }
-    if (chatAttachments.videos.length > 0) {
-      attachmentsText.push(`\n🎥 الفيديوهات المرفقة بالشات: ${chatAttachments.videos.join(' ، ')}`);
-    }
-    if (chatAttachments.pdfs.length > 0) {
-      attachmentsText.push(`\n📄 ملفات PDF المرفقة بالشات: ${chatAttachments.pdfs.map(p => `${p.name} (${p.url})`).join(' ، ')}`);
-    }
-    if (attachmentsText.length > 0) {
-      textWithAttachments += '\n' + attachmentsText.join('\n');
-    }
-
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      sender: 'user',
-      text: textWithAttachments,
-      createdAt: new Date().toISOString()
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    const filesToSend = [...readyFiles];
-    setInput('');
-    setDiaryMultimodalFiles([]);
-    setChatAttachments({ links: [], videos: [], pdfs: [] });
-    setActiveAttachmentType('none');
-    setLoading(true);
-
-    try {
-      // Filter context based on consent and granular advisor permissions
-      const diariesToPass = (hasConsent && advisorPermissions.diaries) ? diaries : [];
-      const habitsToPass = (hasConsent && advisorPermissions.habits) ? habits : [];
-      const gratitudeCardsToPass = (hasConsent && advisorPermissions.gratitude) ? gratitudeCards : [];
-      const booksToPass = (hasConsent && advisorPermissions.books) ? books : [];
-
-      let localCopingCards: any[] = [];
-      let localProsCons: any[] = [];
-      try {
-        const cRaw = localStorage.getItem('app_custom_coping_cards');
-        if (cRaw) localCopingCards = JSON.parse(cRaw);
-        const pRaw = localStorage.getItem('yawmiyati_pros_cons_records');
-        if (pRaw) localProsCons = JSON.parse(pRaw);
-      } catch {}
-
-      const response = await fetch('/api/gemini/smart-advisor', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-gemini-key': effectiveKey,
-          'x-app-language': appLanguage
-        },
-        body: JSON.stringify({
-          diaries: diariesToPass,
-          habits: habitsToPass,
-          gratitudeCards: gratitudeCardsToPass,
-          books: booksToPass,
-          query: textWithAttachments,
-          attachments: filesToSend,
-          appLanguage: appLanguage,
-          athkarContext: getAthkarContextForAI(),
-          athkarPromptText: getFormattedAthkarPromptContext(),
-          customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
-          prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
-          permissions: advisorPermissions,
-          mediaAccessPermission
-        })
-      });
-
-      const responseText = await response.text();
-      let data: any = null;
-      if (responseText && responseText.trim()) {
-        try {
-          data = JSON.parse(responseText);
-        } catch (e) {}
-      }
-
-      let finalAnswer = data?.answer || data?.text;
-
-      // Fail-proof direct REST call fallback if serverless function or response is empty/invalid
-      if (!data?.success || !finalAnswer || typeof finalAnswer !== 'string' || !finalAnswer.trim() || (data?.error && String(data.error).includes('not found'))) {
         const index = buildUnifiedKnowledgeIndex({
-          diaries: diariesToPass,
-          habits: habitsToPass,
-          gratitudeCards: gratitudeCardsToPass,
-          books: booksToPass,
+          diaries: advisorPermissions.diaries ? diaries : [],
+          habits: advisorPermissions.habits ? habits : [],
+          gratitudeCards: advisorPermissions.gratitude ? gratitudeCards : [],
+          books: advisorPermissions.books ? books : [],
           athkarContext: getAthkarContextForAI(),
-          customCopingCards: (hasConsent && advisorPermissions.cbtExercises) ? localCopingCards : [],
-          prosConsRecords: (hasConsent && advisorPermissions.prosCons) ? localProsCons : [],
+          customCopingCards: advisorPermissions.cbtExercises ? localCopingCards : [],
+          prosConsRecords: advisorPermissions.prosCons ? localProsCons : [],
           permissions: advisorPermissions
         });
-
-        const retrieved = await retrieveRelevantKnowledge(textWithAttachments, index, {
-          maxEntities: 10,
-          requireMediaBlobs: mediaAccessPermission.mode !== 'text-only',
+        const retrieved = await retrieveRelevantKnowledge(query, index, {
+          maxEntities: isGeneral ? 8 : 10,
+          requireMediaBlobs: false,
           mediaAccessPermission
         });
-        const groundedPrompt = `سؤال المستخدم: "${textWithAttachments}"\n\n${retrieved.formattedContextText}\n\n${getGroundedSystemDirectives(appLanguage)}`;
-
-        finalAnswer = await generateGeminiContentDirect(
-          groundedPrompt,
-          `أنت المستشار الذكي الموحد في تطبيق 'حياة AI'. التزم بالدقة والشفافية التامة، واذكر المصادر بوضوح.`,
-          effectiveKey,
-          undefined,
-          appLanguage
-        );
+        diaryContextText = retrieved.formattedContextText;
       }
-
-      const cleanFinalAnswer = sanitizeAdvisorText(finalAnswer || 'أهلاً بك في المستشار الذكي! أنا رفيقك للتحليل والاستشارة والتطوير الذاتي في أي وقت.', appLanguage);
-
-      setMessages(prev => {
-        const updated = [...prev, {
-          id: (Date.now() + 1).toString(),
-          sender: 'ai' as const,
-          text: cleanFinalAnswer,
-          createdAt: new Date().toISOString()
-        }];
-        localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(updated));
-        return updated;
+      const systemPrompt = isGeneral
+        ? `أنت مساعد حياة AI عام، ودود وواضح. لا تفترض أن لديك أي معرفة خاصة عن المستخدم. لا تستخدم يومياته أو بياناته الشخصية إلا إذا أضيفت صراحة في السياق التالي. أجب بلغة المستخدم وبشكل طبيعي.\n${diaryContextText ? `\nسياق شخصي أذن المستخدم بإضافته:\n${diaryContextText}` : ''}`
+        : `أنت مستشار حياة AI لليوميات، متعاطف ودقيق ولا تشخّص. أجب بلغة المستخدم، واستند إلى السياق المسموح فقط.\n${diaryContextText}\n${getGroundedSystemDirectives(appLanguage)}`;
+      const fileKinds = readyFiles.map(file => String(file.type || file.mimeType || '').toLowerCase());
+      const task: GeminiTask = fileKinds.some(kind => kind.includes('audio')) ? 'audio'
+        : fileKinds.some(kind => kind.includes('video')) ? 'video'
+        : fileKinds.some(kind => kind.includes('image')) ? 'image'
+        : fileKinds.some(kind => kind.includes('pdf') || kind.includes('document') || kind.includes('file')) ? 'pdf' : 'chat';
+      const mode = readyFiles.length ? 'precision' : (modelMode === 'auto' ? 'fast' : modelMode);
+      const answer = await requestGeminiDirect({
+        apiKey: effectiveKey || '', query: query || (isGeneral ? 'يرجى تحليل المرفق والإجابة عن محتواه.' : 'يرجى تحليل يومياتي وتقديم نصيحة داعمة.'),
+        systemPrompt, task, mode, files: readyFiles as any,
+        history: (isGeneral ? generalMessages : messages).map(message => ({ sender: message.sender, text: message.text }))
       });
-    } catch (e: any) {
-      console.error("SmartAdvisor Execution Error:", e);
-      const rawErrorMsg = e?.message || 'تعذر الاتصال بـ Gemini API';
-      const cleanErrorMsg = sanitizeAdvisorText(rawErrorMsg, appLanguage);
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        sender: 'ai',
-        text: cleanErrorMsg.startsWith('⚠️') ? cleanErrorMsg : `⚠️ ${cleanErrorMsg}`,
-        createdAt: new Date().toISOString()
-      }]);
-    } finally {
-      setLoading(false);
+      const aiMsg: Message = { id: (Date.now() + 1).toString(), sender: 'ai', text: sanitizeAdvisorText(answer, appLanguage), createdAt: new Date().toISOString() };
+      if (isGeneral) setGeneralMessages(prev => { const next = [...prev, aiMsg]; localStorage.setItem('yawmiyati_general_chat_messages', JSON.stringify(next)); return next; });
+      else setMessages(prev => { const next = [...prev, aiMsg]; localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(next)); return next; });
+    } catch (error: any) {
+      const text = sanitizeAdvisorText(error?.message || 'تعذر الاتصال بـ Gemini API', appLanguage);
+      const errorMsg: Message = { id: (Date.now() + 2).toString(), sender: 'ai', text: text.startsWith('⚠️') ? text : `⚠️ ${text}`, createdAt: new Date().toISOString() };
+      if (isGeneral) setGeneralMessages(prev => [...prev, errorMsg]); else setMessages(prev => [...prev, errorMsg]);
+    } finally { setLoading(false); }
+  };
+
+  const toggleVoiceMessageRecording = async () => {
+    setVoiceMessageError(null);
+    if (voiceMessageRecorderRef.current && voiceMessageRecorderRef.current.state !== 'inactive') {
+      voiceMessageRecorderRef.current.stop();
+      return;
+    }
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw new Error(t.voiceRecordingUnavailable || 'التسجيل الصوتي غير متاح في هذا الجهاز.');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      voiceMessageStreamRef.current = stream;
+      voiceMessageChunksRef.current = [];
+      const supported = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'].find(type => MediaRecorder.isTypeSupported?.(type));
+      const recorder = supported ? new MediaRecorder(stream, { mimeType: supported }) : new MediaRecorder(stream);
+      voiceMessageRecorderRef.current = recorder;
+      recorder.ondataavailable = event => { if (event.data?.size) voiceMessageChunksRef.current.push(event.data); };
+      recorder.onstop = async () => {
+        const blob = new Blob(voiceMessageChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        voiceMessageChunksRef.current = [];
+        voiceMessageStreamRef.current?.getTracks().forEach(track => track.stop());
+        voiceMessageStreamRef.current = null;
+        voiceMessageRecorderRef.current = null;
+        setIsRecordingVoiceMessage(false);
+        if (!blob.size) return;
+        const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+        const file = new File([blob], `voice-message-${Date.now()}.${extension}`, { type: blob.type || 'audio/webm' });
+        const id = `voice-${Date.now()}`;
+        try {
+          setVoiceMessageProgress(0);
+          const geminiMedia = await prepareGeminiMedia(file, setVoiceMessageProgress, effectiveKey);
+          const attachment = { id, name: file.name, type: 'audio', mimeType: geminiMedia.mimeType, sizeBytes: file.size, status: 'ready', geminiMedia } as any as MultimodalAttachment;
+          setVoiceMessageProgress(null);
+          await handleSend('', [attachment]);
+        } catch (error: any) {
+          setVoiceMessageProgress(null);
+          setVoiceMessageError(error?.message || (t.voiceRecordingFailed || 'تعذر إرسال التسجيل الصوتي.'));
+        }
+      };
+      recorder.onerror = () => { setVoiceMessageError(t.voiceRecordingFailed || 'تعذر إرسال التسجيل الصوتي.'); setIsRecordingVoiceMessage(false); };
+      recorder.start();
+      setIsRecordingVoiceMessage(true);
+    } catch (error: any) {
+      voiceMessageStreamRef.current?.getTracks().forEach(track => track.stop());
+      voiceMessageStreamRef.current = null;
+      setIsRecordingVoiceMessage(false);
+      setVoiceMessageError(error?.message || (t.voiceRecordingFailed || 'تعذر بدء التسجيل الصوتي.'));
     }
   };
 
@@ -1060,6 +796,111 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const activeMessages = activeAdvisorTab === 'diary' ? messages : generalMessages;
+
+  const handleNewConversation = () => {
+    const id = `general-${Date.now()}`;
+    const welcome: Message = { id: `welcome-${id}`, sender: 'ai', text: t.smartAdvisorGenWelcome || 'مرحباً، كيف أستطيع مساعدتك اليوم؟', createdAt: new Date().toISOString() };
+    const thread: GeneralConversation = { id, title: t.newChatTitle || 'محادثة جديدة', updatedAt: new Date().toISOString(), messages: [welcome] };
+    setGeneralThreads(previous => [thread, ...previous]);
+    setActiveThreadId(id);
+    setGeneralMessages(thread.messages);
+    setGeneralMultimodalFiles([]);
+    setShowConversationDrawer(false);
+  };
+
+  const selectConversation = (thread: GeneralConversation) => {
+    setActiveThreadId(thread.id);
+    setGeneralMessages(thread.messages);
+    setShowConversationDrawer(false);
+    try { localStorage.setItem('yawmiyati_active_general_thread', thread.id); } catch {}
+  };
+
+  const renameConversation = (thread: GeneralConversation) => {
+    const title = window.prompt(t.renameConversation || 'إعادة تسمية المحادثة', thread.title);
+    if (!title?.trim()) return;
+    const next = generalThreads.map(item => item.id === thread.id ? { ...item, title: title.trim().slice(0, 60), isRenamed: true } : item);
+    setGeneralThreads(next);
+    try { localStorage.setItem('yawmiyati_general_chat_threads', JSON.stringify(next)); } catch {}
+  };
+
+  const deleteConversation = (thread: GeneralConversation) => {
+    if (!window.confirm(t.deleteConversationConfirm || 'هل تريد حذف هذه المحادثة؟')) return;
+    const remaining = generalThreads.filter(item => item.id !== thread.id);
+    if (!remaining.length) {
+      const id = `general-${Date.now()}`;
+      const welcome: Message = { id: `welcome-${id}`, sender: 'ai', text: t.smartAdvisorGenWelcome || 'مرحباً، كيف أستطيع مساعدتك اليوم؟', createdAt: new Date().toISOString() };
+      remaining.push({ id, title: t.newChatTitle || 'محادثة جديدة', updatedAt: new Date().toISOString(), messages: [welcome] });
+    }
+    setGeneralThreads(remaining);
+    try { localStorage.setItem('yawmiyati_general_chat_threads', JSON.stringify(remaining)); } catch {}
+    if (thread.id === activeThreadId) {
+      setActiveThreadId(remaining[0].id);
+      setGeneralMessages(remaining[0].messages);
+    }
+  };
+
+  const refreshGeminiModels = async () => {
+    if (!effectiveKey) return;
+    setIsRefreshingModels(true);
+    try { setDiscoveredModels(await refreshDiscoveredModels()); }
+    catch { setFileErrorToast(t.modelRefreshFailed || 'تعذر تحديث قائمة النماذج.'); }
+    finally { setIsRefreshingModels(false); }
+  };
+
+  const createDiaryPromptContext = async (query: string) => {
+    let customCopingCards: any[] = [];
+    let prosConsRecords: any[] = [];
+    try {
+      const cards = localStorage.getItem('app_custom_coping_cards');
+      const records = localStorage.getItem('yawmiyati_pros_cons_records');
+      if (cards) customCopingCards = JSON.parse(cards);
+      if (records) prosConsRecords = JSON.parse(records);
+    } catch {}
+    const index = buildUnifiedKnowledgeIndex({
+      diaries: hasConsent && advisorPermissions.diaries ? diaries : [],
+      habits: hasConsent && advisorPermissions.habits ? habits : [],
+      gratitudeCards: hasConsent && advisorPermissions.gratitude ? gratitudeCards : [],
+      books: hasConsent && advisorPermissions.books ? books : [],
+      athkarContext: getAthkarContextForAI(),
+      customCopingCards: advisorPermissions.cbtExercises ? customCopingCards : [],
+      prosConsRecords: advisorPermissions.prosCons ? prosConsRecords : [],
+      permissions: advisorPermissions
+    });
+    const retrieved = await retrieveRelevantKnowledge(query, index, { maxEntities: 10, requireMediaBlobs: false, mediaAccessPermission });
+    return `${retrieved.formattedContextText}
+${getGroundedSystemDirectives(appLanguage)}`;
+  };
+
+  const transcribeLiveVoice = async (file: File) => {
+    try {
+      const geminiMedia = await prepareGeminiMedia(file, setVoiceMessageProgress, effectiveKey);
+      return await requestGeminiDirect({
+        apiKey: effectiveKey || '', query: 'فرّغ التسجيل الصوتي حرفيًا كما قيل، باللغة الأصلية دون تلخيص أو حذف أو إضافة، وأعد النص فقط.',
+        systemPrompt: 'أنت خدمة تفريغ صوتي دقيقة. اكتب الكلمات المنطوقة حرفيًا فقط ولا تستنتج محتوى غير مسموع.',
+        task: 'audio', mode: 'precision', files: [{ geminiMedia }]
+      });
+    } finally { setVoiceMessageProgress(null); }
+  };
+
+  const submitLiveVoiceTurn = async (text: string, context: { history: Array<{ sender: 'user' | 'ai'; text: string }>; diaryContextEnabled: boolean; diaryContext: string; interruptionNote?: string }) => {
+    const useDiary = context.diaryContextEnabled && hasConsent && advisorPermissions.diaries;
+    const diaryContextText = useDiary ? await createDiaryPromptContext(text) : '';
+    const interruptText = context.interruptionNote ? `\nملاحظة سياقية: قوطع ردك السابق أثناء قول: «${context.interruptionNote}». تابع من هذه النقطة دون إعادة الرد كاملًا.` : '';
+    const systemPrompt = `${activeAdvisorTab === 'general' ? 'أنت مساعد عام ودود ومختصر في حياة AI. لا تستخدم بيانات اليوميات إلا إذا أُرفقت في السياق أدناه.' : 'أنت مستشار يوميات متعاطف في حياة AI. قدم ردًا طبيعيًا داعمًا بلا تشخيص.'}\n${diaryContextText}${interruptText}`;
+    const answer = await requestGeminiDirect({
+      apiKey: effectiveKey || '', query: text, systemPrompt, task: 'voice', mode: 'fast',
+      history: context.history.slice(0, -1)
+    });
+    const timestamp = new Date().toISOString();
+    const userMessage: Message = { id: `voice-user-${Date.now()}`, sender: 'user', text, createdAt: timestamp };
+    const aiMessage: Message = { id: `voice-ai-${Date.now() + 1}`, sender: 'ai', text: sanitizeAdvisorText(answer, appLanguage), createdAt: timestamp };
+    if (activeAdvisorTab === 'general') setGeneralMessages(previous => [...previous, userMessage, aiMessage]);
+    else setMessages(previous => { const next = [...previous, userMessage, aiMessage]; localStorage.setItem('yawmiyati_chat_messages', JSON.stringify(next)); return next; });
+    return aiMessage.text;
+  };
+
+  const todayThreads = generalThreads.filter(thread => new Date(thread.updatedAt).toDateString() === new Date().toDateString());
+  const previousThreads = generalThreads.filter(thread => new Date(thread.updatedAt).toDateString() !== new Date().toDateString());
 
   // --- Copy and Export Handlers for Smart Advisor Chat ---
   const handleCopyAdvisorChat = async () => {
@@ -1170,7 +1011,6 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
             <button
               onClick={() => {
                 setShowVoiceModal(true);
-                startListeningVoiceChat();
               }}
               className="flex items-center space-x-1 space-x-reverse px-2 py-1 bg-[#8B9D83] hover:bg-[#5A5A40] text-white text-[10px] sm:text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
               title={t.smartAdvisorStartVoiceChat}
@@ -1202,39 +1042,66 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
                 />
               </button>
             </div>
+            <select aria-label={t.geminiModelModeLabel || 'وضع نموذج Gemini'} value={String(modelMode)} onChange={event => { const next = event.target.value; setModelMode(next); setSelectedModelMode(next); }} className="max-w-[112px] rounded-lg border border-[#E2DCC8] bg-white px-1.5 py-1.5 text-[9px] text-[#2B3E50]">
+              <option value="auto">{t.geminiModeAuto || 'متكيف تلقائي'}</option><option value="fast">{t.geminiModeFast || 'سريع'}</option><option value="precision">{t.geminiModePrecision || 'دقة عالية Pro'}</option>
+              {discoveredModels.length > 0 && <optgroup label={t.discoveredGeminiModels || 'نماذج Gemini المتاحة'}>{discoveredModels.map(model => <option key={model.id} value={model.id}>{model.displayName || model.id}</option>)}</optgroup>}
+            </select>
+            <button type="button" onClick={refreshGeminiModels} disabled={isRefreshingModels} aria-label={t.refreshGeminiModels || 'تحديث النماذج'} className="rounded-lg border border-[#E2DCC8] bg-white p-1.5 text-[#2D6A4F] disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${isRefreshingModels ? 'animate-spin' : ''}`} /></button>
           </div>
+        </div>
+      )}
+
+      {showConversationDrawer && activeAdvisorTab === 'general' && (
+        <div className="absolute inset-0 z-[60] bg-black/35" role="presentation" onClick={() => setShowConversationDrawer(false)}>
+          <aside className={`absolute ${langInfo.dir === 'rtl' ? 'right-0' : 'left-0'} top-0 flex h-full w-[min(88%,360px)] flex-col border-x border-[#E2DCC8] bg-[#FAF8F5] shadow-2xl animate-fade-in`} dir={langInfo.dir} onClick={event => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[#E2DCC8] p-4">
+              <h3 className="font-black text-[#2B3E50]">{t.advisorConversations || 'محادثاتك'}</h3>
+              <button type="button" onClick={() => setShowConversationDrawer(false)} className="rounded-lg p-2 text-gray-500 hover:bg-white" aria-label={t.close || 'إغلاق'}><X className="h-4 w-4" /></button>
+            </div>
+            <button type="button" onClick={handleNewConversation} className="m-3 flex items-center justify-center gap-2 rounded-xl bg-[#2B3E50] px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-[#1E2B38]"><Plus className="h-4 w-4" />{t.newChatTitle || 'محادثة جديدة'}</button>
+            <div className="flex-1 space-y-4 overflow-y-auto p-3">
+              {todayThreads.length > 0 && <section><h4 className="mb-2 px-1 text-[11px] font-black uppercase tracking-wide text-gray-400">{t.todayLabel || 'اليوم'}</h4><div className="space-y-2">{todayThreads.map(thread => (
+                <div key={thread.id} className={`rounded-xl border p-2.5 ${thread.id === activeThreadId ? 'border-[#2B3E50] bg-[#2B3E50]/5' : 'border-[#E2DCC8] bg-white'}`}>
+                  <button type="button" className="w-full min-w-0 text-start" onClick={() => selectConversation(thread)}><span className="block truncate text-sm font-bold text-[#2B3E50]">{thread.title}</span><span className="mt-1 block truncate text-[10px] text-gray-500">{thread.messages[thread.messages.length - 1]?.text || t.noMessagesYet || 'لا توجد رسائل بعد'}</span><span className="mt-1 block text-[9px] text-gray-400">{new Date(thread.updatedAt).toLocaleTimeString(langInfo.bcp47, { hour: '2-digit', minute: '2-digit' })}</span></button>
+                  <div className="mt-1 flex justify-end gap-1"><button type="button" onClick={() => renameConversation(thread)} title={t.renameConversation || 'إعادة تسمية'} className="rounded p-1 text-gray-400 hover:bg-slate-100 hover:text-slate-700"><Pencil className="h-3.5 w-3.5" /></button><button type="button" onClick={() => deleteConversation(thread)} title={t.deleteConversation || 'حذف المحادثة'} className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button></div>
+                </div>
+              ))}</div></section>}
+              {previousThreads.length > 0 && <section><h4 className="mb-2 px-1 text-[11px] font-black uppercase tracking-wide text-gray-400">{t.previousLabel || 'السابق'}</h4><div className="space-y-2">{previousThreads.map(thread => (
+                <div key={thread.id} className={`rounded-xl border p-2.5 ${thread.id === activeThreadId ? 'border-[#2B3E50] bg-[#2B3E50]/5' : 'border-[#E2DCC8] bg-white'}`}>
+                  <button type="button" className="w-full min-w-0 text-start" onClick={() => selectConversation(thread)}><span className="block truncate text-sm font-bold text-[#2B3E50]">{thread.title}</span><span className="mt-1 block truncate text-[10px] text-gray-500">{thread.messages[thread.messages.length - 1]?.text || t.noMessagesYet || 'لا توجد رسائل بعد'}</span><span className="mt-1 block text-[9px] text-gray-400">{new Date(thread.updatedAt).toLocaleDateString(langInfo.bcp47)}</span></button>
+                  <div className="mt-1 flex justify-end gap-1"><button type="button" onClick={() => renameConversation(thread)} title={t.renameConversation || 'إعادة تسمية'} className="rounded p-1 text-gray-400 hover:bg-slate-100 hover:text-slate-700"><Pencil className="h-3.5 w-3.5" /></button><button type="button" onClick={() => deleteConversation(thread)} title={t.deleteConversation || 'حذف المحادثة'} className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button></div>
+                </div>
+              ))}</div></section>}
+            </div>
+          </aside>
         </div>
       )}
 
       {/* Top Bar Info (General AI Mode Banner) */}
       {activeAdvisorTab === 'general' && (
-        <div className="p-2.5 sm:p-3 bg-[#2B3E50] text-white border-b border-[#E2DCC8] flex items-center justify-between gap-2 shrink-0 z-10">
-          <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
-            <div className="bg-amber-400/20 p-1.5 sm:p-2 rounded-xl text-amber-300 shrink-0">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+        <div className="bg-[#2B3E50] text-white border-b border-[#E2DCC8] flex flex-col gap-2 p-2.5 sm:p-3 shrink-0 z-10">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="bg-amber-400/20 p-1.5 rounded-xl text-amber-300 shrink-0"><Sparkles className="w-4 h-4" /></div>
+              <div className="min-w-0"><h3 className="font-bold text-white text-xs sm:text-sm truncate">{t.smartAdvisorGeneralTitle}</h3><p className="text-[9px] text-gray-200 truncate">{t.smartAdvisorGeneralDesc}</p></div>
             </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-white text-xs sm:text-sm truncate">{t.smartAdvisorGeneralTitle}</h3>
-              <p className="text-[9.5px] sm:text-[10px] text-gray-200 truncate">{t.smartAdvisorGeneralDesc}</p>
+            <button onClick={() => setShowVoiceModal(true)} className="flex items-center gap-1 px-2 py-1 bg-amber-400/20 text-amber-200 border border-amber-300/30 text-[10px] font-bold rounded-lg shrink-0" title={t.smartAdvisorStartVoiceChat}><span>🎙️</span><span>{t.smartAdvisorVoiceChatBtn}</span></button>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-1.5">
+            <div className="flex rounded-full border border-white/20 bg-white/10 p-0.5 text-[9px] font-bold" role="group" aria-label={t.advisorContextMode || 'سياق المحادثة'}>
+              <button type="button" onClick={() => { setIncludeDiaryContext(false); localStorage.setItem('yawmiyati_general_diary_context', 'false'); }} className={`rounded-full px-2 py-1 ${!includeDiaryContext ? 'bg-white text-[#2B3E50]' : 'text-white/80'}`}>{t.advisorGeneralMode || 'دردشة عامة'}</button>
+              <button type="button" onClick={() => { setIncludeDiaryContext(true); localStorage.setItem('yawmiyati_general_diary_context', 'true'); }} className={`rounded-full px-2 py-1 ${includeDiaryContext ? 'bg-white text-[#2B3E50]' : 'text-white/80'}`}>{t.advisorDiaryContextMode || 'مع سياق يومياتي'}</button>
+            </div>
+            <div className="flex items-center gap-1">
+              <select aria-label={t.geminiModelModeLabel || 'وضع نموذج Gemini'} value={String(modelMode)} onChange={event => { const next = event.target.value; setModelMode(next); setSelectedModelMode(next); }} className="max-w-[145px] rounded-lg border border-white/20 bg-[#233344] px-2 py-1.5 text-[10px] text-white">
+                <option value="auto">{t.geminiModeAuto || 'متكيف تلقائي'}</option><option value="fast">{t.geminiModeFast || 'سريع'}</option><option value="precision">{t.geminiModePrecision || 'دقة عالية Pro'}</option>
+                {discoveredModels.length > 0 && <optgroup label={t.discoveredGeminiModels || 'نماذج Gemini المتاحة'}>{discoveredModels.map(model => <option key={model.id} value={model.id}>{model.displayName || model.id}</option>)}</optgroup>}
+              </select>
+              <button type="button" onClick={refreshGeminiModels} disabled={isRefreshingModels} aria-label={t.refreshGeminiModels || 'تحديث النماذج'} className="rounded-lg border border-white/20 bg-white/10 p-1.5 text-white disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${isRefreshingModels ? 'animate-spin' : ''}`} /></button>
+              <button type="button" onClick={() => setShowConversationDrawer(true)} aria-label={t.advisorConversations || 'المحادثات'} className="flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 text-[10px] font-bold text-white"><MessageSquare className="h-3.5 w-3.5" /><span>{t.advisorConversations || 'المحادثات'}</span></button>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => {
-                setShowVoiceModal(true);
-                startListeningVoiceChat();
-              }}
-              className="flex items-center space-x-1 space-x-reverse px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-300/30 text-[10px] sm:text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer shrink-0"
-              title={t.smartAdvisorStartVoiceChat}
-            >
-              <span className="animate-pulse">🎙️</span>
-              <span className="truncate">{t.smartAdvisorVoiceChatBtn}</span>
-            </button>
-
-            <span className="text-[9px] sm:text-[10px] bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-white/20 font-bold shrink-0 whitespace-nowrap hidden xs:inline-block">
-              {t.smartAdvisorIndependentContext}
-            </span>
-          </div>
+          {includeDiaryContext && <div className="text-[9px] text-amber-100">{t.advisorDiaryContextEnabled || 'سياق اليوميات مفعّل وفق صلاحياتك.'}</div>}
         </div>
       )}
 
@@ -1342,8 +1209,7 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
               {att.type === 'file' && <Paperclip className="w-3.5 h-3.5 text-gray-500 shrink-0" />}
               <span className="truncate max-w-[110px]">{att.name}</span>
 
-              {att.status === 'uploading' && <span className="text-[9px] text-amber-600 animate-pulse shrink-0">جاري الرفع...</span>}
-              {att.status === 'processing' && <span className="text-[9px] text-amber-600 animate-pulse shrink-0">جاري التجهيز...</span>}
+              {(att.status === 'uploading' || att.status === 'processing') && <span className="text-[9px] text-amber-600 animate-pulse shrink-0">{(t.geminiUploadProgress || 'جاري رفع الملف للتحليل الدقيق... {percent}%').replace('{percent}', String(uploadProgress[att.id] ?? 0))}</span>}
               {att.status === 'failed' && <span className="text-[9px] text-red-600 font-bold shrink-0">فشل الرفع</span>}
               {(!att.status || att.status === 'ready') && <span className="text-[9px] text-emerald-600 font-bold shrink-0">✓</span>}
 
@@ -1494,6 +1360,9 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
 
       {/* Bottom Input Area */}
       <div className="p-3 bg-white border-t border-[#E2DCC8] flex flex-col gap-2 shrink-0 relative z-20">
+        {voiceMessageError && <div role="alert" className="rounded-lg bg-red-50 px-3 py-1.5 text-[10px] text-red-700">{voiceMessageError}<button type="button" onClick={() => setVoiceMessageError(null)} className="ms-2 font-bold">×</button></div>}
+        {voiceMessageProgress !== null && <div className="rounded-lg bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-800">{(t.geminiUploadProgress || 'جاري رفع الملف للتحليل الدقيق... {percent}%').replace('{percent}', String(voiceMessageProgress))}</div>}
+        {isRecordingVoiceMessage && <div className="rounded-lg bg-red-50 px-3 py-1.5 text-[10px] font-bold text-red-700 animate-pulse">{t.recordingVoiceMessage || 'جارٍ تسجيل الرسالة الصوتية…'}</div>}
         {/* Granular Per-Chat AI Media Access Control */}
         <AIMediaAccessSelector
           permission={mediaAccessPermission}
@@ -1621,6 +1490,15 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
           </button>
 
           <button
+            type="button"
+            onClick={toggleVoiceMessageRecording}
+            className={`p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer shrink-0 ${isRecordingVoiceMessage ? 'bg-red-600 text-white animate-pulse' : 'bg-[#E8F1EC] text-[#2D6A4F] hover:bg-[#D4E5DB]'}`}
+            title={isRecordingVoiceMessage ? (t.stopVoiceRecording || 'إيقاف التسجيل وإرساله') : (t.recordVoiceMessage || 'تسجيل رسالة صوتية')}
+            aria-label={isRecordingVoiceMessage ? (t.stopVoiceRecording || 'إيقاف التسجيل وإرساله') : (t.recordVoiceMessage || 'تسجيل رسالة صوتية')}
+          >
+            <Mic className="w-4 h-4" />
+          </button>
+          <button
             onClick={handleDictation}
             className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 cursor-pointer shrink-0 ${
               isRecording
@@ -1660,111 +1538,31 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         </div>
       </div>
 
-      {/* 🎙️ Interactive Hands-free Voice Chat Overlay Modal */}
-      {showVoiceModal && (
-        <div className="fixed inset-0 bg-[#5A5A40]/45 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E2DCC8] rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6 text-center relative animate-fade-in font-sans" dir={appLanguage === 'ar' ? 'rtl' : 'ltr'}>
-            
-            {/* Close Button */}
-            <button
-              onClick={endVoiceChatSession}
-              className={`absolute top-4 ${appLanguage === 'ar' ? 'left-4' : 'right-4'} p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-xl transition-all cursor-pointer text-sm font-bold`}
-            >
-              ×
-            </button>
-
-            {/* Header Status */}
-            <div className="space-y-1.5 pt-4">
-              <span className={`text-xs px-3 py-1 rounded-full font-bold ${
-                activeAdvisorTab === 'general' ? 'bg-[#2B3E50]/15 text-[#2B3E50]' : 'bg-[#8B9D83]/15 text-[#8B9D83]'
-              }`}>
-                {activeAdvisorTab === 'general' 
-                  ? (t.generalVoiceCompanionTitle)
-                  : (t.voiceCompanionTitle)
-                }
-              </span>
-              <h3 className="font-extrabold text-[#3A3A3A] text-lg">
-                {voiceStatus === 'listening' && `🎤 ${t.voiceStatusListening}`}
-                {voiceStatus === 'analyzing' && `🧠 ${t.voiceStatusAnalyzing}`}
-                {voiceStatus === 'speaking' && `🔊 ${t.voiceStatusSpeaking}`}
-                {voiceStatus === 'idle' && `💤 ${t.voiceStatusIdle}`}
-              </h3>
-            </div>
-
-            {/* Animated Soundwave Ripple Area */}
-            <div className="flex items-center justify-center bg-[#F9F7F2] rounded-2xl h-44 border border-[#E2DCC8]/65 relative overflow-hidden">
-              <div className="absolute inset-0 bg-radial-gradient from-[#8B9D83]/5 to-transparent animate-pulse pointer-events-none"></div>
-              
-              {/* Animated Audio Wave bars */}
-              <div className="flex items-end justify-center space-x-2 space-x-reverse h-24">
-                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
-                  voiceStatus === 'listening' ? 'h-16 animate-bounce' : 
-                  voiceStatus === 'speaking' ? 'h-20 animate-pulse' : 'h-4'
-                }`}></div>
-                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
-                  voiceStatus === 'listening' ? 'h-24 animate-bounce delay-75' : 
-                  voiceStatus === 'speaking' ? 'h-14 animate-pulse delay-75' : 'h-4'
-                }`}></div>
-                <div className="w-2 bg-[#D4A373] rounded-full transition-all duration-300 ${
-                  voiceStatus === 'listening' ? 'h-28 animate-bounce delay-150' : 
-                  voiceStatus === 'speaking' ? 'h-24 animate-pulse delay-150' : 'h-4'
-                }"></div>
-                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
-                  voiceStatus === 'listening' ? 'h-18 animate-bounce delay-100' : 
-                  voiceStatus === 'speaking' ? 'h-12 animate-pulse delay-100' : 'h-4'
-                }`}></div>
-                <div className={`w-2 ${activeAdvisorTab === 'general' ? 'bg-[#2B3E50]' : 'bg-[#8B9D83]'} rounded-full transition-all duration-300 ${
-                  voiceStatus === 'listening' ? 'h-10 animate-bounce delay-200' : 
-                  voiceStatus === 'speaking' ? 'h-8 animate-pulse delay-200' : 'h-4'
-                }`}></div>
-              </div>
-            </div>
-
-            {/* Live Transcript / Response display area */}
-            <div className="bg-[#F0EDE4]/45 p-4 rounded-2xl border border-[#E2DCC8]/50 max-h-40 overflow-y-auto">
-              <p className="text-xs text-gray-500 font-medium mb-1">{t.voiceLiveTranscript}</p>
-              <p className="text-sm text-[#3A3A3A] font-medium leading-relaxed">
-                {voiceTranscript || (activeAdvisorTab === 'general'
-                  ? (t.generalVoiceModalDesc)
-                  : (t.advisorVoiceModalDesc)
-                )}
-              </p>
-            </div>
-
-            {/* Action controls */}
-            <div className="flex justify-center gap-3">
-              {voiceStatus === 'speaking' && (
-                <button
-                  onClick={() => {
-                    stopVoiceChatSpeech();
-                    setVoiceStatus('listening');
-                    startListeningVoiceChat();
-                  }}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-                >
-                  {t.voiceInterruptAndSpeak}
-                </button>
-              )}
-
-              {voiceStatus === 'idle' && (
-                <button
-                  onClick={startListeningVoiceChat}
-                  className="px-6 py-2.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-                >
-                  {t.voiceStartSpeaking}
-                </button>
-              )}
-
-              <button
-                onClick={endVoiceChatSession}
-                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-bold cursor-pointer"
-              >
-                {t.voiceEndSession}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <LiveVoiceChatModal
+        open={showVoiceModal}
+        onClose={() => setShowVoiceModal(false)}
+        language={langInfo.speechLang}
+        history={activeMessages.map(message => ({ sender: message.sender, text: message.text }))}
+        diaryContextEnabled={activeAdvisorTab === 'diary' || includeDiaryContext}
+        diaryContext=""
+        onTranscribeAudio={transcribeLiveVoice}
+        onSubmitTurn={submitLiveVoiceTurn}
+        labels={{
+          status: t.liveVoiceStatus || t.voiceCompanionTitle || 'المحادثة الصوتية المباشرة',
+          listen: t.voiceStartSpeaking || 'ابدأ التحدث',
+          stop: t.stopVoiceRecording || 'إيقاف التسجيل',
+          send: t.sendVoiceMessage || 'إرسال',
+          interrupt: t.voiceInterruptAndSpeak || 'مقاطعة والرد الآن',
+          autoBargeIn: t.autoBargeIn || 'المقاطعة التلقائية بالصوت',
+          close: t.voiceEndSession || 'إنهاء المحادثة',
+          transcribing: t.voiceStatusAnalyzing || 'جارٍ التحليل…',
+          listening: t.voiceStatusListening || 'أستمع إليك…',
+          thinking: t.voiceStatusAnalyzing || 'أفكر…',
+          speaking: t.voiceStatusSpeaking || 'أتحدث الآن…',
+          idle: t.voiceStatusIdle || 'جاهز للاستماع',
+          error: t.voiceRecordingFailed || 'حدث خطأ في الصوت.'
+        }}
+      />
 
       {/* 🛡️ Advisor Access Permissions Modal */}
       {showPermissionsModal && (

@@ -10742,6 +10742,7 @@ export default function App() {
               books={books}
               userApiKey={settings.userApiKey}
               appLanguage={settings?.appLanguage || 'ar'}
+              initialAdvisorTab="diary"
               onFilePickerOpen={markFilePickerActive}
               onFilePickerClose={resetFilePickerGuard}
             />

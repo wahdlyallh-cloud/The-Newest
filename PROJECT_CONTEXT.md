@@ -239,3 +239,9 @@ npm run build
 - `src/lib/geminiFileUpload.ts` uses inline Base64 below 4MB and Gemini resumable File API uploads with processing polling, progress callbacks, the original Blob reference, and key failover.
 - Gemini request paths share persisted key cooldown diagnostics for 400/403/429/503 responses and the settings modal can scan all five configured keys while refreshing models.
 - Audio prompts now require verbatim Egyptian Arabic, MSA, English, and mixed-speech transcription without summarization or invented wording.
+
+## 19. Advisor Workspace, Multimodal Attachments & Live Voice (2026-11-27)
+- `SmartAdvisor.tsx` persists general-chat threads in localStorage, supports rename/delete and Today/Previous grouping, keeps diary context opt-in for general chat, and exposes auto/fast/precision plus discovered Gemini models.
+- Advisor attachments and recorded voice messages use `prepareGeminiMedia`: inline payloads below 4MB, Gemini File API for larger media with live progress, and precision-tier generation for media turns.
+- `LiveVoiceChatModal.tsx` shares full conversation history, supports browser speech recognition and MediaRecorder transcription, Arabic speech synthesis, instant interruption with a spoken-point note, optional RMS barge-in, and Android-back cleanup.
+- Text turns use the selected tier (auto maps to fast); multimodal and audio transcription turns explicitly use precision.

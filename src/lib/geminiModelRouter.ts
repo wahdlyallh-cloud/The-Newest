@@ -92,8 +92,8 @@ export async function refreshDiscoveredModels(key?: string): Promise<DiscoveredG
   return Array.from(unique.values()).sort((a, b) => versionScore(b.id) - versionScore(a.id) || accuracyScore(b.id) - accuracyScore(a.id));
 }
 
-export async function selectModelsForTask(task: GeminiTask = 'chat', key?: string): Promise<string[]> {
-  const mode = getSelectedModelMode();
+export async function selectModelsForTask(task: GeminiTask = 'chat', key?: string, modeOverride?: GeminiModelMode): Promise<string[]> {
+  const mode = modeOverride || getSelectedModelMode();
   const models = getDiscoveredModels(key);
   const discovered = models.length ? models.map(m => m.id) : FALLBACK_MODELS;
   const heavy = ['multimodal', 'deep', 'reasoning', 'audio', 'voice', 'video', 'image', 'pdf', 'report'].includes(task);
@@ -103,8 +103,8 @@ export async function selectModelsForTask(task: GeminiTask = 'chat', key?: strin
   return Array.from(new Set(sorted));
 }
 
-export async function getModelsForKeyAndTask(key: string, task: GeminiTask = 'chat'): Promise<string[]> {
+export async function getModelsForKeyAndTask(key: string, task: GeminiTask = 'chat', modeOverride?: GeminiModelMode): Promise<string[]> {
   const cached = loadCache(key.trim());
   if (!cached || Date.now() - cached.timestamp >= DISCOVERY_TTL_MS) await refreshDiscoveredModels(key);
-  return selectModelsForTask(task, key);
+  return selectModelsForTask(task, key, modeOverride);
 }
