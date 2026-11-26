@@ -341,37 +341,30 @@ export type AITaskType = 'light' | 'multimodal' | 'deep' | 'reasoning';
  */
 export const STATIC_TASK_MODELS: Record<'light' | 'multimodal' | 'deep', string[]> = {
   light: [
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
-    'gemini-3.6-flash',
-    'gemini-3.8-flash',
-    'gemini-4-hydrogen'
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-1.5-flash'
   ],
   multimodal: [
-    'gemini-3.8-flash',
-    'gemini-4-hydrogen',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite'
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-1.5-flash'
   ],
   deep: [
-    'gemini-4-carbon',
-    'gemini-4-argon',
-    'gemini-4-hydrogen',
-    'gemini-3.8-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite'
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-pro',
+    'gemini-1.5-flash'
   ]
 };
 
-// Retired or restricted legacy models to permanently ignore everywhere
+// Retired or restricted legacy preview models to ignore
 export const RETIRED_LEGACY_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-2.5-pro',
-  'gemini-2.5-flash-lite',
   'gemini-3.8-pro',
-  'gemini-3-pro-preview'
+  'gemini-3-pro-preview',
+  'gemini-1.0-pro'
 ];
 
 // Specialized non-general endpoints to strictly exclude from model discovery
@@ -789,22 +782,28 @@ export async function getModelCandidatesForTask(key: string, taskType: AITaskTyp
   }
 
   // Always append verifiedModel (or proven light model) to every tier's fallback list if not already present
-  const verified = getVerifiedModelForKey(cleanKey) || 'gemini-3.5-flash-lite';
+  const verified = getVerifiedModelForKey(cleanKey) || 'gemini-2.5-flash';
   if (verified && !candidates.includes(verified)) {
     candidates.push(verified);
   }
-  if (!candidates.includes('gemini-3.5-flash-lite')) {
-    candidates.push('gemini-3.5-flash-lite');
+  if (!candidates.includes('gemini-2.5-flash')) {
+    candidates.push('gemini-2.5-flash');
+  }
+  if (!candidates.includes('gemini-2.0-flash')) {
+    candidates.push('gemini-2.0-flash');
   }
 
   // Skip models already cached as unsupported / limit: 0 or in active cooldown on this key,
-  // but GUARANTEE verifiedModel and gemini-3.5-flash-lite are NEVER excluded.
-  const available = candidates.filter(m => isModelAvailableForKey(cleanKey, m) || m === verified || m === 'gemini-3.5-flash-lite');
+  // but GUARANTEE verifiedModel and gemini-2.5-flash / gemini-2.0-flash are NEVER excluded.
+  const available = candidates.filter(m => isModelAvailableForKey(cleanKey, m) || m === verified || m === 'gemini-2.5-flash' || m === 'gemini-2.0-flash');
   if (verified && !available.includes(verified)) {
     available.push(verified);
   }
-  if (!available.includes('gemini-3.5-flash-lite')) {
-    available.push('gemini-3.5-flash-lite');
+  if (!available.includes('gemini-2.5-flash')) {
+    available.push('gemini-2.5-flash');
+  }
+  if (!available.includes('gemini-2.0-flash')) {
+    available.push('gemini-2.0-flash');
   }
 
   return available;
@@ -849,7 +848,7 @@ export async function testGeminiApiKey(key: string): Promise<{
 
   // 1. Discover live models
   const discovered = await discoverGoogleModels(cleanKey, true).catch(() => []);
-  const priorityTestList = ['gemini-3.8-flash', 'gemini-4-hydrogen', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'];
+  const priorityTestList = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash'];
 
   const candidatesSet = new Set<string>();
 
@@ -873,8 +872,9 @@ export async function testGeminiApiKey(key: string): Promise<{
   for (const m of priorityTestList) {
     candidatesSet.add(m);
   }
-  // Always guarantee gemini-3.5-flash-lite is in the candidate test set
-  candidatesSet.add('gemini-3.5-flash-lite');
+  // Always guarantee gemini-2.5-flash and gemini-2.0-flash are in the candidate test set
+  candidatesSet.add('gemini-2.5-flash');
+  candidatesSet.add('gemini-2.0-flash');
 
   const modelsToTest = Array.from(candidatesSet);
   let lastErr = '';
@@ -916,7 +916,7 @@ export async function testGeminiApiKey(key: string): Promise<{
       // Step down immediately on 429 / RESOURCE_EXHAUSTED / limit: 0 without marking whole key exhausted!
       if (errType === 'quota_exhausted' || errType === 'rate_limited' || status === 429) {
         markModelFailedForKey(cleanKey, model, status, rawMsg);
-        continue; // Try next candidate model (e.g. gemini-3.5-flash-lite) on the SAME key!
+        continue; // Try next candidate model (e.g. gemini-2.0-flash) on the SAME key!
       }
 
       all429 = false;

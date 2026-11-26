@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { exportBlobSafe } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
@@ -828,7 +829,16 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
       }
 
       const fileName = `تقرير_الصحة_النفسية_${periodType}_${periodLabel.replace(/[\s\(\)\/]/g, '_')}.pdf`;
-      pdf.save(fileName);
+      const pdfBlob = pdf.output('blob');
+      await exportBlobSafe({
+        blob: pdfBlob,
+        filename: fileName,
+        title: periodTitle || 'تقرير الصحة النفسية',
+        mimeType: 'application/pdf',
+        onSuccess: () => {
+          showToast(t.reportSavedSuccessToast || 'تم تصدير التقرير بنجاح ✅');
+        }
+      });
     } catch (err) {
       console.error('PDF canvas export error, switching seamlessly to print fallback:', err);
       // Fallback to iframe printing seamlessly without showing errors

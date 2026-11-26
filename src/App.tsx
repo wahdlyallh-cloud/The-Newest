@@ -24,6 +24,9 @@ import BackupSyncModal from './components/BackupSyncModal';
 import LanguagesModal from './components/LanguagesModal';
 import TypographySettingsSection from './components/TypographySettingsSection';
 import { getFontCss, getLineHeightCss } from './lib/fonts';
+import { exportBlobSafe } from './lib/exportUtils';
+import { backgroundAIManager } from './lib/backgroundAIManager';
+import { BackgroundAIStatus } from './components/BackgroundAIStatus';
 import WriteDiaryImporter from './components/WriteDiaryImporter';
 import { uploadToGeminiFilesAPI } from './services/attachmentService';
 import { cleanDiaryText, generateGeminiContentDirect } from './lib/gemini';
@@ -3209,8 +3212,16 @@ export default function App() {
     isSavingDiaryRef.current = false;
     setIsSavingDiary(false);
 
-    // Call server API to perform intelligent AI mood analysis in background (fire-and-forget)
+    // Call server API to perform intelligent AI mood analysis in background (navigation-safe)
     if (updatedEntry.title.trim() || updatedEntry.content.trim()) {
+      const taskId = `mood-${updatedEntry.id}-${Date.now()}`;
+      backgroundAIManager.startTask({
+        id: taskId,
+        category: 'mood_analysis',
+        title: updatedEntry.title || (settings?.appLanguage === 'ar' ? 'تحليل مشاعر المذكرة' : 'Mood Analysis'),
+        targetId: updatedEntry.id
+      });
+
       fetch('/api/gemini/analyze-mood', {
         method: 'POST',
         headers: {
@@ -3225,11 +3236,21 @@ export default function App() {
         .then(res => res.json())
         .then(data => {
           if (data.success && Array.isArray(data.analysis) && data.analysis.length > 0) {
-            setDiaries(prev => prev.map(d => d.id === updatedEntry.id ? { ...d, aiMoodAnalysis: data.analysis } : d));
+            setDiaries(prev => {
+              const updated = prev.map(d => d.id === updatedEntry.id ? { ...d, aiMoodAnalysis: data.analysis } : d);
+              try {
+                localStorage.setItem('yawmiyati_diaries', JSON.stringify(updated));
+              } catch (_) {}
+              return updated;
+            });
+            backgroundAIManager.completeTask(taskId, data.analysis);
+          } else {
+            backgroundAIManager.failTask(taskId, data.error || 'No analysis returned');
           }
         })
         .catch(e => {
           console.warn('Background AI mood analysis skipped:', e);
+          backgroundAIManager.failTask(taskId, e?.message);
         });
     }
   };
@@ -3310,7 +3331,14 @@ export default function App() {
       // Clean filename
       const safeTitle = (editingDiary.title || 'diary').trim().slice(0, 30).replace(/[^a-zA-Z0-9آ-ي\s]/g, '');
       const dateStr = new Date(editingDiary.createdAt).toISOString().split('T')[0];
-      pdf.save(`${safeTitle || 'diary'}_${dateStr}.pdf`);
+      const fileName = `${safeTitle || 'diary'}_${dateStr}.pdf`;
+      const pdfBlob = pdf.output('blob');
+      await exportBlobSafe({
+        blob: pdfBlob,
+        filename: fileName,
+        title: editingDiary.title || 'Hayat AI Diary PDF',
+        mimeType: 'application/pdf'
+      });
     } catch (err) {
       console.error('Error exporting PDF:', err);
       // Fallback print via iframe
@@ -4321,6 +4349,13 @@ export default function App() {
 
     setTranscribingAudioId(rec.id);
     updateAudioTranscriptionAtomic(rec.id, '⏳ جاري التفريغ النصي بذكاء Gemini...');
+    const taskId = `transcribe-${rec.id}-${Date.now()}`;
+    backgroundAIManager.startTask({
+      id: taskId,
+      category: 'voice_transcription',
+      title: rec.name ? `تفريغ: ${rec.name}` : (settings?.appLanguage === 'ar' ? 'تفريغ تسجيل صوتي' : 'Voice Transcription'),
+      targetId: rec.id
+    });
     try {
       if (!audioBlob && rawAudio) {
         if (rawAudio.startsWith('blob:')) {
@@ -4341,12 +4376,16 @@ export default function App() {
       }
 
       if (!audioBlob || audioBlob.size === 0) {
-        updateAudioTranscriptionAtomic(rec.id, settings?.appLanguage === 'ar' ? 'الملف الصوتي فارغ أو تعذر قراءته.' : 'Audio file is empty or could not be read.');
+        const emptyMsg = settings?.appLanguage === 'ar' ? 'الملف الصوتي فارغ أو تعذر قراءته.' : 'Audio file is empty or could not be read.';
+        updateAudioTranscriptionAtomic(rec.id, emptyMsg);
+        backgroundAIManager.failTask(taskId, emptyMsg);
         return;
       }
 
       if (audioBlob.size > 22 * 1024 * 1024) {
-        updateAudioTranscriptionAtomic(rec.id, t.transcriptionFailedSize || (settings?.appLanguage === 'ar' ? 'حجم الملف كبير جداً (الحد الأقصى 20 ميجابايت).' : 'Audio file exceeds the maximum 20MB limit.'));
+        const sizeMsg = t.transcriptionFailedSize || (settings?.appLanguage === 'ar' ? 'حجم الملف كبير جداً (الحد الأقصى 20 ميجابايت).' : 'Audio file exceeds the maximum 20MB limit.');
+        updateAudioTranscriptionAtomic(rec.id, sizeMsg);
+        backgroundAIManager.failTask(taskId, sizeMsg);
         return;
       }
 
@@ -4371,14 +4410,17 @@ export default function App() {
       const data = await res.json();
       if (data.success && data.transcription && !data.transcription.includes('وضع المعالجة الصوتية')) {
         updateAudioTranscriptionAtomic(rec.id, data.transcription, data.speechEmotion);
+        backgroundAIManager.completeTask(taskId, data.transcription);
       } else {
         const errorMsg = data.error || data.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe this audio file.'));
         updateAudioTranscriptionAtomic(rec.id, errorMsg);
+        backgroundAIManager.failTask(taskId, errorMsg);
       }
     } catch (err: any) {
       console.warn('Transcribe error:', err);
       const errorMsg = err?.message || (t.aiTranscriptionUnavailable || (settings?.appLanguage === 'ar' ? 'تعذر تفريغ هذا الملف الصوتي، يرجى المحاولة لاحقاً.' : 'Could not transcribe this audio file.'));
       updateAudioTranscriptionAtomic(rec.id, errorMsg);
+      backgroundAIManager.failTask(taskId, errorMsg);
     } finally {
       setTranscribingAudioId(null);
     }
@@ -4962,6 +5004,14 @@ export default function App() {
     }
     setDiaryChatLoading(true);
 
+    const taskId = `diarychat-${editingDiary.id}-${Date.now()}`;
+    backgroundAIManager.startTask({
+      id: taskId,
+      category: 'diary_chat',
+      title: editingDiary.title ? `استشارة: ${editingDiary.title}` : (settings?.appLanguage === 'ar' ? 'استشارة الذكاء الاصطناعي' : 'AI Reflection'),
+      targetId: editingDiary.id
+    });
+
     try {
       const isAr = (settings?.appLanguage || 'ar') === 'ar';
 
@@ -5100,6 +5150,7 @@ export default function App() {
         createdAt: new Date().toISOString()
       };
       saveDiaryWithLogs([...updatedLogs, aiMsg]);
+      backgroundAIManager.completeTask(taskId, aiMsg.text);
     } catch (error: any) {
       console.error("Diary chat error:", error);
       let fallbackText = '';
@@ -5129,6 +5180,7 @@ export default function App() {
         createdAt: new Date().toISOString()
       };
       saveDiaryWithLogs([...updatedLogs, errorMsg]);
+      backgroundAIManager.completeTask(taskId, errorMsg.text);
     } finally {
       setDiaryChatLoading(false);
       // Auto-scroll chat box
@@ -5185,7 +5237,14 @@ export default function App() {
         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
         heightLeft -= pageHeight;
       }
-      pdf.save(`HayatAI_Chat_${editingDiary.id.split('-')[1] || 'log'}.pdf`);
+      const fileName = `HayatAI_Chat_${editingDiary.id.split('-')[1] || 'log'}.pdf`;
+      const pdfBlob = pdf.output('blob');
+      await exportBlobSafe({
+        blob: pdfBlob,
+        filename: fileName,
+        title: 'Hayat AI Diary Chat',
+        mimeType: 'application/pdf'
+      });
     } catch (err) {
       console.error('Export Chat PDF error:', err);
     }
@@ -6537,6 +6596,9 @@ export default function App() {
 
         {/* Offline & Cloud Background Sync Status Banner */}
         <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
+
+        {/* Persistent In-Flight Background AI Status Indicator */}
+        <BackgroundAIStatus appLanguage={settings?.appLanguage || 'ar'} />
 
         {/* Capacitor Android Native In-App Update Banner */}
         <AppUpdateBanner appLanguage={settings?.appLanguage || 'ar'} />

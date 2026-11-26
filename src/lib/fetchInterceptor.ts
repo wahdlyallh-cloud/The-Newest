@@ -20,7 +20,7 @@ import {
 } from '../services/unifiedAIKnowledgeService';
 
 function cleanModelIdentifier(modelName?: string): string {
-  if (!modelName || !modelName.trim()) return 'gemini-3.5-flash-lite';
+  if (!modelName || !modelName.trim()) return 'gemini-2.5-flash';
   return modelName.trim().replace(/^models\//, '');
 }
 

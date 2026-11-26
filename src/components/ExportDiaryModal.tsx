@@ -2,6 +2,7 @@
 import { X, Image as ImageIcon, FileText, Calendar, Clock, Tag, Smile, User, Sparkles, RefreshCw } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { exportBlobSafe } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 
@@ -108,34 +109,12 @@ export default function ExportDiaryModal({
 
       if (imageBlob) {
         const fileName = `HayatAI_Diary_${diary.createdAt.split('T')[0]}.png`;
-        const file = new File([imageBlob], fileName, { type: 'image/png' });
-
-        let shared = false;
-        if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: diary.title || 'Hayat AI Diary',
-            });
-            shared = true;
-          } catch (shareErr: any) {
-            if (shareErr.name === 'AbortError') {
-              setIsExportingImage(false);
-              return;
-            }
-          }
-        }
-
-        if (!shared) {
-          const url = URL.createObjectURL(imageBlob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-        }
+        await exportBlobSafe({
+          blob: imageBlob,
+          filename: fileName,
+          title: diary.title || 'Hayat AI Diary',
+          mimeType: 'image/png'
+        });
       }
     } catch (err) {
       console.error('Export Image error:', err);
@@ -193,27 +172,12 @@ export default function ExportDiaryModal({
 
       const fileName = `HayatAI_Diary_${diary.createdAt.split('T')[0]}.pdf`;
       const pdfBlob = pdf.output('blob');
-      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-      let shared = false;
-      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-        try {
-          await navigator.share({
-            files: [pdfFile],
-            title: diary.title || 'Hayat AI Diary PDF',
-          });
-          shared = true;
-        } catch (shareErr: any) {
-          if (shareErr.name === 'AbortError') {
-            setIsExportingPdf(false);
-            return;
-          }
-        }
-      }
-
-      if (!shared) {
-        pdf.save(fileName);
-      }
+      await exportBlobSafe({
+        blob: pdfBlob,
+        filename: fileName,
+        title: diary.title || 'Hayat AI Diary PDF',
+        mimeType: 'application/pdf'
+      });
     } catch (err) {
       console.error('Export PDF error:', err);
       alert(isAr ? 'حدث خطأ أثناء تصدير PDF.' : 'Error exporting PDF.');

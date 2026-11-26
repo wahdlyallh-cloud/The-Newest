@@ -7,6 +7,7 @@ import { Brain, Send, ShieldCheck, HelpCircle, Sparkles, Mic, Trash2, Paperclip,
 import { copyTextSafe } from '../lib/clipboard';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { exportBlobSafe } from '../lib/exportUtils';
 import { DiaryEntry, AppLanguage, MultimodalAttachment } from '../types';
 import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
@@ -1075,7 +1076,14 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
         heightLeft -= pageHeight;
       }
-      pdf.save(`HayatAI_AdvisorChat_${Date.now()}.pdf`);
+      const fileName = `HayatAI_AdvisorChat_${Date.now()}.pdf`;
+      const pdfBlob = pdf.output('blob');
+      await exportBlobSafe({
+        blob: pdfBlob,
+        filename: fileName,
+        title: 'Hayat AI Advisor Chat',
+        mimeType: 'application/pdf'
+      });
     } catch (err) {
       console.error('Export Chat PDF error:', err);
     }

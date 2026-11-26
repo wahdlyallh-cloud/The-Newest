@@ -5,6 +5,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { exportBlobSafe } from '../lib/exportUtils';
 import { DiaryEntry, Habit, GratitudeCard, Book, AppLanguage } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
@@ -1077,17 +1078,28 @@ ${t.generatedByHayatAiNotice}`;
         logging: false
       });
 
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
-      const fileName = `pros_cons_report_${dayKey}.png`;
+      const imageBlob = await new Promise<Blob | null>(resolve => {
+        canvas.toBlob(blob => resolve(blob), 'image/png', 1.0);
+      });
 
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      showToast(t.imageSavedToast);
+      if (imageBlob) {
+        const fileName = `pros_cons_report_${dayKey}.png`;
+        await exportBlobSafe({
+          blob: imageBlob,
+          filename: fileName,
+          title: t.prosConsReportTitle || 'تقرير الإيجابيات والسلبيات اليومي',
+          mimeType: 'image/png',
+          onShareCancelled: () => {
+            showToast(isAr ? 'تم إلغاء المشاركة' : 'Sharing cancelled');
+          },
+          onSuccess: () => {
+            showToast(t.imageSavedToast);
+          },
+          onError: () => {
+            showToast(t.imageSaveError);
+          }
+        });
+      }
     } catch (err) {
       console.error('Error rendering report image:', err);
       showToast(t.imageSaveError);

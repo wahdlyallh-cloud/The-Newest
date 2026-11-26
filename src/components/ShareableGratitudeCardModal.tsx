@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Download, Share2, Sparkles, Copy, Check, Heart, Quote, Image as ImageIcon, Layout, Palette } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { exportBlobSafe } from '../lib/exportUtils';
 import { AppLanguage, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
 
@@ -288,27 +289,24 @@ export default function ShareableGratitudeCardModal({
 
       console.log('[GratitudeExport] blob:size', blob.size);
       const filename = `gratitude-card-${Date.now()}.png`;
-      const blobUrl = URL.createObjectURL(blob);
 
-      // Mobile-safe trigger using Blob URL
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up object URL after download cycle
-      setTimeout(() => {
-        try {
-          URL.revokeObjectURL(blobUrl);
-        } catch (_) {}
-      }, 30000);
-
-      setDownloadSuccess(true);
-      showToast(t.gratitudeDownloaded, 'success');
-      setTimeout(() => setDownloadSuccess(false), 3000);
+      await exportBlobSafe({
+        blob,
+        filename,
+        title: t.gratitudeCardShareTitle || 'بطاقة امتنان',
+        mimeType: 'image/png',
+        onShareCancelled: () => {
+          showToast(isRtl ? 'تم إلغاء المشاركة' : 'Sharing cancelled', 'info');
+        },
+        onSuccess: () => {
+          setDownloadSuccess(true);
+          showToast(t.gratitudeDownloaded, 'success');
+          setTimeout(() => setDownloadSuccess(false), 3000);
+        },
+        onError: () => {
+          showToast(t.gratitudeDownloadFailed, 'error');
+        }
+      });
     } catch (err: any) {
       console.error('[GratitudeExport] error during download:', err?.message, err?.stack);
       showToast(t.gratitudeDownloadFailed, 'error');
