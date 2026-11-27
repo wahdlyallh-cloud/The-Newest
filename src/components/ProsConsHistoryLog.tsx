@@ -38,6 +38,7 @@ export default function ProsConsHistoryLog({
   const [activeModalDayKey, setActiveModalDayKey] = useState<string | null>(null);
   const [activeModalDisplayDate, setActiveModalDisplayDate] = useState<string>('');
   const [activeModalDiaries, setActiveModalDiaries] = useState<DiaryEntry[]>([]);
+  const [activeModalIsOfficial, setActiveModalIsOfficial] = useState(false);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -105,13 +106,15 @@ export default function ProsConsHistoryLog({
   const handleOpenEdit = (entry: DailyProsConsEntry) => {
     // Find matching diaries for that dayKey
     const dayDiaries = diaries.filter(d => {
-      const entryDayKey = new Date(d.createdAt).toISOString().split('T')[0];
+      const date = new Date(d.createdAt);
+      const entryDayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       return entryDayKey === entry.dayKey;
     });
 
     setActiveModalDayKey(entry.dayKey);
     setActiveModalDisplayDate(entry.displayDate);
     setActiveModalDiaries(dayDiaries);
+    setActiveModalIsOfficial(Boolean(entry.isOfficialDailyReport));
   };
 
   // Delete Record
@@ -430,6 +433,7 @@ export default function ProsConsHistoryLog({
           allBooks={books}
           allDiaries={diaries}
           userApiKey={userApiKey}
+          isOfficialDailyReport={activeModalIsOfficial}
           onSaveSuccess={refreshRecords}
         />
       )}

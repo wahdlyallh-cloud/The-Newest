@@ -87,7 +87,10 @@ export function extractAvailableAttachments(diaries: DiaryEntry[]): AttachmentIt
   const seenIds = new Set<string>();
 
   for (const d of diaries) {
-    const dDate = d.createdAt ? d.createdAt.split('T')[0] : '';
+    const created = d.createdAt ? new Date(d.createdAt) : null;
+    const dDate = created && !Number.isNaN(created.getTime())
+      ? `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}-${String(created.getDate()).padStart(2, '0')}`
+      : '';
 
     // Images
     if (d.images && Array.isArray(d.images)) {
@@ -123,6 +126,16 @@ export function extractAvailableAttachments(diaries: DiaryEntry[]): AttachmentIt
           attachmentId: d.drawingAttachmentId
         });
       }
+    }
+
+    if (d.drawings && Array.isArray(d.drawings)) {
+      d.drawings.forEach((drawing, idx) => {
+        const drawingId = d.drawingAttachmentIds?.[idx] || `drawing-${d.id}-${idx}`;
+        if (!seenIds.has(drawingId)) {
+          seenIds.add(drawingId);
+          items.push({ id: drawingId, name: `${d.title || 'رسم ذهني'} (تخطيط ${idx + 1})`, type: 'image', mimeType: 'image/png', dateStr: dDate, thumbnailUrl: drawing.startsWith('data:') ? drawing : undefined, attachmentId: d.drawingAttachmentIds?.[idx] });
+        }
+      });
     }
 
     // Audio
@@ -182,6 +195,31 @@ export function extractAvailableAttachments(diaries: DiaryEntry[]): AttachmentIt
   }
 
   return items;
+}
+
+/** Returns day-scoped media records with legacy inline data URLs attached for the Gemini encoder. */
+export function extractDailyMediaSources(diaries: DiaryEntry[]): Array<AttachmentItemSummary & { dataUrl?: string }> {
+  const summaries = extractAvailableAttachments(diaries);
+  return summaries.map(summary => {
+    if (summary.thumbnailUrl?.startsWith('data:')) return { ...summary, dataUrl: summary.thumbnailUrl };
+    for (const diary of diaries) {
+      const storedImageIndex = (diary.imageAttachmentIds || []).indexOf(summary.attachmentId || summary.id);
+      const imageIndex = storedImageIndex >= 0 ? storedImageIndex : summary.id.startsWith(`img-${diary.id}-`) ? Number(summary.id.split('-').pop()) : -1;
+      if (imageIndex >= 0 && diary.images?.[imageIndex]) return { ...summary, dataUrl: diary.images[imageIndex] };
+      const storedVideoIndex = (diary.videoAttachmentIds || []).indexOf(summary.attachmentId || summary.id);
+      const videoIndex = storedVideoIndex >= 0 ? storedVideoIndex : summary.id.startsWith(`vid-${diary.id}-`) ? Number(summary.id.split('-').pop()) : -1;
+      if (videoIndex >= 0 && diary.videos?.[videoIndex]) return { ...summary, dataUrl: diary.videos[videoIndex] };
+      if ((diary.drawingAttachmentId || `draw-${diary.id}`) === summary.id && diary.drawing) return { ...summary, dataUrl: diary.drawing };
+      const audio = diary.audioRecordings?.find(item => (item.attachmentId || item.id) === summary.id);
+      if (audio?.dataUrl) return { ...summary, dataUrl: audio.dataUrl };
+      const file = diary.files?.find(item => (item.attachmentId || item.id) === summary.id);
+      if (file?.dataUrl) return { ...summary, dataUrl: file.dataUrl };
+      const storedDrawingIndex = (diary.drawingAttachmentIds || []).indexOf(summary.attachmentId || summary.id);
+      const drawingIndex = storedDrawingIndex >= 0 ? storedDrawingIndex : summary.id.startsWith(`drawing-${diary.id}-`) ? Number(summary.id.split('-').pop()) : -1;
+      if (drawingIndex >= 0 && diary.drawings?.[drawingIndex]) return { ...summary, dataUrl: diary.drawings[drawingIndex] };
+    }
+    return summary;
+  });
 }
 
 /**

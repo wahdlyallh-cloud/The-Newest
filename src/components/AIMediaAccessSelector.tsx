@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { AIMediaAccessPermission, AttachmentItemSummary } from '../lib/aiMediaAccess';
 import { AppLanguage } from '../types';
+import { getTranslation } from '../lib/languages';
 
 interface AIMediaAccessSelectorProps {
   permission: AIMediaAccessPermission;
@@ -26,6 +27,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
   compact = false
 }) => {
   const isAr = appLanguage === 'ar';
+  const t = getTranslation(appLanguage);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getStatusChipText = () => {
@@ -77,13 +79,13 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5 transition-all text-xs">
+    <div className={`${compact ? 'w-auto max-w-[280px] bg-white/80 border border-[#E2DCC8]/80 rounded-xl p-1.5' : 'w-full bg-[#FAF8F5] border border-[#E2DCC8] rounded-2xl p-2.5'} transition-all text-xs`}>
       {/* Top Bar Header with Toggle Chip */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 shrink-0">
           <ShieldCheck className="w-4 h-4 text-[#8B9D83]" />
           <span className="font-extrabold text-[#3A3A3A]">
-            {isAr ? 'وسائط الذكاء الاصطناعي:' : 'AI Media Access:'}
+            {t.dailyMediaSelectorTitle || (isAr ? 'وسائط الذكاء الاصطناعي' : 'AI media access')}
           </span>
         </div>
 
@@ -119,7 +121,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
                   : 'text-gray-600 hover:text-black'
               }`}
             >
-              {isAr ? 'نص فقط (توفير)' : 'Text Only (Saver)'}
+              {t.dailyMediaTextOnly || (isAr ? 'نص فقط (توفير)' : 'Text Only (Saver)')}
             </button>
             <button
               type="button"
@@ -130,7 +132,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
                   : 'text-gray-600 hover:text-black'
               }`}
             >
-              {isAr ? 'حسب الفئة' : 'By Type'}
+              {t.dailyMediaByCategory || (isAr ? 'حسب الفئة' : 'By category')}
             </button>
             <button
               type="button"
@@ -141,7 +143,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
                   : 'text-gray-600 hover:text-black'
               }`}
             >
-              {isAr ? 'اختيار يدوي' : 'Pick Items'}
+              {t.dailyMediaManual || (isAr ? 'اختيار يدوي' : 'Manual selection')}
             </button>
           </div>
 
@@ -159,7 +161,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
               >
                 <span className="flex items-center gap-1">
                   <Image className="w-3.5 h-3.5 text-blue-600" />
-                  {isAr ? 'الصور' : 'Images'}
+                  {t.dailyMediaImages || (isAr ? 'الصور' : 'Images')}
                 </span>
                 {permission.allowImages && <Check className="w-3.5 h-3.5 text-[#8B9D83]" />}
               </button>
@@ -175,7 +177,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
               >
                 <span className="flex items-center gap-1">
                   <Video className="w-3.5 h-3.5 text-purple-600" />
-                  {isAr ? 'الفيديوهات' : 'Videos'}
+                  {t.dailyMediaVideos || (isAr ? 'الفيديوهات' : 'Videos')}
                 </span>
                 {permission.allowVideos && <Check className="w-3.5 h-3.5 text-[#8B9D83]" />}
               </button>
@@ -191,7 +193,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
               >
                 <span className="flex items-center gap-1">
                   <Mic className="w-3.5 h-3.5 text-emerald-600" />
-                  {isAr ? 'الصوتيات' : 'Audio'}
+                  {t.dailyMediaAudio || (isAr ? 'الصوتيات' : 'Audio')}
                 </span>
                 {permission.allowAudio && <Check className="w-3.5 h-3.5 text-[#8B9D83]" />}
               </button>
@@ -207,7 +209,7 @@ export const AIMediaAccessSelector: React.FC<AIMediaAccessSelectorProps> = ({
               >
                 <span className="flex items-center gap-1">
                   <FileText className="w-3.5 h-3.5 text-red-600" />
-                  {isAr ? 'المستندات' : 'Files'}
+                  {t.dailyMediaFiles || (isAr ? 'المستندات' : 'Documents/files')}
                 </span>
                 {permission.allowFiles && <Check className="w-3.5 h-3.5 text-[#8B9D83]" />}
               </button>

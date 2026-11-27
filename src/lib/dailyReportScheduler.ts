@@ -1,436 +1,217 @@
-// src/lib/dailyReportScheduler.ts
-// Reliable local midnight (12:00 AM) daily report scheduler with strict idempotency,
-// local timezone date resolution, catch-up checks, and backgroundAIManager resilience.
-
-import { backgroundAIManager } from './backgroundAIManager';
-import { DiaryEntry, AppLanguage } from '../types';
-import { normalizeMoodDistribution, MoodPercentageEntry } from './emotionNormalization';
+import { AppLanguage, DiaryEntry, Habit } from '../types';
+import { DEFAULT_AI_MEDIA_ACCESS, AIMediaAccessPermission, encodePermittedMediaParts, extractDailyMediaSources } from './aiMediaAccess';
+import { loadProsConsMediaPreference } from '../components/DailyProsConsMediaSelector';
 import { PROS_CONS_STORAGE_KEY, DailyProsConsEntry } from '../components/DailyProsConsModal';
-import { DEFAULT_AI_MEDIA_ACCESS } from './aiMediaAccess';
-import {
-  filterDiaryMetricsForAI,
-  loadAllTouchedMetrics,
-  isMetricTouched
-} from './dailyMetricsFilter';
+import { loadAllTouchedMetrics, isMetricTouched, filterDiaryMetricsForAI, TouchedStore } from './dailyMetricsFilter';
+import { normalizeMoodDistribution } from './emotionNormalization';
 
-/**
- * Returns strictly the local device date string formatted as YYYY-MM-DD.
- * NEVER uses toISOString().slice(0, 10) which causes a 2-hour shift in UTC+2 (e.g. Egypt).
- */
-export function getLocalTodayYMD(dateInput: Date | number | string = new Date()): string {
-  const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  if (isNaN(d.getTime())) {
-    const fallback = new Date();
-    const y = fallback.getFullYear();
-    const m = String(fallback.getMonth() + 1).padStart(2, '0');
-    const day = String(fallback.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export function getLocalYesterdayYMD(d: Date = new Date()): string {
-  const yesterday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
-  return getLocalTodayYMD(yesterday);
-}
-
-const REPORT_DONE_KEY_PREFIX = 'yawmiyati_daily_report_done_';
-const REPORTS_HISTORY_KEY = 'yawmiyati_mental_health_reports_history';
-
-let midnightTimer: any = null;
+export const OFFICIAL_PROS_CONS_STORAGE_KEY = 'officialProsConsByDate';
+const REPORT_DONE_PREFIX = 'yawmiyati_daily_report_done_';
+const HISTORY_KEY = 'yawmiyati_mental_health_reports_history';
+const inFlightDates = new Set<string>();
+let midnightTimer: ReturnType<typeof setTimeout> | null = null;
+let minuteTimer: ReturnType<typeof setInterval> | null = null;
 let isInitialized = false;
 
-/**
- * Checks if a daily report has already been generated for a specific local date key.
- */
-export function hasDailyReportForDate(dateYMD: string): boolean {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return false;
-    return Boolean(localStorage.getItem(REPORT_DONE_KEY_PREFIX + dateYMD));
-  } catch {
-    return false;
-  }
+export function getLocalTodayYMD(input: Date | number | string = new Date()): string {
+  const date = input instanceof Date ? input : new Date(input);
+  const safe = Number.isNaN(date.getTime()) ? new Date() : date;
+  return `${safe.getFullYear()}-${String(safe.getMonth() + 1).padStart(2, '0')}-${String(safe.getDate()).padStart(2, '0')}`;
 }
 
-/**
- * Marks a daily report as generated for a specific local date key (strict idempotency).
- */
-export function markDailyReportDone(dateYMD: string): void {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    localStorage.setItem(REPORT_DONE_KEY_PREFIX + dateYMD, String(Date.now()));
-  } catch (_) {}
+function dayBounds(dateKey: string): { start: Date; end: Date } {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return { start: new Date(year, month - 1, day, 0, 0, 0, 0), end: new Date(year, month - 1, day, 23, 59, 59, 999) };
 }
 
-/**
- * Generates the daily midnight report for a targeted local date key.
- * Routed through backgroundAIManager to guarantee execution even across screen changes.
- */
-export async function generateDailyReportForDate(
-  targetDateYMD: string,
-  userApiKey?: string,
-  appLanguage: AppLanguage = 'ar'
-): Promise<boolean> {
-  if (hasDailyReportForDate(targetDateYMD)) {
-    return true; // Already generated, enforce strict idempotency
+function isWithinDay(value: unknown, dateKey: string): boolean {
+  if (!value) return false;
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return false;
+  const { start, end } = dayBounds(dateKey);
+  return date >= start && date <= end;
+}
+
+function readJson<T>(key: string, fallback: T): T {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as T : fallback; } catch { return fallback; }
+}
+
+function formatTrackerStatus(dateKey: string, touched: TouchedStore, diaries: DiaryEntry[], lang: AppLanguage): string[] {
+  const labels = lang === 'ar'
+    ? { water: 'الماء', exercise: 'الرياضة', sleep: 'النوم', mood: 'المزاج', habits: 'العادات', tasks: 'المهام' }
+    : { water: 'Water intake', exercise: 'Exercise', sleep: 'Sleep', mood: 'Mood', habits: 'Habits', tasks: 'Tasks' };
+  const values: string[] = [];
+  for (const metric of ['water', 'exercise', 'sleep', 'mood'] as const) {
+    const touchedToday = isMetricTouched(dateKey, metric, touched);
+    if (!touchedToday) {
+      values.push(`${labels[metric]}: not tracked in the app today`);
+      continue;
+    }
+    const relevant = diaries.filter(d => isWithinDay(d.createdAt, dateKey));
+    const vals = relevant.map(d => metric === 'water' ? d.waterCups : metric === 'exercise' ? d.sportsDuration : metric === 'sleep' ? d.sleepHours : d.fastMoodScore).filter(v => typeof v === 'number');
+    values.push(`${labels[metric]}: ${vals.length ? vals.join(', ') : (lang === 'ar' ? 'تم التفاعل مع المتتبع دون قيمة مسجلة' : 'tracker touched; no numeric value logged')}`);
+  }
+  return values;
+}
+
+export interface DailyContextResult {
+  dateKey: string;
+  diaries: DiaryEntry[];
+  mediaPreference: AIMediaAccessPermission;
+  mediaParts: any[];
+  context: string;
+  hasActivity: boolean;
+}
+
+/** Collects only records belonging to one local calendar date; general advisor data is never read. */
+export async function collectDailyContextForDate(dateKey: string, mediaPref?: AIMediaAccessPermission, appLanguage: AppLanguage = 'ar'): Promise<DailyContextResult> {
+  const allDiaries = readJson<DiaryEntry[]>('yawmiyati_diaries', []).filter(d => isWithinDay(d.createdAt, dateKey));
+  const mediaPreference = mediaPref || loadProsConsMediaPreference(dateKey) || DEFAULT_AI_MEDIA_ACCESS;
+  const touched = loadAllTouchedMetrics();
+  const lines: string[] = [`Calendar day: ${dateKey} 00:00:00–23:59:59 local time.`, 'Only use the dated records supplied below. Do not infer activity from defaults.'];
+  let activity = allDiaries.length > 0;
+  for (const diary of allDiaries) {
+    lines.push(`Diary: ${diary.title || '(untitled)'}`, `Text: ${diary.content || '(no text)'}`);
+    if (diary.moods?.length) lines.push(`Mood before writing: ${diary.moods.join(', ')}`);
+    if (diary.aiMoodAnalysis?.length) lines.push(`AI-inferred mood: ${diary.aiMoodAnalysis.map(m => `${m.mood} (${m.percentage}%)`).join(', ')}`);
+    if (diary.importance) lines.push(`Rating: ${diary.importance}/5`);
+    if (diary.tags?.length) lines.push(`Tags: ${diary.tags.join(', ')}`);
+    if (diary.tasks?.length) lines.push(`Diary tasks: ${diary.tasks.map(t => `${t.completed ? '[done]' : '[pending]'} ${t.text}`).join('; ')}`);
+    const datedChat = (diary.chatLogs || []).filter(m => isWithinDay(m.createdAt, dateKey));
+    if (datedChat.length) lines.push(`Inline diary consultation highlights: ${datedChat.map(m => `${m.sender}: ${m.text}`).join(' | ')}`);
+    const metrics = filterDiaryMetricsForAI(diary, touched, appLanguage);
+    lines.push(`Water intake: ${metrics.isWaterTouched ? metrics.waterCupsFormatted : 'not tracked in the app today'}`);
+    lines.push(`Exercise: ${metrics.isExerciseTouched ? metrics.exerciseFormatted : 'not tracked in the app today'}`);
+    lines.push(`Sleep: ${metrics.isSleepTouched ? metrics.sleepHoursFormatted : 'not tracked in the app today'}`);
+    if (diary.customHabits?.length) lines.push(`Entry habits: ${diary.customHabits.map(h => `${h.name}: ${h.completed ? 'completed' : 'not completed'}`).join('; ')}`);
   }
 
-  // If completely offline, wait for online event catch-up
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    console.log('[DailyReportScheduler] Offline, postponing daily report catch-up for:', targetDateYMD);
-    return false;
-  }
-
-  const isAr = appLanguage === 'ar';
-  const taskId = `daily-report-${targetDateYMD}`;
-
-  backgroundAIManager.startTask({
-    id: taskId,
-    category: 'general_ai',
-    title: isAr ? `التقرير اليومي الذكي (${targetDateYMD})` : `Daily AI Report (${targetDateYMD})`,
-    targetId: targetDateYMD
+  const habits = readJson<Habit[]>('yawmiyati_habits', []);
+  const dateHabits: string[] = [];
+  habits.forEach(h => {
+    const record = (h as any).history?.[dateKey];
+    if (record !== undefined) dateHabits.push(`${h.name}: ${record === true || record?.completed ? 'completed' : typeof record === 'number' ? record : 'not completed'}`);
   });
+  if (dateHabits.length) { activity = true; lines.push(`Daily habits: ${dateHabits.join('; ')}`); }
+  else lines.push(`Habits: not tracked in the app today`);
 
+  const gratitude = readJson<any[]>('yawmiyati_gratitude_cards', []).filter(g => isWithinDay(g.createdAt, dateKey));
+  if (gratitude.length) { activity = true; lines.push(`Gratitude: ${gratitude.map(g => g.text).join(' | ')}`); }
+
+  const touchedDay = touched[dateKey];
+  if (touchedDay && Object.values(touchedDay).some(Boolean)) activity = true;
+  lines.push(...formatTrackerStatus(dateKey, touched, allDiaries, appLanguage));
+  if (!allDiaries.some(d => d.tasks?.length)) lines.push('Daily tasks: not tracked in the app today');
+
+  const attachments = extractDailyMediaSources(allDiaries);
+  const filteredPermission = mediaPreference;
+  const media = await encodePermittedMediaParts(attachments, filteredPermission);
+  if (media.skippedOversized) lines.push('Some selected media was skipped because the safe request size limit was reached.');
+  return { dateKey, diaries: allDiaries, mediaPreference, mediaParts: media.parts, context: lines.join('\n'), hasActivity: activity, };
+}
+
+function loadOfficialMap(): Record<string, DailyProsConsEntry> {
+  return readJson<Record<string, DailyProsConsEntry>>(OFFICIAL_PROS_CONS_STORAGE_KEY, {});
+}
+
+export async function generateOfficialProsConsForDate(dateKey: string, userApiKey?: string, appLanguage: AppLanguage = 'ar'): Promise<boolean> {
+  if (inFlightDates.has(dateKey)) return false;
+  const official = loadOfficialMap();
+  if (official[dateKey]) return true;
+  if (localStorage.getItem(REPORT_DONE_PREFIX + dateKey)) {
+    const legacyRecord = readJson<DailyProsConsEntry[]>(PROS_CONS_STORAGE_KEY, []).find(r => r.dayKey === dateKey);
+    if (legacyRecord) {
+      const migrated = { ...legacyRecord, isOfficialDailyReport: true };
+      official[dateKey] = migrated;
+      localStorage.setItem(OFFICIAL_PROS_CONS_STORAGE_KEY, JSON.stringify(official));
+      return true;
+    }
+  }
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+  if (!userApiKey?.trim()) return false;
+  inFlightDates.add(dateKey);
   try {
-    // Read local diaries to summarize
-    let targetDiaries: DiaryEntry[] = [];
-    try {
-      const rawDiaries = localStorage.getItem('yawmiyati_diaries');
-      if (rawDiaries) {
-        const parsed: DiaryEntry[] = JSON.parse(rawDiaries);
-        targetDiaries = parsed.filter(d => {
-          if (!d.createdAt) return false;
-          return getLocalTodayYMD(d.createdAt) === targetDateYMD;
-        });
-      }
-    } catch (_) {}
-
-    // Read habits & gratitude cards
-    let habits: any[] = [];
-    let gratitudeCards: any[] = [];
-    try {
-      const rawHabits = localStorage.getItem('yawmiyati_habits');
-      if (rawHabits) habits = JSON.parse(rawHabits);
-      const rawGratitude = localStorage.getItem('yawmiyati_gratitude_cards');
-      if (rawGratitude) gratitudeCards = JSON.parse(rawGratitude);
-    } catch (_) {}
-
-    const response = await fetch('/api/gemini/smart-advisor', {
+    const gathered = await collectDailyContextForDate(dateKey, loadProsConsMediaPreference(dateKey), appLanguage);
+    if (!gathered.hasActivity) return false;
+    const response = await fetch('/api/gemini/pros-cons-report', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-gemini-key': userApiKey || '',
-        'x-app-language': appLanguage
-      },
-      body: JSON.stringify({
-        query: isAr
-          ? `ملخص الإنجاز والرفاهية النفسية لختام يوم ${targetDateYMD}`
-          : `Daily mental wellness and productivity closure summary for ${targetDateYMD}`,
-        reportType: 'therapist',
-        startDate: targetDateYMD,
-        endDate: targetDateYMD,
-        diaries: targetDiaries,
-        habits,
-        gratitudeCards,
-        appLanguage,
-        mediaAccessPermission: DEFAULT_AI_MEDIA_ACCESS
-      })
+      headers: { 'Content-Type': 'application/json', 'x-gemini-key': userApiKey, 'x-app-language': appLanguage },
+      body: JSON.stringify({ fullCompiledContext: gathered.context, displayDate: dateKey, appLanguage, mediaAccessPermission: gathered.mediaPreference, mediaParts: gathered.mediaParts })
     });
-
+    if (!response.ok) return false;
     const data = await response.json().catch(() => ({}));
-    const reportText = data?.response || data?.message || data?.answer || (
-      isAr
-        ? `تقرير يوم ${targetDateYMD}: تم تسجيل وتلخيص أنشطتك بنجاح، ونتمنى لك يوماً جديداً مليئاً بالسكينة والإنجاز.`
-        : `Daily Report for ${targetDateYMD}: Your daily reflections and activities have been successfully logged.`
-    );
-
-    // 1) Compute Full-Day Mood Breakdown across all entries of that day
-    // Combines recorded entry moods + AI entry emotion analysis, strictly normalized to 100%
-    const moodInputs: Array<{ mood: string; count?: number; percentage?: number }> = [];
-    targetDiaries.forEach(d => {
-      if (d.moods && Array.isArray(d.moods)) {
-        d.moods.forEach(m => moodInputs.push({ mood: m, count: 1 }));
-      }
-      if (d.aiMoodAnalysis && Array.isArray(d.aiMoodAnalysis)) {
-        d.aiMoodAnalysis.forEach(item => {
-          if (item && item.mood) {
-            moodInputs.push({ mood: item.mood, percentage: item.percentage });
-          }
-        });
-      }
-    });
-
-    if (moodInputs.length === 0) {
-      moodInputs.push({ mood: isAr ? 'مرتاح' : 'Relaxed', percentage: 100 });
-    }
-
-    const normalizedBreakdown: MoodPercentageEntry[] = normalizeMoodDistribution(
-      moodInputs,
-      isAr ? 'ar' : 'en'
-    );
-
-    // 2) Dual Auto-Generated Output: Daily Pros & Cons
-    // Generate Pros/Cons for targetDateYMD and persist alongside mood breakdown
-    try {
-      const touchedStore = loadAllTouchedMetrics();
-      const filteredDiariesWithSafeMetrics = targetDiaries.map(d => {
-        const fm = filterDiaryMetricsForAI(d, touchedStore, appLanguage);
-        return {
-          title: d.title || 'تدوينة',
-          content: d.content || '',
-          metrics: {
-            sleep: fm.sleepHoursFormatted,
-            exercise: fm.exerciseFormatted,
-            water: fm.waterCupsFormatted,
-            symptoms: fm.symptomsFormatted,
-            moodScore: fm.moodFormatted
-          }
-        };
-      });
-
-      const fullContextParts: string[] = [
-        `=== اليوميات والملاحظات (${targetDiaries.length}) ===`,
-        ...filteredDiariesWithSafeMetrics.map(d => 
-          `- ${d.title}: ${d.content} | المؤشرات الصحية المسجلة: نوم (${d.metrics.sleep}) | رياضة (${d.metrics.exercise}) | ماء (${d.metrics.water}) | مزاج (${d.metrics.moodScore}) | أعراض (${d.metrics.symptoms})`
-        ),
-        `=== تنبيه الأمان لمنع الهلوسة ===`,
-        `أي مؤشر يحمل وسم "لم يُسجّل اليوم" هو افتراضي ولم يحدث للمستخدم إطلاقاً، تجنب اعتباره إنجازاً أو نقداً!`,
-        `=== العادات والأنشطة (${habits.length}) ===`,
-        ...habits.map(h => `- ${h.name || 'عادة'}: ${h.completedToday ? 'مكتملة ✅' : 'غير مكتملة ❌'}`)
-      ];
-      const compiledContext = fullContextParts.join('\n');
-
-      let prosList: string[] = [];
-      let consList: string[] = [];
-
-      try {
-        const pcRes = await fetch('/api/gemini/pros-cons-report', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-gemini-key': userApiKey || '',
-            'x-app-language': appLanguage
-          },
-          body: JSON.stringify({
-            fullCompiledContext: compiledContext,
-            displayDate: targetDateYMD,
-            appLanguage,
-            mediaAccessPermission: DEFAULT_AI_MEDIA_ACCESS
-          })
-        });
-        const pcData = await pcRes.json().catch(() => ({}));
-        if (pcData.success && Array.isArray(pcData.pros) && Array.isArray(pcData.cons)) {
-          prosList = pcData.pros;
-          consList = pcData.cons;
-        }
-      } catch (_) {}
-
-      if (prosList.length === 0) {
-        prosList = [
-          isAr ? 'تسجيل ومتابعة أنشطة اليوم والالتزام بالتدوين الواعي.' : 'Consistent journaling and mindful reflection.',
-          isAr ? 'الحفاظ على توازن اليوم والمضي قدماً في الأهداف.' : 'Maintaining balance and progressing on daily goals.'
-        ];
-      }
-      if (consList.length === 0) {
-        consList = [
-          isAr ? 'الحاجة لمزيد من الاسترخاء والنوم المنتظم غداً.' : 'Prioritize deeper relaxation and consistent sleep tomorrow.'
-        ];
-      }
-
-      // Save or update in Pros & Cons history store
-      const storedPC = localStorage.getItem(PROS_CONS_STORAGE_KEY);
-      let pcRecords: DailyProsConsEntry[] = [];
-      if (storedPC) {
-        try { pcRecords = JSON.parse(storedPC); } catch (_) {}
-      }
-
-      const existingIdx = pcRecords.findIndex(r => r.dayKey === targetDateYMD);
-      const newProsConsRecord: DailyProsConsEntry = {
-        dayKey: targetDateYMD,
-        displayDate: targetDateYMD,
-        aiPositives: prosList,
-        aiNegatives: consList,
-        aiGeneratedAt: new Date().toISOString(),
-        userPositives: [],
-        userNegatives: [],
-        updatedAt: new Date().toISOString(),
-        moodBreakdown: normalizedBreakdown
-      };
-
-      if (existingIdx >= 0) {
-        pcRecords[existingIdx] = {
-          ...pcRecords[existingIdx],
-          aiPositives: prosList,
-          aiNegatives: consList,
-          moodBreakdown: normalizedBreakdown,
-          updatedAt: new Date().toISOString()
-        };
-      } else {
-        pcRecords.unshift(newProsConsRecord);
-      }
-      localStorage.setItem(PROS_CONS_STORAGE_KEY, JSON.stringify(pcRecords));
-    } catch (pcErr) {
-      console.warn('[DailyReportScheduler] Error auto-generating Pros & Cons:', pcErr);
-    }
-
-    // Save into saved reports history
-    try {
-      const touchedStore = loadAllTouchedMetrics();
-      const storedHistory = localStorage.getItem(REPORTS_HISTORY_KEY);
-      let historyList: any[] = [];
-      if (storedHistory) {
-        try { historyList = JSON.parse(storedHistory); } catch (_) {}
-      }
-
-      const newReportEntry = {
-        id: `daily-report-${targetDateYMD}-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        displayDate: targetDateYMD,
-        periodTitle: isAr ? `التقرير اليومي لختام يوم (${targetDateYMD})` : `Daily Report (${targetDateYMD})`,
-        periodLabel: isAr ? `يوم ${targetDateYMD}` : `Day ${targetDateYMD}`,
-        startDateStr: targetDateYMD,
-        endDateStr: targetDateYMD,
-        periodType: 'daily',
-        preSessionMood: 80,
-        preSessionMoodLabel: isAr ? 'متزن' : 'Balanced',
-        postSessionMood: 90,
-        postSessionMoodLabel: isAr ? 'مرتاح ومطمئن' : 'Calm & Peaceful',
-        patientNotes: isAr ? `تم التوليد التلقائي لتقرير منتصف الليل (12:00 AM)` : `Auto-generated midnight closure report`,
-        sessionDateTime: new Date().toLocaleString(),
-        therapistFeedback: reportText,
-        therapistHomework: [
-          isAr ? 'ممارسة التنفس العميق 5 دقائق قبل النوم' : '5 minutes of deep breathing before sleep',
-          isAr ? 'كتابة ثلاثة أشياء ممتن لها اليوم' : 'Write down three things you are grateful for'
-        ],
-        sessionSummaryBullets: [
-          isAr ? `إجمالي الملاحظات واليوميات المدونة: ${targetDiaries.length}` : `Total journal entries: ${targetDiaries.length}`,
-          isAr ? `تاريخ التقرير المحلي: ${targetDateYMD}` : `Local Report Date: ${targetDateYMD}`
-        ],
-        aiAnalysisText: reportText,
-        statsSnapshot: {
-          totalDiaries: targetDiaries.length,
-          avgSleep: targetDiaries.some(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore))
-            ? (targetDiaries
-                .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore))
-                .reduce((acc, curr) => acc + (curr.sleepHours || 0), 0) /
-              (targetDiaries.filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'sleep', touchedStore)).length || 1)).toFixed(1)
-            : (isAr ? 'لم يُسجّل اليوم' : 'Not logged today'),
-          avgMood: targetDiaries.some(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore))
-            ? (targetDiaries
-                .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore))
-                .reduce((acc, curr) => acc + (curr.fastMoodScore || 0), 0) /
-              (targetDiaries.filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'mood', touchedStore)).length || 1)).toFixed(1)
-            : (isAr ? 'لم يُسجّل اليوم' : 'Not logged today'),
-          totalSportsMinutes: targetDiaries
-            .filter(d => isMetricTouched(getLocalTodayYMD(d.createdAt), 'exercise', touchedStore))
-            .reduce((acc, curr) => acc + (curr.sportsDuration || 0), 0)
-        }
-      };
-
-      historyList.unshift(newReportEntry);
-      localStorage.setItem(REPORTS_HISTORY_KEY, JSON.stringify(historyList));
-    } catch (e) {
-      console.warn('[DailyReportScheduler] Error appending report to history:', e);
-    }
-
-    markDailyReportDone(targetDateYMD);
-    backgroundAIManager.completeTask(taskId, reportText);
-
-    // Notify listeners
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('yawmiyati-daily-report-generated', {
-        detail: { date: targetDateYMD }
-      }));
-    }
-
+    if (data?.success !== true) return false;
+    const pros = Array.isArray(data.pros) ? data.pros : [];
+    const cons = Array.isArray(data.cons) ? data.cons : [];
+    const timestamp = new Date().toISOString();
+    const moodInputs = gathered.diaries.flatMap(d => [
+      ...(d.moods || []).map(mood => ({ mood, count: 1 })),
+      ...(d.aiMoodAnalysis || []).map(item => ({ mood: item.mood, percentage: item.percentage }))
+    ]);
+    const moodBreakdown = normalizeMoodDistribution(moodInputs, appLanguage === 'ar' ? 'ar' : 'en');
+    const record: DailyProsConsEntry = {
+      dayKey: dateKey, displayDate: dateKey, aiPositives: pros, aiNegatives: cons,
+      userPositives: [], userNegatives: [], aiGeneratedAt: timestamp, updatedAt: timestamp,
+      isOfficialDailyReport: true, moodBreakdown
+    };
+    const records = readJson<DailyProsConsEntry[]>(PROS_CONS_STORAGE_KEY, []);
+    const index = records.findIndex(r => r.dayKey === dateKey);
+    if (index >= 0) records[index] = { ...records[index], ...record };
+    else records.unshift(record);
+    localStorage.setItem(PROS_CONS_STORAGE_KEY, JSON.stringify(records));
+    official[dateKey] = record;
+    localStorage.setItem(OFFICIAL_PROS_CONS_STORAGE_KEY, JSON.stringify(official));
+    localStorage.setItem(REPORT_DONE_PREFIX + dateKey, timestamp);
+    window.dispatchEvent(new CustomEvent('yawmiyati-daily-report-generated', { detail: { date: dateKey, official: true } }));
     return true;
-  } catch (err: any) {
-    console.error('[DailyReportScheduler] Generation error:', err);
-    backgroundAIManager.failTask(taskId, err?.message);
+  } catch (error) {
+    console.warn('[DailyReportScheduler] Official Pros/Cons generation failed for', dateKey, error);
     return false;
+  } finally {
+    inFlightDates.delete(dateKey);
   }
 }
 
-/**
- * Checks for any missed daily reports and schedules the next local 12:00 AM rollover trigger.
- */
-export function checkAndTriggerDailyReports(
-  userApiKey?: string,
-  appLanguage: AppLanguage = 'ar'
-): void {
-  const now = new Date();
-  const todayYMD = getLocalTodayYMD(now);
-  const yesterdayYMD = getLocalYesterdayYMD(now);
+function previousDateKey(dateKey: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return getLocalTodayYMD(new Date(y, m - 1, d - 1));
+}
 
-  // If local time is past 12:00 AM, ensure yesterday's day closure report is generated
-  if (!hasDailyReportForDate(yesterdayYMD)) {
-    generateDailyReportForDate(yesterdayYMD, userApiKey, appLanguage);
+export function checkAndTriggerDailyReports(userApiKey?: string, appLanguage: AppLanguage = 'ar'): void {
+  const today = getLocalTodayYMD();
+  let candidate = previousDateKey(today);
+  for (let i = 0; i < 7 && candidate < today; i++, candidate = previousDateKey(candidate)) {
+    if (!loadOfficialMap()[candidate]) void generateOfficialProsConsForDate(candidate, userApiKey, appLanguage);
   }
 }
 
-/**
- * Initializes the midnight timer and lifecycle catch-up listeners.
- */
-export function initializeDailyReportScheduler(
-  getUserApiKey: () => string | undefined,
-  getAppLanguage: () => AppLanguage
-): () => void {
-  if (isInitialized) {
-    return () => {};
-  }
+export function initializeDailyReportScheduler(getUserApiKey: () => string | undefined, getAppLanguage: () => AppLanguage): () => void {
+  if (isInitialized) return () => {};
   isInitialized = true;
-
-  const triggerCatchUp = () => {
-    checkAndTriggerDailyReports(getUserApiKey(), getAppLanguage());
-  };
-
-  const scheduleNextMidnight = () => {
-    if (midnightTimer) {
-      clearTimeout(midnightTimer);
-    }
-
+  const trigger = () => checkAndTriggerDailyReports(getUserApiKey(), getAppLanguage());
+  const scheduleMidnight = () => {
+    if (midnightTimer) clearTimeout(midnightTimer);
     const now = new Date();
-    // Next local midnight: 00:00:01 tomorrow in local device timezone
-    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0);
-    const msUntilMidnight = Math.max(1000, nextMidnight.getTime() - now.getTime());
-
-    midnightTimer = setTimeout(() => {
-      triggerCatchUp();
-      scheduleNextMidnight();
-    }, msUntilMidnight);
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0);
+    midnightTimer = setTimeout(() => { trigger(); scheduleMidnight(); }, Math.max(1000, next.getTime() - now.getTime()));
   };
-
-  // 1. Initial catch-up on app boot
-  triggerCatchUp();
-  scheduleNextMidnight();
-
-  // 2. Catch-up when app is resumed from background / screen unlocked
-  const handleVisibilityChange = () => {
-    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-      triggerCatchUp();
-      scheduleNextMidnight();
-    }
-  };
-
-  // 3. Catch-up when network connectivity returns (if missed while offline)
-  const handleOnline = () => {
-    triggerCatchUp();
-  };
-
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', handleOnline);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-  }
-
+  trigger();
+  scheduleMidnight();
+  minuteTimer = setInterval(() => {
+    if (getLocalTodayYMD() !== getLocalTodayYMD(new Date(Date.now() - 60_000))) trigger();
+  }, 60_000);
+  const onOnline = () => trigger();
+  const onVisible = () => { if (document.visibilityState === 'visible') trigger(); };
+  window.addEventListener('online', onOnline);
+  document.addEventListener('visibilitychange', onVisible);
+  let appStateListener: { remove: () => Promise<void> } | null = null;
+  void import('@capacitor/app').then(({ App }) => App.addListener('appStateChange', ({ isActive }) => { if (isActive) trigger(); })).then(listener => { appStateListener = listener; }).catch(() => {});
   return () => {
     if (midnightTimer) clearTimeout(midnightTimer);
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', handleOnline);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }
+    if (minuteTimer) clearInterval(minuteTimer);
+    window.removeEventListener('online', onOnline);
+    document.removeEventListener('visibilitychange', onVisible);
+    if (appStateListener) void appStateListener.remove();
     isInitialized = false;
   };
 }

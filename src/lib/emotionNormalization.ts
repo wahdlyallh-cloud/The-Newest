@@ -147,3 +147,8 @@ export function normalizeMoodDistribution(
     percentage: Math.max(0, Math.min(100, item.floor))
   }));
 }
+
+/** Converts raw per-day mood counts into integer percentages whose total is exactly 100. */
+export function normalizeMoodPercentages(counts: Record<string, number>, preferredLang: 'ar' | 'en' = 'ar'): MoodPercentageEntry[] {
+  return normalizeMoodDistribution(counts, preferredLang);
+}

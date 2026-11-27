@@ -1089,7 +1089,17 @@ ${formattedLogs || 'لا يوجد حوار سابق، هذه بداية الجل
 
   // API Endpoint: Pros & Cons Structured Report Generator
   if (url.includes('/api/gemini/pros-cons-report')) {
-    const { fullCompiledContext, displayDate } = requestBody;
+    const { fullCompiledContext, displayDate, mediaParts, mediaAccessPermission } = requestBody;
+    const permission: AIMediaAccessPermission = mediaAccessPermission || DEFAULT_AI_MEDIA_ACCESS;
+    const allowedMediaParts = permission.mode === 'text-only' || !Array.isArray(mediaParts)
+      ? []
+      : mediaParts.filter((part: any) => {
+          const mime = String(part?.inlineData?.mimeType || part?.fileData?.mimeType || '').toLowerCase();
+          if (mime.startsWith('image/')) return permission.mode === 'selected' || permission.allowImages;
+          if (mime.startsWith('video/')) return permission.mode === 'selected' || permission.allowVideos;
+          if (mime.startsWith('audio/')) return permission.mode === 'selected' || permission.allowAudio;
+          return permission.mode === 'selected' || permission.allowFiles;
+        });
     const isContextEmpty = !fullCompiledContext || fullCompiledContext.trim().length === 0;
 
     if (isContextEmpty) {
@@ -1124,7 +1134,7 @@ ${getAILanguageInstruction(reqLang)}`;
         "You are an objective behavioral analyst. Return pure JSON object with 'pros' and 'cons' string arrays only.",
         true,
         keyToUse,
-        undefined,
+        allowedMediaParts,
         'multimodal'
       );
 

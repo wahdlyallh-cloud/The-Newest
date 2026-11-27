@@ -3031,6 +3031,17 @@ export const AR_DICT: Record<string, any> = {
   writeDiaryImportSub: "استيراد يومياتك الحالية",
   onboardingDiscoverTitle: "اكتشف حياة AI",
   onboardingDiscoverSub: "جولة تعريفية بالمزايا",
+  moodBeforeWritingLabel: "المزاج قبل الكتابة",
+  aiWritingAnalysisLabel: "تحليل الذكاء الاصطناعي للكتابة",
+  dailyMediaSelectorTitle: "وسائط الذكاء الاصطناعي",
+  dailyMediaTextOnly: "نص فقط (توفير)",
+  dailyMediaByCategory: "حسب الفئة",
+  dailyMediaManual: "اختيار يدوي",
+  dailyMediaImages: "الصور",
+  dailyMediaVideos: "الفيديوهات",
+  dailyMediaAudio: "الصوتيات",
+  dailyMediaFiles: "المستندات/الملفات",
+  dailyReportPreviewBadge: "معاينة مؤقتة — التقرير الرسمي يُحفظ تلقائيًا الساعة 12:00 ص",
 };
 
 export const EN_DICT: Record<string, any> = {
@@ -5658,6 +5669,17 @@ export const EN_DICT: Record<string, any> = {
   writeDiaryImportSub: "Import your existing journals",
   onboardingDiscoverTitle: "Discover Hayat AI",
   onboardingDiscoverSub: "Take the feature tour",
+  moodBeforeWritingLabel: "Mood before writing",
+  aiWritingAnalysisLabel: "AI writing analysis",
+  dailyMediaSelectorTitle: "AI media access",
+  dailyMediaTextOnly: "Text only (Saver)",
+  dailyMediaByCategory: "By category",
+  dailyMediaManual: "Manual selection",
+  dailyMediaImages: "Images",
+  dailyMediaVideos: "Videos",
+  dailyMediaAudio: "Audio",
+  dailyMediaFiles: "Documents/files",
+  dailyReportPreviewBadge: "Temporary preview — the official report is saved automatically at 12:00 AM",
 };
 
 export const FR_DICT: Record<string, any> = {
@@ -8285,6 +8307,17 @@ export const FR_DICT: Record<string, any> = {
   writeDiaryImportSub: "Importer vos journaux existants",
   onboardingDiscoverTitle: "Découvrir Hayat AI",
   onboardingDiscoverSub: "Visite des fonctionnalités",
+  moodBeforeWritingLabel: "Humeur avant écriture",
+  aiWritingAnalysisLabel: "Analyse IA de l’écriture",
+  dailyMediaSelectorTitle: "Médias de l’IA",
+  dailyMediaTextOnly: "Texte uniquement (économie)",
+  dailyMediaByCategory: "Par catégorie",
+  dailyMediaManual: "Sélection manuelle",
+  dailyMediaImages: "Visuels",
+  dailyMediaVideos: "Vidéos",
+  dailyMediaAudio: "Son",
+  dailyMediaFiles: "Documents/fichiers",
+  dailyReportPreviewBadge: "Aperçu temporaire — le rapport officiel est enregistré automatiquement à minuit",
 };
 
 export const DE_DICT: Record<string, any> = {
@@ -10912,6 +10945,17 @@ export const DE_DICT: Record<string, any> = {
   writeDiaryImportSub: "Vorhandene Tagebücher importieren",
   onboardingDiscoverTitle: "Hayat AI entdecken",
   onboardingDiscoverSub: "Funktionstour starten",
+  moodBeforeWritingLabel: "Stimmung vor dem Schreiben",
+  aiWritingAnalysisLabel: "KI-Schreibanalyse",
+  dailyMediaSelectorTitle: "KI-Medienzugriff",
+  dailyMediaTextOnly: "Nur Text (sparsam)",
+  dailyMediaByCategory: "Nach Kategorie",
+  dailyMediaManual: "Manuelle Auswahl",
+  dailyMediaImages: "Bilder",
+  dailyMediaVideos: "Videoclips",
+  dailyMediaAudio: "Audiodateien",
+  dailyMediaFiles: "Dokumente/Dateien",
+  dailyReportPreviewBadge: "Temporäre Vorschau — der offizielle Bericht wird automatisch um Mitternacht gespeichert",
 };
 
 export const ES_DICT: Record<string, any> = {
@@ -13539,6 +13583,17 @@ export const ES_DICT: Record<string, any> = {
   writeDiaryImportSub: "Importa tus diarios existentes",
   onboardingDiscoverTitle: "Descubre Hayat AI",
   onboardingDiscoverSub: "Visita guiada de funciones",
+  moodBeforeWritingLabel: "Ánimo antes de escribir",
+  aiWritingAnalysisLabel: "Análisis de escritura con IA",
+  dailyMediaSelectorTitle: "Medios de IA",
+  dailyMediaTextOnly: "Solo texto (ahorro)",
+  dailyMediaByCategory: "Por categoría",
+  dailyMediaManual: "Selección manual",
+  dailyMediaImages: "Imágenes",
+  dailyMediaVideos: "Vídeos",
+  dailyMediaAudio: "Audio",
+  dailyMediaFiles: "Documentos/archivos",
+  dailyReportPreviewBadge: "Vista previa temporal — el informe oficial se guarda automáticamente a medianoche",
 };
 
 export const IT_DICT: Record<string, any> = {
@@ -16166,6 +16221,17 @@ export const IT_DICT: Record<string, any> = {
   writeDiaryImportSub: "Importa i tuoi diari esistenti",
   onboardingDiscoverTitle: "Scopri Hayat AI",
   onboardingDiscoverSub: "Tour delle funzionalità",
+  moodBeforeWritingLabel: "Umore prima di scrivere",
+  aiWritingAnalysisLabel: "Analisi AI della scrittura",
+  dailyMediaSelectorTitle: "Media AI",
+  dailyMediaTextOnly: "Solo testo (risparmio)",
+  dailyMediaByCategory: "Per categoria",
+  dailyMediaManual: "Selezione manuale",
+  dailyMediaImages: "Immagini",
+  dailyMediaVideos: "Video",
+  dailyMediaAudio: "Audio",
+  dailyMediaFiles: "Documenti/file",
+  dailyReportPreviewBadge: "Anteprima temporanea — il rapporto ufficiale viene salvato automaticamente a mezzanotte",
 };
 
 export const TR_DICT: Record<string, any> = {
@@ -18793,6 +18859,17 @@ export const TR_DICT: Record<string, any> = {
   writeDiaryImportSub: "Mevcut günlüklerinizi içe aktarın",
   onboardingDiscoverTitle: "Hayat AI’yi keşfedin",
   onboardingDiscoverSub: "Özellik turuna katılın",
+  moodBeforeWritingLabel: "Yazmadan önceki ruh hâli",
+  aiWritingAnalysisLabel: "Yazının yapay zekâ analizi",
+  dailyMediaSelectorTitle: "Yapay zekâ medyası",
+  dailyMediaTextOnly: "Yalnızca metin (tasarruf)",
+  dailyMediaByCategory: "Kategoriye göre",
+  dailyMediaManual: "Elle seçim",
+  dailyMediaImages: "Görseller",
+  dailyMediaVideos: "Videolar",
+  dailyMediaAudio: "Ses",
+  dailyMediaFiles: "Belgeler/dosyalar",
+  dailyReportPreviewBadge: "Geçici önizleme — resmi rapor gece yarısı otomatik kaydedilir",
 };
 
 export const PT_DICT: Record<string, any> = {
@@ -21420,6 +21497,17 @@ export const PT_DICT: Record<string, any> = {
   writeDiaryImportSub: "Importe seus diários existentes",
   onboardingDiscoverTitle: "Descubra o Hayat AI",
   onboardingDiscoverSub: "Faça o tour de recursos",
+  moodBeforeWritingLabel: "Humor antes de escrever",
+  aiWritingAnalysisLabel: "Análise de escrita por IA",
+  dailyMediaSelectorTitle: "Mídia da IA",
+  dailyMediaTextOnly: "Somente texto (economia)",
+  dailyMediaByCategory: "Por categoria",
+  dailyMediaManual: "Seleção manual",
+  dailyMediaImages: "Imagens",
+  dailyMediaVideos: "Vídeos",
+  dailyMediaAudio: "Áudio",
+  dailyMediaFiles: "Documentos/arquivos",
+  dailyReportPreviewBadge: "Prévia temporária — o relatório oficial é salvo automaticamente à meia-noite",
 };
 
 export const RU_DICT: Record<string, any> = {
@@ -24047,6 +24135,17 @@ export const RU_DICT: Record<string, any> = {
   writeDiaryImportSub: "Импорт существующих дневников",
   onboardingDiscoverTitle: "Откройте для себя Hayat AI",
   onboardingDiscoverSub: "Обзор функций",
+  moodBeforeWritingLabel: "Настроение до записи",
+  aiWritingAnalysisLabel: "ИИ-анализ текста",
+  dailyMediaSelectorTitle: "Медиа для ИИ",
+  dailyMediaTextOnly: "Только текст (экономия)",
+  dailyMediaByCategory: "По категориям",
+  dailyMediaManual: "Выбор вручную",
+  dailyMediaImages: "Изображения",
+  dailyMediaVideos: "Видео",
+  dailyMediaAudio: "Аудио",
+  dailyMediaFiles: "Документы/файлы",
+  dailyReportPreviewBadge: "Временный просмотр — официальный отчёт сохранится автоматически в полночь",
 };
 
 export const JA_DICT: Record<string, any> = {
@@ -26674,6 +26773,17 @@ export const JA_DICT: Record<string, any> = {
   writeDiaryImportSub: "既存の日記をインポート",
   onboardingDiscoverTitle: "Hayat AIを発見",
   onboardingDiscoverSub: "機能ツアーを見る",
+  moodBeforeWritingLabel: "書く前の気分",
+  aiWritingAnalysisLabel: "AI文章分析",
+  dailyMediaSelectorTitle: "AIメディア",
+  dailyMediaTextOnly: "テキストのみ（節約）",
+  dailyMediaByCategory: "カテゴリ別",
+  dailyMediaManual: "手動選択",
+  dailyMediaImages: "画像",
+  dailyMediaVideos: "動画",
+  dailyMediaAudio: "音声",
+  dailyMediaFiles: "書類/ファイル",
+  dailyReportPreviewBadge: "一時プレビュー — 公式レポートは午前0時に自動保存されます",
 };
 
 export const ZH_DICT: Record<string, any> = {
@@ -29301,6 +29411,17 @@ export const ZH_DICT: Record<string, any> = {
   writeDiaryImportSub: "导入现有日记",
   onboardingDiscoverTitle: "探索 Hayat AI",
   onboardingDiscoverSub: "查看功能导览",
+  moodBeforeWritingLabel: "写作前的心情",
+  aiWritingAnalysisLabel: "AI写作分析",
+  dailyMediaSelectorTitle: "AI媒体",
+  dailyMediaTextOnly: "仅文本（节省）",
+  dailyMediaByCategory: "按类别",
+  dailyMediaManual: "手动选择",
+  dailyMediaImages: "图片",
+  dailyMediaVideos: "视频",
+  dailyMediaAudio: "音频",
+  dailyMediaFiles: "文档/文件",
+  dailyReportPreviewBadge: "临时预览 — 正式报告将在午夜自动保存",
 };
 
 export const HI_DICT: Record<string, any> = {
@@ -31928,6 +32049,17 @@ export const HI_DICT: Record<string, any> = {
   writeDiaryImportSub: "अपनी मौजूदा डायरी आयात करें",
   onboardingDiscoverTitle: "Hayat AI खोजें",
   onboardingDiscoverSub: "फीचर टूर देखें",
+  moodBeforeWritingLabel: "लिखने से पहले का मूड",
+  aiWritingAnalysisLabel: "AI लेखन विश्लेषण",
+  dailyMediaSelectorTitle: "AI मीडिया",
+  dailyMediaTextOnly: "केवल टेक्स्ट (बचत)",
+  dailyMediaByCategory: "श्रेणी के अनुसार",
+  dailyMediaManual: "मैन्युअल चयन",
+  dailyMediaImages: "छवियाँ",
+  dailyMediaVideos: "वीडियो",
+  dailyMediaAudio: "ऑडियो",
+  dailyMediaFiles: "दस्तावेज़/फ़ाइलें",
+  dailyReportPreviewBadge: "अस्थायी पूर्वावलोकन — आधिकारिक रिपोर्ट आधी रात को अपने-आप सहेजी जाएगी",
 };
 
 Object.assign(AR_DICT, {

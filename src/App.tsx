@@ -59,6 +59,7 @@ import {
 } from './lib/attachmentStore';
 import DailyProsConsModal from './components/DailyProsConsModal';
 import ProsConsHistoryLog from './components/ProsConsHistoryLog';
+import DailyProsConsMediaSelector from './components/DailyProsConsMediaSelector';
 import FullAthkarModal from './components/FullAthkarModal';
 import LockScreenAthkarOverlay from './components/LockScreenAthkarOverlay';
 import { navigationStack, useRegisterBackStep } from './lib/navigationStack';
@@ -5903,14 +5904,13 @@ export default function App() {
     const tempGroups: { [key: string]: DiaryEntry[] } = {};
     sorted.forEach(entry => {
       let dayKey = '2026-08-05';
-      if (typeof entry.createdAt === 'string' && entry.createdAt.includes('T')) {
-        dayKey = entry.createdAt.split('T')[0];
-      } else if (entry.createdAt) {
-        try {
-          dayKey = new Date(entry.createdAt).toISOString().split('T')[0];
-        } catch {
-          dayKey = '2026-08-05';
+      try {
+        const date = new Date(entry.createdAt);
+        if (!Number.isNaN(date.getTime())) {
+          dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         }
+      } catch {
+        dayKey = '2026-08-05';
       }
       if (!tempGroups[dayKey]) {
         tempGroups[dayKey] = [];
@@ -10609,6 +10609,7 @@ export default function App() {
                                   <Scale className="w-3.5 h-3.5 text-[#FEFAE0]" />
                                   <span>⚖️ {t.prosConsBtnLabel}</span>
                                 </button>
+                                <DailyProsConsMediaSelector dateKey={dayKey} diaries={dayEntries} appLanguage={settings?.appLanguage || 'ar'} />
 
                                 {/* Side-by-Side: Full-Day Mood Percentage Breakdown (Strictly 100% Normalized) */}
                                 {(() => {
@@ -10626,9 +10627,6 @@ export default function App() {
                                       });
                                     }
                                   });
-                                  if (moodInputs.length === 0) {
-                                    moodInputs.push({ mood: (settings?.appLanguage || 'ar') === 'ar' ? 'مرتاح' : 'Relaxed', percentage: 100 });
-                                  }
                                   const dayBreakdown = normalizeMoodDistribution(moodInputs, (settings?.appLanguage || 'ar') === 'ar' ? 'ar' : 'en');
                                   const pillColors = [
                                     'bg-emerald-50 text-emerald-800 border-emerald-200',
@@ -10654,7 +10652,7 @@ export default function App() {
                                         ))}
                                       </div>
                                       {/* Pills */}
-                                      {dayBreakdown.slice(0, 3).map((item, idx) => (
+                                      {dayBreakdown.map((item, idx) => (
                                         <span
                                           key={item.mood}
                                           className={`px-2 py-0.5 rounded-lg text-[10.5px] font-black border flex items-center gap-1 shadow-3xs ${pillColors[idx % pillColors.length]}`}
@@ -10815,17 +10813,16 @@ export default function App() {
                                       </div>
 
                                       {/* Mood badge on the left in RTL - showing both manual and AI analyzed mood percentages */}
-                                      <div className="flex flex-wrap items-center gap-1 justify-end max-w-full overflow-hidden">
+                                      <div className="flex flex-col items-end gap-1 justify-end max-w-full overflow-hidden">
                                         {/* Manual moods */}
-                                        {diary.moods && diary.moods.slice(0, 2).map((m, idx) => (
-                                          <span key={idx} className="bg-[#8B9D83]/15 text-[#4E685B] text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg font-black border border-[#8B9D83]/20 shadow-3xs max-w-full truncate">
-                                            {m}
-                                          </span>
-                                        ))}
+                                        {diary.moods && diary.moods.length > 0 && <div className="flex flex-wrap items-center gap-1 justify-end"><span className="text-[9px] font-bold text-[#5A5A40]">{t.moodBeforeWritingLabel}:</span>{diary.moods.slice(0, 2).map((m, idx) => (
+                                          <span key={idx} className="bg-[#8B9D83]/15 text-[#4E685B] text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg font-black border border-[#8B9D83]/20 shadow-3xs max-w-full truncate">{m}</span>
+                                        ))}</div>}
 
                                         {/* AI Mood percentages */}
                                         {diary.aiMoodAnalysis && diary.aiMoodAnalysis.length > 0 && (
-                                          <div className="flex flex-wrap gap-1 max-w-full overflow-hidden">
+                                          <div className="flex flex-wrap gap-1 max-w-full overflow-hidden items-center">
+                                            <span className="text-[9px] font-bold text-fuchsia-700">{t.aiWritingAnalysisLabel}:</span>
                                             {normalizeMoodDistribution(diary.aiMoodAnalysis, isRtl ? 'ar' : 'en').slice(0, 2).map((analysis, idx) => (
                                               <span
                                                 key={idx}

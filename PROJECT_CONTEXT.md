@@ -293,3 +293,11 @@ npm run build
   - 14 new keys added across all 12 supported languages (`ar, en, fr, de, es, it, tr, pt, ru, ja, zh, hi`).
   - Passed all 4 quality gates: TypeScript, strict 12-locale i18n audit (2629/2629 keys), localization validator, and production Vite build. Zero modifications to `.github/` or `android/`.
 
+
+
+## 24. Phase 3: Mood Clarity, Per-Day Media, and Official Calendar-Day Reports
+- Diary cards explicitly distinguish manual mood tags (“Mood before writing”) from AI-inferred writing analysis. Daily mood weights use `normalizeMoodDistribution` / `normalizeMoodPercentages` largest-remainder rounding; non-empty distributions total exactly 100%, and empty days do not receive a synthetic mood.
+- Daily Pros/Cons media settings are persisted by local `YYYY-MM-DD` in `prosConsMediaPrefByDate`; untouched dates use text-only. By-category/manual permissions select date-scoped diary attachments, with media encoded through the existing Gemini multimodal pipeline.
+- `collectDailyContextForDate` is strictly bounded to one device-local calendar date. It includes diary content, dated inline consultation highlights, tasks, touched daily metrics, habits, and gratitude records; it never reads standalone General Advisor conversations. Untouched trackers are described neutrally as not tracked in the app today.
+- `dailyReportScheduler.ts` generates only official completed-day reports, binds each to `officialProsConsByDate`, guards in-flight dates, and checks the prior seven calendar dates on startup, reconnect, resume, visibility change, and midnight rollover. A manual report for today before midnight is a temporary preview and cannot be saved as the official report.
+- Quality gates: `npx tsc --noEmit`, `node scripts/i18nAudit.cjs`, `node scripts/validate-localization.mjs`, and `npm run build`. No `.github/` or `android/` files are part of this phase.

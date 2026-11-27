@@ -14,10 +14,13 @@ import { normalizeMoodDistribution, MoodPercentageEntry } from '../lib/emotionNo
 import AIMediaAccessSelector from './AIMediaAccessSelector';
 import NativeModalHeader from './NativeModalHeader';
 import { useRegisterBackStep } from '../lib/navigationStack';
+import { loadProsConsMediaPreference, saveProsConsMediaPreference } from './DailyProsConsMediaSelector';
 import {
   AIMediaAccessPermission,
   DEFAULT_AI_MEDIA_ACCESS,
-  extractAvailableAttachments
+  extractAvailableAttachments,
+  extractDailyMediaSources,
+  encodePermittedMediaParts
 } from '../lib/aiMediaAccess';
 import {
   filterDiaryMetricsForAI,
@@ -34,6 +37,7 @@ export interface DailyProsConsEntry {
   userNegatives: string[];
   updatedAt?: string;
   moodBreakdown?: MoodPercentageEntry[]; // Full-Day Mood Breakdown strictly normalized to 100%
+  isOfficialDailyReport?: boolean;
 }
 
 // Safe Cross-Browser Rounded Rectangle Canvas Drawer (Supports older Mobile Safari / WebKit)
@@ -74,6 +78,7 @@ interface DailyProsConsModalProps {
   userApiKey?: string;
   appLanguage?: AppLanguage;
   onSaveSuccess?: () => void;
+  isOfficialDailyReport?: boolean;
 }
 
 // Storage Key
@@ -114,7 +119,8 @@ export default function DailyProsConsModal({
   allDiaries,
   userApiKey,
   appLanguage = "ar",
-  onSaveSuccess
+  onSaveSuccess,
+  isOfficialDailyReport = false
 }: DailyProsConsModalProps) {
   const isAr = appLanguage === "ar";
   const langInfo = getLanguageInfo(appLanguage);
@@ -128,7 +134,8 @@ export default function DailyProsConsModal({
   const [userPositives, setUserPositives] = useState<string[]>([]);
   const [userNegatives, setUserNegatives] = useState<string[]>([]);
   const [moodBreakdown, setMoodBreakdown] = useState<MoodPercentageEntry[]>([]);
-  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
+  const [mediaAccessPermission, setMediaAccessPermission] = useState<AIMediaAccessPermission>(() => loadProsConsMediaPreference(dayKey));
+  const isTodayPreview = dayKey === (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })() && !isOfficialDailyReport;
 
   const [newUserPositive, setNewUserPositive] = useState('');
   const [newUserNegative, setNewUserNegative] = useState('');
@@ -143,15 +150,20 @@ export default function DailyProsConsModal({
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  useEffect(() => {
+    setMediaAccessPermission(loadProsConsMediaPreference(dayKey));
+  }, [dayKey]);
+
   // Comprehensive Data Gatherer across ALL app modules for dayKey
   const compileFullDayData = (): string => {
     const contextLines: string[] = [];
 
-    // Source A: Diaries & Thoughts
+    // Source A: Diaries & Thoughts (strict local calendar-day boundaries)
     const targetDiaries = (allDiaries && allDiaries.length > 0)
       ? allDiaries.filter(d => {
-          const entryDate = d.createdAt ? d.createdAt.split('T')[0] : '';
-          return entryDate === dayKey || (dayDiaries && dayDiaries.some(dd => dd.id === d.id));
+          const date = d.createdAt ? new Date(d.createdAt) : null;
+          const entryDate = date && !Number.isNaN(date.getTime()) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
+          return entryDate === dayKey;
         })
       : dayDiaries;
 
@@ -177,6 +189,11 @@ export default function DailyProsConsModal({
         if (d.aiMoodAnalysis && d.aiMoodAnalysis.length > 0) {
           contextLines.push(`- تحليل المشاعر الذكي: ${d.aiMoodAnalysis.map(m => `${m.mood} (${m.percentage}%)`).join(', ')}`);
         }
+        const inlineConsultation = (d.chatLogs || []).filter(message => {
+          const date = new Date(message.createdAt);
+          return !Number.isNaN(date.getTime()) && `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` === dayKey;
+        });
+        if (inlineConsultation.length) contextLines.push(`- استشارات اليوم داخل المذكرة: ${inlineConsultation.map(message => `${message.sender}: ${message.text}`).join(' | ')}`);
         const touchedStore = loadAllTouchedMetrics();
         const filteredMetrics = filterDiaryMetricsForAI(d, touchedStore, appLanguage);
 
@@ -380,12 +397,13 @@ export default function DailyProsConsModal({
     }
   }, [isOpen, dayKey]);
 
-  // Compute normalized mood distribution across all entries of the day
+  // Compute normalized mood distribution across all entries of the local calendar day
   const computeLocalMoodBreakdown = () => {
     const targetDiaries = (allDiaries && allDiaries.length > 0)
       ? allDiaries.filter(d => {
-          const entryDate = d.createdAt ? d.createdAt.split('T')[0] : '';
-          return entryDate === dayKey || (dayDiaries && dayDiaries.some(dd => dd.id === d.id));
+          const date = d.createdAt ? new Date(d.createdAt) : null;
+          const entryDate = date && !Number.isNaN(date.getTime()) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
+          return entryDate === dayKey;
         })
       : dayDiaries;
 
@@ -402,10 +420,6 @@ export default function DailyProsConsModal({
         });
       }
     });
-
-    if (moodInputs.length === 0) {
-      moodInputs.push({ mood: isAr ? 'مرتاح' : 'Relaxed', percentage: 100 });
-    }
 
     const normalized = normalizeMoodDistribution(moodInputs, isAr ? 'ar' : 'en');
     setMoodBreakdown(normalized);
@@ -438,7 +452,14 @@ export default function DailyProsConsModal({
           displayDate,
           userApiKey,
           appLanguage,
-          mediaAccessPermission
+          mediaAccessPermission,
+          mediaParts: (await encodePermittedMediaParts(
+            extractDailyMediaSources((allDiaries && allDiaries.length ? allDiaries : dayDiaries || []).filter(d => {
+              const date = d.createdAt ? new Date(d.createdAt) : null;
+              return date && !Number.isNaN(date.getTime()) && `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` === dayKey;
+            })),
+            mediaAccessPermission
+          )).parts
         })
       });
 
@@ -548,6 +569,10 @@ export default function DailyProsConsModal({
 
   // Save record
   const handleSave = () => {
+    if (isTodayPreview) {
+      showToast(t.dailyReportPreviewBadge || (isAr ? 'معاينة مؤقتة — التقرير الرسمي يُحفظ تلقائيًا الساعة 12:00 ص' : 'Temporary preview — official report is saved automatically at 12:00 AM'));
+      return;
+    }
     const allRecords = loadAllProsConsRecords();
     const existingIndex = allRecords.findIndex(r => r.dayKey === dayKey);
 
@@ -560,7 +585,8 @@ export default function DailyProsConsModal({
       userPositives,
       userNegatives,
       updatedAt: new Date().toISOString(),
-      moodBreakdown: moodBreakdown.length > 0 ? moodBreakdown : computeLocalMoodBreakdown()
+      moodBreakdown: moodBreakdown.length > 0 ? moodBreakdown : computeLocalMoodBreakdown(),
+      isOfficialDailyReport
     };
 
     if (existingIndex >= 0) {
@@ -864,6 +890,8 @@ ${t.generatedByHayatAiNotice}`;
           }
         />
 
+        {isTodayPreview && <div className="mx-4 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900" role="status">{t.dailyReportPreviewBadge}</div>}
+
         {/* Modal Middle Content Scrollable Area */}
         <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 text-gray-800">
 
@@ -929,8 +957,11 @@ ${t.generatedByHayatAiNotice}`;
           <div data-html2canvas-ignore="true" className="space-y-2">
             <AIMediaAccessSelector
               permission={mediaAccessPermission}
-              onChange={setMediaAccessPermission}
-              availableAttachments={extractAvailableAttachments(allDiaries || dayDiaries || [])}
+              onChange={(next) => { setMediaAccessPermission(next); saveProsConsMediaPreference(dayKey, next); }}
+              availableAttachments={extractAvailableAttachments((allDiaries && allDiaries.length ? allDiaries : dayDiaries || []).filter(d => {
+                const date = d.createdAt ? new Date(d.createdAt) : null;
+                return date && !Number.isNaN(date.getTime()) && `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` === dayKey;
+              }))}
               appLanguage={appLanguage}
               compact={true}
             />
