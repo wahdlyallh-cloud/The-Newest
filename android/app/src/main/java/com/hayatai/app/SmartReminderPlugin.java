@@ -1,24 +1,30 @@
 package com.hayatai.app;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
+import androidx.activity.result.ActivityResult;
 import androidx.core.app.NotificationManagerCompat;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import java.util.Iterator;
 
 @CapacitorPlugin(
     name = "SmartReminder",
@@ -54,10 +60,11 @@ public class SmartReminderPlugin extends Plugin {
         try {
             boolean enabled = call.getBoolean("enabled", false);
             PersistentNotificationHelper.setEnabled(getContext(), enabled,
-                    call.getString("title", "حياة AI"),
-                    call.getString("body", "كتابة وفضفضة سريعة من شاشة القفل"),
-                    call.getString("writeLabel", "كتابة سريعة"),
-                    call.getString("voiceLabel", "فضفضة صوتية"));
+                    call.getString("title", "حياة AI — وصول سريع"),
+                    call.getString("writeLabel", "كتابة"),
+                    call.getString("voiceLabel", "تسجيل صوتي"),
+                    call.getString("moodLabel", "مزاج"),
+                    call.getString("advisorLabel", "مستشار"));
             JSObject ret = new JSObject(); ret.put("enabled", enabled); call.resolve(ret);
         } catch (Exception error) { call.reject("Failed to update lock-screen notification", error); }
     }
@@ -132,6 +139,137 @@ public class SmartReminderPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void pickAlarmSound(PluginCall call) {
+        try {
+            Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM | RingtoneManager.TYPE_RINGTONE);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "اختر نغمة المنبه");
+            startActivityForResult(call, intent, "pickAlarmSoundResult");
+        } catch (Exception e) {
+            call.reject("Failed to open ringtone picker: " + e.getMessage(), e);
+        }
+    }
+
+    @ActivityCallback
+    private void pickAlarmSoundResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        try {
+            if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                Uri uri = result.getData().getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                String uriStr = uri != null ? uri.toString() : "";
+                String title = "النغمة الافتراضية";
+                if (uri != null) {
+                    Ringtone r = RingtoneManager.getRingtone(getContext(), uri);
+                    if (r != null) {
+                        String ringtoneTitle = r.getTitle(getContext());
+                        if (ringtoneTitle != null && !ringtoneTitle.trim().isEmpty()) {
+                            title = ringtoneTitle;
+                        }
+                    }
+                }
+                JSObject ret = new JSObject();
+                ret.put("uri", uriStr);
+                ret.put("title", title);
+                call.resolve(ret);
+            } else {
+                JSObject ret = new JSObject();
+                ret.put("uri", "");
+                ret.put("title", "");
+                ret.put("cancelled", true);
+                call.resolve(ret);
+            }
+        } catch (Exception e) {
+            call.reject("Error resolving picked sound: " + e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
+    public void pickAudioFile(PluginCall call) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("audio/*");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            startActivityForResult(call, intent, "pickAudioFileResult");
+        } catch (Exception e) {
+            call.reject("Failed to pick audio file: " + e.getMessage(), e);
+        }
+    }
+
+    @ActivityCallback
+    private void pickAudioFileResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        try {
+            if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                Uri uri = result.getData().getData();
+                try {
+                    int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                    getContext().getContentResolver().takePersistableUriPermission(uri, flags);
+                } catch (Exception ignored) {}
+
+                String title = "ملف صوتي من الجهاز";
+                Cursor cursor = null;
+                try {
+                    cursor = getContext().getContentResolver().query(uri, null, null, null, null);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                        if (nameIndex != -1) {
+                            String displayName = cursor.getString(nameIndex);
+                            if (displayName != null && !displayName.trim().isEmpty()) {
+                                title = displayName;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {
+                } finally {
+                    if (cursor != null) cursor.close();
+                }
+
+                JSObject ret = new JSObject();
+                ret.put("uri", uri.toString());
+                ret.put("title", title);
+                call.resolve(ret);
+            } else {
+                JSObject ret = new JSObject();
+                ret.put("uri", "");
+                ret.put("title", "");
+                ret.put("cancelled", true);
+                call.resolve(ret);
+            }
+        } catch (Exception e) {
+            call.reject("Error resolving picked audio: " + e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
+    public void previewAlarmSound(PluginCall call) {
+        try {
+            String uriStr = call.getString("uri");
+            int repeatCount = call.getInt("repeatCount", 1);
+            AlarmSoundManager.playAlarmSound(getContext(), uriStr, repeatCount);
+            JSObject ret = new JSObject();
+            ret.put("playing", true);
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject("Failed to preview sound: " + e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
+    public void stopPreviewSound(PluginCall call) {
+        try {
+            AlarmSoundManager.stopAlarmSound();
+            JSObject ret = new JSObject();
+            ret.put("stopped", true);
+            call.resolve(ret);
+        } catch (Exception e) {
+            call.reject("Failed to stop preview sound: " + e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
     public void scheduleReminder(PluginCall call) {
         try {
             Context ctx = getContext();
@@ -144,6 +282,10 @@ public class SmartReminderPlugin extends Plugin {
             String yesLabel = call.getString("yesLabel", "نعم");
             String noLabel = call.getString("noLabel", "لا");
             Boolean showOverlay = call.getBoolean("showOverlay", true);
+            String alertMode = call.getString("alertMode", "notification");
+            String soundUri = call.getString("soundUri", "");
+            Integer repeatCount = call.getInt("repeatCount", 1);
+            Integer snoozeMinutes = call.getInt("snoozeMinutes", 5);
 
             if (id == null || id.trim().isEmpty()) {
                 call.reject("Reminder id is required");
@@ -154,18 +296,17 @@ public class SmartReminderPlugin extends Plugin {
                 if (triggerAtMillis == null) {
                     triggerAtMillis = System.currentTimeMillis() + 5000;
                 } else if (repeatDaily != null && repeatDaily) {
-                    // Advance to next day if in past
                     while (triggerAtMillis <= System.currentTimeMillis()) {
                         triggerAtMillis += 24L * 60 * 60 * 1000;
                     }
                 }
             }
 
-            // Save to SharedPreferences
-            saveReminderMeta(ctx, id, title, body, triggerAtMillis, repeatDaily, isQuestion, yesLabel, noLabel, showOverlay);
+            saveReminderMeta(ctx, id, title, body, triggerAtMillis, repeatDaily, isQuestion,
+                    yesLabel, noLabel, showOverlay, alertMode, soundUri, repeatCount, snoozeMinutes);
 
-            // Schedule with AlarmManager
-            scheduleAlarm(ctx, id, title, body, triggerAtMillis, repeatDaily, isQuestion, yesLabel, noLabel, showOverlay);
+            scheduleAlarm(ctx, id, title, body, triggerAtMillis, repeatDaily, isQuestion,
+                    yesLabel, noLabel, showOverlay, alertMode, soundUri, repeatCount, snoozeMinutes);
 
             JSObject ret = new JSObject();
             ret.put("success", true);
@@ -211,8 +352,13 @@ public class SmartReminderPlugin extends Plugin {
             String yesLabel = call.getString("yesLabel", "نعم، شربت");
             String noLabel = call.getString("noLabel", "ليس بعد");
             boolean showOverlay = call.getBoolean("showOverlay", true);
+            String alertMode = call.getString("alertMode", "notification");
+            String soundUri = call.getString("soundUri", "");
+            int repeatCount = call.getInt("repeatCount", 1);
+            int snoozeMinutes = call.getInt("snoozeMinutes", 5);
 
-            scheduleAlarm(ctx, id, title, body, triggerAtMillis, false, isQuestion, yesLabel, noLabel, showOverlay);
+            scheduleAlarm(ctx, id, title, body, triggerAtMillis, false, isQuestion,
+                    yesLabel, noLabel, showOverlay, alertMode, soundUri, repeatCount, snoozeMinutes);
 
             JSObject ret = new JSObject();
             ret.put("success", true);
@@ -232,7 +378,6 @@ public class SmartReminderPlugin extends Plugin {
             String raw = prefs.getString(KEY_RESPONSES, "[]");
             JSONArray array = new JSONArray(raw);
 
-            // Clear stored responses
             prefs.edit().putString(KEY_RESPONSES, "[]").apply();
 
             JSArray result = new JSArray();
@@ -255,7 +400,8 @@ public class SmartReminderPlugin extends Plugin {
 
     public static void scheduleAlarm(Context ctx, String id, String title, String body,
                                     long triggerAtMillis, boolean repeatDaily, boolean isQuestion,
-                                    String yesLabel, String noLabel, boolean showOverlay) {
+                                    String yesLabel, String noLabel, boolean showOverlay,
+                                    String alertMode, String soundUri, int repeatCount, int snoozeMinutes) {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
 
@@ -269,6 +415,10 @@ public class SmartReminderPlugin extends Plugin {
         intent.putExtra("yesLabel", yesLabel);
         intent.putExtra("noLabel", noLabel);
         intent.putExtra("showOverlay", showOverlay);
+        intent.putExtra("alertMode", alertMode);
+        intent.putExtra("soundUri", soundUri);
+        intent.putExtra("repeatCount", repeatCount);
+        intent.putExtra("snoozeMinutes", snoozeMinutes);
 
         int requestCode = Math.abs(id.hashCode());
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
@@ -290,7 +440,6 @@ public class SmartReminderPlugin extends Plugin {
                 am.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
             }
         } catch (SecurityException se) {
-            // Safe fallback without exact alarm permission
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
             } else {
@@ -316,7 +465,8 @@ public class SmartReminderPlugin extends Plugin {
 
     private static void saveReminderMeta(Context ctx, String id, String title, String body,
                                         long triggerAtMillis, boolean repeatDaily, boolean isQuestion,
-                                        String yesLabel, String noLabel, boolean showOverlay) {
+                                        String yesLabel, String noLabel, boolean showOverlay,
+                                        String alertMode, String soundUri, int repeatCount, int snoozeMinutes) {
         try {
             SharedPreferences prefs = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
             String raw = prefs.getString(KEY_REMINDERS, "{}");
@@ -332,6 +482,10 @@ public class SmartReminderPlugin extends Plugin {
             r.put("yesLabel", yesLabel);
             r.put("noLabel", noLabel);
             r.put("showOverlay", showOverlay);
+            r.put("alertMode", alertMode);
+            r.put("soundUri", soundUri);
+            r.put("repeatCount", repeatCount);
+            r.put("snoozeMinutes", snoozeMinutes);
 
             all.put(id, r);
             prefs.edit().putString(KEY_REMINDERS, all.toString()).apply();

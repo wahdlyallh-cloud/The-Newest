@@ -23,10 +23,10 @@ This document summarizes the core architecture, AI routing model, Android APK We
 
 ## 2. Gemini Routing Rules
 
-- **Standard Model**: `gemini-2.5-flash-lite` / `gemini-3.5-flash-lite` is prioritized across all conversational, analysis, and multimodal transcription flows for minimal latency and cost efficiency.
+- **Standard Model**: `gemini-3.5-flash-lite` is prioritized across quick conversational, analysis, and multimodal transcription flows for minimal latency and cost efficiency.
 - **Fallback Chain**:
-  1. Primary API key / custom key with `gemini-2.5-flash-lite` / `gemini-3.5-flash-lite`.
-  2. Fallback models (`gemini-2.5-flash`, `gemini-1.5-flash`) on quota exhaustion (429 / RESOURCE_EXHAUSTED).
+  1. Live auto-discovered Google models per API key with task-adaptive routing (`light`, `multimodal`, `deep`).
+  2. Fallback models (`gemini-3.8-flash`, `gemini-4-hydrogen`, `gemini-3.6-flash`, `gemini-3.5-flash-lite`) with runtime self-healing on model restriction.
   3. No raw quota sentinel errors leaked to UI; user-friendly localized advisories are surfaced instead.
 
 ---
@@ -257,3 +257,8 @@ npm run build
 - Replaced the sprawling Settings tab with `src/components/SettingsPanel.tsx`, a compact RTL-aware native mobile surface built from six expandable groups: الأمان والخصوصية، الذكاء الاصطناعي والمفاتيح، الإشعارات وشاشة القفل، المزامنة والنسخ الاحتياطي، المظهر واللغة، والتطبيق والتحديثات.
 - Preserved live wiring for PIN/password and biometric security, five-key Gemini diagnostics, media/token-saving guidance, lock-screen notification, smart reminders, email/account sync, WriteDiary import, backup/export, theme, 12-language selection, in-app updater, and onboarding tour.
 - Normalized settings rows and switches to compact `py-3 px-4` grouped-list styling with no browser alerts in the redesigned surface; localized new labels across all 12 supported locales.
+
+## 22. Real Biometrics, 4-Action Lock-Screen Widget, Smart Overlay/Lock Routing & Full Alarm System (2026-11-27)
+- **Real Biometric Authentication & Single Lock State:** Removed simulated browser camera Face ID (`getUserMedia`) entirely from `PINLock.tsx`. All biometrics (Fingerprint and Face Unlock) route natively through `BiometricAuthPlugin.java` via `androidx.biometric.BiometricPrompt`. Consolidated master lock toggle into a single source of truth in `localStorage` (`appLockEnabled`). When disabled, lock screen never triggers on cold start or background resume; when enabled, auto-prompts biometrics and secures the app. Cleaned security settings clutter by removing the redundant top row and technical APK text box.
+- **4-Action Lock-Screen Notification Widget & Home Polish:** Upgraded `PersistentNotificationHelper.java` to use a fresh channel ID `hayat_lockscreen_quick_v2` with `IMPORTANCE_DEFAULT`, `VISIBILITY_PUBLIC`, and a custom RemoteViews XML layout (`notification_lockscreen_quick.xml`) featuring 4 interactive actions: كتابة (`write`), تسجيل صوتي (`voice`), مزاج (`mood`), and مستشار (`advisor`). Tapping any button launches the app, resolves lock if enabled, and navigates immediately to the destination. Cleaned Home screen by removing the top "التنبيهات نشطة الآن" card, and removed "أداة التحكم السريع" row from settings.
+- **Smart Reminders Zero Duplicate & Full Alarm System:** `ReminderAlarmReceiver.java` inspects `KeyguardManager` and `PowerManager`. When unlocked & interactive, it shows ONLY the interactive floating overlay without a status-bar notification; when locked or screen is off, it posts ONLY the lock-screen notification. Added full Alarm Mode (`AlarmSoundManager.java`) using `AudioAttributes.USAGE_ALARM` with repeat count and stop/snooze actions directly on the overlay and notification. Added native Android ringtone picker (`RingtoneManager.ACTION_RINGTONE_PICKER`) and audio file picker (`pickAudioFile`), plus audio preview and stop preview inside the reminder editor.

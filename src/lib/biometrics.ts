@@ -34,6 +34,17 @@ export async function isBiometricsSupported(): Promise<{
 
   // 1. Native Capacitor Biometrics check
   try {
+    const { Capacitor } = await import('@capacitor/core');
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      const { checkNativeBiometricAvailability } = await import('./biometricAuth');
+      const check = await checkNativeBiometricAvailability();
+      if (check.available) {
+        return { supported: true, isNative: true };
+      }
+    }
+  } catch {}
+
+  try {
     const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
     if (BiometricAuth) {
       const check = await BiometricAuth.checkBiometry();
@@ -123,6 +134,24 @@ export async function registerBiometrics(appLanguage: AppLanguage = 'ar'): Promi
     // Native Capacitor path
     if (check.isNative) {
       try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+          const { authenticateNativeBiometric } = await import('./biometricAuth');
+          const res = await authenticateNativeBiometric(appLanguage);
+          if (res.authenticated) {
+            return {
+              success: true,
+              credentialId: 'native_android_biometrics_' + Date.now()
+            };
+          } else {
+            return {
+              success: false,
+              fallbackToPin: true,
+              infoMessage: t.biometricsNotSupportedFallbackPin,
+              error: res.error || 'BIOMETRIC_AUTH_FAILED'
+            };
+          }
+        }
         const { BiometricAuth } = await import('@aparajita/capacitor-biometric-auth');
         await BiometricAuth.authenticate({
           reason: t.biometricScanInstruction,
@@ -216,6 +245,24 @@ export async function verifyBiometrics(
   const t = getTranslation(appLanguage);
 
   try {
+    // Native Android BiometricAuthPlugin verification
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        const { authenticateNativeBiometric } = await import('./biometricAuth');
+        const res = await authenticateNativeBiometric(appLanguage);
+        if (res.authenticated) {
+          return { success: true };
+        }
+        return {
+          success: false,
+          fallbackToPin: true,
+          infoMessage: t.biometricsNotSupportedFallbackPin,
+          error: res.error || (t.biometricsAuthFailed)
+        };
+      }
+    } catch {}
+
     // Native Capacitor verification
     if (credentialId && credentialId.startsWith('native_capacitor_biometrics_')) {
       try {

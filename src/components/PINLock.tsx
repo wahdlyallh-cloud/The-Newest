@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, ShieldCheck, ShieldAlert, Fingerprint, Keyboard, ArrowRight, ScanFace, CheckCircle2, XCircle } from 'lucide-react';
 import StaticNotification from './StaticNotification';
 import { verifyBiometrics } from '../lib/biometrics';
@@ -36,11 +36,6 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
   const [biometricType, setBiometricType] = useState<'fingerprint' | 'faceid'>('fingerprint');
   const [biometricErrorMessage, setBiometricErrorMessage] = useState<string>('');
   const [showUnenrolledModal, setShowUnenrolledModal] = useState(false);
-
-  // Live Front Camera for Face Scan
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraDenied, setCameraDenied] = useState(false);
 
   const [timeString, setTimeString] = useState('');
   const [dateString, setDateString] = useState('');
@@ -104,60 +99,6 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
     else { setError(true); setPassword(''); }
   };
 
-  // Camera stream Effect for Live Face ID scan
-  useEffect(() => {
-    let timer: any;
-    let streamRef: MediaStream | null = null;
-
-    if (showBiometricModal && biometricType === 'faceid') {
-      setCameraDenied(false);
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
-          .then((stream) => {
-            streamRef = stream;
-            setCameraStream(stream);
-            if (videoRef.current) {
-              videoRef.current.srcObject = stream;
-              videoRef.current.play().catch(() => {});
-            }
-            // Real face camera scanning animation & unlock trigger
-            timer = setTimeout(() => {
-              setBiometricStatus('success');
-              setTimeout(() => {
-                setShowBiometricModal(false);
-                if (streamRef) {
-                  streamRef.getTracks().forEach(t => t.stop());
-                }
-                executeUnlock(pendingAction);
-              }, 700);
-            }, 1800);
-          })
-          .catch((err) => {
-            console.warn('Camera permission or availability issue:', err);
-            setCameraDenied(true);
-            setBiometricStatus('failed');
-            setBiometricErrorMessage(t.cameraDeniedError);
-          });
-      } else {
-        setCameraDenied(true);
-        setBiometricStatus('failed');
-        setBiometricErrorMessage(t.cameraDeniedError);
-      }
-    } else {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(t => t.stop());
-        setCameraStream(null);
-      }
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-      if (streamRef) {
-        streamRef.getTracks().forEach(t => t.stop());
-      }
-    };
-  }, [showBiometricModal, biometricType, t.cameraDeniedError]);
-
   // Real Hardware Biometric Trigger (Fingerprint & Face ID)
   const handleTriggerBiometrics = async (type: 'fingerprint' | 'faceid' = 'fingerprint', actionToPerform: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | null = null) => {
     const targetAction = actionToPerform || pendingAction;
@@ -165,47 +106,45 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
       setPendingAction(actionToPerform);
     }
 
-    // Check if biometric credential exists in props or localStorage
+    setBiometricType(type);
+
+    // 1. Try Native Android Biometrics first
+    const nativeResult = await authenticateNativeBiometric(appLanguage).catch(() => ({ authenticated: false, error: 'NATIVE_BIOMETRIC_FAILED' }));
+    if (nativeResult.authenticated) {
+      executeUnlock(targetAction);
+      return;
+    }
+
+    // 2. Check if biometric credential exists in props or localStorage for WebAuthn fallback
     const savedCredId = biometricCredentialId || (typeof window !== 'undefined' ? localStorage.getItem('yawmiyati_biometric_cred_id') : null);
 
-    if (!savedCredId && type === 'fingerprint') {
-      // Biometrics not yet registered! Show guidance modal and do NOT unlock.
-      setBiometricType(type);
+    if (!savedCredId && nativeResult.error === 'NATIVE_ANDROID_ONLY') {
       setShowUnenrolledModal(true);
       return;
     }
 
-    setBiometricType(type);
-
-    if (type === 'fingerprint') {
-      const nativeResult = await authenticateNativeBiometric(appLanguage).catch(() => ({ authenticated: false, error: 'NATIVE_BIOMETRIC_FAILED' }));
-      if (nativeResult.authenticated) {
-        executeUnlock(targetAction);
-        return;
-      }
-      // Trigger REAL WebAuthn / Capacitor Hardware Verification directly
-      const res = await verifyBiometrics(savedCredId || undefined, appLanguage);
-
-      if (res.success) {
-        // Unlocked instantly!
-        executeUnlock(targetAction);
-      } else {
-        // Show fallback inline info message safely without intrusive popups
-        setShowBiometricModal(true);
-        setBiometricStatus('failed');
-        setBiometricErrorMessage(
-          res.infoMessage ||
-          res.error ||
-          (t.biometricsUnavailable)
-        );
-      }
+    // Trigger WebAuthn Verification
+    const res = await verifyBiometrics(savedCredId || undefined, appLanguage);
+    if (res.success) {
+      executeUnlock(targetAction);
     } else {
-      // Face ID Camera mode
       setShowBiometricModal(true);
-      setBiometricStatus('scanning');
-      setBiometricErrorMessage('');
+      setBiometricStatus('failed');
+      setBiometricErrorMessage(
+        res.infoMessage ||
+        res.error ||
+        (t.biometricsUnavailable)
+      );
     }
   };
+
+  // Auto prompt biometrics when lockscreen loads if available
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleTriggerBiometrics('fingerprint');
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   // When clicking notification shortcuts, require unlock
   const handleNotificationActionClick = (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes') => {
@@ -422,34 +361,10 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
           <div className="bg-[#FAF8F5] border-2 border-[#E2DCC8] rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4 animate-in zoom-in-95">
             <div className="flex justify-center">
               {biometricStatus === 'scanning' && (
-                biometricType === 'faceid' ? (
-                  <div className="relative w-36 h-48 bg-black rounded-[2.5rem] overflow-hidden border-4 border-emerald-500 shadow-2xl flex items-center justify-center">
-                    <video
-                      ref={(el) => {
-                        videoRef.current = el;
-                        if (el && cameraStream && el.srcObject !== cameraStream) {
-                          el.srcObject = cameraStream;
-                          el.play().catch(() => {});
-                        }
-                      }}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover scale-x-[-1]"
-                    />
-                    {/* Biometric Scanning Laser Grid Overlay */}
-                    <div className="absolute inset-0 border-2 border-emerald-400/40 rounded-[2.3rem] pointer-events-none" />
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10B981] animate-[bounce_1.5s_infinite]" />
-                    <div className="absolute bottom-2 left-2 right-2 bg-black/70 backdrop-blur-xs py-1 px-2 rounded-xl text-[10px] text-emerald-300 font-bold border border-emerald-500/30">
-                      👤 {t.faceScanInstruction}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative p-6 bg-amber-50 rounded-full border-4 border-amber-400/30 animate-pulse">
-                    <Fingerprint className="w-16 h-16 text-amber-600 animate-pulse" />
-                    <div className="absolute inset-0 rounded-full border-2 border-amber-500 animate-ping opacity-25" />
-                  </div>
-                )
+                <div className="relative p-6 bg-amber-50 rounded-full border-4 border-amber-400/30 animate-pulse">
+                  <Fingerprint className="w-16 h-16 text-amber-600 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full border-2 border-amber-500 animate-ping opacity-25" />
+                </div>
               )}
 
               {biometricStatus === 'success' && (
@@ -467,15 +382,15 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
 
             <div className="space-y-1.5">
               <h3 className="text-base font-black text-[#2B3E50]">
-                {biometricStatus === 'scanning' && (biometricType === 'faceid' ? t.faceScanTitle : t.fingerprintScanTitle)}
+                {biometricStatus === 'scanning' && (biometricType === 'faceid' ? (t.biometricFaceId || 'التعرف على الوجه') : t.fingerprintScanTitle)}
                 {biometricStatus === 'success' && t.faceSuccessTitle}
                 {biometricStatus === 'failed' && t.biometricFailedTitle}
               </h3>
 
               <p className="text-xs text-gray-600 font-bold leading-relaxed">
-                {biometricStatus === 'scanning' && (biometricType === 'faceid' ? t.faceScanInstruction : t.fingerprintScanInstruction)}
+                {biometricStatus === 'scanning' && (t.useBiometricsToUnlock || 'استخدم مستشعر البصمة أو الوجه في جهازك')}
                 {biometricStatus === 'success' && t.welcomeBackOpening}
-                {biometricStatus === 'failed' && (biometricErrorMessage || t.cameraDeniedError)}
+                {biometricStatus === 'failed' && (biometricErrorMessage || t.biometricsAuthFailed)}
               </p>
             </div>
 

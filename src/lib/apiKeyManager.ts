@@ -369,20 +369,23 @@ export const STATIC_TASK_MODELS: Record<'light' | 'multimodal' | 'deep', string[
   light: [
     'gemini-3.5-flash-lite',
     'gemini-3.1-flash-lite',
-    'gemini-4-hydrogen',
-    'gemini-3.8-flash'
+    'gemini-3.6-flash',
+    'gemini-3.8-flash',
+    'gemini-4-hydrogen'
   ],
   multimodal: [
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
+    'gemini-3.8-flash',
     'gemini-4-hydrogen',
-    'gemini-3.8-flash'
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite'
   ],
   deep: [
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
+    'gemini-4-carbon',
+    'gemini-4-argon',
     'gemini-4-hydrogen',
-    'gemini-3.8-flash'
+    'gemini-3.8-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite'
   ]
 };
 
@@ -795,17 +798,42 @@ export function scoreModelForTask(model: string, taskType: 'light' | 'multimodal
   const version = match ? parseFloat(match[1]) : 3.0;
   score += version * 1000;
 
-  // 2. Rank newest lightweight models first:
-  // newest flash-lite (+5000) -> newest flash (+3000) -> general model (+1000)
-  if (clean.includes('flash-lite') || clean.includes('lite')) {
-    score += 5000;
-  } else if (clean.includes('flash') || clean.includes('hydrogen')) {
-    score += 3000;
+  // 2. Rank higher version numbers appropriately by tier:
+  // lite for light, flash/hydrogen for multimodal, carbon/argon/pro for deep
+  if (taskType === 'light') {
+    if (clean.includes('flash-lite') || clean.includes('lite')) {
+      score += 5000;
+    } else if (clean.includes('flash') || clean.includes('hydrogen')) {
+      score += 2500;
+    } else {
+      score += 500;
+    }
+  } else if (taskType === 'multimodal') {
+    if (clean.includes('flash') || clean.includes('hydrogen')) {
+      score += 4000;
+    } else if (clean.includes('lite')) {
+      score += 1500;
+    } else if (clean.includes('carbon') || clean.includes('argon') || clean.includes('pro')) {
+      score += 1000;
+    } else {
+      score += 500;
+    }
   } else {
-    score += 1000;
+    // deep (psychological consultation, cognitive distortions)
+    if (clean.includes('carbon') || clean.includes('argon') || clean.includes('pro') || clean.includes('ultra')) {
+      score += 6000;
+    } else if (clean.includes('hydrogen')) {
+      score += 4000;
+    } else if (clean.includes('flash')) {
+      score += 2000;
+    } else if (clean.includes('lite')) {
+      score += 1000;
+    } else {
+      score += 500;
+    }
   }
 
-  // 3. Fallback tier alignment bonus
+  // 3. Static preference bonus to preserve proven ranked hierarchy
   const staticList = STATIC_TASK_MODELS[taskType] || STATIC_TASK_MODELS.light;
   const staticIdx = staticList.indexOf(clean);
   if (staticIdx !== -1) {
@@ -932,7 +960,7 @@ export async function testGeminiApiKey(key: string): Promise<{
 
   // 1. Discover live models
   const discovered = await discoverGoogleModels(cleanKey, true).catch(() => []);
-  const priorityTestList = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen', 'gemini-3.8-flash'];
+  const priorityTestList = ['gemini-3.8-flash', 'gemini-4-hydrogen', 'gemini-3.5-flash-lite', 'gemini-3.6-flash'];
 
   const candidatesSet = new Set<string>();
 
@@ -1000,7 +1028,7 @@ export async function testGeminiApiKey(key: string): Promise<{
       // Step down immediately on 429 / RESOURCE_EXHAUSTED / limit: 0 without marking whole key exhausted!
       if (errType === 'quota_exhausted' || errType === 'rate_limited' || status === 429) {
         markModelFailedForKey(cleanKey, model, status, rawMsg);
-        continue; // Try next candidate model (e.g. gemini-2.0-flash) on the SAME key!
+        continue; // Try next candidate model on the SAME key!
       }
 
       all429 = false;

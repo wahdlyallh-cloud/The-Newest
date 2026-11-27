@@ -5,6 +5,10 @@ export interface SmartReminderPluginInterface {
   checkPermissions(): Promise<{ notificationsGranted: boolean; overlayGranted: boolean }>;
   requestNotificationPermission(): Promise<{ notificationsGranted: boolean }>;
   openOverlayPermissionSettings(): Promise<void>;
+  pickAlarmSound(): Promise<{ uri: string; title: string; cancelled?: boolean }>;
+  pickAudioFile(): Promise<{ uri: string; title: string; cancelled?: boolean }>;
+  previewAlarmSound(options: { uri?: string; repeatCount?: number }): Promise<{ playing: boolean }>;
+  stopPreviewSound(): Promise<{ stopped: boolean }>;
   scheduleReminder(options: {
     id: string;
     title: string;
@@ -15,6 +19,10 @@ export interface SmartReminderPluginInterface {
     yesLabel?: string;
     noLabel?: string;
     showOverlay?: boolean;
+    alertMode?: 'notification' | 'alarm';
+    soundUri?: string;
+    repeatCount?: number;
+    snoozeMinutes?: number;
   }): Promise<{ success: boolean; id: string; scheduledAt: number }>;
   cancelReminder(options: { id: string }): Promise<{ success: boolean; id: string }>;
   triggerTestReminder(options: {
@@ -24,9 +32,13 @@ export interface SmartReminderPluginInterface {
     yesLabel?: string;
     noLabel?: string;
     showOverlay?: boolean;
+    alertMode?: 'notification' | 'alarm';
+    soundUri?: string;
+    repeatCount?: number;
+    snoozeMinutes?: number;
   }): Promise<{ success: boolean; id: string; delaySeconds: number }>;
   consumePendingResponses(): Promise<{
-    responses: Array<{ reminderId: string; answer: 'yes' | 'no' | 'dismissed'; answeredAt: number }>;
+    responses: Array<{ reminderId: string; answer: string; answeredAt: number }>;
   }>;
   setLockScreenNotification(options: {
     enabled: boolean;
@@ -34,9 +46,13 @@ export interface SmartReminderPluginInterface {
     body?: string;
     writeLabel?: string;
     voiceLabel?: string;
+    moodLabel?: string;
+    advisorLabel?: string;
   }): Promise<{ enabled: boolean }>;
-  getPendingQuickAction(): Promise<{ action: '' | 'write' | 'voice' }>;
+  getPendingQuickAction(): Promise<{ action: '' | 'write' | 'voice' | 'mood' | 'advisor' }>;
 }
+
+let previewAudioEl: HTMLAudioElement | null = null;
 
 const SmartReminder = registerPlugin<SmartReminderPluginInterface>('SmartReminder', {
   web: {
@@ -53,6 +69,32 @@ const SmartReminder = registerPlugin<SmartReminderPluginInterface>('SmartReminde
     },
     async openOverlayPermissionSettings() {
       // No-op on web
+    },
+    async pickAlarmSound() {
+      return { uri: '', title: 'النغمة الافتراضية' };
+    },
+    async pickAudioFile() {
+      return { uri: '', title: 'ملف صوتي من الجهاز' };
+    },
+    async previewAlarmSound(options) {
+      if (previewAudioEl) {
+        previewAudioEl.pause();
+        previewAudioEl = null;
+      }
+      if (options.uri) {
+        try {
+          previewAudioEl = new Audio(options.uri);
+          previewAudioEl.play().catch(() => {});
+        } catch {}
+      }
+      return { playing: true };
+    },
+    async stopPreviewSound() {
+      if (previewAudioEl) {
+        previewAudioEl.pause();
+        previewAudioEl = null;
+      }
+      return { stopped: true };
     },
     async scheduleReminder(options) {
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -138,7 +180,11 @@ export async function syncReminderNative(reminder: AppReminder): Promise<void> {
       isQuestion: !!reminder.isQuestion,
       yesLabel: reminder.yesLabel || 'نعم',
       noLabel: reminder.noLabel || 'لا',
-      showOverlay: reminder.showOverlay ?? true
+      showOverlay: reminder.showOverlay ?? true,
+      alertMode: reminder.alertMode || 'notification',
+      soundUri: reminder.soundUri || '',
+      repeatCount: reminder.repeatCount || 1,
+      snoozeMinutes: reminder.snoozeMinutes !== undefined ? reminder.snoozeMinutes : 5
     });
   } catch (e) {
     console.warn('Failed to schedule reminder on native:', e);

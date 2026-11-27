@@ -169,6 +169,12 @@ export interface AppReminder {
   yesLabel?: string;
   noLabel?: string;
   showOverlay?: boolean; // whether to show cross-app overlay
+  alertMode?: 'notification' | 'alarm'; // notification ping vs continuous alarm
+  soundSource?: 'default' | 'preset' | 'device';
+  soundUri?: string;
+  soundTitle?: string;
+  repeatCount?: number; // 1, 3, 5, or -1 (continuous)
+  snoozeMinutes?: number; // 0, 5, 10, 15
 }
 
 export interface HabitSettings {
@@ -226,7 +232,8 @@ export interface AppSettings {
   appPasswordHash?: string; // SHA-256 hash for alphanumeric app password
   appLockMethod?: 'pin' | 'password';
   appLockGracePeriodMs?: number;
-  isAppLocked: boolean;
+  appLockEnabled?: boolean; // Unified Master App Lock Toggle
+  isAppLocked: boolean; // Active runtime locked state
   biometricCredentialId?: string; // WebAuthn Passkey Credential ID
   isBiometricEnabled?: boolean; // Toggle for Biometrics (Fingerprint / Face ID)
   backupSettings: BackupSettings;

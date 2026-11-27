@@ -51,6 +51,8 @@
                 <action android:name="com.hayatai.app.ACTION_REMINDER_YES" />
                 <action android:name="com.hayatai.app.ACTION_REMINDER_NO" />
                 <action android:name="com.hayatai.app.ACTION_REMINDER_DISMISS" />
+                <action android:name="com.hayatai.app.ACTION_STOP_ALARM" />
+                <action android:name="com.hayatai.app.ACTION_SNOOZE_ALARM" />
             </intent-filter>
         </receiver>
     </application>

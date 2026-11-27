@@ -1052,6 +1052,24 @@ export default function App() {
       if (savedCredId && !parsed.biometricCredentialId) {
         parsed.biometricCredentialId = savedCredId;
       }
+      // Migrate / resolve master lock state
+      const rawStoredLock = localStorage.getItem('appLockEnabled');
+      if (rawStoredLock !== null) {
+        parsed.appLockEnabled = rawStoredLock === 'true';
+      } else if (parsed.appLockEnabled !== undefined) {
+        localStorage.setItem('appLockEnabled', String(parsed.appLockEnabled));
+      } else {
+        // If neither was explicitly set, default to false
+        parsed.appLockEnabled = false;
+        localStorage.setItem('appLockEnabled', 'false');
+      }
+      // If appLockEnabled is false, enforce isAppLocked = false on boot
+      if (!parsed.appLockEnabled) {
+        parsed.isAppLocked = false;
+      } else {
+        // On cold start with lock enabled, require lock
+        parsed.isAppLocked = true;
+      }
       const migrated = migrateSettingsApiKeys(parsed || DEFAULT_SETTINGS);
       try {
         localStorage.setItem('yawmiyati_settings', JSON.stringify(migrated));
@@ -1436,7 +1454,7 @@ export default function App() {
   const [editingDrawingIndex, setEditingDrawingIndex] = useState<number | null>(null);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
-  const [pendingNativeQuickAction, setPendingNativeQuickAction] = useState<'new_note' | 'voice' | 'notes' | null>(null);
+  const [pendingNativeQuickAction, setPendingNativeQuickAction] = useState<'new_note' | 'voice' | 'mood' | 'ai' | 'notes' | null>(null);
   const [showGratitudeImportModal, setShowGratitudeImportModal] = useState<boolean>(false);
   const [globalCopyToast, setGlobalCopyToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -1518,7 +1536,9 @@ export default function App() {
         return;
       }
       if (document.visibilityState === 'hidden' || document.hidden) {
-        if (settings.appPinCode || settings.isAppLocked) {
+        // Only lock if master app lock toggle is enabled
+        const isMasterLockEnabled = settings.appLockEnabled === true || localStorage.getItem('appLockEnabled') === 'true';
+        if (isMasterLockEnabled) {
           setSettings(prev => {
             const next = { ...prev, isAppLocked: true };
             try {
@@ -1537,7 +1557,7 @@ export default function App() {
       document.removeEventListener('visibilitychange', handleAutoLock);
       window.removeEventListener('pagehide', handleAutoLock);
     };
-  }, [settings.appPinCode, settings.isAppLocked]);
+  }, [settings.appPinCode, settings.isAppLocked, settings.appLockEnabled]);
 
 
   useEffect(() => {
@@ -1941,10 +1961,12 @@ export default function App() {
     if (isNativeAndroid) {
       await SmartReminder.setLockScreenNotification({
         enabled: true,
-        title: t.lockScreenNotificationTitle,
-        body: t.lockScreenPermanentDesc,
-        writeLabel: t.quickActionNewDiary,
-        voiceLabel: t.quickVoiceJournal
+        title: t.lockScreenNotificationTitle || 'حياة AI — وصول سريع',
+        body: t.lockScreenPermanentDesc || 'كتابة وفضفضة سريعة من شاشة القفل',
+        writeLabel: t.write || 'كتابة',
+        voiceLabel: t.voiceRecord || 'تسجيل صوتي',
+        moodLabel: t.mood || 'مزاج',
+        advisorLabel: t.smartAdvisorTab || 'مستشار'
       });
       return;
     }
@@ -2026,7 +2048,9 @@ export default function App() {
         const res = await SmartReminder.consumePendingResponses();
         if (res?.responses && res.responses.length > 0) {
           for (const item of res.responses) {
-            handleReminderResponse(item.reminderId, item.answer);
+            if (item.answer === 'yes' || item.answer === 'no' || item.answer === 'dismissed') {
+              handleReminderResponse(item.reminderId, item.answer);
+            }
           }
         }
       } catch {}
@@ -3305,11 +3329,12 @@ export default function App() {
     if (actionType === 'new_note') {
       startNewDiary();
     } else if (actionType === 'voice') {
-      setShowVoiceJournalModal(true);
+      setShowVoiceVentModal(true);
     } else if (actionType === 'mood') {
-      setActiveTab('dashboard');
-      // Scroll to daily stats
-      document.getElementById('habits-tracker')?.scrollIntoView({ behavior: 'smooth' });
+      startNewDiary();
+      setTimeout(() => {
+        document.getElementById('diary-mood-picker')?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
     } else if (actionType === 'ai') {
       setActiveTab('advisor');
     } else if (actionType === 'task') {
@@ -3330,10 +3355,21 @@ export default function App() {
     const consumeQuickAction = async () => {
       try {
         const result = await SmartReminder.getPendingQuickAction();
-        if (result.action === 'write' || result.action === 'voice') {
-          const action = result.action === 'write' ? 'new_note' : 'voice';
-          if (settings.isAppLocked) setPendingNativeQuickAction(action);
-          else handleQuickAction(action);
+        if (result.action) {
+          let mappedAction: 'new_note' | 'voice' | 'mood' | 'ai' | null = null;
+          if (result.action === 'write') mappedAction = 'new_note';
+          else if (result.action === 'voice') mappedAction = 'voice';
+          else if (result.action === 'mood') mappedAction = 'mood';
+          else if (result.action === 'advisor') mappedAction = 'ai';
+
+          if (mappedAction) {
+            const isLocked = (settings.appLockEnabled ?? false) && settings.isAppLocked;
+            if (isLocked) {
+              setPendingNativeQuickAction(mappedAction);
+            } else {
+              handleQuickAction(mappedAction);
+            }
+          }
         }
       } catch {}
     };
@@ -3341,7 +3377,7 @@ export default function App() {
     const onResume = () => consumeQuickAction();
     window.addEventListener('resume', onResume);
     return () => window.removeEventListener('resume', onResume);
-  }, [settings.isAppLocked]);
+  }, [settings.isAppLocked, settings.appLockEnabled]);
 
   // --- Initialize blank or default diary entry ---
   const startNewDiary = (initialType: JournalEntryType = 'diary') => {
@@ -6002,7 +6038,8 @@ export default function App() {
   };
 
   // --- PIN Unlock Screen Trigger ---
-  if (settings.isAppLocked) {
+  const isCurrentlyLocked = (settings.appLockEnabled ?? false) && settings.isAppLocked;
+  if (isCurrentlyLocked) {
     return (
       <PINLock
         correctPin={settings.appPinCode || '1234'}
@@ -6642,7 +6679,8 @@ export default function App() {
             <button
               type="button"
               onClick={() => {
-                setSettings(prev => ({ ...prev, isAppLocked: true }));
+                localStorage.setItem('appLockEnabled', 'true');
+                setSettings(prev => ({ ...prev, appLockEnabled: true, isAppLocked: true }));
                 collapseHeaderOnMobile();
               }}
               className="p-2.5 bg-[#EEECDF] border border-[#D1CCBA] text-[#5A5A40] rounded-xl hover:bg-[#DDD8C3] active:scale-95 transition-all cursor-pointer shadow-3xs shrink-0 min-h-[38px] min-w-[38px] flex items-center justify-center"
@@ -6745,7 +6783,8 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         setShowNavMoreMenu(false);
-                        setSettings(prev => ({ ...prev, isAppLocked: true }));
+                        localStorage.setItem('appLockEnabled', 'true');
+                        setSettings(prev => ({ ...prev, appLockEnabled: true, isAppLocked: true }));
                       }}
                       className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-amber-50 text-xs font-extrabold text-[#5A5A40] transition-colors cursor-pointer"
                     >
@@ -6939,13 +6978,7 @@ export default function App() {
         </div>
       )}
 
-      {activeTab === 'dashboard' && (
-          <div className={isHeaderCollapsedOnMobile ? 'pt-2' : ''}>
-            <StaticNotification onAction={handleQuickAction} appLanguage={settings?.appLanguage || 'ar'} />
-          </div>
-        )}
-
-        {/* --- TAB VIEW 1: DASHBOARD (HOME) --- */}
+      {/* --- TAB VIEW 1: DASHBOARD (HOME) --- */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
 
@@ -10950,7 +10983,25 @@ export default function App() {
             settings={settings}
             appLanguage={settings?.appLanguage || 'ar'}
             currentUser={currentUser}
-            onUpdateSettings={(patch) => setSettings(prev => ({ ...prev, ...patch }))}
+            onUpdateSettings={(patch: any) => {
+              setSettings(prev => {
+                const updated = { ...prev, ...patch };
+                if (patch.isAppLockEnabled !== undefined) {
+                  updated.appLockEnabled = patch.isAppLockEnabled;
+                  localStorage.setItem('appLockEnabled', String(patch.isAppLockEnabled));
+                  if (!patch.isAppLockEnabled) {
+                    updated.isAppLocked = false;
+                  }
+                }
+                if (patch.appLockEnabled !== undefined) {
+                  localStorage.setItem('appLockEnabled', String(patch.appLockEnabled));
+                  if (!patch.appLockEnabled) {
+                    updated.isAppLocked = false;
+                  }
+                }
+                return updated;
+              });
+            }}
             onOpenApiKeys={() => setShowGeminiKeyModal(true)}
             onOpenBackup={() => setShowBackupSyncModal(true)}
             onOpenWriteDiaryImport={() => setShowWriteDiaryImporter(true)}
@@ -13178,7 +13229,10 @@ export default function App() {
 
       {/* Simulated Hardware Power Button protruding from the right edge */}
       <div
-        onClick={() => setSettings(prev => ({ ...prev, isAppLocked: true }))}
+        onClick={() => {
+          localStorage.setItem('appLockEnabled', 'true');
+          setSettings(prev => ({ ...prev, appLockEnabled: true, isAppLocked: true }));
+        }}
         className="fixed end-0 top-[35%] w-3.5 h-16 bg-gradient-to-l from-[#222] to-[#444] rounded-s-lg hover:from-[#333] hover:to-[#555] border border-gray-600 border-e-0 shadow-xl cursor-pointer transition-all hover:w-4 z-[9999] flex items-center justify-center group"
         title={t.hardwarePowerBtnTooltip}
       >

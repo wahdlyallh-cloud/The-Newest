@@ -85,8 +85,7 @@ export default function SettingsPanel({
             </button>
             {isOpen && <div>
               {group.id === 'security' && <>
-                <Row title={t.appLockTitle || 'قفل التطبيق'} subtitle={t.appLockSub || 'PIN أو كلمة مرور لحماية يومياتك'} icon={<Lock className="w-4 h-4" />} onClick={() => onUpdateSettings({ isAppLocked: !settings.isAppLocked })} trailing={<Switch checked={settings.isAppLocked} label={t.appLockTitle || 'قفل التطبيق'} />} />
-                <div className="px-4 py-3 bg-slate-50/70 dark:bg-slate-900/20"><PasskeyAuth appLanguage={appLanguage} biometricCredentialId={settings.biometricCredentialId} isAppLockEnabled={settings.isAppLocked} appPinCode={settings.appPinCode} appPasswordHash={settings.appPasswordHash} appLockMethod={settings.appLockMethod} onUpdateSecuritySettings={onUpdateSettings} /></div>
+                <div className="px-4 py-3 bg-slate-50/70 dark:bg-slate-900/20"><PasskeyAuth appLanguage={appLanguage} biometricCredentialId={settings.biometricCredentialId} isAppLockEnabled={settings.appLockEnabled ?? settings.isAppLocked} appPinCode={settings.appPinCode} appPasswordHash={settings.appPasswordHash} appLockMethod={settings.appLockMethod} onUpdateSecuritySettings={onUpdateSettings} /></div>
               </>}
               {group.id === 'ai' && <>
                 <Row title={t.apiKeyTitle || 'مفاتيح Gemini API'} subtitle={`${settings.apiKeys?.length || (settings.userApiKey ? 1 : 0)}/5 • ${t.apiKeySub || 'إدارة المفاتيح والحالة الحية'}`} icon={<KeyRound className="w-4 h-4" />} onClick={onOpenApiKeys} />
@@ -96,7 +95,6 @@ export default function SettingsPanel({
                 <Row title={t.notificationsTitle || 'الإشعارات'} subtitle={t.notificationsSub || 'التنبيهات اليومية والتذكيرات'} icon={<Bell className="w-4 h-4" />} onClick={() => toggle('notificationsEnabled')} trailing={<Switch checked={settings.notificationsEnabled} label={t.notificationsTitle || 'الإشعارات'} />} />
                 <Row title={t.lockScreenWidgetTitle || 'إشعار شاشة القفل المثبت'} subtitle={t.lockScreenWidgetDesc || 'اختصارات سريعة من شاشة القفل'} icon={<Fingerprint className="w-4 h-4" />} onClick={() => { const enabled = settings.lockScreenWidgetEnabled === false; onUpdateSettings({ lockScreenWidgetEnabled: enabled }); if (enabled) onTriggerLockScreenNotification(); }} trailing={<Switch checked={settings.lockScreenWidgetEnabled !== false} label={t.lockScreenWidgetTitle || 'شاشة القفل'} />} />
                 <Row title={t.smartRemindersCardTitle || 'التذكيرات الذكية'} subtitle={t.smartRemindersCardDesc || 'إدارة التذكيرات والصلاحيات'} icon={<Bell className="w-4 h-4" />} onClick={onOpenReminders} />
-                <Row title={t.floatingBallTitle || 'التنبيهات العائمة'} subtitle={t.floatingBallSub || 'وصول سريع فوق التطبيقات'} icon={<Sparkles className="w-4 h-4" />} onClick={() => toggle('floatingBallEnabled')} trailing={<Switch checked={settings.floatingBallEnabled} label={t.floatingBallTitle || 'التنبيهات العائمة'} />} />
               </>}
               {group.id === 'sync' && <>
                 <Row title={t.backupTitle || 'المزامنة والنسخ الاحتياطي'} subtitle={t.backupSub || 'نسخة سحابية ومحلية وتصدير'} icon={<Cloud className="w-4 h-4" />} onClick={onOpenBackup} />

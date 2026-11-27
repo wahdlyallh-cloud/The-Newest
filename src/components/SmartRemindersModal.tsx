@@ -54,6 +54,15 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
   const [noLabel, setNoLabel] = useState('لا');
   const [showOverlay, setShowOverlay] = useState(true);
 
+  // Sound & Alarm mode states
+  const [alertMode, setAlertMode] = useState<'notification' | 'alarm'>('notification');
+  const [soundSource, setSoundSource] = useState<'default' | 'preset' | 'device'>('default');
+  const [soundUri, setSoundUri] = useState<string>('');
+  const [soundTitle, setSoundTitle] = useState<string>('');
+  const [repeatCount, setRepeatCount] = useState<number>(3);
+  const [snoozeMinutes, setSnoozeMinutes] = useState<number>(5);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+
   // Permissions state for Android
   const [permissions, setPermissions] = useState<{ notificationsGranted: boolean; overlayGranted: boolean }>({
     notificationsGranted: true,
@@ -130,6 +139,14 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     setYesLabel(t('yesActionLabel') || 'نعم');
     setNoLabel(t('noActionLabel') || 'لا');
     setShowOverlay(true);
+    setAlertMode('notification');
+    setSoundSource('default');
+    setSoundUri('');
+    setSoundTitle('');
+    setRepeatCount(3);
+    setSnoozeMinutes(5);
+    setIsPreviewPlaying(false);
+    SmartReminder.stopPreviewSound().catch(() => {});
     setEditingId(null);
     setShowForm(false);
   };
@@ -151,7 +168,51 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     setYesLabel(reminder.yesLabel || t('yesActionLabel') || 'نعم');
     setNoLabel(reminder.noLabel || t('noActionLabel') || 'لا');
     setShowOverlay(reminder.showOverlay ?? true);
+    setAlertMode(reminder.alertMode || 'notification');
+    setSoundSource(reminder.soundSource || 'default');
+    setSoundUri(reminder.soundUri || '');
+    setSoundTitle(reminder.soundTitle || '');
+    setRepeatCount(reminder.repeatCount !== undefined ? reminder.repeatCount : 3);
+    setSnoozeMinutes(reminder.snoozeMinutes !== undefined ? reminder.snoozeMinutes : 5);
+    setIsPreviewPlaying(false);
     setShowForm(true);
+  };
+
+  const handlePickRingtone = async () => {
+    try {
+      const res = await SmartReminder.pickAlarmSound();
+      if (!res.cancelled && res.title) {
+        setSoundUri(res.uri || '');
+        setSoundTitle(res.title);
+        setSoundSource('device');
+      }
+    } catch (e) {
+      console.warn('Failed to pick ringtone:', e);
+    }
+  };
+
+  const handlePickAudioFile = async () => {
+    try {
+      const res = await SmartReminder.pickAudioFile();
+      if (!res.cancelled && res.title) {
+        setSoundUri(res.uri || '');
+        setSoundTitle(res.title);
+        setSoundSource('device');
+      }
+    } catch (e) {
+      console.warn('Failed to pick audio file:', e);
+    }
+  };
+
+  const handleTogglePreviewSound = async (uriToPlay?: string) => {
+    const targetUri = uriToPlay !== undefined ? uriToPlay : soundUri;
+    if (isPreviewPlaying) {
+      await SmartReminder.stopPreviewSound().catch(() => {});
+      setIsPreviewPlaying(false);
+    } else {
+      await SmartReminder.previewAlarmSound({ uri: targetUri, repeatCount: 1 }).catch(() => {});
+      setIsPreviewPlaying(true);
+    }
   };
 
   const handleToggleDay = (dayId: number) => {
@@ -167,6 +228,11 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     e.preventDefault();
     if (!title.trim()) return;
 
+    if (isPreviewPlaying) {
+      SmartReminder.stopPreviewSound().catch(() => {});
+      setIsPreviewPlaying(false);
+    }
+
     const newReminder: AppReminder = {
       id: editingId || `rem_${Date.now()}`,
       title: title.trim(),
@@ -180,6 +246,12 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
       yesLabel: isQuestion ? yesLabel.trim() : undefined,
       noLabel: isQuestion ? noLabel.trim() : undefined,
       showOverlay,
+      alertMode,
+      soundSource,
+      soundUri,
+      soundTitle,
+      repeatCount,
+      snoozeMinutes,
       createdAt: new Date().toISOString()
     };
 
@@ -457,6 +529,118 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
                       />
                     </div>
                   </div>
+                )}
+              </div>
+
+              {/* Sound & Alert Mode Section: Notification Ping vs Continuous Alarm */}
+              <div className="p-3.5 bg-[#F4F1EA] border border-[#DCE4D8] rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black text-[#2C3E35] flex items-center gap-1.5">
+                    <Volume2 className="w-4 h-4 text-[#4E685B]" />
+                    <span>الصوت ونوع التنبيه</span>
+                  </label>
+                  <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-[#DCE4D8]">
+                    <button
+                      type="button"
+                      onClick={() => setAlertMode('notification')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        alertMode === 'notification' ? 'bg-[#4E685B] text-white shadow-2xs' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      إشعار عادي
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAlertMode('alarm')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        alertMode === 'alarm' ? 'bg-[#C5221F] text-white shadow-2xs' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      منبه كامل ⏰
+                    </button>
+                  </div>
+                </div>
+
+                {alertMode === 'alarm' ? (
+                  <div className="space-y-3 pt-1 border-t border-[#DCE4D8]/60 mt-2">
+                    {/* Tone details & Native Picker */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-gray-700">نغمة المنبه:</span>
+                        <span className="text-[11px] font-black text-[#4E685B] truncate max-w-[180px]">
+                          {soundTitle || 'نغمة المنبه الافتراضية'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={handlePickRingtone}
+                          className="px-3 py-2 bg-white hover:bg-gray-50 border border-[#DCE4D8] rounded-xl text-xs font-extrabold text-[#2C3E35] flex items-center justify-center gap-1.5 transition-all shadow-3xs cursor-pointer"
+                        >
+                          <Smartphone className="w-3.5 h-3.5 text-[#4E685B]" />
+                          <span>نغمات الهاتف</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handlePickAudioFile}
+                          className="px-3 py-2 bg-white hover:bg-gray-50 border border-[#DCE4D8] rounded-xl text-xs font-extrabold text-[#2C3E35] flex items-center justify-center gap-1.5 transition-all shadow-3xs cursor-pointer"
+                        >
+                          <Volume2 className="w-3.5 h-3.5 text-[#C5221F]" />
+                          <span>ملف صوتي من الجهاز</span>
+                        </button>
+                      </div>
+
+                      {/* Preview Sound Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePreviewSound()}
+                        className={`w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                          isPreviewPlaying 
+                            ? 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse'
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                        }`}
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>{isPreviewPlaying ? 'إيقاف معاينة النغمة' : 'معاينة النغمة المحددة 🔊'}</span>
+                      </button>
+                    </div>
+
+                    {/* Repeat Count & Snooze */}
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-700 block">تكرار الرنين:</label>
+                        <select
+                          value={repeatCount}
+                          onChange={e => setRepeatCount(Number(e.target.value))}
+                          className="w-full px-2.5 py-1.5 border border-[#DCE4D8] rounded-xl text-xs font-bold bg-white"
+                        >
+                          <option value={1}>مرة واحدة (1)</option>
+                          <option value={3}>3 مرات</option>
+                          <option value={5}>5 مرات</option>
+                          <option value={-1}>مستمر حتى الإيقاف</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-700 block">مدة الغفوة (Snooze):</label>
+                        <select
+                          value={snoozeMinutes}
+                          onChange={e => setSnoozeMinutes(Number(e.target.value))}
+                          className="w-full px-2.5 py-1.5 border border-[#DCE4D8] rounded-xl text-xs font-bold bg-white"
+                        >
+                          <option value={0}>إيقاف الغفوة</option>
+                          <option value={5}>5 دقائق</option>
+                          <option value={10}>10 دقائق</option>
+                          <option value={15}>15 دقيقة</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-gray-500 font-semibold leading-relaxed">
+                    إشعار سريع وموجز في شريط الحالة مع نغمة التنبيهات الافتراضية.
+                  </p>
                 )}
               </div>
 

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#FFFFFF">
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/quick_notif_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_stat_hayat"
+            android:contentDescription="Icon" />
+
+        <TextView
+            android:id="@+id/quick_notif_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="حياة AI — وصول سريع"
+            android:textColor="#2D4030"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <!-- 4 Action Buttons Grid (RemoteViews compatible LinearLayout) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Action 1: Write (كتابة) -->
+        <LinearLayout
+            android:id="@+id/btn_quick_write"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_quick_action_btn">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_quick_write"
+                android:contentDescription="Write" />
+
+            <TextView
+                android:id="@+id/txt_quick_write"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="كتابة"
+                android:textColor="#333333"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Action 2: Voice (تسجيل صوتي) -->
+        <LinearLayout
+            android:id="@+id/btn_quick_voice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_quick_action_btn">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_quick_voice"
+                android:contentDescription="Voice" />
+
+            <TextView
+                android:id="@+id/txt_quick_voice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="تسجيل صوتي"
+                android:textColor="#333333"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Action 3: Mood (مزاج) -->
+        <LinearLayout
+            android:id="@+id/btn_quick_mood"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_quick_action_btn">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_quick_mood"
+                android:contentDescription="Mood" />
+
+            <TextView
+                android:id="@+id/txt_quick_mood"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="مزاج"
+                android:textColor="#333333"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <!-- Action 4: Advisor (مستشار) -->
+        <LinearLayout
+            android:id="@+id/btn_quick_advisor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_quick_action_btn">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_quick_advisor"
+                android:contentDescription="Advisor" />
+
+            <TextView
+                android:id="@+id/txt_quick_advisor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="مستشار"
+                android:textColor="#333333"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:singleLine="true" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

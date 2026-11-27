@@ -47,6 +47,18 @@ export default function PasskeyAuth({
   // Pre-check biometric support on mount
   useEffect(() => {
     async function checkSupport() {
+      try {
+        const { checkNativeBiometricAvailability } = await import('../lib/biometricAuth');
+        const nativeCheck = await checkNativeBiometricAvailability();
+        if (nativeCheck.available) {
+          setBiometricStatus({
+            checked: true,
+            supported: true
+          });
+          return;
+        }
+      } catch {}
+
       const res = await isBiometricsSupported();
       setBiometricStatus({
         checked: true,
@@ -69,7 +81,33 @@ export default function PasskeyAuth({
     setSuccessNotice(null);
 
     try {
-      // Pre-check support first
+      try {
+        const { checkNativeBiometricAvailability, authenticateNativeBiometric } = await import('../lib/biometricAuth');
+        const nativeCheck = await checkNativeBiometricAvailability();
+        if (nativeCheck.available) {
+          const authRes = await authenticateNativeBiometric(appLanguage);
+          if (authRes.authenticated) {
+            const credId = 'native_android_biometrics_' + Date.now();
+            setSuccessNotice(t.biometricsSuccessNotice);
+            onUpdateSecuritySettings({
+              biometricCredentialId: credId,
+              isBiometricEnabled: true,
+              isAppLockEnabled: true,
+              appPinCode: pinCode || '1234'
+            });
+            setIsLoading(false);
+            return;
+          } else {
+            setFallbackNotice(authRes.error || t.biometricsFallbackPinNotice);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (nativeErr) {
+        console.warn('Native biometric linking check error:', nativeErr);
+      }
+
+      // Pre-check support first for WebAuthn
       const preCheck = await isBiometricsSupported();
       if (!preCheck.supported) {
         setFallbackNotice(
@@ -285,21 +323,6 @@ export default function PasskeyAuth({
               ? (t.updateBiometricBtn) : (t.linkBiometricBtn)}
           </span>
         </button>
-      </div>
-
-      {/* Capacitor Native APK Guidance */}
-      <div className="bg-[#F4F1EA] border border-[#E5E1D4] rounded-2xl p-3 text-[11px] text-gray-600 font-bold flex items-start space-x-2 space-x-reverse">
-        <Smartphone className="w-4 h-4 text-[#8B9D83] shrink-0 mt-0.5" />
-        <div>
-          <span className="font-black text-[#2B3E50]">
-            {t.androidCapacitorBiometrics}
-          </span>
-          <p className="text-gray-500 font-medium leading-relaxed mt-0.5">
-            {appLanguage === 'ar'
-              ? 'عند تحويل التطبيق لملف APK عبر Capacitor، يتم استخدام مستشعر أندرويد الحيوي المباشر تلقائياً لتأمين الشاشة بمرونة.'
-              : 'When built as a native APK, direct Android OS biometric sensors are automatically utilized.'}
-          </p>
-        </div>
       </div>
     </div>
   );
