@@ -301,3 +301,8 @@ npm run build
 - `collectDailyContextForDate` is strictly bounded to one device-local calendar date. It includes diary content, dated inline consultation highlights, tasks, touched daily metrics, habits, and gratitude records; it never reads standalone General Advisor conversations. Untouched trackers are described neutrally as not tracked in the app today.
 - `dailyReportScheduler.ts` generates only official completed-day reports, binds each to `officialProsConsByDate`, guards in-flight dates, and checks the prior seven calendar dates on startup, reconnect, resume, visibility change, and midnight rollover. A manual report for today before midnight is a temporary preview and cannot be saved as the official report.
 - Quality gates: `npx tsc --noEmit`, `node scripts/i18nAudit.cjs`, `node scripts/validate-localization.mjs`, and `npm run build`. No `.github/` or `android/` files are part of this phase.
+
+## 25. Blomeo Topographic Launch Splash
+- `src/components/BlomeoSplashScreen.tsx` provides a ~3-second inline-SVG brand animation over a forest-green radial background with drifting topographic contours, awakening head/brain artwork, botanical stroke draw-in, LTR `blomeo` wordmark reveal, and rising mist.
+- `App.tsx` gates the overlay to once per browser session using `sessionStorage`, supports tap/keyboard skip, honors `prefers-reduced-motion` with a static 0.8-second fade, and keeps the existing PINLock beneath it until its normal unlock flow completes.
+- Animation styling lives in `src/index.css`; no animation package or video asset was added. Standard TypeScript, localization, and production build quality gates apply.

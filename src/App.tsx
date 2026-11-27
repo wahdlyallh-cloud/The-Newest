@@ -13,6 +13,7 @@ import {
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
 import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from './lib/journalTypes';
 import StaticNotification from './components/StaticNotification';
+import BlomeoSplashScreen from './components/BlomeoSplashScreen';
 import FloatingBall from './components/FloatingBall';
 import FloatingFabMenu from './components/FloatingFabMenu';
 import FloatingBackButton from './components/FloatingBackButton';
@@ -1042,6 +1043,35 @@ const AudioPlayerWithIndexedDBFallback: React.FC<{
 };
 
 export default function App() {
+  const [showBlomeoSplash, setShowBlomeoSplash] = useState(() => {
+    try { return sessionStorage.getItem('blomeoSplashPlayed') !== 'true'; } catch { return true; }
+  });
+  const [blomeoSplashExiting, setBlomeoSplashExiting] = useState(false);
+  const splashFadeTimerRef = useRef<number | null>(null);
+  const splashCompleteTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!showBlomeoSplash) return;
+    try { sessionStorage.setItem('blomeoSplashPlayed', 'true'); } catch { /* Private browsing may disable session storage. */ }
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const duration = reducedMotion ? 800 : 3000;
+    const fadeDelay = reducedMotion ? 600 : 2580;
+    splashFadeTimerRef.current = window.setTimeout(() => setBlomeoSplashExiting(true), fadeDelay);
+    splashCompleteTimerRef.current = window.setTimeout(() => setShowBlomeoSplash(false), duration);
+    return () => {
+      if (splashFadeTimerRef.current !== null) window.clearTimeout(splashFadeTimerRef.current);
+      if (splashCompleteTimerRef.current !== null) window.clearTimeout(splashCompleteTimerRef.current);
+    };
+  }, [showBlomeoSplash]);
+
+  const skipBlomeoSplash = () => {
+    if (!showBlomeoSplash || blomeoSplashExiting) return;
+    if (splashFadeTimerRef.current !== null) window.clearTimeout(splashFadeTimerRef.current);
+    if (splashCompleteTimerRef.current !== null) window.clearTimeout(splashCompleteTimerRef.current);
+    setBlomeoSplashExiting(true);
+    splashCompleteTimerRef.current = window.setTimeout(() => setShowBlomeoSplash(false), 420);
+  };
+
   // --- Persistent State Hooks ---
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
@@ -6171,29 +6201,32 @@ export default function App() {
   const isCurrentlyLocked = (settings.appLockEnabled ?? false) && settings.isAppLocked;
   if (isCurrentlyLocked) {
     return (
-      <PINLock
-        correctPin={settings.appPinCode || '1234'}
-        biometricCredentialId={settings.biometricCredentialId}
-        appPasswordHash={settings.appPasswordHash}
-        appLockMethod={settings.appLockMethod || 'pin'}
-        appLanguage={settings?.appLanguage || 'ar'}
-        initialQuickAction={pendingNativeQuickAction}
-        onUnlocked={() => {
-          setSettings(prev => ({ ...prev, isAppLocked: false }));
-          if (pendingNativeQuickAction) {
-            const action = pendingNativeQuickAction;
+      <>
+        <PINLock
+          correctPin={settings.appPinCode || '1234'}
+          biometricCredentialId={settings.biometricCredentialId}
+          appPasswordHash={settings.appPasswordHash}
+          appLockMethod={settings.appLockMethod || 'pin'}
+          appLanguage={settings?.appLanguage || 'ar'}
+          initialQuickAction={pendingNativeQuickAction}
+          onUnlocked={() => {
+            setSettings(prev => ({ ...prev, isAppLocked: false }));
+            if (pendingNativeQuickAction) {
+              const action = pendingNativeQuickAction;
+              setPendingNativeQuickAction(null);
+              setTimeout(() => handleQuickAction(action), 350);
+            }
+          }}
+          onQuickAction={(actionType) => {
             setPendingNativeQuickAction(null);
-            setTimeout(() => handleQuickAction(action), 350);
-          }
-        }}
-        onQuickAction={(actionType) => {
-          setPendingNativeQuickAction(null);
-          setSettings(prev => ({ ...prev, isAppLocked: false }));
-          setTimeout(() => {
-            handleQuickAction(actionType);
-          }, 350);
-        }}
-      />
+            setSettings(prev => ({ ...prev, isAppLocked: false }));
+            setTimeout(() => {
+              handleQuickAction(actionType);
+            }, 350);
+          }}
+        />
+        {showBlomeoSplash && <BlomeoSplashScreen isExiting={blomeoSplashExiting} onSkip={skipBlomeoSplash} />}
+      </>
     );
   }
 
@@ -6206,6 +6239,7 @@ export default function App() {
         lineHeight: getLineHeightCss(settings.appLineHeight)
       }}
     >
+      {showBlomeoSplash && <BlomeoSplashScreen isExiting={blomeoSplashExiting} onSkip={skipBlomeoSplash} />}
 
       {/* 🔔 Floating Habit Reminder Notification */}
       {activeHabitReminder && (
