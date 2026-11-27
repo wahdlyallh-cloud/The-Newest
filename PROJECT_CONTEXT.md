@@ -262,3 +262,34 @@ npm run build
 - **Real Biometric Authentication & Single Lock State:** Removed simulated browser camera Face ID (`getUserMedia`) entirely from `PINLock.tsx`. All biometrics (Fingerprint and Face Unlock) route natively through `BiometricAuthPlugin.java` via `androidx.biometric.BiometricPrompt`. Consolidated master lock toggle into a single source of truth in `localStorage` (`appLockEnabled`). When disabled, lock screen never triggers on cold start or background resume; when enabled, auto-prompts biometrics and secures the app. Cleaned security settings clutter by removing the redundant top row and technical APK text box.
 - **4-Action Lock-Screen Notification Widget & Home Polish:** Upgraded `PersistentNotificationHelper.java` to use a fresh channel ID `hayat_lockscreen_quick_v2` with `IMPORTANCE_DEFAULT`, `VISIBILITY_PUBLIC`, and a custom RemoteViews XML layout (`notification_lockscreen_quick.xml`) featuring 4 interactive actions: كتابة (`write`), تسجيل صوتي (`voice`), مزاج (`mood`), and مستشار (`advisor`). Tapping any button launches the app, resolves lock if enabled, and navigates immediately to the destination. Cleaned Home screen by removing the top "التنبيهات نشطة الآن" card, and removed "أداة التحكم السريع" row from settings.
 - **Smart Reminders Zero Duplicate & Full Alarm System:** `ReminderAlarmReceiver.java` inspects `KeyguardManager` and `PowerManager`. When unlocked & interactive, it shows ONLY the interactive floating overlay without a status-bar notification; when locked or screen is off, it posts ONLY the lock-screen notification. Added full Alarm Mode (`AlarmSoundManager.java`) using `AudioAttributes.USAGE_ALARM` with repeat count and stop/snooze actions directly on the overlay and notification. Added native Android ringtone picker (`RingtoneManager.ACTION_RINGTONE_PICKER`) and audio file picker (`pickAudioFile`), plus audio preview and stop preview inside the reminder editor.
+
+---
+
+## 23. Navigation Shell, Flexible Floating FAB, Fullscreen Writing & Consultation, and Bulletproof Auto-Save (2026-11-27)
+- **Flexible Draggable Floating '+' FAB Menu (`FloatingFabMenu.tsx`):**
+  - Converted the quick-tools button into an independent, smooth draggable floating FAB with touch/pointer drag clamping, `localStorage` persistence (`yawmiyati_fab_pos`), and a 6px drag threshold to prevent accidental clicks while dragging.
+  - Tapping opens all tools in a compact horizontally scrollable tray (`overflow-x-auto flex-nowrap`). The FAB icon morphs into an `X` button; tapping `X` closes ONLY the tray without dismissing whatever tool was opened.
+- **Unstuck Header & Persistent Bottom Navigation:**
+  - Removed sticky positioning from the top "حياة AI" header so it scrolls naturally with page content.
+  - Upgraded the bottom navigation bar to remain persistent across all regular screens and sub-pages; auto-hides strictly in 3 states: 1) virtual keyboard is open/typing, 2) fullscreen editor or consultation is active, 3) live voice call or voice vent session is active.
+- **Universal Floating Back Button & Settings Toggle (`FloatingBackButton.tsx`):**
+  - Rendered at the top-most portal/root level (`z-[9999]`) with drag clamping and persistence (`yawmiyati_back_btn_pos`), remaining accessible above all pages, sub-pages, and modals while keeping native Android gesture back functional.
+  - Added a toggle switch in `SettingsPanel.tsx` (under Appearance) backed by `localStorage` (`yawmiyati_floating_back_enabled`) and `AppSettings.floatingBackButtonEnabled`.
+- **Diary Composer Redesign & Fullscreen Writing Mode:**
+  - Removed redundant top row ("تدوينة جديدة 📝", expand button, "إلغاء وحفظ كمسودة") so the composer opens directly onto entry fields.
+  - Direction-aware swipe hint for category chips (`scrollHintRtl`: "اسحب لليسار لعرض المزيد", `scrollHintLtr`: "Swipe right for more").
+  - Localized mood picker heading ("المزاج والشعور الغالب لحظة كتابة اليومية") with all 10 mood pills in a single horizontally scrollable row.
+  - Dedicated Expand/Collapse button on the writing box toolbar providing a 100% full-viewport distraction-free writing canvas (`fixed inset-0 z-[9995]`).
+  - Audited rich text formatting toolbar: selection preservation on touch/click (`onMouseDown e.preventDefault()`, saved Range restore), Bold, Italic, Underline, Strikethrough, H1, H2, Blockquote, Bullet & Numbered lists, Text Alignment (Right, Center, Left), Highlighter pen, and Clear formatting.
+- **Bulletproof Continuous Auto-Save Engine:**
+  - Debounced auto-save at ~800ms on any change across title, rich text, rating, category, mood, tags, tasks, attachments, or chat logs.
+  - Synchronous flush on `visibilitychange` (hidden), `pagehide`, `beforeunload`, Capacitor `appStateChange` (background), navigation switch, or Back press. Live status pill (`تم الحفظ تلقائيًا ✓`) displayed next to the final Save & Close button.
+- **Inline Smart Consultation Upgrade ("جلسة استشارة ومحادثة ذكية"):**
+  - Dedicated Fullscreen toggle button expanding consultation to full viewport.
+  - Moved `AIMediaAccessSelector` bar to the top (directly under header, above chat messages).
+  - Gemini-style multiline auto-expanding composer (`<textarea rows={1}>` up to 140px) with circular Up-Arrow (`↑`) send button and loading spinner.
+  - Single horizontal scrollable row with 8 practical localized psychological analysis suggestions (summarize, cognitive errors, tomorrow's plan, deep feelings, strengths, cognitive reframing, quick calm, 3 reflection questions).
+- **Localization & Quality Gates:**
+  - 14 new keys added across all 12 supported languages (`ar, en, fr, de, es, it, tr, pt, ru, ja, zh, hi`).
+  - Passed all 4 quality gates: TypeScript, strict 12-locale i18n audit (2629/2629 keys), localization validator, and production Vite build. Zero modifications to `.github/` or `android/`.
+

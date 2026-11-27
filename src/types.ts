@@ -228,6 +228,7 @@ export interface AppSettings {
   appFont?: AppFontFamily; // App font family
   appLineHeight?: AppLineHeight; // App line height
   floatingBallEnabled: boolean;
+  floatingBackButtonEnabled?: boolean;
   appPinCode?: string; // Screen Lock PIN
   appPasswordHash?: string; // SHA-256 hash for alphanumeric app password
   appLockMethod?: 'pin' | 'password';

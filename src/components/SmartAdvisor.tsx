@@ -84,6 +84,7 @@ interface SmartAdvisorProps {
   initialAdvisorTab?: 'diary' | 'general';
   onFilePickerOpen?: () => void;
   onFilePickerClose?: () => void;
+  onLiveVoiceStateChange?: (active: boolean) => void;
 }
 
 interface Message {
@@ -168,7 +169,7 @@ function sanitizeAdvisorText(text: string, lang: string): string {
   return text;
 }
 
-export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar', initialAdvisorTab = 'diary', onFilePickerOpen, onFilePickerClose }: SmartAdvisorProps) {
+export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = [], books = [], userApiKey, appLanguage = 'ar', initialAdvisorTab = 'diary', onFilePickerOpen, onFilePickerClose, onLiveVoiceStateChange }: SmartAdvisorProps) {
   const effectiveKey = userApiKey || getActiveApiKeyFromSettings();
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
@@ -415,6 +416,10 @@ export default function SmartAdvisor({ diaries, habits = [], gratitudeCards = []
   // --- 🎙️ Real-time Audio / Speech Interface states & controls ---
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    onLiveVoiceStateChange?.(showVoiceModal);
+  }, [showVoiceModal, onLiveVoiceStateChange]);
 
   useRegisterBackStep('advisor_permissions_modal', 'modal', showPermissionsModal, () => {
     setShowPermissionsModal(false);

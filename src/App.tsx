@@ -8,12 +8,14 @@ import {
   Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
   User, Printer, ChevronRight, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize, Maximize2, Minimize2,
-  MoreVertical, MoreHorizontal, Folder, FileText
+  MoreVertical, MoreHorizontal, Folder, FileText, ArrowUp, AlignRight, AlignCenter, AlignLeft, Highlighter, RemoveFormatting
 } from 'lucide-react';
 import { DiaryEntry, AppSettings, TaskItem, AudioRecording, FileAttachment, Habit, GratitudeCard, ChatLogEntry, Book, AppReminder, AuthUser, AppLanguage, JournalEntryType } from './types';
 import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJournalTypeLabel, getJournalTypeDescription } from './lib/journalTypes';
 import StaticNotification from './components/StaticNotification';
 import FloatingBall from './components/FloatingBall';
+import FloatingFabMenu from './components/FloatingFabMenu';
+import FloatingBackButton from './components/FloatingBackButton';
 import DrawingCanvas from './components/DrawingCanvas';
 import TherapistReportModal from './components/TherapistReportModal';
 import RatingModal from './components/RatingModal';
@@ -2728,6 +2730,109 @@ export default function App() {
   useRegisterBackStep('diary_editor_fullscreen', 'modal', isDiaryEditorFullscreen, () => setIsDiaryEditorFullscreen(false), isAr ? 'محرر اليوميات' : 'Diary editor');
   useRegisterBackStep('drawing_pad_fullscreen', 'modal', isSketchboardFullscreen, () => setIsSketchboardFullscreen(false), isAr ? 'لوحة الرسم' : 'Drawing pad');
 
+  // --- Dedicated Fullscreen & Live Voice Chat States ---
+  const [isWritingBoxFullscreen, setIsWritingBoxFullscreen] = useState(false);
+  const [isConsultationFullscreen, setIsConsultationFullscreen] = useState(false);
+  const [isLiveVoiceChatActive, setIsLiveVoiceChatActive] = useState(false);
+  const [autoSavedTime, setAutoSavedTime] = useState<string | null>(null);
+  const savedSelectionRangeRef = useRef<Range | null>(null);
+  const diaryChatTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useRegisterBackStep('writing_box_fullscreen', 'modal', isWritingBoxFullscreen, () => setIsWritingBoxFullscreen(false), isAr ? 'ملء شاشة الكتابة' : 'Fullscreen Writing');
+  useRegisterBackStep('consultation_fullscreen', 'modal', isConsultationFullscreen, () => setIsConsultationFullscreen(false), isAr ? 'ملء شاشة الاستشارة' : 'Fullscreen Consultation');
+
+  // --- Continuous Auto-Save Engine (Debounced ~800ms & Lifecycle Flush) ---
+  const flushAutoSave = useCallback(() => {
+    if (!editingDiary) return;
+    const currentHtml = editorRef.current ? editorRef.current.innerHTML : editingDiary.content;
+    const safeTitle = editingDiary.title ? editingDiary.title.trim() : (isAr ? 'مذكرة يومية بدون عنوان' : 'Untitled Diary');
+
+    const updatedEntry: DiaryEntry = {
+      ...editingDiary,
+      title: safeTitle,
+      content: currentHtml,
+      updatedAt: new Date().toISOString()
+    };
+
+    saveDraftSynchronously(updatedEntry);
+
+    setDiaries(prev => {
+      const exists = prev.some(d => d.id === updatedEntry.id);
+      const next = (isNewEntry || !exists)
+        ? [updatedEntry, ...prev.filter(d => d.id !== updatedEntry.id)]
+        : prev.map(d => d.id === updatedEntry.id ? updatedEntry : d);
+
+      try {
+        const safeDiaries = sanitizeDiariesForLocalStorage(next);
+        localStorage.setItem('yawmiyati_diaries', JSON.stringify(safeDiaries));
+      } catch (err) {
+        console.warn('LocalStorage save error:', err);
+      }
+      return next;
+    });
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString(isAr ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+    setAutoSavedTime(timeStr);
+  }, [editingDiary, isAr, isNewEntry, saveDraftSynchronously]);
+
+  // Debounced ~800ms auto-save on any diary changes
+  useEffect(() => {
+    if (!editingDiary) return;
+    const timer = setTimeout(() => {
+      flushAutoSave();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [
+    editingDiary?.title,
+    editingDiary?.content,
+    editingDiary?.importance,
+    editingDiary?.diaryType,
+    editingDiary?.moods,
+    editingDiary?.tags,
+    editingDiary?.tasks,
+    editingDiary?.images,
+    editingDiary?.videos,
+    editingDiary?.audioRecordings,
+    editingDiary?.files,
+    editingDiary?.drawing,
+    editingDiary?.drawings,
+    editingDiary?.chatLogs,
+    flushAutoSave
+  ]);
+
+  // Flush on visibilitychange, pagehide, beforeunload, and appStateChange
+  useEffect(() => {
+    const handleFlush = () => {
+      flushAutoSave();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden' || document.hidden) {
+        flushAutoSave();
+      }
+    };
+
+    window.addEventListener('pagehide', handleFlush);
+    window.addEventListener('beforeunload', handleFlush);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    let removeCap: (() => void) | undefined;
+    CapApp.addListener('appStateChange', (state) => {
+      if (!state.isActive) {
+        flushAutoSave();
+      }
+    }).then(handle => {
+      removeCap = () => { handle.remove(); };
+    }).catch(() => {});
+
+    return () => {
+      window.removeEventListener('pagehide', handleFlush);
+      window.removeEventListener('beforeunload', handleFlush);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (removeCap) removeCap();
+    };
+  }, [flushAutoSave]);
+
   // --- Therapist Report Modal State ---
   const [showTherapistModal, setShowTherapistModal] = useState(false);
 
@@ -3147,11 +3252,36 @@ export default function App() {
     lastRecordedHtmlRef.current = htmlToSave;
   };
 
+  const saveEditorSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && editorRef.current) {
+      const range = sel.getRangeAt(0);
+      if (editorRef.current.contains(range.commonAncestorContainer)) {
+        savedSelectionRangeRef.current = range.cloneRange();
+      }
+    }
+  }, []);
+
+  const restoreEditorSelection = useCallback(() => {
+    if (savedSelectionRangeRef.current && editorRef.current) {
+      editorRef.current.focus();
+      const sel = window.getSelection();
+      if (sel) {
+        try {
+          sel.removeAllRanges();
+          sel.addRange(savedSelectionRangeRef.current);
+        } catch (_) {}
+      }
+    }
+  }, []);
+
   const applyRichFormat = (command: string, value: string | null = null) => {
     if (editorRef.current) {
+      restoreEditorSelection();
       editorRef.current.focus();
       recordUndoSnapshot();
       document.execCommand(command, false, value || undefined);
+      saveEditorSelection();
       const html = editorRef.current.innerHTML;
       setEditingDiary(prev => prev ? { ...prev, content: html } : null);
     } else if (diaryTextareaRef.current && editingDiary) {
@@ -6302,184 +6432,32 @@ export default function App() {
 
       {/* 🚀 Header bar with branding & Responsive Navigation Toolbar */}
       <header
-        className={`sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs transition-all duration-300 transform pt-safe ${
-          isHeaderCollapsedOnMobile
-            ? 'max-sm:-translate-y-full max-sm:max-h-0 max-sm:opacity-0 max-sm:overflow-hidden max-sm:pointer-events-none'
-            : 'max-sm:translate-y-0 max-sm:max-h-[500px] max-sm:opacity-100'
-        }`}
+        className="relative bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs pt-safe"
         dir={isRtl ? 'rtl' : 'ltr'}
-        onTouchStart={() => {
-          if (!isHeaderCollapsedOnMobile) {
-            revealHeaderTemporarily();
-          }
-        }}
       >
-        {/* 📱 Mobile / Compact Header (< 768px): Expandable + Action Drawer */}
-        {!isTopDrawerOpen ? (
-          <div className="flex md:hidden items-center justify-between px-3 py-2 w-full gap-2 transition-all duration-300">
-            {/* Mobile Branding */}
-            <div className="flex items-center space-x-2 space-x-reverse shrink-0 select-none">
-              <div className="w-8 h-8 bg-[#8B9D83] rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
-                <Brain className="w-4.5 h-4.5" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center space-x-1 space-x-reverse">
-                  <h1 className="text-sm font-black tracking-tight text-[#3A3A3A] truncate max-w-[140px]">
-                    {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
-                  </h1>
-                  <span className="text-[9px] font-black bg-[#8B9D83] text-white px-1 py-0.5 rounded leading-none">
-                    AI
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1 space-x-reverse text-[9px] font-bold text-gray-400">
-                  <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-                  <span>{autoSaveStatus === 'saving' ? t('nav.saving') : (lastAutoSaveTime || '💾')}</span>
-                </div>
-              </div>
+        {/* 📱 Mobile / Compact Header (< 768px): Natural Unstuck Branding */}
+        <div className="flex md:hidden items-center justify-between px-3 py-2 w-full gap-2 transition-all duration-300">
+          {/* Mobile Branding */}
+          <div className="flex items-center space-x-2 space-x-reverse shrink-0 select-none">
+            <div className="w-8 h-8 bg-[#8B9D83] rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
+              <Brain className="w-4.5 h-4.5" />
             </div>
-
-            {/* Consolidated Top-Bar + Toggle Button (smoothly rotates to × when open) */}
-            <button
-              type="button"
-              onClick={() => setIsTopDrawerOpen(true)}
-              className="relative p-2.5 rounded-xl border border-[#D1CCBA] bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] active:scale-95 transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[40px] min-w-[40px]"
-              title={t.topMenuQuickDrawer || 'القائمة السريعة والأقسام'}
-              aria-label={t.topMenuQuickDrawer || 'القائمة السريعة والأقسام'}
-            >
-              <Plus className="w-5 h-5 transition-transform duration-300 transform" />
-              {/* Subtle Red Indicator Dot if Unread Notifications or Incomplete Tasks Exist */}
-              {(incompleteTasksCount > 0 || (settings.reminders || []).some(r => r.active)) && (
-                <span className="absolute top-1.5 end-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white animate-pulse" />
-              )}
-            </button>
-          </div>
-        ) : (
-          <div className="flex md:hidden items-center justify-between px-2 py-1.5 w-full gap-2 transition-all duration-300 bg-[#FAF8F5] border-b border-[#E2DCC8]/80 animate-in fade-in slide-in-from-top-1 duration-200">
-            {/* Close Button that smoothly rotates to × */}
-            <button
-              type="button"
-              onClick={() => setIsTopDrawerOpen(false)}
-              className="p-2 rounded-xl bg-[#5A5A40] text-white hover:bg-[#474732] active:scale-95 transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[38px] min-w-[38px] shrink-0"
-              title={t.closeAction || 'إغلاق'}
-              aria-label={t.closeAction || 'إغلاق'}
-            >
-              <X className="w-5 h-5 transition-transform duration-300 transform rotate-90" />
-            </button>
-
-            {/* Full-width Horizontal Scrollable Action Drawer */}
-            <div className="flex-1 flex items-center space-x-2 space-x-reverse overflow-x-auto scrollbar-none py-1 px-1 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {/* 1. الأذكار (Athkar) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsFullAthkarModalOpen(true);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#F3E8FF] hover:bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
-                title={t('nav.dhikr_title')}
-              >
-                <Sparkles className="w-4 h-4 text-[#7C3AED] animate-pulse shrink-0" />
-                <span>{t('nav.dhikr')}</span>
-              </button>
-
-              {/* 2. قائمة المهام اليومية (Daily Tasks Checklist) */}
-              <button
-                type="button"
-                onClick={() => {
-                  switchTab('diaries', { subTab: 'tasks' });
-                  setActiveDiariesSubTab('tasks');
-                  setEditingDiary(null);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#EEF1EB] hover:bg-[#E2E9DF] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
-                title={t.dailyTasksSubtabLabel}
-              >
-                <span className="flex items-center justify-center bg-[#C5221F] text-white text-[9px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
-                  {incompleteTasksCount}
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-1 space-x-reverse">
+                <h1 className="text-sm font-black tracking-tight text-[#3A3A3A] truncate max-w-[140px]">
+                  {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
+                </h1>
+                <span className="text-[9px] font-black bg-[#8B9D83] text-white px-1 py-0.5 rounded leading-none">
+                  AI
                 </span>
-                <span>{t.dailyTasksSubtabLabel || 'المهام'}</span>
-              </button>
-
-              {/* 3. جدار الامتنان (Gratitude Wall) */}
-              <button
-                type="button"
-                onClick={() => {
-                  switchTab('diaries', { subTab: 'gratitude' });
-                  setActiveDiariesSubTab('gratitude');
-                  setEditingDiary(null);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#FAF0F4] hover:bg-[#FCE8F0] text-[#9D4E6B] border border-[#F3D7E2] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
-                title={t.gratitudeSubtab}
-              >
-                <span className="text-base shrink-0">🌸</span>
-                <span>{t.gratitudeSubtab || 'الامتنان'}</span>
-              </button>
-
-              {/* 4. تمارين العلاج المعرفي (CBT Exercises) */}
-              <button
-                type="button"
-                onClick={() => {
-                  switchTab('diaries', { subTab: 'cbt' });
-                  setActiveDiariesSubTab('cbt');
-                  setEditingDiary(null);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-[#F0F4FA] hover:bg-[#E5EEF8] text-[#3E5C76] border border-[#D3E0EA] rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
-                title={t.cbtSubtabLabel}
-              >
-                <span className="text-base shrink-0">🧠</span>
-                <span>{t.cbtSubtabLabel || 'التمارين'}</span>
-              </button>
-
-              {/* 5. التنبيهات / الإشعارات (Smart Reminders with unread/active count badge) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowSmartRemindersModal(true);
-                  setIsTopDrawerOpen(false);
-                }}
-                className="relative flex items-center space-x-1.5 space-x-reverse px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/90 rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px]"
-                title={t('nav.smart_reminders')}
-              >
-                <BellRing className="w-4 h-4 text-amber-700 shrink-0" />
-                <span>{t('nav.smart_reminders')}</span>
-                {(settings.reminders?.length || 0) > 0 && (
-                  <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded-full font-black">
-                    {settings.reminders.length}
-                  </span>
-                )}
-              </button>
-
-              {/* 6. تسجيل الدخول / الحساب (Login / Account status) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAuthModalOpen(true);
-                  setIsTopDrawerOpen(false);
-                }}
-                className={`flex items-center space-x-1.5 space-x-reverse px-3 py-2 border rounded-xl text-xs font-black shadow-3xs active:scale-95 transition-all shrink-0 whitespace-nowrap h-10 min-h-[40px] ${
-                  currentUser
-                    ? 'bg-teal-700 hover:bg-teal-800 text-white border-teal-800'
-                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
-                }`}
-                title={t('nav.account_title')}
-              >
-                {currentUser ? (
-                  <>
-                    <Cloud className="w-4 h-4 text-teal-200 shrink-0" />
-                    <span className="truncate max-w-[90px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{t('nav.sign_in')}</span>
-                  </>
-                )}
-              </button>
+              </div>
+              <div className="flex items-center space-x-1 space-x-reverse text-[9px] font-bold text-gray-400">
+                <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                <span>{autoSaveStatus === 'saving' ? t('nav.saving') : (lastAutoSaveTime || '💾')}</span>
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* 💻 Desktop Header (>= 768px): Structured Desktop Layout with Central Navigation Tabs */}
         <div className="hidden md:flex max-w-[1440px] mx-auto px-4 lg:px-6 py-2.5 items-center justify-between gap-4">
@@ -6803,31 +6781,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* 🔙 Universal Back Navigation: Desktop Sticky Bar vs Mobile Draggable Floating Pill */}
+      {/* 🔙 Universal Back Navigation: Desktop Sticky Bar vs Root Floating Back Button */}
       {(activeTab !== 'dashboard' || editingDiary !== null || navHistory.length > 0 || navStackCount > 0) && (
         <>
-          {/* Mobile Floating Draggable Back Button */}
-          <motion.div
-            drag
-            dragMomentum={false}
-            dragElastic={0.1}
-            className="fixed top-16 left-4 z-40 sm:hidden cursor-grab active:cursor-grabbing"
-          >
-            <button
-              type="button"
-              onClick={handleGoBack}
-              className="flex items-center space-x-1.5 space-x-reverse p-2.5 bg-[#4E685B] text-white hover:bg-[#3F5449] border-2 border-[#E5E1D4] rounded-full shadow-2xl transition-all active:scale-95 cursor-pointer group"
-              title={t('nav.back_mobile_title')}
-            >
-              <ArrowRight className={`w-5 h-5 text-[#FEFAE0] group-hover:-translate-x-0.5 transition-transform shrink-0 ${isRtl ? '' : 'rotate-180'}`} />
-              {(navHistory.length + navStackCount) > 0 && (
-                <span className="text-[11px] bg-white text-[#4E685B] px-2 py-0.5 rounded-full font-black leading-none shadow-xs">
-                  {navHistory.length + navStackCount}
-                </span>
-              )}
-            </button>
-          </motion.div>
-
           {/* Desktop Sticky Navigation Bar (Aligned with header without overlapping) */}
           <div className="hidden sm:block bg-[#F9F7F2]/95 backdrop-blur-md border-b border-[#E2DCC8]/80 py-2 px-4 sticky top-[64px] z-20 transition-all duration-300 shadow-3xs" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -8008,44 +7964,27 @@ export default function App() {
             {editingDiary ? (
               <div className={`${isDiaryEditorFullscreen ? 'fixed inset-0 z-[9990] h-[100dvh] w-full rounded-none p-3 sm:p-6 overflow-y-auto' : 'rounded-none sm:rounded-3xl p-3 sm:p-6'} bg-white border-y sm:border border-[#E2DCC8] shadow-xs space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden mx-0`}>
 
-                {/* Editor Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-[#E2DCC8]/55 flex-wrap gap-2">
-                  <h3 className="font-bold text-[#3A3A3A] text-base">
-                    {isNewEntry ? t.newJournalHeader : t.editJournalHeader}
-                  </h3>
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <button type="button" data-compact-control="true" onClick={() => setIsDiaryEditorFullscreen(v => !v)} className="inline-flex items-center justify-center w-9 h-9 min-h-0 min-w-0 rounded-lg bg-[#EEF1EB] text-[#2D6A4F] border border-[#DCE4D8]" aria-label={isDiaryEditorFullscreen ? (isAr ? 'استعادة المحرر' : 'Restore editor') : (isAr ? 'ملء شاشة المحرر' : 'Fullscreen editor')}>
-                      {isDiaryEditorFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                    </button>
-                    {!isNewEntry && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          toggleArchiveDiary(editingDiary.id);
-                          const nextState = !editingDiary.isArchived;
-                          setEditingDiary(prev => prev ? { ...prev, isArchived: nextState } : null);
-                          if (nextState) {
-                            setEditingDiary(null);
-                          }
-                        }}
-                        className="text-xs font-black text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
-                      >
-                        <Archive className="w-3.5 h-3.5 text-amber-700" />
-                        <span>{editingDiary.isArchived ? t.restoreAction : t.archiveAction}</span>
-                      </button>
-                    )}
+                {/* Minimal Header for Existing Entry only */}
+                {!isNewEntry && (
+                  <div className="flex items-center justify-between pb-3 border-b border-[#E2DCC8]/50 flex-wrap gap-2">
+                    <span className="text-xs font-bold text-gray-500">{t.editJournalHeader}</span>
                     <button
+                      type="button"
                       onClick={() => {
-                        setEditingDiary(null);
-                        setIsNewEntry(false);
-                        setDiaryAiAnswer('');
+                        toggleArchiveDiary(editingDiary.id);
+                        const nextState = !editingDiary.isArchived;
+                        setEditingDiary(prev => prev ? { ...prev, isArchived: nextState } : null);
+                        if (nextState) {
+                          setEditingDiary(null);
+                        }
                       }}
-                      className="text-xs font-semibold text-[#5A5A40] hover:text-[#3A3A3A] bg-[#F0EDE4] px-3 py-1.5 rounded-lg cursor-pointer"
+                      className="text-xs font-black text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
                     >
-                      {t.cancelAndSaveDraft}
+                      <Archive className="w-3.5 h-3.5 text-amber-700" />
+                      <span>{editingDiary.isArchived ? t.restoreAction : t.archiveAction}</span>
                     </button>
                   </div>
-                </div>
+                )}
 
                 {/* Title & Star Rating Input */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -8086,7 +8025,7 @@ export default function App() {
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-[#5A5A40]">{t.entryClassificationLabel}</label>
                     <span className="text-[10px] font-bold text-gray-400">
-                      {t.scrollHint}
+                      {isRtl ? (t.scrollHintRtl || 'اسحب لليسار لعرض المزيد') : (t.scrollHintLtr || 'Swipe right for more')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full max-w-full">
@@ -8126,7 +8065,7 @@ export default function App() {
 
                 <div>
                   <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.behavioralMoodLabel}</label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-nowrap overflow-x-auto gap-2 no-scrollbar scrollbar-none py-1 w-full max-w-full">
                     {['سعيد', 'متحمس', 'مرتاح', 'طبيعي', 'حزين', 'مكتئب', 'قلق', 'غاضب', 'مرهق', 'ممتن'].map((m) => {
                       const isSelected = editingDiary.moods.includes(m);
                       const moodTranslationMap: Record<string, string> = {
@@ -8157,9 +8096,9 @@ export default function App() {
                               }
                             });
                           }}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                          className={`shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] scale-105 font-semibold'
+                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] scale-[1.02] font-black shadow-3xs'
                               : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4]'
                           }`}
                         >
@@ -8198,28 +8137,66 @@ export default function App() {
                 )}
 
                 {/* Content text area with Rich Editor Toolbar */}
-                <div className="overflow-hidden">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="block text-xs font-bold text-[#5A5A40]">{t.writeFeelingsLabel}</label>
-                    {gratitudeCards.length > 0 && (
+                <div className={isWritingBoxFullscreen ? 'fixed inset-0 z-[9995] bg-white h-[100dvh] w-full flex flex-col p-3 sm:p-6 overflow-hidden' : 'overflow-hidden space-y-0 w-full'}>
+                  {isWritingBoxFullscreen ? (
+                    <div className="flex items-center justify-between pb-2.5 border-b border-[#E2DCC8] mb-2 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-[#3A3A3A] truncate max-w-[200px] sm:max-w-md">
+                          {editingDiary.title || (isAr ? 'كتابة اليومية' : 'Writing Journal')}
+                        </span>
+                        {autoSavedTime && (
+                          <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                            {t.autoSavedCheck || (isAr ? 'تم الحفظ تلقائيًا ✓' : 'Auto-saved ✓')}
+                          </span>
+                        )}
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setShowGratitudeImportModal(true)}
-                        className="text-[10px] text-[#8B9D83] hover:text-[#5A5A40] font-extrabold flex items-center space-x-1 space-x-reverse cursor-pointer bg-[#8B9D83]/8 px-2.5 py-1 rounded-lg transition-colors border border-[#8B9D83]/20 animate-pulse"
+                        onClick={() => setIsWritingBoxFullscreen(false)}
+                        className="p-1.5 bg-[#EEF1EB] hover:bg-[#E2E9DF] text-[#2D6A4F] rounded-xl border border-[#DCE4D8] flex items-center gap-1 text-xs font-bold cursor-pointer"
+                        title={t.editorRestoreWriting || (isAr ? 'استعادة الحجم الطبيعي' : 'Exit fullscreen')}
                       >
-                        <span>🌸</span>
-                        <span>{t.importGratitudeBtn}</span>
+                        <Minimize2 className="w-4 h-4" />
+                        <span className="text-[11px] hidden sm:inline">{t.editorRestoreWriting || (isAr ? 'تصغير' : 'Collapse')}</span>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="block text-xs font-bold text-[#5A5A40]">{t.writeFeelingsLabel}</label>
+                      {gratitudeCards.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowGratitudeImportModal(true)}
+                          className="text-[10px] text-[#8B9D83] hover:text-[#5A5A40] font-extrabold flex items-center space-x-1 space-x-reverse cursor-pointer bg-[#8B9D83]/8 px-2.5 py-1 rounded-lg transition-colors border border-[#8B9D83]/20 animate-pulse"
+                        >
+                          <span>🌸</span>
+                          <span>{t.importGratitudeBtn}</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                  {/* Rich Text Editor Toolbar (Organized & Clutter-Free) */}
-                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 text-xs overflow-x-auto scrollbar-none">
+                  {/* Rich Text Editor Toolbar (Organized, Fullscreen Toggle & Complete Rich Tools) */}
+                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 text-xs overflow-x-auto scrollbar-none shrink-0">
+                    {/* Fullscreen Writing Mode Toggle */}
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setIsWritingBoxFullscreen(v => !v)}
+                      className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#2D6A4F] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px] shrink-0"
+                      title={isWritingBoxFullscreen ? (t.editorRestoreWriting || 'استعادة الحجم الطبيعي') : (t.editorFullscreenWriting || 'ملء الشاشة')}
+                    >
+                      {isWritingBoxFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
+
+                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
+
                     {/* Undo / Redo */}
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         title={t.undoTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={handleUndo}
                         className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px]"
                       >
@@ -8228,6 +8205,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.redoTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={handleRedo}
                         className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px]"
                       >
@@ -8242,6 +8220,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.boldTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('**', '**')}
                         className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
                       >
@@ -8250,6 +8229,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.italicTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('*', '*')}
                         className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
                       >
@@ -8258,6 +8238,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.underlineTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('<u>', '</u>')}
                         className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
                       >
@@ -8266,6 +8247,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.strikethroughTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('~~', '~~')}
                         className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
                       >
@@ -8275,11 +8257,12 @@ export default function App() {
 
                     <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
 
-                    {/* Headings & Blocks */}
+                    {/* Headings & Blocks & Lists */}
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         title={t.h1Tooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('\n# ')}
                         className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
                       >
@@ -8288,6 +8271,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.h2Tooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('\n## ')}
                         className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
                       >
@@ -8296,6 +8280,7 @@ export default function App() {
                       <button
                         type="button"
                         title={t.quoteTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('\n> ')}
                         className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
                       >
@@ -8304,10 +8289,77 @@ export default function App() {
                       <button
                         type="button"
                         title={t.bulletListTooltip}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => insertFormatting('\n- ')}
                         className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px] whitespace-nowrap"
                       >
                         • {t.bulletListLabel}
+                      </button>
+                      <button
+                        type="button"
+                        title={t.toolbarNumberedList || 'قائمة مرقمة'}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applyRichFormat('insertOrderedList')}
+                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px] whitespace-nowrap"
+                      >
+                        1. {t.numberedListLabel || 'مرقمة'}
+                      </button>
+                    </div>
+
+                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
+
+                    {/* Text Alignment */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        title={t.alignRightBtn || 'محاذاة لليمين'}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applyRichFormat('justifyRight')}
+                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      >
+                        <AlignRight className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title={t.alignCenterBtn || 'توسيط'}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applyRichFormat('justifyCenter')}
+                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      >
+                        <AlignCenter className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title={t.alignLeftBtn || 'محاذاة لليسار'}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applyRichFormat('justifyLeft')}
+                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      >
+                        <AlignLeft className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
+
+                    {/* Highlighter Pen & Clear Formatting */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        title={t.highlighterBtn || 'قلم التظليل'}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applyRichFormat('hiliteColor', '#FEF08A')}
+                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      >
+                        <Highlighter className="w-4 h-4 text-amber-500" />
+                      </button>
+                      <button
+                        type="button"
+                        title={t.clearFormattingBtn || 'إزالة التنسيق'}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applyRichFormat('removeFormat')}
+                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      >
+                        <RemoveFormatting className="w-4 h-4 text-gray-500" />
                       </button>
                     </div>
 
@@ -8317,6 +8369,7 @@ export default function App() {
                     <button
                       type="button"
                       title={t.fontColorsTooltip}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => setShowColorPalette(!showColorPalette)}
                       className={`px-3 py-1.5 sm:py-2 rounded-xl border transition-all font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs shrink-0 whitespace-nowrap min-h-[36px] ${
                         showColorPalette
@@ -8331,19 +8384,19 @@ export default function App() {
 
                   {/* Dedicated Inline Font Colors Swatches Row (Natural anchored placement) */}
                   {showColorPalette && (
-                    <div className="bg-[#FAF8F5] border-x border-[#E2DCC8] px-3.5 py-2 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="bg-[#FAF8F5] border-x border-[#E2DCC8] px-3.5 py-2 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-150 shrink-0">
                       <span className="text-[11px] font-black text-amber-950 shrink-0 flex items-center gap-1">
                         <span>🎨</span>
                         <span>{t.fontColorsBtn}:</span>
                       </span>
                       <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-5 h-5 rounded-full bg-amber-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorOrange} />
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorGreen} />
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-5 h-5 rounded-full bg-blue-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorBlue} />
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-5 h-5 rounded-full bg-red-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorRed} />
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-5 h-5 rounded-full bg-purple-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorPurple} />
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#2B3E50">', '</span>')} className="w-5 h-5 rounded-full bg-[#2B3E50] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="كحلي" />
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<span style="color:#3A3A3A">', '</span>')} className="w-5 h-5 rounded-full bg-[#3A3A3A] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="افتراضي" />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-5 h-5 rounded-full bg-amber-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorOrange} />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorGreen} />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-5 h-5 rounded-full bg-blue-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorBlue} />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-5 h-5 rounded-full bg-red-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorRed} />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-5 h-5 rounded-full bg-purple-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorPurple} />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#2B3E50">', '</span>')} className="w-5 h-5 rounded-full bg-[#2B3E50] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="كحلي" />
+                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#3A3A3A">', '</span>')} className="w-5 h-5 rounded-full bg-[#3A3A3A] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="افتراضي" />
                       </div>
                     </div>
                   )}
@@ -8354,7 +8407,12 @@ export default function App() {
                     contentEditable
                     suppressContentEditableWarning
                     data-placeholder={t.editorTextareaPlaceholder}
+                    onKeyUp={saveEditorSelection}
+                    onMouseUp={saveEditorSelection}
+                    onTouchEnd={saveEditorSelection}
+                    onSelect={saveEditorSelection}
                     onInput={(e) => {
+                      saveEditorSelection();
                       const html = e.currentTarget.innerHTML;
                       const prevRecorded = lastRecordedHtmlRef.current || '';
                       if (Math.abs(html.length - prevRecorded.length) > 5 || html.endsWith(' ') || html.endsWith('&nbsp;')) {
@@ -8368,6 +8426,7 @@ export default function App() {
                       });
                     }}
                     onBlur={(e) => {
+                      saveEditorSelection();
                       const html = e.currentTarget.innerHTML;
                       setEditingDiary(prev => {
                         if (!prev) return null;
@@ -8379,10 +8438,12 @@ export default function App() {
                     style={{
                       backgroundColor: editingDiary.color || '#F9F7F2',
                       fontSize: `${Math.max(16, fontDrawerSize)}px`,
-                      minHeight: '280px',
+                      minHeight: isWritingBoxFullscreen ? '200px' : '280px',
                       lineHeight: '1.85'
                     }}
-                    className={`w-full max-w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none px-3 py-3 sm:p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none max-h-[600px] overflow-y-auto overflow-x-hidden shadow-inner select-text selectable-text whitespace-pre-wrap ${fontDrawerFamily}`}
+                    className={`w-full max-w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none px-3 py-3 sm:p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none ${
+                      isWritingBoxFullscreen ? 'flex-1 min-h-0' : 'max-h-[600px]'
+                    } overflow-y-auto overflow-x-hidden shadow-inner select-text selectable-text whitespace-pre-wrap ${fontDrawerFamily}`}
                   />
 
                   {/* Attachment & Features Toolbar directly attached to textarea (Image 4 format) */}
@@ -9905,8 +9966,8 @@ export default function App() {
                 )}
 
                 {/* 🧠 Flagship AI Assistant Panel - Real-time Psychological Chat */}
-                <div className="border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-3.5 sm:p-5 space-y-3.5 flex flex-col shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between border-b border-[#E2DCC8]/60 pb-3 gap-2">
+                <div className={isConsultationFullscreen ? 'fixed inset-0 z-[9995] bg-[#F9F7F2] h-[100dvh] w-full flex flex-col p-3 sm:p-6 overflow-hidden' : 'border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-3.5 sm:p-5 space-y-3.5 flex flex-col shadow-xs'}>
+                  <div className="flex flex-wrap items-center justify-between border-b border-[#E2DCC8]/60 pb-3 gap-2 shrink-0">
                     <div className="flex items-center space-x-2 space-x-reverse">
                       <span className="p-2 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl text-base">🧠</span>
                       <div>
@@ -9921,6 +9982,16 @@ export default function App() {
 
                     {/* Chat Actions Toolbar */}
                     <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Fullscreen Consultation Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => setIsConsultationFullscreen(v => !v)}
+                        className="p-1.5 bg-[#EEF1EB] hover:bg-[#E2E9DF] text-[#2D6A4F] rounded-xl border border-[#DCE4D8] flex items-center gap-1 text-xs font-bold cursor-pointer"
+                        title={isConsultationFullscreen ? (t.consultationRestore || (isAr ? 'استعادة الحجم الطبيعي' : 'Exit fullscreen')) : (t.consultationFullscreen || (isAr ? 'ملء الشاشة' : 'Fullscreen'))}
+                      >
+                        {isConsultationFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                        <span className="text-[11px] hidden sm:inline">{isConsultationFullscreen ? (t.consultationRestore || (isAr ? 'تصغير' : 'Collapse')) : (t.consultationFullscreen || (isAr ? 'ملء الشاشة' : 'Fullscreen'))}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={handleCopyDiaryChat}
@@ -10000,8 +10071,19 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* AIMediaAccessSelector: Moved to TOP directly below consultation header */}
+                  <div className="shrink-0">
+                    <AIMediaAccessSelector
+                      permission={diaryChatMediaPermission}
+                      onChange={setDiaryChatMediaPermission}
+                      availableAttachments={editingDiary ? extractAvailableAttachments([editingDiary]) : []}
+                      appLanguage={settings?.appLanguage || 'ar'}
+                      compact={true}
+                    />
+                  </div>
+
                   {/* Chat Messages Log Box */}
-                  <div className="flex-1 min-h-[420px] max-h-[60vh] overflow-y-auto space-y-3.5 p-4 bg-white border border-[#E2DCC8]/80 rounded-2xl scroll-smooth shadow-inner" id="diary-chat-log-box">
+                  <div className={`flex-1 min-h-[300px] ${isConsultationFullscreen ? 'h-full max-h-none' : 'max-h-[60vh]'} overflow-y-auto space-y-3.5 p-4 bg-white border border-[#E2DCC8]/80 rounded-2xl scroll-smooth shadow-inner`} id="diary-chat-log-box">
                     {(editingDiary.chatLogs || []).length === 0 ? (
                       <div className="text-center py-12 px-4 space-y-2.5">
                         <span className="text-4xl block">💬</span>
@@ -10094,45 +10176,60 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* AIMediaAccessSelector: Per-Chat Quota & Token Saver */}
-                  <AIMediaAccessSelector
-                    permission={diaryChatMediaPermission}
-                    onChange={setDiaryChatMediaPermission}
-                    availableAttachments={editingDiary ? extractAvailableAttachments([editingDiary]) : []}
-                    appLanguage={settings?.appLanguage || 'ar'}
-                    compact={true}
-                  />
-
-                  {/* Input Chat Messages */}
-                  <div className="flex w-full max-w-full overflow-hidden flex-nowrap gap-2 items-center">
-                    <input
-                      type="text"
+                  {/* Gemini-Style Multiline Auto-Expanding Composer Bar with Circular Up-Arrow Button */}
+                  <div className="bg-white border border-[#E2DCC8] rounded-2xl p-2 sm:p-2.5 flex items-end gap-2 shadow-xs transition-all focus-within:ring-2 focus-within:ring-[#2D6A4F] focus-within:border-[#2D6A4F] shrink-0">
+                    <textarea
+                      ref={diaryChatTextareaRef}
+                      rows={1}
                       value={diaryChatMessage}
-                      onChange={(e) => setDiaryChatMessage(e.target.value)}
+                      onChange={(e) => {
+                        setDiaryChatMessage(e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = `${Math.min(e.target.scrollHeight, 140)}px`;
+                      }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
                           handleSendDiaryChatMessage();
+                          if (diaryChatTextareaRef.current) {
+                            diaryChatTextareaRef.current.style.height = 'auto';
+                          }
                         }
                       }}
                       placeholder={t.expressMindPlaceholder}
-                      className="flex-1 min-w-0 w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-2xl px-3.5 py-2.5 text-xs text-[#3A3A3A] font-medium placeholder:text-gray-400"
+                      className="flex-1 min-w-0 w-full bg-transparent resize-none border-none outline-none text-xs sm:text-sm text-[#3A3A3A] font-medium placeholder:text-gray-400 max-h-[140px] py-1 px-1.5 leading-relaxed"
                     />
                     <button
                       type="button"
                       disabled={diaryChatLoading || !diaryChatMessage.trim()}
-                      onClick={() => handleSendDiaryChatMessage()}
-                      className="px-4 py-2.5 bg-[#8B9D83] hover:bg-[#72856A] disabled:opacity-50 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center justify-center space-x-1.5 space-x-reverse shrink-0 whitespace-nowrap"
+                      onClick={() => {
+                        handleSendDiaryChatMessage();
+                        if (diaryChatTextareaRef.current) {
+                          diaryChatTextareaRef.current.style.height = 'auto';
+                        }
+                      }}
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-xs ${
+                        diaryChatLoading
+                          ? 'bg-amber-100 text-amber-700 animate-pulse'
+                          : diaryChatMessage.trim()
+                          ? 'bg-[#2D6A4F] hover:bg-[#1E4D38] text-white active:scale-95'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                      }`}
+                      title={t.sendBtnLabel || 'إرسال'}
                     >
-                      <span>{t.sendBtnLabel}</span>
-                      <span>🚀</span>
+                      {diaryChatLoading ? (
+                        <span className="w-3.5 h-3.5 border-2 border-[#2D6A4F] border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                      )}
                     </button>
                   </div>
 
-                  {/* Built-in quick psychologist suggestions */}
-                  <div className="space-y-1.5 pt-0.5">
+                  {/* Single Horizontal Row of 8 Rich Localized Psychologist Suggestions */}
+                  <div className="space-y-1.5 pt-0.5 shrink-0">
                     <p className="text-[10px] text-gray-400 font-extrabold">{t('quickOneClickActions')}</p>
-                    <div className="flex flex-wrap sm:flex-nowrap gap-1.5 overflow-x-auto pb-0.5">
+                    <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
+                      {/* 1. تلخيص التدوينة */}
                       <button
                         type="button"
                         onClick={() => handleSendDiaryChatMessage(t('promptSummarizeEntry'))}
@@ -10141,6 +10238,8 @@ export default function App() {
                         <span>📝</span>
                         <span>{t('summarizeEntryBtn')}</span>
                       </button>
+
+                      {/* 2. استخراج الأخطاء المعرفية */}
                       <button
                         type="button"
                         onClick={() => handleSendDiaryChatMessage(t('promptExtractCognitiveErrors'))}
@@ -10149,6 +10248,8 @@ export default function App() {
                         <span>💡</span>
                         <span>{t('extractCognitiveErrorsBtn')}</span>
                       </button>
+
+                      {/* 3. خطة عملية ليوم الغد */}
                       <button
                         type="button"
                         onClick={() => handleSendDiaryChatMessage(t('promptPracticalPlanTomorrow'))}
@@ -10156,6 +10257,56 @@ export default function App() {
                       >
                         <span>🎯</span>
                         <span>{t('practicalPlanTomorrowBtn')}</span>
+                      </button>
+
+                      {/* 4. تحليل المشاعر العميقة */}
+                      <button
+                        type="button"
+                        onClick={() => handleSendDiaryChatMessage(t('promptAnalyzeDeepFeelings'))}
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
+                      >
+                        <span>🌊</span>
+                        <span>{t('promptAnalyzeDeepFeelingsBtn')}</span>
+                      </button>
+
+                      {/* 5. استخراج نقاط القوة */}
+                      <button
+                        type="button"
+                        onClick={() => handleSendDiaryChatMessage(t('promptExtractStrengths'))}
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
+                      >
+                        <span>⭐</span>
+                        <span>{t('promptExtractStrengthsBtn')}</span>
+                      </button>
+
+                      {/* 6. إعادة صياغة الأفكار السلبية */}
+                      <button
+                        type="button"
+                        onClick={() => handleSendDiaryChatMessage(t('promptReframeNegativeThoughts'))}
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
+                      >
+                        <span>🔄</span>
+                        <span>{t('promptReframeNegativeThoughtsBtn')}</span>
+                      </button>
+
+                      {/* 7. خطوات سريعة لتهدئة التوتر */}
+                      <button
+                        type="button"
+                        onClick={() => handleSendDiaryChatMessage(t('promptQuickCalmStress'))}
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
+                      >
+                        <span>🌿</span>
+                        <span>{t('promptQuickCalmStressBtn')}</span>
+                      </button>
+
+                      {/* 8. 3 أسئلة عميقة للتأمل */}
+                      <button
+                        type="button"
+                        onClick={() => handleSendDiaryChatMessage(t('promptThreeDeepQuestions'))}
+                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
+                      >
+                        <span>🔍</span>
+                        <span>{t('promptThreeDeepQuestionsBtn')}</span>
                       </button>
                     </div>
                   </div>
@@ -10227,6 +10378,13 @@ export default function App() {
                       <Download className="w-4 h-4" />
                       <span>{t.exportDiary || (settings?.appLanguage === 'ar' ? 'تصدير التدوينة' : 'Export')}</span>
                     </button>
+
+                    {autoSavedTime && (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-3xs">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{t.autoSavedCheck || (isAr ? 'تم الحفظ تلقائيًا ✓' : 'Auto-saved ✓')} ({autoSavedTime})</span>
+                      </span>
+                    )}
 
                     <button
                       type="button"
@@ -10820,6 +10978,7 @@ export default function App() {
               initialAdvisorTab="diary"
               onFilePickerOpen={markFilePickerActive}
               onFilePickerClose={resetFilePickerGuard}
+              onLiveVoiceStateChange={setIsLiveVoiceChatActive}
             />
           </div>
         )}
@@ -11047,7 +11206,7 @@ export default function App() {
       {/* Persistent Bottom Tab Navigation Bar with Lucide icons (Mobile / APK Native Bottom Navigation) */}
       <nav
         className={`fixed bottom-0 inset-x-0 md:hidden bg-[#F9F7F2]/95 backdrop-blur-md border-t border-[#E2DCC8] z-[35] shadow-lg font-sans transition-all duration-300 transform ${
-          editingDiary !== null || isFullAthkarModalOpen || isLockScreenAthkarOpen || isKeyboardOpen
+          isKeyboardOpen || isDiaryEditorFullscreen || isWritingBoxFullscreen || isConsultationFullscreen || showVoiceVentModal || isLiveVoiceChatActive
             ? 'translate-y-full opacity-0 pointer-events-none'
             : isBottomNavCollapsedOnMobile
             ? 'max-sm:translate-y-full max-sm:opacity-0 max-sm:pointer-events-none'
@@ -13450,6 +13609,36 @@ export default function App() {
           setIsLockScreenAthkarOpen(false);
           setIsFullAthkarModalOpen(true);
         }}
+      />
+
+      {/* 🔙 Universal Top-Most Draggable Floating Back Button */}
+      {settings.floatingBackButtonEnabled !== false && (
+        <FloatingBackButton
+          appLanguage={settings?.appLanguage || 'ar'}
+          stepCount={navStackCount + (navHistory.length > 0 || activeTab !== 'dashboard' || editingDiary !== null ? 1 : 0)}
+          onClick={handleGoBack}
+        />
+      )}
+
+      {/* ➕ Universal Draggable Floating '+' Tools FAB Menu */}
+      <FloatingFabMenu
+        appLanguage={settings?.appLanguage || 'ar'}
+        incompleteTasksCount={incompleteTasksCount}
+        remindersCount={settings.reminders?.length || 0}
+        hasActiveReminders={(settings.reminders || []).some(r => r.active)}
+        currentUser={currentUser}
+        onOpenAthkar={() => setIsFullAthkarModalOpen(true)}
+        onOpenTasks={() => {
+          switchTab('diaries', { subTab: 'tasks' });
+        }}
+        onOpenGratitude={() => {
+          switchTab('diaries', { subTab: 'gratitude' });
+        }}
+        onOpenCBT={() => {
+          switchTab('diaries', { subTab: 'cbt' });
+        }}
+        onOpenReminders={() => setShowSmartRemindersModal(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
       />
 
     </div>
