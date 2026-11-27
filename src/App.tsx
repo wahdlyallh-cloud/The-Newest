@@ -5,7 +5,7 @@ import {
   Plus, Search, Calendar, Heart, BookOpen, Brain, Scale,
   Settings as SettingsIcon, Sparkles, LogOut, CheckSquare,
   Trash2, Edit3, Trash, Star, Image, Paperclip, Mic, MicOff,
-  Smile, ShieldCheck, Download, Upload, Activity, Moon, Pill,
+  Smile, ShieldCheck, Download, Upload, Activity, Moon, Sun, Pill,
   User, Printer, ChevronRight, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, Flame, Bell, Key, Archive, RotateCcw, ChevronDown, ChevronUp, Compass,
   Cloud, RefreshCw, Copy, Check, Mail, Send, Video, Camera, PenTool, Music, ExternalLink, Globe, Fingerprint, X, Smartphone, BellRing, Info, Maximize, Minimize, Maximize2, Minimize2,
   MoreVertical, MoreHorizontal, Folder, FileText, ArrowUp, AlignRight, AlignCenter, AlignLeft, Highlighter, RemoveFormatting
@@ -15,7 +15,7 @@ import { JOURNAL_TYPES_CONFIG, ALL_JOURNAL_TYPES, getJournalTypeConfig, getJourn
 import StaticNotification from './components/StaticNotification';
 import BlomeoSplashScreen from './components/BlomeoSplashScreen';
 import FloatingBall from './components/FloatingBall';
-import FloatingFabMenu from './components/FloatingFabMenu';
+import BlomeoSideNav from './components/BlomeoSideNav';
 import FloatingBackButton from './components/FloatingBackButton';
 import DrawingCanvas from './components/DrawingCanvas';
 import TherapistReportModal from './components/TherapistReportModal';
@@ -265,6 +265,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   appFont: 'cairo',
   appLineHeight: 'relaxed',
   floatingBallEnabled: true,
+  floatingBackButtonEnabled: false,
   appPinCode: '',
   isAppLocked: false, // Default to false so user can preview and test all features instantly
   backupSettings: {
@@ -1103,6 +1104,13 @@ export default function App() {
         // On cold start with lock enabled, require lock
         parsed.isAppLocked = true;
       }
+      // Floating back button default to false unless explicitly toggled ON by user
+      const rawStoredFloatingBack = localStorage.getItem('yawmiyati_floating_back_enabled');
+      if (rawStoredFloatingBack !== null) {
+        parsed.floatingBackButtonEnabled = rawStoredFloatingBack === 'true';
+      } else {
+        parsed.floatingBackButtonEnabled = false;
+      }
       const migrated = migrateSettingsApiKeys(parsed || DEFAULT_SETTINGS);
       try {
         localStorage.setItem('yawmiyati_settings', JSON.stringify(migrated));
@@ -1294,6 +1302,53 @@ export default function App() {
   // Mobile Top Header & Bottom Navigation State (Stable native navigation)
   const [isHeaderCollapsedOnMobile, setIsHeaderCollapsedOnMobile] = useState(false);
   const [isBottomNavCollapsedOnMobile, setIsBottomNavCollapsedOnMobile] = useState(false);
+  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+  const [isBottomNavHidden, setIsBottomNavHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
+
+  // Synchronize dark theme class dynamically on documentElement
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', Boolean(settings.isDarkMode));
+  }, [settings.isDarkMode]);
+
+  // Facebook-Style Scroll Hide/Show directional detection with 12px hysteresis
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          const delta = currentY - lastScrollYRef.current;
+          if (currentY <= 24) {
+            setIsBottomNavHidden(false);
+          } else if (delta > 12) {
+            // Scrolling DOWN
+            setIsBottomNavHidden(true);
+          } else if (delta < -12) {
+            // Scrolling UP
+            setIsBottomNavHidden(false);
+          }
+          lastScrollYRef.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleToggleDarkMode = useCallback(() => {
+    setSettings((prev) => {
+      const nextMode = !prev.isDarkMode;
+      const updated = { ...prev, isDarkMode: nextMode };
+      try {
+        localStorage.setItem('yawmiyati_settings', JSON.stringify(updated));
+        localStorage.setItem('theme', nextMode ? 'dark' : 'light');
+      } catch (_) {}
+      return updated;
+    });
+  }, []);
 
   // Mobile Virtual Keyboard detection (hides bottom nav during typing to prevent jumping)
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -6232,7 +6287,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-dvh min-h-screen w-full overflow-x-clip ${settings.isDarkMode ? 'bg-[#121110] text-[#E4E2DD]' : 'bg-[#F9F7F2] text-[#3A3A3A]'} pb-nav-safe md:pb-12 font-sans antialiased selection:bg-[#E2DCC8] selection:text-[#5A5A40] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
+      className={`min-h-dvh min-h-screen w-full overflow-x-clip ${settings.isDarkMode ? 'bg-[#0B1611] text-[#ECF3EE]' : 'bg-[#F3F7F4] text-[#214E3A]'} blomeo-topographic-canvas pb-nav-safe md:pb-12 font-sans antialiased selection:bg-[#2D6A4F]/20 selection:text-[#214E3A] app-font-${settings.appFont || 'cairo'} app-lh-${settings.appLineHeight || 'relaxed'}`}
       dir={isRtl ? 'rtl' : 'ltr'}
       style={{
         fontFamily: getFontCss(settings.appFont),
@@ -6464,354 +6519,57 @@ export default function App() {
         </motion.div>
       )}
 
-      {/* 🚀 Header bar with branding & Responsive Navigation Toolbar */}
+      {/* 🌲 Blomeo Minimal Clean Header */}
       <header
-        className="relative bg-white/95 backdrop-blur-md border-b border-[#E2DCC8] z-30 shadow-xs pt-safe"
+        className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between z-20 select-none"
         dir={isRtl ? 'rtl' : 'ltr'}
       >
-        {/* 📱 Mobile / Compact Header (< 768px): Natural Unstuck Branding */}
-        <div className="flex md:hidden items-center justify-between px-3 py-2 w-full gap-2 transition-all duration-300">
-          {/* Mobile Branding */}
-          <div className="flex items-center space-x-2 space-x-reverse shrink-0 select-none">
-            <div className="w-8 h-8 bg-[#8B9D83] rounded-xl flex items-center justify-center text-white shadow-xs shrink-0">
-              <Brain className="w-4.5 h-4.5" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center space-x-1 space-x-reverse">
-                <h1 className="text-sm font-black tracking-tight text-[#3A3A3A] truncate max-w-[140px]">
-                  {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
-                </h1>
-                <span className="text-[9px] font-black bg-[#8B9D83] text-white px-1 py-0.5 rounded leading-none">
-                  AI
-                </span>
-              </div>
-              <div className="flex items-center space-x-1 space-x-reverse text-[9px] font-bold text-gray-400">
-                <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-                <span>{autoSaveStatus === 'saving' ? t('nav.saving') : (lastAutoSaveTime || '💾')}</span>
-              </div>
-            </div>
+        {/* Brand Trigger (Opens Dual-Mode Side Nav directly in High-Load) */}
+        <button
+          type="button"
+          onClick={() => setIsSideNavOpen(true)}
+          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-2xl bg-white/70 dark:bg-[#11211A]/80 hover:bg-white dark:hover:bg-[#172B22] border border-[#DCE7E0] dark:border-[#74C69D]/20 shadow-2xs transition-all cursor-pointer group tap-feedback"
+          title={isRtl ? 'فتح القائمة الجانبية' : 'Open Side Navigation'}
+          aria-label="Open Side Navigation"
+        >
+          <div className="w-8 h-8 rounded-xl bg-[#2D6A4F]/10 dark:bg-[#74C69D]/15 border border-[#2D6A4F]/20 dark:border-[#74C69D]/30 flex items-center justify-center overflow-hidden p-1 group-hover:scale-105 transition-transform shrink-0">
+            <img src="/blomeo-icon.png" alt="blomeo" className="w-full h-full object-contain" />
           </div>
-        </div>
+          <span className="font-black tracking-tight text-base text-[#214E3A] dark:text-[#ECF3EE] lowercase font-sans">
+            blomeo
+          </span>
+        </button>
 
-        {/* 💻 Desktop Header (>= 768px): Structured Desktop Layout with Central Navigation Tabs */}
-        <div className="hidden md:flex max-w-[1440px] mx-auto px-4 lg:px-6 py-2.5 items-center justify-between gap-4">
+        {/* Action Controls: Notifications Bell & Dark/Light Toggle */}
+        <div className="flex items-center gap-2">
+          {/* Notifications Button */}
+          <button
+            type="button"
+            onClick={() => setShowSmartRemindersModal(true)}
+            className="relative w-10 h-10 rounded-2xl bg-white/70 dark:bg-[#11211A]/80 hover:bg-white dark:hover:bg-[#172B22] border border-[#DCE7E0] dark:border-[#74C69D]/20 text-[#214E3A] dark:text-[#ECF3EE] flex items-center justify-center shadow-2xs transition-all cursor-pointer tap-feedback"
+            title={t('smartRemindersTitle') || (isRtl ? 'التنبيهات الذكية' : 'Smart Reminders')}
+            aria-label="Notifications"
+          >
+            <Bell className="w-4.5 h-4.5 text-[#2D6A4F] dark:text-[#74C69D]" />
+            {(settings.reminders || []).some(r => r.active) && (
+              <span className="absolute top-2.5 end-2.5 w-2 h-2 rounded-full bg-[#D4A359] dark:bg-[#E9C46A] ring-2 ring-white dark:ring-[#11211A]" />
+            )}
+          </button>
 
-          {/* 🌟 Zone 1: Protected Branding Card (Zero-Occlusion, full size) */}
-          <div className="flex items-center space-x-3 space-x-reverse shrink-0 select-none w-full md:w-auto justify-between md:justify-start">
-            <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-10 h-10 bg-[#8B9D83] rounded-2xl flex items-center justify-center text-white shadow-xs shrink-0">
-                <Brain className="w-5.5 h-5.5" />
-              </div>
-              <div>
-                <div className="flex items-baseline space-x-1.5 space-x-reverse">
-                  <h1 className="text-base font-extrabold tracking-tight text-[#3A3A3A]">
-                    {t('nav.hayat_ai').replace(/\s*AI\s*/i, '')}
-                  </h1>
-                  <span className="text-xs font-black bg-[#8B9D83] text-white px-1.5 py-0.5 rounded-md leading-none">
-                    AI
-                  </span>
-                </div>
-                <p className="text-[9px] text-gray-500 font-bold mt-0.5 flex flex-wrap items-center gap-1.5 max-w-full">
-                  <span>{t('nav.subtitle')}</span>
-                  <span className="text-gray-300 hidden sm:inline">•</span>
-                  <span className={`inline-flex items-center space-x-1 space-x-reverse text-[9px] font-extrabold px-2 py-0.5 rounded-full border transition-all ${
-                    autoSaveStatus === 'saving'
-                      ? 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></span>
-                    <span>{autoSaveStatus === 'saving' ? t('nav.saving') : `${t('nav.auto_saved')} ${lastAutoSaveTime ? `(${lastAutoSaveTime})` : '💾'}`}</span>
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 🧭 Zone 2: Desktop Center Navigation Bar */}
-          <nav className="flex items-center bg-[#F4F1EA] p-1 rounded-2xl border border-[#E2DCC8]/80 shadow-inner shrink-0" aria-label="Desktop Navigation">
-            {[
-              { id: 'dashboard', label: t('nav.home'), icon: Calendar },
-              { id: 'diaries', label: t('nav.diaries'), icon: BookOpen },
-              { id: 'advisor', label: t('nav.advisor'), icon: Brain },
-              { id: 'analytics', label: t('nav.progress'), icon: Activity },
-              { id: 'settings', label: t('nav.settings'), icon: SettingsIcon }
-            ].map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => switchTab(tab.id as any)}
-                  className={`flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-[#4E685B] shadow-xs font-black'
-                      : 'text-gray-600 hover:text-[#3A3A3A] hover:bg-white/60'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#8B9D83]' : 'text-gray-400'}`} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* 🎯 Zones 2 & 3: Navigation Action Bar & Utility Controls */}
-          <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end w-full md:w-auto">
-
-            {/* 1. 📿 Direct Athkar Button (أذكار) */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsFullAthkarModalOpen(true);
-                collapseHeaderOnMobile();
-              }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#F3E8FF] text-[#7C3AED] border border-[#DDD6FE] rounded-xl text-xs font-black shadow-3xs hover:bg-[#EDE9FE] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
-              title={t('nav.dhikr_title')}
-              aria-label={t('nav.dhikr')}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#7C3AED] animate-pulse shrink-0" />
-              <span>{t('nav.dhikr')}</span>
-            </button>
-
-            {/* 2. 📋 Habits & Tasks Button (المهام اليومية) */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('diaries');
-                setActiveDiariesSubTab('tasks');
-                setEditingDiary(null);
-                collapseHeaderOnMobile();
-              }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#EEF1EB] text-[#556E4F] border border-[#DCE4D8] rounded-xl text-xs font-black shadow-3xs hover:bg-[#E2E9DF] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
-              title={t('nav.daily_tasks')}
-              aria-label={t('nav.daily_tasks')}
-            >
-              <span className="flex items-center justify-center bg-[#C5221F] text-white text-[10px] font-black w-4.5 h-4.5 rounded-full border border-white shrink-0">
-                {incompleteTasksCount}
-              </span>
-              <span>{t('nav.daily_tasks')}</span>
-            </button>
-
-            {/* 3. ✍️ My Diary Thoughts Button (خواطري) */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('diaries');
-                setActiveDiariesSubTab('journal');
-                setDiaryTypeFilter('thought');
-                setEditingDiary(null);
-                collapseHeaderOnMobile();
-              }}
-              className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-[#FCF5DE] text-[#A67E2E] border border-[#E9E1C4] rounded-xl text-xs font-black shadow-3xs hover:bg-[#F9ECC4] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
-              title={t('nav.my_thoughts')}
-              aria-label={t('nav.my_thoughts')}
-            >
-              <span>{t('nav.my_thoughts')}</span>
-              <span className="flex items-center justify-center w-5 h-5 bg-[#F8ECB8] text-[#8C6418] rounded-full border border-[#E1D39D] shrink-0">
-                <PenTool className="w-3 h-3 text-[#8C6418]" />
-              </span>
-            </button>
-
-            {/* 4. 🎓 Therapist Session Button (جلسة العلاج) */}
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('analytics');
-                setAnalyticsSubTab('report');
-                setEditingDiary(null);
-                collapseHeaderOnMobile();
-              }}
-              className="flex items-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#446A5E] hover:bg-[#3B5A50] text-white rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
-              title={t('nav.therapy_session')}
-              aria-label={t('nav.therapy_session')}
-            >
-              <span>{t('nav.therapy_session')}</span>
-              <span className="flex items-center justify-center w-5 h-5 bg-[#FCF5DE] border border-[#E9E1C4] rounded-full shrink-0 shadow-3xs animate-pulse">
-                <svg className="w-3 h-3 text-[#A67E2E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                </svg>
-              </span>
-            </button>
-
-            {/* 5. 👤 Personal Account / Cloud Sync Login Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsAuthModalOpen(true);
-                collapseHeaderOnMobile();
-              }}
-              className={`flex items-center space-x-1.5 space-x-reverse px-3 py-2 border rounded-xl text-xs font-black shadow-3xs hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px] ${
-                currentUser
-                  ? 'bg-teal-700 text-white border-teal-800 hover:bg-teal-800'
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-              }`}
-              title={t('nav.account_title')}
-              aria-label={t('nav.account_title')}
-            >
-              {currentUser ? (
-                <>
-                  <Cloud className="w-3.5 h-3.5 text-teal-200 shrink-0" />
-                  <span className="truncate max-w-[90px]">{currentUser.name || currentUser.email.split('@')[0]}</span>
-                </>
-              ) : (
-                <>
-                  <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>{t('nav.sign_in')}</span>
-                </>
-              )}
-            </button>
-
-            {/* 6. 🌐 Language Switcher Button */}
-            <button
-              type="button"
-              onClick={() => setShowLanguagesModal(true)}
-              className="flex items-center space-x-1.5 space-x-reverse px-2.5 py-2 bg-amber-50/90 text-amber-950 border border-amber-300 rounded-xl text-xs font-black shadow-3xs hover:bg-amber-100 active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
-              title={t('nav.switch_language')}
-              aria-label={t('nav.switch_language')}
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              <span className="text-sm leading-none">{langInfo.flag}</span>
-              <span className="text-[11px] font-extrabold">{langInfo.nativeName}</span>
-            </button>
-
-            {/* 7. 🖥️ Fullscreen Toggle Button */}
-            <button
-              type="button"
-              onClick={handleToggleFullscreen}
-              className="flex items-center space-x-1 space-x-reverse px-2.5 py-2 bg-blue-50 text-blue-900 border border-blue-200 rounded-xl text-xs font-black shadow-3xs hover:bg-blue-100 active:scale-95 transition-all cursor-pointer shrink-0 whitespace-nowrap min-h-[38px]"
-              title={t('nav.fullscreen_title')}
-              aria-label={t('nav.fullscreen')}
-            >
-              <Maximize className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
-              <span className="text-[11px]">{t('nav.fullscreen')}</span>
-            </button>
-
-            {/* 8. 🔒 Lock Button */}
-            <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem('appLockEnabled', 'true');
-                setSettings(prev => ({ ...prev, appLockEnabled: true, isAppLocked: true }));
-                collapseHeaderOnMobile();
-              }}
-              className="p-2.5 bg-[#EEECDF] border border-[#D1CCBA] text-[#5A5A40] rounded-xl hover:bg-[#DDD8C3] active:scale-95 transition-all cursor-pointer shadow-3xs shrink-0 min-h-[38px] min-w-[38px] flex items-center justify-center"
-              title={t('nav.lock_app')}
-              aria-label={t('nav.lock_app')}
-            >
-              <Lock className="w-4 h-4 text-[#4A4A30]" />
-            </button>
-
-            {/* --- ⚙️ SMART OVERFLOW "MORE" MENU DROPDOWN --- */}
-            <div className="relative shrink-0" ref={navMoreMenuRef}>
-              <button
-                type="button"
-                onClick={() => setShowNavMoreMenu(prev => !prev)}
-                className={`p-2 rounded-xl border transition-all cursor-pointer shadow-3xs flex items-center justify-center min-h-[38px] min-w-[38px] ${
-                  showNavMoreMenu
-                    ? 'bg-[#5A5A40] text-white border-[#5A5A40]'
-                    : 'bg-[#F0EDE4] hover:bg-[#E2DCC8] text-[#5A5A40] border-[#D1CCBA]'
-                }`}
-                title={t('nav.more_options')}
-                aria-label={t('nav.more_options')}
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
-
-              {/* Overflow Menu Popover */}
-              {showNavMoreMenu && (
-                <div
-                  className={`absolute top-full mt-2 ${isRtl ? 'left-0' : 'right-0'} w-60 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1 font-sans text-start`}
-                >
-                  {/* Language */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowNavMoreMenu(false);
-                      setShowLanguagesModal(true);
-                    }}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>{t('nav.switch_language')}</span>
-                    </div>
-                    <span className="text-xs font-normal">{langInfo.flag} {langInfo.nativeName}</span>
-                  </button>
-
-                  {/* Fullscreen */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowNavMoreMenu(false);
-                      handleToggleFullscreen();
-                    }}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Maximize className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>{t('nav.fullscreen')}</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400">F11</span>
-                  </button>
-
-                  {/* Smart Reminders */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowNavMoreMenu(false);
-                      setShowSmartRemindersModal(true);
-                    }}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <BellRing className="w-4 h-4 text-[#8B9D83] shrink-0" />
-                      <span>{t('nav.smart_reminders')}</span>
-                    </div>
-                    <span className="text-[10px] bg-[#8B9D83]/20 text-[#5A5A40] px-1.5 py-0.5 rounded-md font-bold">
-                      {settings.reminders?.length || 0}
-                    </span>
-                  </button>
-
-                  {/* Rating / Feedback */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowNavMoreMenu(false);
-                      setShowRatingModal(true);
-                    }}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF8F5] text-xs font-bold text-[#3A3A3A] transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span>{t('nav.rate_feedback')}</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400">★ ★ ★ ★ ★</span>
-                  </button>
-
-                  {/* App Lock */}
-                  <div className="border-t border-[#F0EDE4] pt-1 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowNavMoreMenu(false);
-                        localStorage.setItem('appLockEnabled', 'true');
-                        setSettings(prev => ({ ...prev, appLockEnabled: true, isAppLocked: true }));
-                      }}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-amber-50 text-xs font-extrabold text-[#5A5A40] transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-[#4A4A30] shrink-0" />
-                        <span>{t('nav.lock_app')}</span>
-                      </div>
-                      <span className="text-[10px] bg-[#EEECDF] px-2 py-0.5 rounded-md text-[#5A5A40]">🔒 PIN</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-          </div>
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={handleToggleDarkMode}
+            className="w-10 h-10 rounded-2xl bg-white/70 dark:bg-[#11211A]/80 hover:bg-white dark:hover:bg-[#172B22] border border-[#DCE7E0] dark:border-[#74C69D]/20 text-[#2D6A4F] dark:text-[#E9C46A] flex items-center justify-center shadow-2xs transition-all cursor-pointer tap-feedback hover:rotate-12"
+            title={settings.isDarkMode ? (isRtl ? 'الوضع الفاتح' : 'Light Mode') : (isRtl ? 'الوضع الداكن' : 'Dark Mode')}
+            aria-label="Toggle Dark/Light Mode"
+          >
+            {settings.isDarkMode ? (
+              <Sun className="w-4.5 h-4.5 text-[#E9C46A]" />
+            ) : (
+              <Moon className="w-4.5 h-4.5 text-[#2D6A4F]" />
+            )}
+          </button>
         </div>
       </header>
 
@@ -6972,366 +6730,111 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
 
-            {/* Pro Feature Action Buttons Banner */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => setShowPredictiveHealthModal(true)}
-                className="bg-gradient-to-r from-[#2B3E50] to-[#3B5266] hover:from-[#1E2D3B] hover:to-[#2B3E50] text-white p-3.5 rounded-2xl flex items-center justify-between text-start cursor-pointer shadow-md transition-all hover:scale-[1.01]"
-              >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <div className="p-2 bg-white/10 rounded-xl shrink-0">
-                    <Brain className="w-4 h-4 text-amber-300" />
-                  </div>
-                  <div className="min-w-0 flex-1 break-words">
-                    <h4 className="font-extrabold text-xs truncate">{t.predictiveTitle}</h4>
-                    <p className="text-[10px] text-blue-100/80 line-clamp-1">{t.predictiveSub}</p>
-                  </div>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 text-amber-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowVoiceJournalModal(true)}
-                className="bg-gradient-to-r from-[#6D5D6E] to-[#4F3B51] hover:from-[#4F3B51] hover:to-[#38283A] text-white p-3.5 rounded-2xl flex items-center justify-between text-start cursor-pointer shadow-md transition-all hover:scale-[1.01]"
-              >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <div className="p-2 bg-white/10 rounded-xl shrink-0">
-                    <Mic className="w-4 h-4 text-purple-200" />
-                  </div>
-                  <div className="min-w-0 flex-1 break-words">
-                    <h4 className="font-extrabold text-xs truncate">{t.voiceJournalTitle}</h4>
-                    <p className="text-[10px] text-purple-100/80 line-clamp-1">{t.voiceJournalSub}</p>
-                  </div>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 text-purple-200 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowOnboardingTour(true)}
-                className="bg-gradient-to-r from-[#3A506B] to-[#1C2541] hover:from-[#1C2541] hover:to-[#0B132B] text-white p-3.5 rounded-2xl flex items-center justify-between text-start cursor-pointer shadow-md transition-all hover:scale-[1.01]"
-              >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <div className="p-2 bg-white/10 rounded-xl shrink-0">
-                    <Sparkles className="w-4 h-4 text-cyan-300" />
-                  </div>
-                  <div className="min-w-0 flex-1 break-words">
-                    <h4 className="font-extrabold text-xs truncate">{t('interactiveTourTitle')}</h4>
-                    <p className="text-[10px] text-cyan-100/80 line-clamp-1">{t('interactiveTourSub')}</p>
-                  </div>
-                </div>
-                <ChevronRight className={`w-3.5 h-3.5 text-cyan-300 shrink-0 ${isRtl ? 'rotate-180' : ''}`} />
-              </button>
-            </div>
-
-            {/* 📅 التقويم الكامل واستعراض الأيام */}
-            <div
-              onClick={() => setShowCalendarModal(true)}
-              className="bg-[#EBF2EA] border-2 border-dashed border-[#8B9D83]/60 hover:bg-[#E0EBE0] rounded-3xl p-4 mb-6 flex items-center justify-between cursor-pointer transition-all shadow-xs group"
-            >
-              <div className="space-y-1">
-                <h3 className="text-xs sm:text-sm font-black text-[#4E685B] flex items-center space-x-1.5 space-x-reverse">
-                  <span>📅</span>
-                  <span>{t.fullCalendar}</span>
-                </h3>
-                <p className="text-[10px] sm:text-xs text-[#5A5A40]/80 leading-relaxed">
-                  {t.fullCalendarSub}
-                </p>
-              </div>
-              <div className="p-3 bg-white border border-[#E2DCC8] rounded-2xl text-rose-500 shadow-xs shrink-0 group-hover:scale-105 transition-transform flex items-center justify-center">
-                <Calendar className="w-5.5 h-5.5" />
-              </div>
-            </div>
-
-            {/* Cairo styled greeting panel */}
-            <div className="bg-gradient-to-l from-[#5A5A40] to-[#8B9D83] text-white p-6 rounded-3xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 translate-x-[-20%] translate-y-[-20%] w-60 h-60 bg-[#FEFAE0]/10 rounded-full blur-3xl" />
-              <div className="relative z-10 space-y-2">
-                <span className="text-xs font-bold text-[#FEFAE0] tracking-wide flex items-center space-x-1.5 space-x-reverse">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FEFAE0]" />
+            {/* 1. Greeting Hero Banner (Blomeo Forest Gradient) */}
+            <div className="relative overflow-hidden rounded-3xl p-6 sm:p-7 text-white shadow-md bg-gradient-to-br from-[#1E5F48] via-[#113B2D] to-[#0A221A] border border-[#2D6A4F]/40">
+              <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 rounded-full bg-[#52B788]/15 blur-3xl pointer-events-none" />
+              <div className="relative z-10 space-y-2.5">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-white/10 text-[#ECF3EE] backdrop-blur-xs border border-white/10">
+                  <Sparkles className="w-3.5 h-3.5 text-[#E9C46A]" />
                   <span>{t('safeEncryptedSpace')}</span>
                 </span>
-                <h2 className="text-xl font-extrabold tracking-wide flex items-center space-x-2 space-x-reverse">
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-[#ECF3EE] flex items-center gap-2">
                   <span>{getArabicGreetingHeader()}</span>
                   <span className="text-2xl">{getArabicGreetingIcon()}</span>
                 </h2>
-                <p className="text-xs text-[#F9F7F2]/90 leading-relaxed max-w-xl">
+                <p className="text-xs sm:text-sm text-[#ECF3EE]/80 leading-relaxed max-w-xl">
                   {t.greetingDesc}
                 </p>
               </div>
             </div>
 
-            {/* 🌱 Psychological Growth Tree (Visual Gamification Component) */}
-            <PsychologicalGrowthTree
-              appLanguage={settings?.appLanguage || 'ar'}
-              diariesCount={diaries.length}
-              cbtCount={diaries.filter(d => (d.cbtWorksheets && d.cbtWorksheets.length > 0)).length}
-              gratitudeCount={gratitudeCards.length}
-              habitsCount={habits.filter(h => h.isCompleted).length}
-              activeStreak={streakInfo.currentStreak}
-              onQuickAction={(action) => {
-                if (action === 'journal') startNewDiary();
-                else if (action === 'gratitude') {
-                  setActiveTab('diaries');
-                  setActiveDiariesSubTab('gratitude');
-                } else if (action === 'cbt') {
-                  setActiveTab('diaries');
-                  setActiveDiariesSubTab('cbt');
-                } else if (action === 'habits') {
-                  setActiveTab('diaries');
-                  setActiveDiariesSubTab('tasks');
-                }
-              }}
-            />
-
-            {/* 🧠 Advanced Behavioral Correlation Engine Card */}
-            <BehavioralCorrelationCard entries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
-
-            {/* 📁 شريط التدوين السريع والوصول المباشر للملفات */}
-            <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-3">
-              <h3 className="text-xs font-extrabold text-[#5A5A40] flex items-center space-x-2 space-x-reverse">
-                <span className="p-1 bg-[#8B9D83]/10 text-[#8B9D83] rounded-lg">⚡</span>
-                <span>{t.directUploadTitle}</span>
-              </h3>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 items-center align-middle gap-3">
-                {/* 1. كتابة يومية */}
-                <button
-                  onClick={() => startNewDiary()}
-                  className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
-                >
-                  <div className="w-12 h-12 rounded-full bg-[#8B9D83]/10 text-[#8B9D83] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
-                    <PenTool className="w-5 h-5" />
-                  </div>
-                  <div className="h-9 flex flex-col items-center justify-center text-center leading-tight">
-                    <span className="text-xs font-bold text-[#3A3A3A]">{t.freeWrite}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">{t.freeWriteSub}</span>
-                  </div>
-                </button>
-
-                {/* 2. صورة */}
-                <button
-                  onClick={() => {
-                    markFilePickerActive();
-                    document.getElementById('global-image-uploader')?.click();
-                  }}
-                  className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
-                >
-                  <div className="w-12 h-12 rounded-full bg-sky-500/10 text-sky-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
-                    <Camera className="w-5 h-5" />
-                  </div>
-                  <div className="h-9 flex flex-col items-center justify-center text-center leading-tight">
-                    <span className="text-xs font-bold text-[#3A3A3A]">{t.attachPhoto}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">{t.attachPhotoSub}</span>
-                  </div>
-                </button>
-
-                {/* 3. فيديو */}
-                <button
-                  onClick={() => {
-                    markFilePickerActive();
-                    document.getElementById('global-video-uploader')?.click();
-                  }}
-                  className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
-                >
-                  <div className="w-12 h-12 rounded-full bg-orange-500/10 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
-                    <Video className="w-5 h-5" />
-                  </div>
-                  <div className="h-9 flex flex-col items-center justify-center text-center leading-tight">
-                    <span className="text-xs font-bold text-[#3A3A3A]">{t.phoneVideo}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">{t.phoneVideoSub}</span>
-                  </div>
-                </button>
-
-                {/* 4. تسجيل ريكورد */}
-                <button
-                  onClick={() => {
-                    markFilePickerActive();
-                    document.getElementById('global-audio-uploader')?.click();
-                  }}
-                  className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
-                >
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
-                    <Mic className="w-5 h-5" />
-                  </div>
-                  <div className="h-9 flex flex-col items-center justify-center text-center leading-tight">
-                    <span className="text-xs font-bold text-[#3A3A3A]">{t.audioFile}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">{t.audioFileSub}</span>
-                  </div>
-                </button>
-
-                {/* 5. كتاب / PDF */}
-                <button
-                  onClick={() => {
-                    markFilePickerActive();
-                    document.getElementById('global-document-uploader')?.click();
-                  }}
-                  className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
-                >
-                  <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <div className="h-9 flex flex-col items-center justify-center text-center leading-tight">
-                    <span className="text-xs font-bold text-[#3A3A3A]">{t.bookDoc}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">{t.bookDocSub}</span>
-                  </div>
-                </button>
-
-                {/* 6. مستشار الذكاء الاصطناعي */}
-                <button
-                  onClick={() => setActiveTab('advisor')}
-                  className="flex flex-col items-center justify-center p-3 bg-[#F9F7F2]/60 hover:bg-[#F0EDE4]/80 border border-[#E2DCC8]/60 hover:border-[#8B9D83] rounded-2xl transition-all cursor-pointer group h-full"
-                >
-                  <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform mb-1.5">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div className="h-9 flex flex-col items-center justify-center text-center leading-tight">
-                    <span className="text-xs font-bold text-[#3A3A3A]">{t.aiAdvisor}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">{t.aiAdvisorSub}</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* 🎯 Streak Tracker (سلسلة الالتزام) */}
-            <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
+            {/* 2. Commitment Streak Card (سلسلة الالتزام) */}
+            <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-5 shadow-xs space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-
-                {/* Left Side: Fire Icon & Main Numbers */}
-                <div className="flex items-center space-x-4 space-x-reverse">
-                  {/* Animated Flame container */}
+                <div className="flex items-center space-x-3.5 space-x-reverse">
                   <motion.div
-                    animate={{
-                      scale: [1, 1.15, 1],
-                      filter: [
-                        "drop-shadow(0px 0px 4px rgba(212,163,115,0.2))",
-                        "drop-shadow(0px 0px 12px rgba(212,163,115,0.7))",
-                        "drop-shadow(0px 0px 4px rgba(212,163,115,0.2))"
-                      ]
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
+                    animate={{ scale: [1, 1.08, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                     className={`p-3.5 rounded-2xl flex items-center justify-center shrink-0 ${
                       streakInfo.currentStreak > 0
-                        ? 'bg-[#FAEDCD] text-[#D4A373]'
-                        : 'bg-gray-100 text-gray-400'
+                        ? 'bg-[#D4A359]/20 text-[#D4A359] dark:text-[#E9C46A]'
+                        : 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500'
                     }`}
                   >
-                    <Flame className={`w-8 h-8 ${streakInfo.currentStreak > 0 ? 'fill-[#D4A373]' : ''}`} />
+                    <Flame className={`w-8 h-8 ${streakInfo.currentStreak > 0 ? 'fill-[#D4A359] dark:fill-[#E9C46A]' : ''}`} />
                   </motion.div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-gray-400 tracking-wider block">{t.streakTitle}</span>
+                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 tracking-wider block">{t.streakTitle}</span>
                     <div className="flex items-baseline space-x-1 space-x-reverse">
-                      <span className="text-2xl font-extrabold text-[#3A3A3A]">{streakInfo.currentStreak}</span>
-                      <span className="text-xs text-[#5A5A40] font-semibold">{t.dayStreak}</span>
+                      <span className="text-2xl font-black text-[#214E3A] dark:text-[#ECF3EE]">{streakInfo.currentStreak}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-bold">{t.dayStreak}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Center Side: Live Motivational Message */}
                 <div className="flex-grow md:px-4">
-                  <p className="text-xs text-[#5A5A40] leading-relaxed font-medium">
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
                     {streakInfo.hasLoggedToday ? (
-                      <span className="text-emerald-700 flex items-center space-x-1 space-x-reverse">
+                      <span className="text-[#2D6A4F] dark:text-[#74C69D] flex items-center space-x-1 space-x-reverse font-bold">
                         <span>✨ {t.streakActiveMsg}</span>
                       </span>
                     ) : (
                       <span>
-                        {streakInfo.currentStreak === 0 ? (
-                          t.streakInactiveZero
-                        ) : (
-                          t.streakInactiveOneLeft
-                        )}
+                        {streakInfo.currentStreak === 0
+                          ? t.streakInactiveZero
+                          : t.streakInactiveOneLeft}
                       </span>
                     )}
                   </p>
                 </div>
 
-                {/* Right Side: Quick Stats Badges */}
-                <div className="flex flex-col items-end justify-center shrink-0 border-r md:border-r border-t md:border-t-0 border-[#E2DCC8]/60 pt-3 md:pt-0 pr-4 md:pr-4 pl-4 md:pl-0">
+                <div className="flex flex-col items-end justify-center shrink-0 border-r md:border-r border-t md:border-t-0 border-[#DCE7E0] dark:border-[#74C69D]/20 pt-3 md:pt-0 pr-4 md:pr-4 pl-4 md:pl-0">
                   <div className="text-right">
-                    <span className="text-[10px] text-gray-400 block font-medium">{t.longestStreak}</span>
-                    <span className="text-sm font-bold text-[#8B9D83] flex items-center justify-end space-x-1 space-x-reverse">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 block font-medium">{t.longestStreak}</span>
+                    <span className="text-sm font-bold text-[#2D6A4F] dark:text-[#74C69D] flex items-center justify-end space-x-1 space-x-reverse">
                       <span>🏆</span>
                       <span>{streakInfo.maxStreak} {t.daysUnit}</span>
                     </span>
                   </div>
                 </div>
-
               </div>
 
               {/* 7-Day Visual Calendar Tracker */}
-              <div className="border-t border-[#E2DCC8]/50 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <span className="text-[10px] font-bold text-gray-400">{t.recentWeek}</span>
+              <div className="border-t border-[#DCE7E0] dark:border-[#74C69D]/20 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500">{t.recentWeek}</span>
                 <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto scrollbar-none pb-1">
-                  {getWeekDays().map((day, idx) => {
-                    // Check if diaries has an entry on this day
+                  {getWeekDays().map((day) => {
                     const isLoggedOnDay = diaries.some(d => d.createdAt.split('T')[0] === day.isoString);
                     return (
                       <div
-                        key={idx}
-                        className={`px-2.5 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[42px] border ${
+                        key={day.isoString}
+                        className={`flex flex-col items-center justify-center min-w-[36px] py-1.5 px-1 rounded-xl border transition-all ${
                           isLoggedOnDay
-                            ? 'bg-[#8B9D83]/10 border-[#8B9D83]/30 text-[#8B9D83]'
-                            : 'bg-[#F9F7F2]/50 border-[#E2DCC8]/40 text-gray-400'
+                            ? 'bg-[#2D6A4F]/15 dark:bg-[#74C69D]/20 border-[#2D6A4F]/40 dark:border-[#74C69D]/40 text-[#214E3A] dark:text-[#74C69D] font-black'
+                            : day.isToday
+                            ? 'bg-amber-500/10 border-amber-400 text-amber-700 dark:text-amber-300 font-bold'
+                            : 'bg-[#F4F7F5] dark:bg-[#172B22] border-transparent text-gray-400 dark:text-gray-500 font-normal'
                         }`}
                       >
-                        <span className="text-[9px] font-semibold">{day.label}</span>
-                        {isLoggedOnDay ? (
-                          <Flame className="w-3.5 h-3.5 fill-[#D4A373] text-[#D4A373] mt-1" />
-                        ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-dashed border-gray-300 mt-1" />
-                        )}
+                        <span className="text-[9px]">{day.dayName}</span>
+                        <span className="text-xs mt-0.5">{day.dayNumber}</span>
+                        {isLoggedOnDay && <span className="w-1 h-1 bg-[#2D6A4F] dark:bg-[#74C69D] rounded-full mt-1" />}
                       </div>
                     );
                   })}
                 </div>
               </div>
-
             </div>
 
-            {/* Day Selector Calendar Matrix */}
-            <div className="bg-white border border-[#E2DCC8] rounded-3xl p-4 shadow-xs space-y-3">
-              <span className="text-xs font-bold text-[#5A5A40] block mb-1">{t.selectDateTitle}</span>
-              <div className="grid grid-cols-7 gap-2">
-                {getWeekDays().map((day, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedDate(day.isoString)}
-                    className={`p-2.5 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer ${
-                      selectedDate === day.isoString
-                        ? 'bg-[#8B9D83] text-white scale-105 font-bold'
-                        : 'bg-[#F9F7F2] hover:bg-[#F0EDE4] text-gray-700'
-                    }`}
-                  >
-                    <span className="text-[10px] opacity-75 font-medium">{day.label}</span>
-                    <span className="text-sm font-bold mt-1">{day.dayNum}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 💡 Psychological Daily Inspiration Card */}
-            <div className="bg-gradient-to-br from-[#FAEDCD]/80 to-[#F9F7F2] border border-[#D4A373]/40 rounded-3xl p-6 shadow-xs relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4A373]/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="space-y-2 flex-grow">
-                  <div className="flex items-center space-x-2 space-x-reverse text-xs font-bold text-[#D4A373]">
-                    <Sparkles className="w-4 h-4" />
-                    <span>{t.quoteTitle}</span>
-                  </div>
-                  <p className="text-sm md:text-base font-medium text-[#3A3A3A] leading-relaxed italic">
-                    "{dailyQuote?.quote || t.quoteDefaultText}"
-                  </p>
-                  <span className="text-xs text-gray-400 block font-bold">— {dailyQuote?.author || t.quoteDefaultAuthor}</span>
+            {/* 3. Daily Inspiration / Wisdom Quote Card */}
+            <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-4 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <span className="p-1.5 bg-[#D4A359]/15 dark:bg-[#E9C46A]/20 text-[#D4A359] dark:text-[#E9C46A] rounded-xl">✨</span>
+                  <span className="text-xs font-bold text-[#214E3A] dark:text-[#ECF3EE]">{t.quoteTitle}</span>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse shrink-0">
+                <div className="flex items-center space-x-1.5 space-x-reverse">
                   <button
                     onClick={async () => {
                       const qT = dailyQuote?.quote || t.quoteDefaultText;
@@ -7343,203 +6846,163 @@ export default function App() {
                         showGlobalCopyToast(t.copyFailedToast || (settings?.appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy quote'), 'error');
                       }
                     }}
-                    className="p-2.5 bg-white border border-[#E2DCC8] hover:border-[#D4A373] text-[#5A5A40] rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-center"
+                    className="p-2.5 bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 hover:border-[#D4A359] text-gray-600 dark:text-gray-300 rounded-2xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
                     title={t.copyQuoteTooltip}
                   >
-                    <Copy className="w-4 h-4" />
+                    <Copy className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={fetchDailyQuote}
                     disabled={quoteLoading}
-                    className="flex items-center space-x-1.5 space-x-reverse px-4 py-2.5 bg-[#8B9D83] hover:bg-[#5A5A40] disabled:bg-gray-100 disabled:text-gray-400 text-white rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    className="flex items-center space-x-1 space-x-reverse px-3 py-1.5 bg-[#2D6A4F]/10 dark:bg-[#74C69D]/15 hover:bg-[#2D6A4F]/20 text-[#214E3A] dark:text-[#74C69D] rounded-xl text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50"
                   >
-                    {quoteLoading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
+                    {quoteLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                     <span>{t.aiInspirationBtn}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 bg-[#F4F7F5] dark:bg-[#172B22] rounded-2xl border border-[#DCE7E0]/60 dark:border-[#74C69D]/10">
+                <p className="text-xs sm:text-sm text-[#214E3A] dark:text-[#ECF3EE] font-medium leading-relaxed italic">
+                  "{dailyQuote?.quote || t.quoteDefaultText}"
+                </p>
+                <span className="text-xs text-gray-400 dark:text-gray-500 block font-bold mt-1.5">— {dailyQuote?.author || t.quoteDefaultAuthor}</span>
+              </div>
+            </div>
+
+            {/* 4. Interactive Mood Tracker & Scale Card */}
+            <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-5 shadow-xs space-y-4">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-2 space-x-reverse">
+                    <Smile className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D]" />
+                    <span>{t.moodScaleTitle}</span>
+                  </h3>
+                  {!isMetricTouched(selectedDate, 'mood', dailyTouchedMetrics) && (
+                    <span className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold">
+                      {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  {t.moodScaleDesc}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center justify-center py-4 bg-[#F4F7F5] dark:bg-[#172B22] border border-[#DCE7E0]/60 dark:border-[#74C69D]/10 rounded-2xl space-y-4">
+                <div className="text-5xl md:text-6xl animate-bounce" style={{ animationDuration: '3s' }}>
+                  {(() => {
+                    const score = activeDiaryForSelectedDate?.fastMoodScore || 5;
+                    if (score <= 2) return '😭';
+                    if (score <= 4) return '😞';
+                    if (score <= 6) return '😐';
+                    if (score <= 8) return '😊';
+                    return '🤩';
+                  })()}
+                </div>
+
+                <div className="text-center space-y-1">
+                  <span className="text-xs font-bold text-[#214E3A] dark:text-[#ECF3EE] block">
+                    {t.moodRating} <span className="font-mono text-base font-extrabold text-[#2D6A4F] dark:text-[#74C69D]">{activeDiaryForSelectedDate?.fastMoodScore || 5}</span> / 10
+                  </span>
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium block">
+                    {(() => {
+                      const score = activeDiaryForSelectedDate?.fastMoodScore || 5;
+                      if (score <= 2) return t.moodRating1to2;
+                      if (score <= 4) return t.moodRating3to4;
+                      if (score <= 6) return t.moodRating5to6;
+                      if (score <= 8) return t.moodRating7to8;
+                      return t.moodRating9to10;
+                    })()}
+                  </span>
+                </div>
+
+                <div className="w-full max-w-xs px-4">
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    step="1"
+                    value={activeDiaryForSelectedDate?.fastMoodScore || 5}
+                    onChange={(e) => handleUpdateHabit('fastMood', e.target.value)}
+                    className="w-full h-2 bg-[#DCE7E0] dark:bg-[#11211A] rounded-lg appearance-none cursor-pointer accent-[#2D6A4F] dark:accent-[#74C69D]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Interactive Water Bottle Hydration Tracker Card */}
+            <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-5 shadow-xs space-y-4">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-2 space-x-reverse">
+                    <span className="text-[#89CFF0] text-base">💧</span>
+                    <span>{t.waterTrackerTitle}</span>
+                  </h3>
+                  {!isMetricTouched(selectedDate, 'water', dailyTouchedMetrics) && (
+                    <span className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-400/30 px-2 py-0.5 rounded-full font-bold">
+                      {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  {t.waterTrackerDesc}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-around py-3">
+                <div className="w-16 h-32 border-3 border-[#89CFF0]/80 rounded-2xl relative overflow-hidden bg-white dark:bg-[#172B22] shadow-inner flex flex-col justify-end">
+                  <motion.div
+                    className="bg-gradient-to-t from-[#89CFF0] to-[#A0E0FF] w-full transition-all"
+                    animate={{
+                      height: `${Math.min(100, ((activeDiaryForSelectedDate?.waterCups || 0) / 8) * 100)}%`
+                    }}
+                    transition={{ type: 'spring', damping: 15 }}
+                  >
+                    <div className="w-full h-2 bg-[#89CFF0] rounded-full opacity-60 animate-pulse" />
+                  </motion.div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-black text-[#214E3A] dark:text-white drop-shadow-xs">
+                      {activeDiaryForSelectedDate?.waterCups || 0}/8
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                  <button
+                    onClick={() => handleUpdateHabit('water', (activeDiaryForSelectedDate?.waterCups || 0) + 1)}
+                    className="px-4 py-2 bg-[#89CFF0] hover:bg-[#72bde0] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex items-center space-x-1.5 space-x-reverse"
+                  >
+                    <span>+</span>
+                    <span>{t.addCupBtn}</span>
+                  </button>
+                  <button
+                    onClick={() => handleUpdateHabit('water', Math.max(0, (activeDiaryForSelectedDate?.waterCups || 0) - 1))}
+                    disabled={!activeDiaryForSelectedDate?.waterCups}
+                    className="px-4 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 disabled:opacity-40 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    <span>-</span>
+                    <span>{t.removeCupBtn}</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* 🎯 Interactive Rapid Mood, Water & Symptoms Tracker Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-              {/* Column 1: Fast Mood Slider with visual feedback */}
-              <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                      <Smile className="w-4 h-4 text-[#8B9D83]" />
-                      <span>{t.moodScaleTitle}</span>
-                    </h3>
-                    {!isMetricTouched(selectedDate, 'mood', dailyTouchedMetrics) && (
-                      <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200/80 px-2 py-0.5 rounded-full font-bold">
-                        {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-gray-500 font-medium">
-                    {t.moodScaleDesc}
-                  </p>
-                </div>
-
-                <div className="flex flex-col items-center justify-center py-4 bg-[#F9F7F2]/50 border border-[#E2DCC8]/40 rounded-2xl space-y-4">
-                  {/* Big changing emoji */}
-                  <div className="text-5xl md:text-6xl animate-bounce" style={{ animationDuration: '3s' }}>
-                    {(() => {
-                      const score = activeDiaryForSelectedDate?.fastMoodScore || 5;
-                      if (score <= 2) return '😭';
-                      if (score <= 4) return '😞';
-                      if (score <= 6) return '😐';
-                      if (score <= 8) return '😊';
-                      return '🤩';
-                    })()}
-                  </div>
-
-                  {/* Rating indicator */}
-                  <div className="text-center space-y-1">
-                    <span className="text-xs font-bold text-[#5A5A40] block">
-                      {t.moodRating} <span className="font-mono text-base font-extrabold text-[#8B9D83]">{activeDiaryForSelectedDate?.fastMoodScore || 5}</span> / 10
-                    </span>
-                    <span className="text-xs text-[#D4A373] font-bold block">
-                      {(() => {
-                        const score = activeDiaryForSelectedDate?.fastMoodScore || 5;
-                        if (score <= 2) return t.moodDistress;
-                        if (score <= 4) return t.moodAnxious;
-                        if (score <= 6) return t.moodStable;
-                        if (score <= 8) return t.moodContent;
-                        return t.moodJoyful;
-                      })()}
-                    </span>
-                  </div>
-
-                  {/* Slider input */}
-                  <div className="w-full px-6">
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="1"
-                      value={activeDiaryForSelectedDate?.fastMoodScore || 5}
-                      onChange={(e) => handleUpdateHabit('fastMood', Number(e.target.value))}
-                      className="w-full h-2.5 bg-[#E2DCC8] rounded-lg appearance-none cursor-pointer accent-[#8B9D83]"
-                    />
-                    <div className="flex justify-between text-[10px] text-gray-400 font-bold font-mono mt-1 px-1">
-                      <span>1</span>
-                      <span>5</span>
-                      <span>10</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Column 2: Interactive Water Bottle Tracker */}
-              <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                      <span className="text-[#89CFF0] text-base">💧</span>
-                      <span>{t.waterTrackerTitle}</span>
-                    </h3>
-                    {!isMetricTouched(selectedDate, 'water', dailyTouchedMetrics) && (
-                      <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200/80 px-2 py-0.5 rounded-full font-bold">
-                        {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-gray-500 font-medium">
-                    {t.waterTrackerDesc}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-
-                  {/* Water bottle visualization */}
-                  <div className="sm:col-span-4 flex flex-col items-center justify-center">
-                    <div className="w-16 h-32 border-3 border-[#89CFF0]/80 rounded-2xl relative overflow-hidden bg-white shadow-inner flex flex-col justify-end">
-                      {/* Caps represent fluid level */}
-                      <motion.div
-                        className="bg-gradient-to-t from-[#89CFF0] to-[#A0E0FF] w-full"
-                        animate={{
-                          height: `${((activeDiaryForSelectedDate?.waterCups || 0) / 8) * 100}%`
-                        }}
-                        transition={{ type: 'spring', damping: 15 }}
-                      >
-                        {/* Wave animation effect */}
-                        <div className="w-full h-2 bg-[#89CFF0] rounded-full opacity-60 animate-pulse" />
-                      </motion.div>
-
-                      {/* Percent text overlay */}
-                      <span className="absolute inset-0 flex items-center justify-center font-mono font-extrabold text-xs text-[#5A5A40] drop-shadow-xs">
-                        {Math.round(((activeDiaryForSelectedDate?.waterCups || 0) / 8) * 100)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Cups Grid Selector */}
-                  <div className="sm:col-span-8 space-y-3">
-                    <div className="grid grid-cols-4 gap-2">
-                      {Array.from({ length: 8 }).map((_, idx) => {
-                        const isDrunk = (activeDiaryForSelectedDate?.waterCups || 0) > idx;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              // If current cup clicked is equal to current level, reduce by 1, else set to this cup
-                              const currentLevel = activeDiaryForSelectedDate?.waterCups || 0;
-                              if (currentLevel === idx + 1) {
-                                handleUpdateHabit('water', idx);
-                              } else {
-                                handleUpdateHabit('water', idx + 1);
-                              }
-                            }}
-                            className={`p-2 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                              isDrunk
-                                ? 'bg-[#89CFF0]/20 border-[#89CFF0] text-[#3399FF] scale-105 shadow-2xs'
-                                : 'bg-[#F9F7F2]/50 border-[#E2DCC8]/60 hover:border-[#89CFF0] text-gray-300 hover:text-[#89CFF0]/60'
-                            }`}
-                            title={t('waterCupLabel', { number: idx + 1 }) || `Cup ${idx + 1}`}
-                          >
-                            <span className="text-xl">🥛</span>
-                            <span className="text-[9px] font-bold font-mono mt-0.5">{idx + 1}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="text-center sm:text-right">
-                      <span className="text-xs font-bold text-[#5A5A40]">
-                        {t.waterConsumed} <span className="font-mono text-base text-[#3399FF] font-extrabold">{activeDiaryForSelectedDate?.waterCups || 0}</span> {t('ofEightCups', { total: 8 }) || 'of 8 cups'} ({(activeDiaryForSelectedDate?.waterCups || 0) * 0.25} {t.litersUnit})
-                      </span>
-                      <p className="text-[10px] text-gray-400 font-semibold mt-0.5">
-                        {(activeDiaryForSelectedDate?.waterCups || 0) >= 8 ? (t.hydrationGoalReached) : (t.waterRemaining)}
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-
-            {/* 🩺 Physical Symptoms Tracker Panel */}
-            <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
+            {/* 6. Physical Symptoms Checklist Card */}
+            <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-5 shadow-xs space-y-4">
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
+                  <h3 className="font-bold text-sm text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-2 space-x-reverse">
                     <Activity className="w-4 h-4 text-red-400" />
                     <span>{t.symptomsTitle}</span>
                   </h3>
                   {!isMetricTouched(selectedDate, 'anxietySymptoms', dailyTouchedMetrics) && (
-                    <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200/80 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-400/30 px-2 py-0.5 rounded-full font-bold">
                       {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-500 font-medium">
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
                   {t.symptomsDesc}
                 </p>
               </div>
@@ -7572,8 +7035,8 @@ export default function App() {
                       }}
                       className={`px-3.5 py-2 rounded-2xl border text-xs font-semibold transition-all cursor-pointer ${
                         isChecked
-                          ? 'bg-red-50 border-red-300 text-red-700 shadow-2xs font-extrabold scale-102'
-                          : 'bg-[#F9F7F2]/60 hover:bg-[#F0EDE4] border-[#E2DCC8]/60 text-[#5A5A40]'
+                          ? 'bg-rose-500/15 border-rose-400/40 text-rose-700 dark:text-rose-300 shadow-2xs font-bold scale-102'
+                          : 'bg-[#F4F7F5] dark:bg-[#172B22] hover:bg-gray-100 dark:hover:bg-white/5 border-[#DCE7E0]/60 dark:border-[#74C69D]/10 text-gray-600 dark:text-gray-300'
                       }`}
                     >
                       {symptom.label}
@@ -7583,24 +7046,24 @@ export default function App() {
               </div>
             </div>
 
-            {/* 🧘 Box Breathing interactive psychiatric guide */}
-            <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
+            {/* 7. Interactive Box Breathing Psychiatric Exercise Card */}
+            <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-5 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
+                  <h3 className="font-bold text-sm text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-2 space-x-reverse">
                     <span className="text-base">🧘</span>
                     <span>{t('boxBreathingTitle')}</span>
                   </h3>
-                  <p className="text-[10px] text-gray-500 font-medium">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
                     {t('boxBreathingDesc')}
                   </p>
                 </div>
                 <button
                   onClick={() => setIsBreathingActive(!isBreathingActive)}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-extrabold shadow-2xs cursor-pointer transition-all ${
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold shadow-2xs cursor-pointer transition-all ${
                     isBreathingActive
                       ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
-                      : 'bg-[#8B9D83] hover:bg-[#5A5A40] text-white'
+                      : 'bg-[#2D6A4F] dark:bg-[#74C69D] hover:bg-[#1E5F48] dark:hover:bg-[#52B788] text-white dark:text-[#0B1611]'
                   }`}
                 >
                   {isBreathingActive ? t('stopBreathingBtn') : t('startBreathingBtn')}
@@ -7608,9 +7071,7 @@ export default function App() {
               </div>
 
               {isBreathingActive && (
-                <div className="flex flex-col items-center justify-center py-6 bg-[#F9F7F2]/40 border border-[#E2DCC8]/50 rounded-2xl space-y-6 relative overflow-hidden">
-
-                  {/* Large Pulse animation circle */}
+                <div className="flex flex-col items-center justify-center py-6 bg-[#F4F7F5] dark:bg-[#172B22] border border-[#DCE7E0]/60 dark:border-[#74C69D]/10 rounded-2xl space-y-6 relative overflow-hidden">
                   <div className="relative w-40 h-40 flex items-center justify-center">
                     <motion.div
                       className={`absolute inset-0 rounded-full ${
@@ -7627,7 +7088,7 @@ export default function App() {
                       transition={{ duration: 4, ease: 'easeInOut' }}
                     />
 
-                    <div className={`w-28 h-28 rounded-full shadow-md flex flex-col items-center justify-center text-white font-extrabold ${
+                    <div className={`w-28 h-28 rounded-full shadow-md flex flex-col items-center justify-center text-white font-black ${
                       breathingPhase === 'inhale' ? 'bg-emerald-500' :
                       breathingPhase === 'hold1' ? 'bg-amber-500' :
                       breathingPhase === 'exhale' ? 'bg-blue-500' : 'bg-purple-500'
@@ -7637,48 +7098,46 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Status Indicator text */}
                   <div className="text-center space-y-1 z-10">
-                    <span className="text-sm font-black text-[#3A3A3A] block">
+                    <span className="text-sm font-black text-[#214E3A] dark:text-[#ECF3EE] block">
                       {breathingPhase === 'inhale' && (t.breathingInhaleMessage)}
                       {breathingPhase === 'hold1' && (t.breathingHold1Message)}
                       {breathingPhase === 'exhale' && (t.breathingExhaleMessage)}
                       {breathingPhase === 'hold2' && (t.breathingHold2Message)}
                     </span>
-                    <span className="text-[10px] text-gray-400 block font-bold">
-                      {t('completedCycles')} <span className="font-mono text-xs font-black text-[#8B9D83]">{breathingCycle}</span> {t('cyclesCount')}
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 block font-bold">
+                      {t('completedCycles')} <span className="font-mono text-xs font-black text-[#2D6A4F] dark:text-[#74C69D]">{breathingCycle}</span> {t('cyclesCount')}
                     </span>
                   </div>
-
                 </div>
               )}
             </div>
 
-            {/* Self-Care & Habits Tracker checklist for current selected date */}
-            <div id="habits-tracker" className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
+            {/* 8. Self-Care Trackers Card (Sleep, Workout, Medication) */}
+            <div id="habits-tracker" className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[#74C69D]/20 rounded-3xl p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                  <CheckSquare className="w-4 h-4 text-[#8B9D83]" />
+                <h3 className="font-bold text-sm text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-2 space-x-reverse">
+                  <CheckSquare className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D]" />
                   <span>{t('selfCareGoalsTitle')}</span>
                 </h3>
-                <span className="text-[10px] text-gray-400 font-bold">{t('autoSaveLabel')}</span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold">{t('autoSaveLabel')}</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* 💤 Sleep hours track */}
-                <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 space-y-2">
+                <div className="bg-[#F4F7F5] dark:bg-[#172B22] p-4 rounded-2xl border border-[#DCE7E0]/60 dark:border-[#74C69D]/10 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
+                    <span className="text-xs font-bold text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-1.5 space-x-reverse">
                       <Moon className="w-4 h-4 text-blue-500" />
                       <span>{t('sleepHoursLabel')}</span>
                     </span>
                     <div className="flex items-center gap-1.5">
                       {!isMetricTouched(selectedDate, 'sleep', dailyTouchedMetrics) && (
-                        <span className="text-[9px] bg-indigo-50 text-indigo-700 border border-indigo-200/80 px-1.5 py-0.5 rounded-md font-bold">
+                        <span className="text-[9px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-400/30 px-1.5 py-0.5 rounded-md font-bold">
                           {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
                         </span>
                       )}
-                      <span className="text-xs font-mono font-bold text-[#5A5A40]">
+                      <span className="text-xs font-mono font-bold text-gray-600 dark:text-gray-300">
                         {activeDiaryForSelectedDate?.sleepHours || 8} {t('hoursUnit')}
                       </span>
                     </div>
@@ -7690,24 +7149,24 @@ export default function App() {
                     step="0.5"
                     value={activeDiaryForSelectedDate?.sleepHours || 8}
                     onChange={(e) => handleUpdateHabit('sleep', e.target.value)}
-                    className="w-full h-1.5 bg-[#E2DCC8] rounded-lg appearance-none cursor-pointer accent-[#8B9D83]"
+                    className="w-full h-1.5 bg-[#DCE7E0] dark:bg-[#11211A] rounded-lg appearance-none cursor-pointer accent-[#2D6A4F] dark:accent-[#74C69D]"
                   />
                 </div>
 
                 {/* 🏃 Sports Workout duration */}
-                <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 space-y-2">
+                <div className="bg-[#F4F7F5] dark:bg-[#172B22] p-4 rounded-2xl border border-[#DCE7E0]/60 dark:border-[#74C69D]/10 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <Activity className="w-4 h-4 text-[#8B9D83]" />
+                    <span className="text-xs font-bold text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-1.5 space-x-reverse">
+                      <Activity className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D]" />
                       <span>{t('sportsDurationLabel')}</span>
                     </span>
                     <div className="flex items-center gap-1.5">
                       {!isMetricTouched(selectedDate, 'exercise', dailyTouchedMetrics) && (
-                        <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-1.5 py-0.5 rounded-md font-bold">
+                        <span className="text-[9px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-400/30 px-1.5 py-0.5 rounded-md font-bold">
                           {t.notRecordedToday || getNotRecordedTodayLabel(settings?.appLanguage || 'ar')}
                         </span>
                       )}
-                      <span className="text-xs font-mono font-bold text-[#8B9D83]">
+                      <span className="text-xs font-mono font-bold text-[#2D6A4F] dark:text-[#74C69D]">
                         {activeDiaryForSelectedDate?.sportsDuration || 0} {t('minutesUnit')}
                       </span>
                     </div>
@@ -7719,14 +7178,14 @@ export default function App() {
                     step="5"
                     value={activeDiaryForSelectedDate?.sportsDuration || 0}
                     onChange={(e) => handleUpdateHabit('sports', e.target.value)}
-                    className="w-full h-1.5 bg-[#E2DCC8] rounded-lg appearance-none cursor-pointer accent-[#8B9D83]"
+                    className="w-full h-1.5 bg-[#DCE7E0] dark:bg-[#11211A] rounded-lg appearance-none cursor-pointer accent-[#2D6A4F] dark:accent-[#74C69D]"
                   />
                 </div>
 
                 {/* 💊 Medication Track */}
-                <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                    <Pill className="w-4 h-4 text-[#D4A373]" />
+                <div className="bg-[#F4F7F5] dark:bg-[#172B22] p-4 rounded-2xl border border-[#DCE7E0]/60 dark:border-[#74C69D]/10 flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-1.5 space-x-reverse">
+                    <Pill className="w-4 h-4 text-[#D4A359] dark:text-[#E9C46A]" />
                     <span>{t('medicationDoseLabel')}</span>
                   </span>
                   <button
@@ -7736,8 +7195,8 @@ export default function App() {
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       activeDiaryForSelectedDate?.medications?.[0]?.taken
-                        ? 'bg-[#8B9D83] text-white shadow-xs'
-                        : 'bg-[#F0EDE4] text-[#5A5A40]'
+                        ? 'bg-[#2D6A4F] dark:bg-[#74C69D] text-white dark:text-[#0B1611] shadow-xs'
+                        : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                     }`}
                   >
                     {activeDiaryForSelectedDate?.medications?.[0]?.taken ? t('medicationTakenBtn') : t('medicationPendingBtn')}
@@ -7746,246 +7205,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* 🎯 Daily Habits Tracker (تتبع العادات السلوكية والروتين اليومي) */}
-            <div id="custom-habits-tracker" className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                    <span className="text-base">🎯</span>
-                    <span>{t('habitsTrackerTitle')}</span>
-                  </h3>
-                  <p className="text-[10px] text-gray-500 font-medium">
-                    {t.habitsTrackerSub}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowAddHabitModal(true)}
-                  className="flex items-center space-x-1.5 space-x-reverse px-3.5 py-1.5 bg-[#8B9D83] hover:bg-[#5A5A40] text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
-                >
-                  <span>{t('addHabitBtnLabel')}</span>
-                </button>
-              </div>
-
-              {/* Category Filter Tabs */}
-              <div className="flex items-center space-x-1.5 space-x-reverse overflow-x-auto pb-1 scrollbar-none">
-                {[
-                  { id: 'all', label: t.allCategoriesFilter },
-                  { id: 'health', label: t.healthCategoryFilter },
-                  { id: 'mind', label: t.mindCategoryFilter },
-                  { id: 'sport', label: t.sportCategoryFilter },
-                  { id: 'culture', label: t.cultureCategoryFilter },
-                  { id: 'custom', label: t.customCategoryFilter },
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSelectedHabitCategory(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap border transition-all cursor-pointer ${
-                      selectedHabitCategory === tab.id
-                        ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-xs'
-                        : 'bg-[#F9F7F2]/80 hover:bg-[#F0EDE4] text-[#5A5A40] border-[#E2DCC8]/60'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Habits List Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {habits
-                  .filter(h => selectedHabitCategory === 'all' || h.category === selectedHabitCategory)
-                  .map(habit => {
-                    const isCompleted = !!habit.history[selectedDate];
-                    const catInfo = HABIT_CATEGORIES[habit.category] || HABIT_CATEGORIES.custom;
-
-                    return (
-                      <div
-                        key={habit.id}
-                        className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
-                          isCompleted
-                            ? 'bg-emerald-50/40 border-emerald-200 shadow-xs'
-                            : 'bg-[#F9F7F2]/30 border-[#E2DCC8]/50 hover:border-[#8B9D83]/60'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3 space-x-reverse">
-                          {/* Toggle Button */}
-                          <button
-                            onClick={() => toggleHabitCompletion(habit.id, selectedDate)}
-                            className={`w-6.5 h-6.5 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                              isCompleted
-                                ? 'bg-[#8B9D83] text-white scale-105 shadow-xs'
-                                : 'border border-[#E2DCC8] hover:border-[#8B9D83] text-transparent hover:bg-white'
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold">✓</span>
-                          </button>
-
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-1.5 space-x-reverse">
-                              {habit.icon && <span className="text-sm shrink-0 font-bold">{habit.icon}</span>}
-                              <span className={`text-xs font-bold block transition-all ${isCompleted ? 'line-through text-gray-400' : 'text-[#3A3A3A]'}`}>
-                                {getHabitDisplayName(habit, t)}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2 space-x-reverse">
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded-md border font-medium ${catInfo.color}`}>
-                                {getHabitCategoryLabel(habit.category, t)}
-                              </span>
-                              {habit.reminderTime && (
-                                <span className="text-[9px] text-gray-400 flex items-center space-x-0.5 space-x-reverse">
-                                  <span>⏰ {habit.reminderTime}</span>
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-1 space-x-reverse">
-                          <button
-                            onClick={() => triggerSimulatedHabitNotification(habit)}
-                            className="p-1.5 text-[#5A5A40] hover:text-[#D4A373] hover:bg-[#FAEDCD]/50 rounded-lg transition-colors cursor-pointer"
-                            title={t.simulateReminderNotifTitle}
-                          >
-                            <Bell className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => deleteHabit(habit.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                            title={t.deleteHabitBtnTitle}
-                          >
-                            <Trash className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                {habits.filter(h => selectedHabitCategory === 'all' || h.category === selectedHabitCategory).length === 0 && (
-                  <div className="col-span-full py-8 text-center bg-[#F9F7F2]/50 border border-dashed border-[#E2DCC8]/60 rounded-2xl">
-                    <p className="text-xs text-gray-400 font-medium">{t.noHabitsInCategory}</p>
-                    <button
-                      onClick={() => setShowAddHabitModal(true)}
-                      className="text-xs font-bold text-[#8B9D83] underline mt-1.5 block mx-auto cursor-pointer"
-                    >
-                      {t.addFirstHabitNowBtn}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 📊 Habits Evaluation & Psychiatric Insights Panel */}
-            <div className="bg-white border border-[#E2DCC8] rounded-3xl p-5 shadow-xs space-y-4">
-              <div className="space-y-1">
-                <h3 className="font-bold text-sm text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                  <span className="text-base">📊</span>
-                  <span>{t('aiBehavioralAssessmentTitle')}</span>
-                </h3>
-                <p className="text-[10px] text-gray-500 font-medium">
-                  {t.habitEvaluationPeriodSub}
-                </p>
-              </div>
-
-              {/* Timeframe selector */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { id: 'daily', label: t.evalDailyLabel },
-                  { id: 'weekly', label: t.evalWeeklyLabel },
-                  { id: 'monthly', label: t.evalMonthlyLabel },
-                  { id: 'quarterly', label: t.evalQuarterlyLabel },
-                  { id: 'semi-annually', label: t.evalSemiAnnuallyLabel },
-                  { id: 'annually', label: t.evalAnnuallyLabel },
-                  { id: 'custom', label: t.evalCustomLabel },
-                ].map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => setHabitPeriod(p.id as any)}
-                    className={`p-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                      habitPeriod === p.id
-                        ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
-                        : 'bg-[#F9F7F2]/60 hover:bg-[#F0EDE4] text-[#5A5A40] border-[#E2DCC8]/60'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Custom date range inputs (only if custom is selected) */}
-              {habitPeriod === 'custom' && (
-                <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]/60">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.startDateLabel}</label>
-                    <input
-                      type="date"
-                      value={habitCustomStart}
-                      onChange={e => setHabitCustomStart(e.target.value)}
-                      className="w-full bg-white border border-[#E2DCC8] rounded-xl px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[#5A5A40]">{t.endDateLabel}</label>
-                    <input
-                      type="date"
-                      value={habitCustomEnd}
-                      onChange={e => setHabitCustomEnd(e.target.value)}
-                      className="w-full bg-white border border-[#E2DCC8] rounded-xl px-2.5 py-1.5 text-xs text-[#3A3A3A] focus:outline-none"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Action Button */}
-              <button
-                onClick={generateHabitReport}
-                disabled={habitEvaluationLoading || habits.length === 0}
-                className="w-full py-2.5 bg-[#8B9D83] hover:bg-[#5A5A40] disabled:bg-gray-100 disabled:text-gray-400 text-white rounded-2xl text-xs font-bold transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer shadow-xs"
-              >
-                {habitEvaluationLoading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>{t.analyzingBehavioralDataReport}</span>
-                  </>
-                ) : (
-                  <>
-                    <span>🧠</span>
-                    <span>{t('generateBehavioralReportBtn')}</span>
-                  </>
-                )}
-              </button>
-
-              {/* Evaluation Report Result Display Box */}
-              {habitEvaluationReport && (
-                <div className="p-5 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl space-y-3">
-                  <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-2">
-                    <span className="text-xs font-extrabold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <span>📊</span>
-                      <span>{t.behavioralReportHeader}</span>
-                    </span>
-                    <span className="text-[9px] bg-[#8B9D83]/10 text-[#8B9D83] px-2 py-0.5 rounded-full font-bold">
-                      {t.mentalHealthAiAdvisorRole}
-                    </span>
-                  </div>
-
-                  <div className="text-xs text-[#3A3A3A] leading-relaxed whitespace-pre-wrap font-sans font-normal space-y-4">
-                    {habitEvaluationReport}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Life Map timeline view for selected day */}
+            {/* 9. Life Map Timeline Overview Card for Selected Day */}
             <LifeMap selectedDate={selectedDate} diaries={diaries} appLanguage={settings?.appLanguage || 'ar'} />
-
-            {/* Quick tips display for psychiatric support */}
-            <div className="p-4 bg-[#FAEDCD]/40 border border-[#D4A373]/30 text-[#D4A373] rounded-2xl text-xs leading-relaxed flex items-start space-x-3 space-x-reverse">
-              <span className="text-lg">💡</span>
-              <div>
-                <strong className="block font-bold mb-0.5">{t.mentalHealthTipOfDayHeader}</strong>
-                <span>{t.boxBreathingMentalHealthTip}</span>
-              </div>
-            </div>
 
           </div>
         )}
@@ -11206,133 +10427,113 @@ export default function App() {
 
 
 
-      {/* Mobile Draggable Floating Button for Bottom Nav (Appears when bottom nav auto-collapses on mobile) */}
-      {isBottomNavCollapsedOnMobile && !isKeyboardOpen && (
-        <motion.div
-          drag="x"
-          dragMomentum={false}
-          dragElastic={0.1}
-          className="fixed bottom-3 end-4 z-40 sm:hidden flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-grab active:cursor-grabbing"
-          style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}
-        >
-          <button
-            type="button"
-            onClick={revealBottomNavTemporarily}
-            className="flex items-center space-x-2 space-x-reverse px-3.5 py-1.5 bg-[#4E685B] text-white rounded-full shadow-xl border border-white/40 active:scale-95 transition-all cursor-pointer group"
-            title={t.showBottomMenuTooltip}
-          >
-            <Compass className="w-4 h-4 text-[#FEFAE0] animate-pulse shrink-0" />
-            <span className="text-[11px] font-black tracking-tight">
-              {activeTab === 'dashboard' ? t('nav.home') :
-               activeTab === 'diaries' ? t('nav.diaries') :
-               activeTab === 'advisor' ? t('nav.advisor') :
-               activeTab === 'analytics' ? t('nav.progress') : t('nav.settings')}
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>
-            <ChevronUp className="w-3.5 h-3.5 text-white/80 group-hover:-translate-y-0.5 transition-transform shrink-0" />
-          </button>
-        </motion.div>
-      )}
-
-      {/* Persistent Bottom Tab Navigation Bar with Lucide icons (Mobile / APK Native Bottom Navigation) */}
+      {/* 🧭 Facebook-Style Bottom Navigation Bar (5 Icons Only + Scroll-Aware Hide/Show) */}
       <nav
-        className={`fixed bottom-0 inset-x-0 md:hidden bg-[#F9F7F2]/95 backdrop-blur-md border-t border-[#E2DCC8] z-[35] shadow-lg font-sans transition-all duration-300 transform ${
-          isKeyboardOpen || isDiaryEditorFullscreen || isWritingBoxFullscreen || isConsultationFullscreen || showVoiceVentModal || isLiveVoiceChatActive
-            ? 'translate-y-full opacity-0 pointer-events-none'
-            : isBottomNavCollapsedOnMobile
-            ? 'max-sm:translate-y-full max-sm:opacity-0 max-sm:pointer-events-none'
-            : 'translate-y-0 opacity-100'
+        className={`fixed bottom-0 inset-x-0 z-[35] bg-white/90 dark:bg-[#11211A]/90 backdrop-blur-xl border-t border-[#DCE7E0] dark:border-[rgba(116,198,157,0.18)] shadow-lg transition-all duration-300 transform ${
+          isKeyboardOpen || isDiaryEditorFullscreen || isWritingBoxFullscreen || isConsultationFullscreen || showVoiceVentModal || isLiveVoiceChatActive || isBottomNavHidden
+            ? 'translate-y-[120%] opacity-0 pointer-events-none'
+            : 'translate-y-0 opacity-100 pointer-events-auto'
         }`}
         style={{ paddingBottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
         dir={isRtl ? 'rtl' : 'ltr'}
-        onTouchStart={() => {
-          if (!isBottomNavCollapsedOnMobile) {
-            revealBottomNavTemporarily();
-          }
-        }}
-        onClick={() => {
-          revealBottomNavTemporarily();
-        }}
+        aria-label="Bottom Navigation"
       >
-        <div className="max-w-md mx-auto px-1.5 pt-1.5 grid grid-cols-5 gap-0.5 text-center font-bold">
+        <div className="max-w-md mx-auto px-4 py-2 flex items-center justify-around">
 
-          {/* Tab 1: Dashboard */}
+          {/* 1. الرئيسية (Home) */}
           <button
             type="button"
-            onClick={() => {
-              switchTab('dashboard');
-              revealBottomNavTemporarily();
-            }}
-            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
-              activeTab === 'dashboard' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
+            onClick={() => switchTab('dashboard')}
+            className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'dashboard'
+                ? 'bg-[#2D6A4F]/15 dark:bg-[#74C69D]/20 text-[#214E3A] dark:text-[#74C69D] scale-105 shadow-2xs'
+                : 'text-gray-400 dark:text-gray-500 hover:text-[#214E3A] dark:hover:text-[#ECF3EE]'
             }`}
+            title={t.navHomeAria || (isRtl ? 'الرئيسية' : 'Home')}
+            aria-label={t.navHomeAria || 'Home'}
           >
-            <Calendar className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.home')}</span>
+            {activeTab === 'dashboard' && (
+              <span className="absolute top-0 inset-x-2.5 h-0.5 rounded-full bg-[#2D6A4F] dark:bg-[#74C69D]" />
+            )}
+            <Calendar className="w-5.5 h-5.5" />
           </button>
 
-          {/* Tab 2: Journal Diaries (Returns directly to Journaling & Venting) */}
+          {/* 2. اليوميات (Diary) */}
           <button
             type="button"
             onClick={() => {
               switchTab('diaries', { subTab: 'journal' });
               setActiveDiariesSubTab('journal');
-              revealBottomNavTemporarily();
             }}
-            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
-              activeTab === 'diaries' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
+            className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'diaries'
+                ? 'bg-[#2D6A4F]/15 dark:bg-[#74C69D]/20 text-[#214E3A] dark:text-[#74C69D] scale-105 shadow-2xs'
+                : 'text-gray-400 dark:text-gray-500 hover:text-[#214E3A] dark:hover:text-[#ECF3EE]'
             }`}
+            title={t.navDiariesAria || (isRtl ? 'اليوميات' : 'Diaries')}
+            aria-label={t.navDiariesAria || 'Diaries'}
           >
-            <BookOpen className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.diaries')}</span>
+            {activeTab === 'diaries' && (
+              <span className="absolute top-0 inset-x-2.5 h-0.5 rounded-full bg-[#2D6A4F] dark:bg-[#74C69D]" />
+            )}
+            <BookOpen className="w-5.5 h-5.5" />
           </button>
 
-          {/* Tab 3: Flagship Smart Advisor */}
+          {/* 3. المستشار (Smart Advisor) */}
           <button
             type="button"
-            onClick={() => {
-              switchTab('advisor');
-              revealBottomNavTemporarily();
-            }}
-            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
-              activeTab === 'advisor' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
+            onClick={() => switchTab('advisor')}
+            className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'advisor'
+                ? 'bg-[#2D6A4F]/15 dark:bg-[#74C69D]/20 text-[#214E3A] dark:text-[#74C69D] scale-105 shadow-2xs'
+                : 'text-gray-400 dark:text-gray-500 hover:text-[#214E3A] dark:hover:text-[#ECF3EE]'
             }`}
+            title={t.navAdvisorAria || (isRtl ? 'المستشار الذكي' : 'Smart Advisor')}
+            aria-label={t.navAdvisorAria || 'Smart Advisor'}
           >
+            {activeTab === 'advisor' && (
+              <span className="absolute top-0 inset-x-2.5 h-0.5 rounded-full bg-[#2D6A4F] dark:bg-[#74C69D]" />
+            )}
             <div className="relative">
-              <Brain className="w-5 h-5 mb-0.5" />
-              <span className="absolute top-[-3px] left-[-3px] w-2 h-2 bg-[#D4A373] rounded-full animate-ping"></span>
+              <Brain className="w-5.5 h-5.5" />
+              <span className="absolute -top-1 -end-1 w-2 h-2 rounded-full bg-[#D4A359] animate-ping" />
             </div>
-            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.advisor')}</span>
           </button>
 
-          {/* Tab 4: Interactive Charts & Analytics */}
+          {/* 4. التقدم والبيانات (Progress & Analytics) */}
           <button
             type="button"
-            onClick={() => {
-              switchTab('analytics');
-              revealBottomNavTemporarily();
-            }}
-            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
-              activeTab === 'analytics' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
+            onClick={() => switchTab('analytics')}
+            className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'analytics'
+                ? 'bg-[#2D6A4F]/15 dark:bg-[#74C69D]/20 text-[#214E3A] dark:text-[#74C69D] scale-105 shadow-2xs'
+                : 'text-gray-400 dark:text-gray-500 hover:text-[#214E3A] dark:hover:text-[#ECF3EE]'
             }`}
+            title={t.navProgressAria || (isRtl ? 'التقدم والبيانات' : 'Progress & Analytics')}
+            aria-label={t.navProgressAria || 'Progress and Analytics'}
           >
-            <Activity className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.progress')}</span>
+            {activeTab === 'analytics' && (
+              <span className="absolute top-0 inset-x-2.5 h-0.5 rounded-full bg-[#2D6A4F] dark:bg-[#74C69D]" />
+            )}
+            <Activity className="w-5.5 h-5.5" />
           </button>
 
-          {/* Tab 5: Settings and Backup */}
+          {/* 5. الإعدادات (Settings) */}
           <button
             type="button"
-            onClick={() => {
-              switchTab('settings');
-              revealBottomNavTemporarily();
-            }}
-            className={`flex flex-col items-center justify-center min-h-[48px] min-w-[44px] py-1 rounded-xl transition-all cursor-pointer tap-feedback ${
-              activeTab === 'settings' ? 'text-[#8B9D83] scale-105 font-black' : 'text-gray-400 hover:text-[#5A5A40]'
+            onClick={() => switchTab('settings')}
+            className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all cursor-pointer tap-feedback ${
+              activeTab === 'settings'
+                ? 'bg-[#2D6A4F]/15 dark:bg-[#74C69D]/20 text-[#214E3A] dark:text-[#74C69D] scale-105 shadow-2xs'
+                : 'text-gray-400 dark:text-gray-500 hover:text-[#214E3A] dark:hover:text-[#ECF3EE]'
             }`}
+            title={t.navSettingsAria || (isRtl ? 'الإعدادات' : 'Settings')}
+            aria-label={t.navSettingsAria || 'Settings'}
           >
-            <SettingsIcon className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] leading-tight font-black truncate max-w-full block">{t('nav.settings')}</span>
+            {activeTab === 'settings' && (
+              <span className="absolute top-0 inset-x-2.5 h-0.5 rounded-full bg-[#2D6A4F] dark:bg-[#74C69D]" />
+            )}
+            <SettingsIcon className="w-5.5 h-5.5" />
           </button>
 
         </div>
@@ -13643,7 +12844,7 @@ export default function App() {
       />
 
       {/* 🔙 Universal Top-Most Draggable Floating Back Button */}
-      {settings.floatingBackButtonEnabled !== false && (
+      {settings.floatingBackButtonEnabled === true && (
         <FloatingBackButton
           appLanguage={settings?.appLanguage || 'ar'}
           stepCount={navStackCount + (navHistory.length > 0 || activeTab !== 'dashboard' || editingDiary !== null ? 1 : 0)}
@@ -13651,25 +12852,31 @@ export default function App() {
         />
       )}
 
-      {/* ➕ Universal Draggable Floating '+' Tools FAB Menu */}
-      <FloatingFabMenu
+      {/* 🌲 Blomeo Dual-Mode Glassmorphic Side Navigation Bar */}
+      <BlomeoSideNav
+        isOpen={isSideNavOpen}
+        onClose={() => setIsSideNavOpen(false)}
         appLanguage={settings?.appLanguage || 'ar'}
-        incompleteTasksCount={incompleteTasksCount}
-        remindersCount={settings.reminders?.length || 0}
-        hasActiveReminders={(settings.reminders || []).some(r => r.active)}
+        isDarkMode={Boolean(settings.isDarkMode)}
         currentUser={currentUser}
-        onOpenAthkar={() => setIsFullAthkarModalOpen(true)}
-        onOpenTasks={() => {
-          switchTab('diaries', { subTab: 'tasks' });
+        onOpenAccount={() => setIsAuthModalOpen(true)}
+        onOpenTasks={() => switchTab('diaries', { subTab: 'tasks' })}
+        onOpenCalendar={() => setShowCalendarModal(true)}
+        onOpenGratitude={() => switchTab('diaries', { subTab: 'gratitude' })}
+        onOpenCBT={() => switchTab('diaries', { subTab: 'cbt' })}
+        onNavigateToDiary={(diaryId) => {
+          const entry = diaries.find(d => d.id === diaryId);
+          if (entry) {
+            setEditingDiary(entry);
+            switchTab('diaries', { subTab: 'journal' });
+          }
         }}
-        onOpenGratitude={() => {
-          switchTab('diaries', { subTab: 'gratitude' });
-        }}
-        onOpenCBT={() => {
-          switchTab('diaries', { subTab: 'cbt' });
-        }}
-        onOpenReminders={() => setShowSmartRemindersModal(true)}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
+        diaries={diaries}
+        tasks={activeDiaryForSelectedDate?.tasks || []}
+        habits={habits}
+        gratitudeCards={gratitudeCards}
+        reminders={settings.reminders || []}
+        consultations={editingDiary?.chatLogs || []}
       />
 
     </div>

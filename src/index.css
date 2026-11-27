@@ -43,6 +43,68 @@ main {
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
+
+  /* 🌿 Blomeo Topographic Light Theme Tokens */
+  --blomeo-canvas: #F3F7F4;
+  --blomeo-card: #FFFFFF;
+  --blomeo-card-nested: #F8FAF9;
+  --blomeo-border: #DCE7E0;
+  --blomeo-text-primary: #214E3A;
+  --blomeo-text-secondary: #526B5D;
+  --blomeo-emerald-primary: #214E3A;
+  --blomeo-emerald-vibrant: #2D6A4F;
+  --blomeo-accent-gold: #D4A359;
+}
+
+.dark, :root[class~="dark"], html.dark {
+  /* 🌲 Blomeo Topographic Dark Theme Tokens */
+  --blomeo-canvas: #0B1611;
+  --blomeo-card: #11211A;
+  --blomeo-card-nested: #172B22;
+  --blomeo-card-elevated: #1E362B;
+  --blomeo-border: rgba(116, 198, 157, 0.16);
+  --blomeo-text-primary: #ECF3EE;
+  --blomeo-text-secondary: #98B3A4;
+  --blomeo-emerald-primary: #40916C;
+  --blomeo-emerald-vibrant: #52B788;
+  --blomeo-accent-gold: #E9C46A;
+}
+
+/* Blomeo Unified Topographic Canvas & Components */
+.blomeo-topographic-canvas {
+  background-color: var(--blomeo-canvas);
+  background-image: radial-gradient(circle at 50% 15%, rgba(45, 106, 79, 0.05) 0%, transparent 65%),
+    repeating-radial-gradient(circle at 100% 0%, rgba(45, 106, 79, 0.02) 0px, rgba(45, 106, 79, 0.02) 2px, transparent 3px, transparent 40px);
+}
+
+.dark .blomeo-topographic-canvas {
+  background-color: #0B1611;
+  background-image: radial-gradient(circle at 50% 15%, rgba(64, 145, 108, 0.08) 0%, transparent 70%),
+    repeating-radial-gradient(circle at 100% 0%, rgba(64, 145, 108, 0.03) 0px, rgba(64, 145, 108, 0.03) 2px, transparent 3px, transparent 40px);
+}
+
+.blomeo-card {
+  background-color: #FFFFFF;
+  border: 1px solid #DCE7E0;
+  color: #214E3A;
+  box-shadow: 0 1px 3px 0 rgba(33, 78, 58, 0.04);
+}
+
+.dark .blomeo-card {
+  background-color: #11211A;
+  border: 1px solid rgba(116, 198, 157, 0.16);
+  color: #ECF3EE;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.35);
+}
+
+.blomeo-tile {
+  background-color: #F8FAF9;
+  border: 1px solid #E5EDE8;
+}
+
+.dark .blomeo-tile {
+  background-color: #172B22;
+  border: 1px solid rgba(116, 198, 157, 0.14);
 }
 
 @theme {

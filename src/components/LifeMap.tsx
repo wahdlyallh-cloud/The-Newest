@@ -126,18 +126,18 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
     <div className="space-y-6 font-sans" dir={langInfo.dir}>
 
       {/* 📊 Interactive Dashboard Header Gauges */}
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6">
+      <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[rgba(116,198,157,0.16)] text-[#214E3A] dark:text-[#ECF3EE] rounded-3xl p-6 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center space-x-2.5 space-x-reverse">
-            <div className="p-2.5 bg-[#8B9D83]/15 text-[#8B9D83] rounded-2xl">
+            <div className="p-2.5 bg-[#8B9D83]/15 text-[#8B9D83] dark:text-[#74C69D] rounded-2xl">
               <Brain className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-[#3A3A3A] text-base">{t.dailyLifeMapTitle}</h3>
-              <p className="text-xs text-gray-400">{t.dailyLifeMapSub}</p>
+              <h3 className="font-extrabold text-[#214E3A] dark:text-[#ECF3EE] text-base">{t.dailyLifeMapTitle}</h3>
+              <p className="text-xs text-[#526B5D] dark:text-[#98B3A4]">{t.dailyLifeMapSub}</p>
             </div>
           </div>
-          <span className="text-xs bg-[#F9F7F2] text-[#5A5A40] border border-[#E2DCC8]/60 px-3 py-1.5 rounded-full font-bold self-start sm:self-auto">
+          <span className="text-xs bg-[#F8FAF9] dark:bg-[#172B22] text-[#214E3A] dark:text-[#ECF3EE] border border-[#DCE7E0] dark:border-[rgba(116,198,157,0.14)] px-3 py-1.5 rounded-full font-bold self-start sm:self-auto">
             📆 {selectedDate}
           </span>
         </div>
@@ -148,23 +148,23 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
 
               {/* Day Quality Indicator (Circular Gauge feel) */}
-              <div className="bg-[#F9F7F2]/60 border border-[#E2DCC8]/50 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+              <div className="bg-[#F8FAF9] dark:bg-[#172B22] border border-[#DCE7E0] dark:border-[rgba(116,198,157,0.14)] rounded-2xl p-5 flex flex-col justify-between space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5A5A40]">{t.dailyBalanceIndexLabel}</span>
-                  <Sparkles className="w-4 h-4 text-[#D4A373] animate-pulse" />
+                  <span className="text-xs font-bold text-[#526B5D] dark:text-[#98B3A4]">{t.dailyBalanceIndexLabel}</span>
+                  <Sparkles className="w-4 h-4 text-[#D4A359] dark:text-[#E9C46A] animate-pulse" />
                 </div>
                 <div className="flex items-baseline space-x-2 space-x-reverse">
-                  <span className="text-4xl font-black text-[#8B9D83]">{balanceScore}%</span>
-                  <span className="text-xs text-gray-400 font-semibold">{t.excellentBalance}</span>
+                  <span className="text-4xl font-black text-[#214E3A] dark:text-[#74C69D]">{balanceScore}%</span>
+                  <span className="text-xs text-[#526B5D] dark:text-[#98B3A4] font-semibold">{t.excellentBalance}</span>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-emerald-950/40 rounded-full h-2">
                     <div
-                      className="bg-[#8B9D83] h-2 rounded-full transition-all duration-1000"
+                      className="bg-[#2D6A4F] dark:bg-[#52B788] h-2 rounded-full transition-all duration-1000"
                       style={{ width: `${balanceScore}%` }}
                     ></div>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">
+                  <p className="text-[10px] text-[#526B5D] dark:text-[#98B3A4] leading-relaxed">
                     {t.balanceScoreCalculatedDesc}
                   </p>
                 </div>
@@ -174,58 +174,58 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
               <div className="lg:col-span-2 grid grid-cols-2 gap-4">
 
                 {/* Sleep Metrics */}
-                <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
+                <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0]/70 dark:border-[rgba(116,198,157,0.14)] rounded-2xl p-4 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-[#526B5D] dark:text-[#98B3A4] font-bold">
                     <span>💤 {t.sleepQuality}</span>
                     <Moon className="w-4 h-4 text-blue-500" />
                   </div>
-                  <div className="text-lg font-black text-[#3A3A3A] mt-2">
+                  <div className="text-lg font-black text-[#214E3A] dark:text-[#ECF3EE] mt-2">
                     {diaryToday.sleepHours ? `${diaryToday.sleepHours} ${t.hoursUnit}` : (t.notRecorded)}
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+                  <div className="w-full bg-gray-200 dark:bg-emerald-950/40 rounded-full h-1.5 mt-2">
                     <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${sleepProgress}%` }}></div>
                   </div>
                 </div>
 
                 {/* Sports Metrics */}
-                <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
+                <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0]/70 dark:border-[rgba(116,198,157,0.14)] rounded-2xl p-4 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-[#526B5D] dark:text-[#98B3A4] font-bold">
                     <span>🏃 {t.sportsActivity}</span>
                     <Activity className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <div className="text-lg font-black text-[#3A3A3A] mt-2">
+                  <div className="text-lg font-black text-[#214E3A] dark:text-[#ECF3EE] mt-2">
                     {diaryToday.sportsDuration ? `${diaryToday.sportsDuration} ${t.minutesUnit}` : (t.noSportsLogged)}
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+                  <div className="w-full bg-gray-200 dark:bg-emerald-950/40 rounded-full h-1.5 mt-2">
                     <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${sportsProgress}%` }}></div>
                   </div>
                 </div>
 
                 {/* Medication Compliance */}
-                <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
+                <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0]/70 dark:border-[rgba(116,198,157,0.14)] rounded-2xl p-4 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-[#526B5D] dark:text-[#98B3A4] font-bold">
                     <span>💊 {t.medicationAdherence}</span>
-                    <Pill className="w-4 h-4 text-[#D4A373]" />
+                    <Pill className="w-4 h-4 text-[#D4A359] dark:text-[#E9C46A]" />
                   </div>
-                  <div className="text-lg font-black text-[#3A3A3A] mt-2">
+                  <div className="text-lg font-black text-[#214E3A] dark:text-[#ECF3EE] mt-2">
                     {medTotalCount > 0 ? `${medTakenCount} / ${medTotalCount}` : (t.noDosesToday)}
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                    <div className="bg-[#D4A373] h-1.5 rounded-full" style={{ width: medTotalCount > 0 ? `${(medTakenCount / medTotalCount) * 100}%` : '0%' }}></div>
+                  <div className="w-full bg-gray-200 dark:bg-emerald-950/40 rounded-full h-1.5 mt-2">
+                    <div className="bg-[#D4A359] dark:bg-[#E9C46A] h-1.5 rounded-full" style={{ width: medTotalCount > 0 ? `${(medTakenCount / medTotalCount) * 100}%` : '0%' }}></div>
                   </div>
                 </div>
 
                 {/* Habits checklist rate */}
-                <div className="bg-white border border-[#E2DCC8]/40 rounded-2xl p-4 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-xs text-gray-500 font-bold">
+                <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0]/70 dark:border-[rgba(116,198,157,0.14)] rounded-2xl p-4 flex flex-col justify-between">
+                  <div className="flex items-center justify-between text-xs text-[#526B5D] dark:text-[#98B3A4] font-bold">
                     <span>🎯 {t.habitsCompletionLabel}</span>
-                    <CheckCircle className="w-4 h-4 text-[#8B9D83]" />
+                    <CheckCircle className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D]" />
                   </div>
-                  <div className="text-lg font-black text-[#3A3A3A] mt-2">
+                  <div className="text-lg font-black text-[#214E3A] dark:text-[#ECF3EE] mt-2">
                     {habitTotalCount > 0 ? `${habitCompletedCount} ${t.ofTotalLabel} ${habitTotalCount}` : (t.noSubHabits)}
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                    <div className="bg-[#8B9D83] h-1.5 rounded-full" style={{ width: habitTotalCount > 0 ? `${(habitCompletedCount / habitTotalCount) * 100}%` : '0%' }}></div>
+                  <div className="w-full bg-gray-200 dark:bg-emerald-950/40 rounded-full h-1.5 mt-2">
+                    <div className="bg-[#2D6A4F] dark:bg-[#52B788] h-1.5 rounded-full" style={{ width: habitTotalCount > 0 ? `${(habitCompletedCount / habitTotalCount) * 100}%` : '0%' }}></div>
                   </div>
                 </div>
 
@@ -239,46 +239,46 @@ export default function LifeMap({ selectedDate, diaries, appLanguage = 'ar' }: L
       </div>
 
       {/* ⏳ Chronological Memory Timeline with attachments */}
-      <div className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-6">
-        <h4 className="text-xs font-black text-[#5A5A40] uppercase tracking-wider">{t('integratedTimelineTitle')}</h4>
+      <div className="bg-white dark:bg-[#11211A] border border-[#DCE7E0] dark:border-[rgba(116,198,157,0.16)] text-[#214E3A] dark:text-[#ECF3EE] rounded-3xl p-6 shadow-xs space-y-6">
+        <h4 className="text-xs font-black text-[#214E3A] dark:text-[#ECF3EE] uppercase tracking-wider">{t('integratedTimelineTitle')}</h4>
 
         {events.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 text-xs">
-            <Calendar className="w-10 h-10 mx-auto mb-3 opacity-55 text-[#8B9D83]" />
-            <p className="font-bold text-[#5A5A40] text-sm">{t.noActivitiesLoggedForDay}</p>
-            <p className="text-[10px] mt-1 text-gray-400 max-w-sm mx-auto leading-relaxed">
+          <div className="text-center py-12 text-[#526B5D] dark:text-[#98B3A4] text-xs">
+            <Calendar className="w-10 h-10 mx-auto mb-3 opacity-55 text-[#2D6A4F] dark:text-[#74C69D]" />
+            <p className="font-bold text-[#214E3A] dark:text-[#ECF3EE] text-sm">{t.noActivitiesLoggedForDay}</p>
+            <p className="text-[10px] mt-1 text-[#526B5D] dark:text-[#98B3A4] max-w-sm mx-auto leading-relaxed">
               {t.lifeMapTimelineDescription}
             </p>
           </div>
         ) : (
-          <div className="relative border-e-2 border-[#E2DCC8] pe-6 me-3 space-y-8">
+          <div className="relative border-e-2 border-[#DCE7E0] dark:border-[rgba(116,198,157,0.2)] pe-6 me-3 space-y-8">
             {events.map((ev) => (
               <div key={ev.id} className="relative">
 
                 {/* Visual Circle Icon on Timeline Axis */}
-                <div className="absolute -end-[33px] top-1 bg-white border-2 border-[#E2DCC8] p-1.5 rounded-full shadow-xs z-10 transition-colors">
+                <div className="absolute -end-[33px] top-1 bg-white dark:bg-[#11211A] border-2 border-[#DCE7E0] dark:border-[rgba(116,198,157,0.3)] p-1.5 rounded-full shadow-xs z-10 transition-colors">
                   {ev.icon === 'moon' && <Moon className="w-3.5 h-3.5 text-blue-500" />}
-                  {ev.icon === 'pill' && <Pill className="w-3.5 h-3.5 text-[#D4A373]" />}
+                  {ev.icon === 'pill' && <Pill className="w-3.5 h-3.5 text-[#D4A359] dark:text-[#E9C46A]" />}
                   {ev.icon === 'sports' && <Activity className="w-3.5 h-3.5 text-emerald-500" />}
                   {ev.icon === 'mood' && <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />}
-                  {ev.icon === 'note' && <BookOpen className="w-3.5 h-3.5 text-[#8B9D83]" />}
+                  {ev.icon === 'note' && <BookOpen className="w-3.5 h-3.5 text-[#2D6A4F] dark:text-[#74C69D]" />}
                 </div>
 
                 {/* Event Content card */}
-                <div className="bg-[#F9F7F2] hover:bg-[#F0EDE4]/40 border border-[#E2DCC8]/60 p-5 rounded-2xl space-y-3 transition-colors">
+                <div className="bg-[#F8FAF9] dark:bg-[#172B22] border border-[#E5EDE8] dark:border-[rgba(116,198,157,0.14)] p-5 rounded-2xl space-y-3 transition-colors">
 
                   {/* Header: Title & exact clock time */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-1.5 border-b border-[#E2DCC8]/40">
-                    <h5 className="text-xs font-extrabold text-[#3A3A3A] flex items-center space-x-1.5 space-x-reverse">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-1.5 border-b border-[#DCE7E0]/50 dark:border-[rgba(116,198,157,0.14)]">
+                    <h5 className="text-xs font-extrabold text-[#214E3A] dark:text-[#ECF3EE] flex items-center space-x-1.5 space-x-reverse">
                       <span>{ev.title}</span>
                     </h5>
-                    <span className="text-[10px] font-mono font-bold text-gray-400 flex items-center space-x-1 space-x-reverse">
-                      <Clock className="w-3 h-3 text-[#8B9D83]" />
+                    <span className="text-[10px] font-mono font-bold text-[#526B5D] dark:text-[#98B3A4] flex items-center space-x-1 space-x-reverse">
+                      <Clock className="w-3 h-3 text-[#2D6A4F] dark:text-[#74C69D]" />
                       <span>{ev.time}</span>
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-600 leading-relaxed font-normal">{ev.description}</p>
+                  <p className="text-xs text-[#526B5D] dark:text-[#98B3A4] leading-relaxed font-normal">{ev.description}</p>
 
                   {/* 📷 Premium Visual Attachments inside the Timeline (If Note event has drawings/audio/photos) */}
                   {ev.type === 'note' && diaryToday && (

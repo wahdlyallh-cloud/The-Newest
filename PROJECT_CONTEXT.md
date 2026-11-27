@@ -311,3 +311,21 @@ npm run build
 - `public/blomeo-icon.png` is the image-based splash mark cropped from the supplied Blomeo logo; the splash now reveals the original raster icon first and letter-animates the centered LTR `blomeo` wordmark while preserving topographic contours, once-per-session behavior, skip, and reduced-motion support.
 - Web favicon, Apple touch icon, PWA 192/512 icons, manifest colors, Android density launcher PNGs, adaptive foregrounds, and launcher background resources now use the forest-green Blomeo identity. The HTML root/body background is set inline to prevent a white WebView flash.
 - Android resource updates are limited to launcher icon PNGs and `ic_launcher_background.xml`; no Gradle build was run.
+
+## 27. Blomeo Topographic UI, Dual-Mode Side Nav, Scroll-Aware Bottom Nav & Decluttered 9-Card Home
+- **Dual-Mode Glassmorphic Side Navigation (`src/components/BlomeoSideNav.tsx`):**
+  - Features emerald gradient rail (`linear-gradient(180deg, #1E5F48 0%, #113B2D 55%, #0A221A 100%)`) with curved cutout active pill highlight and hardware back step support via `useRegisterBackStep`.
+  - Supports High-Load (full names, username trigger, and live global search across diaries, tasks, habits, gratitude, CBT, and consultations) and Low-Load (compact vertical rail with icons only), toggleable smoothly via bottom `−` / `+` circular button.
+  - Quick action entries: Daily Tasks, Calendar, Gratitude Wall, and CBT Exercise.
+- **Top Header Bar & Bottom Navigation:**
+  - Non-sticky top header displays the exact `/blomeo-icon.png` badge and `blomeo` wordmark which opens the Side Nav in High-Load mode, alongside Smart Reminders Bell and Dark/Light Mode toggle.
+  - Floating Plus (`+`) FAB removed completely.
+  - Floating Back Button defaults to OFF (`false`), toggleable in Settings.
+  - Facebook-style Bottom Nav Bar contains 5 primary icons only (Home, Diary, Advisor, Analytics, Settings) with directional scroll-aware hide/show (12px hysteresis).
+- **Home Screen & Blomeo Topographic Light/Dark Theme:**
+  - Unified topographic theme CSS tokens in `src/index.css` (soft sage-linen `#F3F7F4` in Light Mode vs deep forest-charcoal `#0B1611` with 3-level matte dark-pine surfaces `#11211A` and muted-mint `#74C69D` borders in Dark Mode).
+  - Home screen decluttered to keep ONLY the exact 9 real cards in order (Greeting Hero Banner, Commitment Streak Card, Daily Inspiration Quote Card, Mood Scale Tracker, Water Bottle Tracker, Physical Symptoms Checklist, Box Breathing Exercise, Self-Care Trackers, and Life Map Timeline) preserving zero-default tracker logic.
+- **Quality Gates & i18n:**
+  - 36 new keys fully localized across all 12 locales (`ar, en, fr, de, es, it, tr, pt, ru, ja, zh, hi`).
+  - Passed all 4 quality gates: TypeScript, strict 12-locale i18n audit (2665/2665 keys), localization validator, and production Vite build. Zero modifications to `.github/` or `android/`.
+
