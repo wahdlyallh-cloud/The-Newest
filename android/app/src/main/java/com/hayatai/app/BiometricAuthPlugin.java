@@ -2,9 +2,11 @@ package com.hayatai.app;
 
 import android.content.Context;
 import android.os.Build;
+import android.app.Activity;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -36,7 +38,16 @@ public class BiometricAuthPlugin extends Plugin {
 
     @PluginMethod
     public void authenticate(final PluginCall call) {
-        getActivity().runOnUiThread(() -> {
+        Activity rawActivity = getActivity();
+        if (!(rawActivity instanceof FragmentActivity)) {
+            JSObject ret = new JSObject();
+            ret.put("authenticated", false);
+            ret.put("error", "Unsupported activity for biometric prompt");
+            call.resolve(ret);
+            return;
+        }
+        final FragmentActivity fragmentActivity = (FragmentActivity) rawActivity;
+        fragmentActivity.runOnUiThread(() -> {
             String title = call.getString("title", "فتح حياة AI");
             String subtitle = call.getString("subtitle", "استخدم بصمة الإصبع أو الوجه");
             String negative = call.getString("negativeButtonText", "استخدام رمز الدخول");
@@ -50,7 +61,7 @@ public class BiometricAuthPlugin extends Plugin {
                 }
                 @Override public void onAuthenticationFailed() { /* prompt remains available */ }
             };
-            BiometricPrompt prompt = new BiometricPrompt(this, ContextCompat.getMainExecutor(getContext()), callback);
+            BiometricPrompt prompt = new BiometricPrompt(fragmentActivity, ContextCompat.getMainExecutor(fragmentActivity), callback);
             BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
                     .setTitle(title).setSubtitle(subtitle).setNegativeButtonText(negative)
                     .setAllowedAuthenticators(authenticators()).build();
