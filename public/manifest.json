@@ -4,8 +4,8 @@
   "description": "My Personal Assistant and Daily Productivity Tracker",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#11261C",
+  "theme_color": "#11261C",
   "icons": [
     {
       "src": "/icon-192.png",

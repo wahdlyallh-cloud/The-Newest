@@ -306,3 +306,8 @@ npm run build
 - `src/components/BlomeoSplashScreen.tsx` provides a ~3-second inline-SVG brand animation over a forest-green radial background with drifting topographic contours, awakening head/brain artwork, botanical stroke draw-in, LTR `blomeo` wordmark reveal, and rising mist.
 - `App.tsx` gates the overlay to once per browser session using `sessionStorage`, supports tap/keyboard skip, honors `prefers-reduced-motion` with a static 0.8-second fade, and keeps the existing PINLock beneath it until its normal unlock flow completes.
 - Animation styling lives in `src/index.css`; no animation package or video asset was added. Standard TypeScript, localization, and production build quality gates apply.
+
+## 26. Blomeo App & Web Branding Assets
+- `public/blomeo-icon.png` is the image-based splash mark cropped from the supplied Blomeo logo; the splash now reveals the original raster icon first and letter-animates the centered LTR `blomeo` wordmark while preserving topographic contours, once-per-session behavior, skip, and reduced-motion support.
+- Web favicon, Apple touch icon, PWA 192/512 icons, manifest colors, Android density launcher PNGs, adaptive foregrounds, and launcher background resources now use the forest-green Blomeo identity. The HTML root/body background is set inline to prevent a white WebView flash.
+- Android resource updates are limited to launcher icon PNGs and `ic_launcher_background.xml`; no Gradle build was run.
