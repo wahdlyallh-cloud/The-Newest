@@ -18,7 +18,7 @@ const allowedTechTerms = new Set([
   'face id', 'pts', 'ref', 'video', 'audio', 'story'
 ]);
 const allowedProperNouns = new Set([
-  'hayat', 'hayat ai', 'hayat ai app', 'google', 'youtube',
+  'hayat', 'hayat ai', 'hayat ai app', 'blomeo', 'blomeo app', 'google', 'youtube',
   'cairo modern', 'tajawal soft', 'almarai clean', 'amiri classic naskh', 'noto naskh traditional'
 ]);
 const allowedSharedTerms = new Set([

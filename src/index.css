@@ -482,24 +482,95 @@ button[role="switch"],
 }
 .blomeo-splash--exiting { animation: none; opacity: 0; transform: scale(1.02); pointer-events: none; }
 .blomeo-splash__contours { position: absolute; inset: -5%; width: 110%; height: 110%; color: #c8d7c6; opacity: .15; animation: blomeo-contour-drift 18s ease-in-out infinite alternate; }
-.blomeo-splash__lockup { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 100vw; direction: ltr; }
-.blomeo-splash__icon { display: block; flex: 0 0 auto; width: clamp(112px,22vw,184px); height: auto; object-fit: contain; opacity: 0; transform: scale(.94); animation: blomeo-icon-in .6s cubic-bezier(.2,.75,.25,1) forwards; }
-.blomeo-splash__wordmark { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; max-width: 0; height: 1.16em; margin-left: 0; overflow: hidden; opacity: 0; color: #e8ede6; font-family: Georgia,"Times New Roman",serif; font-size: clamp(38px,8.1vw,74px); font-weight: 400; letter-spacing: -.065em; line-height: 1; white-space: nowrap; text-shadow: 0 0 28px rgba(232,237,230,.12); animation: blomeo-wordmark-expand 1.2s cubic-bezier(.2,.72,.2,1) .6s forwards; }
-.blomeo-splash__wordmark span { display: inline-block; flex: 0 0 auto; opacity: 0; transform: translate3d(0,7px,0); animation: blomeo-letter-reveal .36s ease-out calc(.68s + var(--letter-index) * 130ms) both; }
-@keyframes blomeo-contour-drift { from { transform: translate3d(-.4%,-.3%,0) scale(1); } to { transform: translate3d(.4%,.3%,0) scale(1.025); } }
-@keyframes blomeo-icon-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
-@keyframes blomeo-wordmark-expand { from { max-width: 0; margin-left: 0; opacity: 0; } to { max-width: 240px; margin-left: 12px; opacity: 1; } }
-@keyframes blomeo-letter-reveal { to { opacity: 1; transform: translate3d(0,0,0); } }
-@keyframes blomeo-splash-timeline { 0%,82.14% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes blomeo-reduced-motion { 0% { opacity: 0; } 18%,70% { opacity: 1; } 100% { opacity: 0; } }
-@media (max-width: 380px) {
-  .blomeo-splash__icon { width: 108px; }
-  .blomeo-splash__wordmark { font-size: 40px; }
+
+.blomeo-splash__lockup {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  direction: ltr;
 }
+
+.blomeo-splash__glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(140px, 28vw, 220px);
+  height: clamp(140px, 28vw, 220px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 206, 122, 0.28) 0%, rgba(212, 163, 115, 0.12) 45%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  animation: blomeo-glow-aura 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes blomeo-glow-aura {
+  0%, 64.2% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+  71.4% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.05); }
+  82.1% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.0); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.blomeo-splash__icon {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(96px, 18vw, 150px);
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.93);
+  animation: blomeo-icon-in 0.6s cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+  margin-bottom: clamp(6px, 1.2vw, 11px);
+}
+
+.blomeo-splash__wordmark {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  color: #F1EFE7;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(48px, 9.2vw, 76px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 0.82;
+  white-space: nowrap;
+  padding-bottom: 0px;
+  margin-bottom: clamp(6px, 1.2vw, 10px);
+  text-shadow: 0 0 28px rgba(241, 239, 231, 0.18);
+  animation: blomeo-wordmark-expand 1.2s cubic-bezier(0.2, 0.72, 0.2, 1) 0.6s forwards;
+}
+
+.blomeo-splash__wordmark span {
+  display: inline-block;
+  flex: 0 0 auto;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  animation: blomeo-letter-reveal 0.32s cubic-bezier(0.25, 1, 0.5, 1) calc(0.68s + var(--letter-index) * 160ms) both;
+}
+
+@keyframes blomeo-contour-drift { from { transform: translate3d(-.4%,-.3%,0) scale(1); } to { transform: translate3d(.4%,.3%,0) scale(1.025); } }
+@keyframes blomeo-icon-in { from { opacity: 0; transform: scale(.93); } to { opacity: 1; transform: scale(1); } }
+@keyframes blomeo-wordmark-expand { from { max-width: 0; margin-left: 0; opacity: 0; } to { max-width: 320px; margin-left: 3px; opacity: 1; } }
+@keyframes blomeo-letter-reveal { to { opacity: 1; transform: translate3d(0,0,0); } }
+@keyframes blomeo-splash-timeline { 0%, 82.14% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes blomeo-reduced-motion { 0% { opacity: 0; } 18%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+@media (max-width: 380px) {
+  .blomeo-splash__icon { width: 88px; margin-bottom: 5px; }
+  .blomeo-splash__wordmark { font-size: 42px; margin-bottom: 5px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .blomeo-splash { animation: blomeo-reduced-motion 800ms ease both; transition-duration: 200ms; }
   .blomeo-splash__contours { animation: none; }
+  .blomeo-splash__glow { display: none; }
   .blomeo-splash__icon { opacity: 1; transform: none; animation: none; }
-  .blomeo-splash__wordmark { max-width: 240px; margin-left: 12px; opacity: 1; animation: none; }
+  .blomeo-splash__wordmark { max-width: 300px; margin-left: 3px; opacity: 1; animation: none; }
   .blomeo-splash__wordmark span { opacity: 1; transform: none; animation: none; }
 }

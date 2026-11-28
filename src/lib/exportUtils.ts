@@ -90,7 +90,7 @@ export async function exportBlobSafe(options: ExportFileOptions): Promise<boolea
   const {
     blob,
     filename,
-    title = 'Hayat AI Export',
+    title = 'Blomeo Export',
     mimeType = blob.type || 'application/octet-stream',
     onShareCancelled,
     onSuccess,

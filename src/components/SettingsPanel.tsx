@@ -72,7 +72,7 @@ export default function SettingsPanel({
       <header className="text-center py-4">
         <div className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-[#2D6A4F]/10 text-[#2D6A4F] mb-2"><ShieldCheck className="w-6 h-6" /></div>
         <h3 className="font-black text-xl text-slate-800 dark:text-slate-100">{t.settingsTitle || 'الإعدادات'}</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">{t.settingsSubtitle || 'تحكم سريع ومرتب في حياة AI'}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">{t.settingsSubtitle || 'تحكم سريع ومرتب في بلوميو'}</p>
       </header>
       <div className="space-y-3">
         {groups.map(group => {
@@ -108,7 +108,7 @@ export default function SettingsPanel({
               </>}
               {group.id === 'updates' && <>
                 <div className="px-4 py-3"><AppSettingsUpdatesSection appLanguage={appLanguage} /></div>
-                <Row title={t.onboardingDiscoverTitle || 'اكتشف حياة AI'} subtitle={t.onboardingDiscoverSub || 'جولة تعريفية بالمزايا'} icon={<RefreshCw className="w-4 h-4" />} onClick={onOpenOnboarding} />
+                <Row title={t.interactiveTourTitle || 'اكتشف بلوميو'} subtitle={t.onboardingDiscoverSub || 'جولة تعريفية بالمزايا'} icon={<RefreshCw className="w-4 h-4" />} onClick={onOpenOnboarding} />
               </>}
             </div>}
           </div>;

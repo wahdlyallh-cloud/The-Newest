@@ -19,7 +19,7 @@ export async function authenticateNativeBiometric(language = 'ar') {
     return { authenticated: false, error: 'NATIVE_ANDROID_ONLY' };
   }
   return NativeBiometricAuth.authenticate({
-    title: language === 'ar' ? 'فتح حياة AI' : 'Unlock Hayat AI',
+    title: language === 'ar' ? 'فتح بلوميو' : 'Unlock Blomeo',
     subtitle: language === 'ar' ? 'استخدم بصمة الإصبع أو الوجه' : 'Use fingerprint or face unlock',
     negativeButtonText: language === 'ar' ? 'استخدام رمز الدخول' : 'Use passcode'
   });

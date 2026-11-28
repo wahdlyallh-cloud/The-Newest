@@ -97,7 +97,7 @@ export const SmartRemindersModal: React.FC<SmartRemindersModalProps> = ({
     try {
       await SmartReminder.triggerTestReminder({
         title: t('waterReminderSampleTitle') || 'هل شربت الماء الآن؟ 💧',
-        body: t('waterReminderSampleBody') || 'تذكير صحي عائم من حياة AI (اضغط نعم أو لا)',
+        body: t('waterReminderSampleBody') || 'تذكير صحي عائم من بلوميو (اضغط نعم أو لا)',
         isQuestion: true,
         yesLabel: t('yesActionLabel') || 'نعم، شربت',
         noLabel: t('noActionLabel') || 'ليس بعد',

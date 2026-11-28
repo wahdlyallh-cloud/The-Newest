@@ -329,7 +329,7 @@ export default function ExportDiaryModal({
         const success = await exportBlobSafe({
           blob: finalBlob,
           filename: fileName,
-          title: diary.title || 'Hayat AI Diary',
+          title: diary.title || 'Blomeo Diary',
           mimeType: 'image/png',
           onError: (err) => {
             alert(err?.message || (isAr ? 'حدث خطأ أثناء تصدير الصورة.' : 'Error exporting image.'));
@@ -419,7 +419,7 @@ export default function ExportDiaryModal({
         const success = await exportBlobSafe({
           blob: pdfBlob,
           filename: fileName,
-          title: diary.title || 'Hayat AI Diary PDF',
+          title: diary.title || 'Blomeo Diary PDF',
           mimeType: 'application/pdf',
           onError: (err) => {
             alert(err?.message || (isAr ? 'حدث خطأ أثناء تصدير PDF.' : 'Error exporting PDF.'));
@@ -949,7 +949,7 @@ export default function ExportDiaryModal({
           <div className="pt-2 flex items-center justify-between text-[11px] text-[#5A5A40] font-bold border-t border-[#E2DCC8]/60">
             <div className="flex items-center gap-1.5">
               <span>🌱</span>
-              <span className="font-extrabold">Hayat AI (حياة AI)</span>
+              <span className="font-extrabold">Blomeo (بلوميو)</span>
               <span>• {isAr ? 'مساحتك اليومية الآمنة' : 'Your Safe Daily Space'}</span>
             </div>
             {showDate && <span>{dateStr}</span>}

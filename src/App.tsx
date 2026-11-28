@@ -493,7 +493,7 @@ const calculateStreak = (entries: DiaryEntry[]) => {
 
 export const TRANSLATIONS = {
   ar: {
-    appName: "حياة AI",
+    appName: "بلوميو",
     settingsTitle: "الإعدادات العامة",
     settingsSubtitle: "تخصيص مساعد الذكي، قفل الحماية، وتزامن بياناتك",
     apiKeyTitle: "مفتاح API الخاص بك 🔑",
@@ -530,7 +530,7 @@ export const TRANSLATIONS = {
     contactSub: "راسلنا باقتراحاتك وملاحظاتك القيمة لتطوير التطبيق",
   },
   en: {
-    appName: "Hayat AI",
+    appName: "Blomeo",
     settingsTitle: "General Settings",
     settingsSubtitle: "Customize your smart assistant, privacy lock, and sync your data",
     apiKeyTitle: "Your API Key 🔑",
@@ -1045,11 +1045,22 @@ const AudioPlayerWithIndexedDBFallback: React.FC<{
 
 export default function App() {
   const [showBlomeoSplash, setShowBlomeoSplash] = useState(() => {
-    try { return sessionStorage.getItem('blomeoSplashPlayed') !== 'true'; } catch { return true; }
+    try {
+      const hasLang = Boolean(localStorage.getItem('app_language') || localStorage.getItem('yawmiyati_language_chosen'));
+      const hasTour = Boolean(localStorage.getItem('blomeo_discover_opened') || localStorage.getItem('hayat_onboarding_completed'));
+      if (!hasLang && !hasTour) {
+        // Fresh install: Step 1 is Language Picker, so do NOT show splash yet!
+        return false;
+      }
+      return sessionStorage.getItem('blomeoSplashPlayed') !== 'true';
+    } catch {
+      return true;
+    }
   });
   const [blomeoSplashExiting, setBlomeoSplashExiting] = useState(false);
   const splashFadeTimerRef = useRef<number | null>(null);
   const splashCompleteTimerRef = useRef<number | null>(null);
+  const pendingDiscoverTourAfterSplashRef = useRef(false);
 
   useEffect(() => {
     if (!showBlomeoSplash) return;
@@ -1058,7 +1069,13 @@ export default function App() {
     const duration = reducedMotion ? 800 : 3000;
     const fadeDelay = reducedMotion ? 600 : 2580;
     splashFadeTimerRef.current = window.setTimeout(() => setBlomeoSplashExiting(true), fadeDelay);
-    splashCompleteTimerRef.current = window.setTimeout(() => setShowBlomeoSplash(false), duration);
+    splashCompleteTimerRef.current = window.setTimeout(() => {
+      setShowBlomeoSplash(false);
+      if (pendingDiscoverTourAfterSplashRef.current) {
+        pendingDiscoverTourAfterSplashRef.current = false;
+        setShowOnboardingTour(true);
+      }
+    }, duration);
     return () => {
       if (splashFadeTimerRef.current !== null) window.clearTimeout(splashFadeTimerRef.current);
       if (splashCompleteTimerRef.current !== null) window.clearTimeout(splashCompleteTimerRef.current);
@@ -1070,7 +1087,13 @@ export default function App() {
     if (splashFadeTimerRef.current !== null) window.clearTimeout(splashFadeTimerRef.current);
     if (splashCompleteTimerRef.current !== null) window.clearTimeout(splashCompleteTimerRef.current);
     setBlomeoSplashExiting(true);
-    splashCompleteTimerRef.current = window.setTimeout(() => setShowBlomeoSplash(false), 420);
+    splashCompleteTimerRef.current = window.setTimeout(() => {
+      setShowBlomeoSplash(false);
+      if (pendingDiscoverTourAfterSplashRef.current) {
+        pendingDiscoverTourAfterSplashRef.current = false;
+        setShowOnboardingTour(true);
+      }
+    }, 420);
   };
 
   // --- Persistent State Hooks ---
@@ -2108,7 +2131,7 @@ export default function App() {
     if (isNativeAndroid) {
       await SmartReminder.setLockScreenNotification({
         enabled: true,
-        title: t.lockScreenNotificationTitle || 'حياة AI — وصول سريع',
+        title: t.lockScreenNotificationTitle || 'بلوميو — وصول سريع',
         body: t.lockScreenPermanentDesc || 'كتابة وفضفضة سريعة من شاشة القفل',
         writeLabel: t.write || 'كتابة',
         voiceLabel: t.voiceRecord || 'تسجيل صوتي',
@@ -3084,10 +3107,11 @@ export default function App() {
   const [showVoiceJournalModal, setShowVoiceJournalModal] = useState(false);
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
 
-  // Auto-open onboarding tour on first visit
+  // Auto-open onboarding tour on first visit (only for returning users who haven't completed it)
   useEffect(() => {
-    const tourDone = localStorage.getItem('hayat_onboarding_completed');
-    if (!tourDone) {
+    const chosen = localStorage.getItem('app_language') || localStorage.getItem('yawmiyati_language_chosen');
+    const tourDone = localStorage.getItem('blomeo_discover_opened') || localStorage.getItem('hayat_onboarding_completed');
+    if (chosen && !tourDone) {
       const timer = setTimeout(() => {
         setShowOnboardingTour(true);
       }, 600);
@@ -3099,12 +3123,39 @@ export default function App() {
   const [showGratitudeShareModal, setShowGratitudeShareModal] = useState(false);
   const [gratitudeShareData, setGratitudeShareData] = useState<CardExportData | undefined>(undefined);
 
-  // Auto-open language selector on first visit
+  // Step 1: Auto-open language selector on fresh install
   useEffect(() => {
     const chosen = localStorage.getItem('app_language') || localStorage.getItem('yawmiyati_language_chosen');
     if (!chosen) {
       setShowLanguagesModal(true);
       setIsFirstTimeLangSelect(true);
+    }
+  }, []);
+
+  // 1-Hour Smart Discovery Nudge Banner State & Effect
+  const [showDiscoverNudge, setShowDiscoverNudge] = useState(false);
+  useEffect(() => {
+    try {
+      let firstLaunchTs = localStorage.getItem('blomeo_first_launch_ts');
+      if (!firstLaunchTs) {
+        firstLaunchTs = String(Date.now());
+        localStorage.setItem('blomeo_first_launch_ts', firstLaunchTs);
+      }
+      const checkNudge = () => {
+        const isDiscoverOpened = localStorage.getItem('blomeo_discover_opened') === 'true' || localStorage.getItem('hayat_onboarding_completed') === 'true';
+        const isDismissed = localStorage.getItem('blomeo_discover_nudge_dismissed') === 'true';
+        if (!isDiscoverOpened && !isDismissed) {
+          const elapsed = Date.now() - Number(firstLaunchTs);
+          if (elapsed >= 60 * 60 * 1000) {
+            setShowDiscoverNudge(true);
+          }
+        }
+      };
+      checkNudge();
+      const interval = setInterval(checkNudge, 60000);
+      return () => clearInterval(interval);
+    } catch {
+      // ignore storage access errors
     }
   }, []);
 
@@ -3908,7 +3959,7 @@ export default function App() {
       await exportBlobSafe({
         blob: pdfBlob,
         filename: fileName,
-        title: editingDiary.title || 'Hayat AI Diary PDF',
+        title: editingDiary.title || 'Blomeo Diary PDF',
         mimeType: 'application/pdf'
       });
     } catch (err) {
@@ -5730,7 +5781,7 @@ export default function App() {
         try {
           answerText = await generateGeminiContentDirect(
             promptContext,
-            'أنت طبيب نفسي ومعالج إكلينيكي حكيم وداعم في تطبيق حياة AI. استمع لليوميات وأجب بأسلوب دافئ ومهني ومفصل باللغة العربية.',
+            'أنت طبيب نفسي ومعالج إكلينيكي حكيم وداعم في تطبيق بلوميو. استمع لليوميات وأجب بأسلوب دافئ ومهني ومفصل باللغة العربية.',
             getActiveApiKeyFromSettings(settings) || settings.userApiKey, extraParts, settings.appLanguage, 'reasoning');
         } catch (genErr) {
           console.warn('Direct fallback generation warning:', genErr);
@@ -5763,7 +5814,7 @@ export default function App() {
       try {
         fallbackText = await generateGeminiContentDirect(
           `رسالة الفضفضة: ${textToSend.trim()}`,
-          'أنت مستشار نفسي حكيم وداعم في تطبيق حياة AI. أجب بأسلوب دافئ ومطمئن.',
+          'أنت مستشار نفسي حكيم وداعم في تطبيق بلوميو. أجب بأسلوب دافئ ومطمئن.',
           getActiveApiKeyFromSettings(settings) || settings.userApiKey, undefined, settings.appLanguage, 'reasoning');
       } catch (_) {}
 
@@ -5843,12 +5894,12 @@ export default function App() {
         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
         heightLeft -= pageHeight;
       }
-      const fileName = `HayatAI_Chat_${editingDiary.id.split('-')[1] || 'log'}.pdf`;
+      const fileName = `Blomeo_Chat_${editingDiary.id.split('-')[1] || 'log'}.pdf`;
       const pdfBlob = pdf.output('blob');
       await exportBlobSafe({
         blob: pdfBlob,
         filename: fileName,
-        title: 'Hayat AI Diary Chat',
+        title: 'Blomeo Diary Chat',
         mimeType: 'application/pdf'
       });
     } catch (err) {
@@ -5895,7 +5946,7 @@ export default function App() {
     const dataStr = JSON.stringify({ diaries, settings: safeSettings });
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = `HayatAI_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    const exportFileDefaultName = `Blomeo_Backup_${new Date().toISOString().split('T')[0]}.json`;
 
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -5917,7 +5968,7 @@ export default function App() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `HayatAI_Diaries_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Blomeo_Diaries_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -6697,6 +6748,66 @@ export default function App() {
 
 
 
+      {/* 🚀 Reliable Global In-App Update Card (Accessible From ANY Tab/Page) */}
+      <AppUpdateBanner
+        appLanguage={settings?.appLanguage || 'ar'}
+        isDarkMode={Boolean(settings.isDarkMode)}
+        onNavigateToSettingsUpdates={() => switchTab('settings')}
+      />
+
+      {/* 🧭 1-Hour Smart Discovery Nudge In-App Banner */}
+      {showDiscoverNudge && (
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 my-2 z-40" dir={isRtl ? 'rtl' : 'ltr'}>
+          <div className={`p-4 rounded-3xl border shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            settings.isDarkMode ? 'bg-[#0C1C14]/95 border-emerald-500/40 text-[#ECF3EE]' : 'bg-[#F2F7F4]/98 border-[#2D6A4F]/30 text-[#113B2D]'
+          }`}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className={`p-2.5 rounded-2xl shrink-0 border ${
+                settings.isDarkMode ? 'bg-amber-400/20 text-amber-300 border-amber-400/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+              }`}>
+                <Sparkles className="w-5 h-5 animate-spin-slow" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="font-black text-xs sm:text-sm text-emerald-400">
+                  {t.interactiveTourTitle || (isRtl ? 'اكتشف بلوميو ✨' : 'Discover Blomeo ✨')}
+                </h4>
+                <p className="text-xs opacity-85 pt-0.5 leading-relaxed">
+                  {t.discoverNudgeMessage || (isRtl ? 'لسه بتستكشف بلوميو؟ اضغط هنا لفتح جولة «اكتشف بلوميو» خطوة بخطوة' : 'Still exploring Blomeo? Tap here to take the interactive Discover Blomeo tour')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  try { localStorage.setItem('blomeo_discover_nudge_dismissed', 'true'); } catch (_) {}
+                  setShowDiscoverNudge(false);
+                }}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer border ${
+                  settings.isDarkMode ? 'border-white/10 hover:bg-white/10 text-white/70' : 'border-emerald-200 hover:bg-white text-emerald-900'
+                }`}
+              >
+                {t.discoverNudgeDismissBtn || (isRtl ? 'لاحقًا' : 'Later')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.setItem('blomeo_discover_opened', 'true');
+                    localStorage.setItem('blomeo_discover_nudge_dismissed', 'true');
+                  } catch (_) {}
+                  setShowDiscoverNudge(false);
+                  setShowOnboardingTour(true);
+                }}
+                className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black text-xs transition-all shadow-md cursor-pointer active:scale-95"
+              >
+                {t.discoverNudgeStartBtn || (isRtl ? 'ابدأ الجولة' : 'Start Tour')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <main className={`max-w-4xl mx-auto px-0 md:px-6 pb-nav-safe md:pb-12 space-y-6 transition-all w-full max-w-full overflow-x-hidden ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
 
@@ -6705,9 +6816,6 @@ export default function App() {
 
         {/* Persistent In-Flight Background AI Status Indicator */}
         <BackgroundAIStatus appLanguage={settings?.appLanguage || 'ar'} />
-
-        {/* Capacitor Android Native In-App Update Banner */}
-        <AppUpdateBanner appLanguage={settings?.appLanguage || 'ar'} />
 
         {/* Mock Android Notification Widget at the top of the Home Dashboard for simulation */}
 
@@ -11842,6 +11950,7 @@ export default function App() {
           setShowWriteDiaryImporter(true);
         }}
         appLanguage={settings?.appLanguage || 'ar'}
+        isDarkMode={Boolean(settings.isDarkMode)}
       />
 
       {/* 👤 User Authentication Modal */}
@@ -11871,9 +11980,15 @@ export default function App() {
         isOpen={showLanguagesModal}
         onClose={() => {
           setShowLanguagesModal(false);
+          const wasFirst = isFirstTimeLangSelect;
           setIsFirstTimeLangSelect(false);
           localStorage.setItem('yawmiyati_language_chosen', 'true');
           localStorage.setItem('app_language', settings?.appLanguage || 'ar');
+          if (wasFirst) {
+            // Step 2: Play Blomeo splash animation, then Step 3: Discover Blomeo tour
+            pendingDiscoverTourAfterSplashRef.current = true;
+            setShowBlomeoSplash(true);
+          }
         }}
         appLanguage={settings?.appLanguage || 'ar'}
         onChangeLanguage={(lang) => {
@@ -13963,6 +14078,7 @@ export default function App() {
         gratitudeCards={gratitudeCards}
         reminders={settings.reminders || []}
         consultations={editingDiary?.chatLogs || []}
+        onOpenDiscover={() => setShowOnboardingTour(true)}
       />
 
     </div>

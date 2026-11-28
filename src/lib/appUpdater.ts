@@ -62,20 +62,7 @@ export async function checkForAppUpdate(_force = false): Promise<AppUpdateCheckR
   const installedVersionCode = versionInfo.versionCode;
   const installedVersionName = versionInfo.versionName;
 
-  // On standard browsers, in-app native APK updates are not applicable
-  if (!Capacitor.isNativePlatform()) {
-    return {
-      hasUpdate: false,
-      installedVersionCode,
-      installedVersionName,
-      remoteVersionCode: null,
-      remoteVersionName: null,
-      apkUrl: null,
-      releaseNotes: null,
-      isOffline: false
-    };
-  }
-
+  // Check network connectivity first
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     return {
       hasUpdate: false,
@@ -137,7 +124,7 @@ export async function checkForAppUpdate(_force = false): Promise<AppUpdateCheckR
     const apkAsset = assets.find(
       (a) => typeof a.name === 'string' && a.name.toLowerCase().endsWith('.apk')
     );
-    const apkUrl: string | null = apkAsset?.browser_download_url || null;
+    const apkUrl: string | null = apkAsset?.browser_download_url || releaseData?.html_url || null;
 
     // 3. Compare strictly newer than real installed native versionCode
     const hasUpdate =

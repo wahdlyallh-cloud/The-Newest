@@ -749,7 +749,7 @@ ${t.generatedByHayatAiNotice}`;
               </div>
             </div>
             <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px; padding: 8px 16px; font-size: 12px; font-weight: 800; color: #F8FAFC;">
-              🌱 حياة AI • Hayat
+              🌿 بلوميو • Blomeo
             </div>
           </div>
 

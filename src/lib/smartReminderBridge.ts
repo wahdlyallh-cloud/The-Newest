@@ -115,7 +115,7 @@ const SmartReminder = registerPlugin<SmartReminderPluginInterface>('SmartReminde
         setTimeout(() => {
           try {
             new Notification(options.title || 'هل شربت الماء الآن؟ 💧', {
-              body: options.body || 'تذكير صحي عائم من حياة AI'
+              body: options.body || 'تذكير صحي عائم من بلوميو'
             });
           } catch {}
         }, 5000);

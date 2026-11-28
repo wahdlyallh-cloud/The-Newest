@@ -463,7 +463,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                           ]).catch(() => null) as ServiceWorkerRegistration | null;
 
                           if (readyReg && readyReg.showNotification) {
-                            await readyReg.showNotification('حياة AI 🧠', {
+                            await readyReg.showNotification('بلوميو 🌿', {
                               body: 'لوحة الاختصارات والمهام الذكية مفعلة الآن | كيف تشعر الآن يا صديقي؟ 😊',
                               icon: '/icon-192.png',
                               badge: '/icon-192.png',
@@ -479,7 +479,7 @@ export const HabitSettingsScreen: React.FC<HabitSettingsScreenProps> = ({
                       }
 
                       if (!sent) {
-                        new Notification('حياة AI 🧠', {
+                        new Notification('بلوميو 🌿', {
                           body: 'لوحة الاختصارات والمهام الذكية مفعلة الآن | كيف تشعر الآن يا صديقي؟ 😊',
                           icon: '/icon-192.png',
                           badge: '/icon-192.png',

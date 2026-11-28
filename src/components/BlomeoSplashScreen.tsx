@@ -45,15 +45,16 @@ export default function BlomeoSplashScreen({ isExiting, onSkip }: BlomeoSplashSc
       </svg>
 
       <div className="blomeo-splash__lockup" dir="ltr" aria-label="blomeo">
+        <div className="blomeo-splash__glow" aria-hidden="true" />
         <img
           className="blomeo-splash__icon"
           src="/blomeo-icon.png"
-          alt="blomeo"
+          alt="b"
           decoding="async"
           fetchPriority="high"
         />
         <div className="blomeo-splash__wordmark" aria-hidden="true">
-          {'blomeo'.split('').map((letter, index) => (
+          {'lomeo'.split('').map((letter, index) => (
             <span key={`${letter}-${index}`} style={{ '--letter-index': index } as React.CSSProperties}>{letter}</span>
           ))}
         </div>

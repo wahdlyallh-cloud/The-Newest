@@ -372,4 +372,29 @@ npm run build
   - 35 new translation keys fully localized across all 12 locales (`ar, en, fr, de, es, it, tr, pt, ru, ja, zh, hi`).
   - Passes all 4 quality gates: `npx tsc --noEmit`, `node scripts/i18nAudit.cjs` (2700/2700 keys, 0 leaks), `node scripts/validate-localization.mjs`, and `npm run build`. Zero modifications to `.github/` or `android/`.
 
+## 29. Blomeo Brand Unification, Pen-Nib Splash Lockup, Discover Tour Overhaul & Global Changelog Updates
+- **Complete Brand Unification to Blomeo / بلوميو:**
+  - Replaced visible legacy names ("حياة AI", "Hayat AI", "اكتشف حياة AI") across `index.html`, `public/manifest.json`, header/navbar titles, and all 12 locales in `src/lib/languages.ts`.
+  - Preserved all `localStorage` and `IndexedDB` storage keys intact (`yawmiyati_*`, `hayat_*`) to guarantee zero data loss for returning users.
+- **Pen-Nib `b` Brand Icon Extraction & Baseline-Aligned Splash Animation:**
+  - Extracted the ivory fountain-pen nib `b` emblem from master art onto clean transparent background with unclipped golden ink-spark dots, head silhouette, and golden brain into `public/blomeo-icon.png` (512x512) and `public/blomeo-icon-master.png` (1024x1024), regenerating `favicon.ico`, `favicon.png`, `apple-touch-icon.png`, `icon-192.png`, and `icon-512.png`.
+  - Refactored `src/components/BlomeoSplashScreen.tsx` for bottom baseline typography alignment (`align-items: flex-end`) in an LTR flex lockup: reveals `b` emblem centered, then reveals only the 5 remaining letters `l o m e o` letter-by-letter in warm ivory serif matching the emblem bowl height (zero duplicate `b`), followed by a subtle golden aura glow and cross-fade out.
+- **First-Launch Onboarding Sequence & Discover Blomeo Overhaul:**
+  - Strictly sequenced fresh-install flow: (1) Language Selection Screen -> (2) Blomeo Splash Animation -> (3) Interactive "اكتشف بلوميو" Guided Tour with Top Skip ("تخطي"). Returning users bypass steps 1 & 3.
+  - Overhauled `src/components/OnboardingTourModal.tsx` into 5 calm slides styled strictly with Blomeo tokens (`--blomeo-bg`, `--blomeo-surface`, `--blomeo-surface-nested`, `--blomeo-hero-gradient`, `--blomeo-accent`) in both Light and Aquatic-Emerald Dark Mode:
+    1. أهلاً بك في بلوميو (Topographic workspace, Mind-Map vs Show All, water cup, meds scheduler, reset clean slate).
+    2. المستشار المزدوج والذكاء الاصطناعي (Personal Scoped Advisor with custom time range & media control vs General AI Advisor + live two-way voice).
+    3. السحابة والمزامنة بالإيميل (Cloud sync via email, cross-device automatic restore).
+    4. الاستيراد والتصدير والنسخ الاحتياطي (Local device backup, import/export anytime).
+    5. الأمان، البصمة، التذكيرات والإعدادات (PIN/biometrics, lockscreen quick shortcuts, smart reminders).
+  - Added "اكتشف بلوميو ✨" quick-access button to `BlomeoSideNav.tsx`.
+  - Implemented 1-hour smart discovery nudge banner in `App.tsx` (`blomeo_first_launch_ts`, `blomeo_discover_opened`, `blomeo_discover_nudge_dismissed`).
+- **Global In-App Update Notification & Release Changelog:**
+  - Overhauled `src/components/AppUpdateBanner.tsx` and `src/lib/appUpdater.ts` to operate globally on both Web and Android above all tabs.
+  - Parses real GitHub release changelog bullets into an interactive accordion ("ما الجديد في التحديث"), tracks direct APK download/install on native, provides direct Web release button, and allows session-only dismissal.
+- **Quality Gates:**
+  - Passed all 4 quality gates cleanly: `npx tsc --noEmit` (0 errors), `node scripts/i18nAudit.cjs` (2795/2795 keys, 0 leaks across all 12 locales), `node scripts/validate-localization.mjs`, and `npm run build` (exit code 0).
+  - Strictly respected guardrails: zero changes to `.github/` and `android/`, no temporary scripts left on disk.
+
+
 

@@ -725,7 +725,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
   // Copy text report directly to clipboard
   const handleCopyText = async () => {
     try {
-      const fullText = `🎓 ${periodTitle}\nمنصة حياة AI | الفترة: ${periodLabel}\n\n📊 الإحصائيات السريعة:\n- عدد المذكرات: ${stats.totalDiaries}\n- متوسط النوم: ${stats.avgSleep} ساعة/ليلة\n- معدل المزاج: ${stats.avgMood} / 10\n- وقت الرياضة: ${stats.totalSportsMinutes} دقيقة\n\n📋 التقرير والتحليل السريري للمستشار الذكي:\n${aiAnalysisText || 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي للنوم.'}\n\n${patientNotes ? `📝 ملاحظات وأسئلة المعالج:\n${patientNotes}\n\n` : ''}تم إنشاء التقرير عبر منصة حياة AI بتاريخ ${new Date().toLocaleDateString('ar-EG')}`;
+      const fullText = `🎓 ${periodTitle}\nمنصة بلوميو | الفترة: ${periodLabel}\n\n📊 الإحصائيات السريعة:\n- عدد المذكرات: ${stats.totalDiaries}\n- متوسط النوم: ${stats.avgSleep} ساعة/ليلة\n- معدل المزاج: ${stats.avgMood} / 10\n- وقت الرياضة: ${stats.totalSportsMinutes} دقيقة\n\n📋 التقرير والتحليل السريري للمستشار الذكي:\n${aiAnalysisText || 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي للنوم.'}\n\n${patientNotes ? `📝 ملاحظات وأسئلة المعالج:\n${patientNotes}\n\n` : ''}تم إنشاء التقرير عبر منصة بلوميو بتاريخ ${new Date().toLocaleDateString('ar-EG')}`;
       const ok = await copyTextSafe(fullText);
       if (ok) {
         setCopySuccess(true);
@@ -738,7 +738,7 @@ export const MonthlyMentalHealthPDFReportModal: React.FC<MonthlyMentalHealthPDFR
 
   // Download plain text report (.txt UTF-8 BOM)
   const handleDownloadTxt = () => {
-    const fullText = `\uFEFF🎓 ${periodTitle}\nمنصة حياة AI | الفترة: ${periodLabel}\n\n📊 الإحصائيات السريعة:\n- عدد المذكرات: ${stats.totalDiaries}\n- متوسط النوم: ${stats.avgSleep} ساعة/ليلة\n- معدل المزاج: ${stats.avgMood} / 10\n- وقت الرياضة: ${stats.totalSportsMinutes} دقيقة\n\n📋 التقرير والتحليل السريري للمستشار الذكي:\n${aiAnalysisText || 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي للنوم.'}\n\n${patientNotes ? `📝 ملاحظات وأسئلة المعالج:\n${patientNotes}\n\n` : ''}تم إنشاء التقرير عبر منصة حياة AI بتاريخ ${new Date().toLocaleDateString('ar-EG')}`;
+    const fullText = `\uFEFF🎓 ${periodTitle}\nمنصة بلوميو | الفترة: ${periodLabel}\n\n📊 الإحصائيات السريعة:\n- عدد المذكرات: ${stats.totalDiaries}\n- متوسط النوم: ${stats.avgSleep} ساعة/ليلة\n- معدل المزاج: ${stats.avgMood} / 10\n- وقت الرياضة: ${stats.totalSportsMinutes} دقيقة\n\n📋 التقرير والتحليل السريري للمستشار الذكي:\n${aiAnalysisText || 'تقرير شامل يرصد حالة الاستقرار المزاجي والتوازن السلوكي للنوم.'}\n\n${patientNotes ? `📝 ملاحظات وأسئلة المعالج:\n${patientNotes}\n\n` : ''}تم إنشاء التقرير عبر منصة بلوميو بتاريخ ${new Date().toLocaleDateString('ar-EG')}`;
     const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
     void exportBlobSafe({ blob, filename: `تقرير_الصحة_النفسية_${periodType}_${new Date().toISOString().split('T')[0]}.txt`, title: periodTitle, mimeType: 'text/plain' });
   };

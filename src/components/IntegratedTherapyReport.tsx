@@ -246,7 +246,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   };
   const handleCopyText = async () => {
     try {
-      const textToCopy = `${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
+      const textToCopy = `${t.therapyReportTitle} - Blomeo\n${startDate} - ${endDate}\n\n- ${totalEntries}\n- ${averageSleep}\n- ${totalSports}\n\n${reportText}`;
       const ok = await copyTextSafe(textToCopy);
       if (ok) {
         setCopySuccess(true);
@@ -258,7 +258,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   };
 
   const handleDownloadTxt = () => {
-    const textContent = `\uFEFF${t.therapyReportTitle} - Hayat AI\n${startDate} - ${endDate}\n\n${reportText}`;
+    const textContent = `\uFEFF${t.therapyReportTitle} - Blomeo\n${startDate} - ${endDate}\n\n${reportText}`;
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     void exportBlobSafe({ blob, filename: `Therapy_Report_${startDate}_${endDate}.txt`, title: t.therapyReportTitle, mimeType: 'text/plain' });
   };
@@ -286,7 +286,7 @@ export default function IntegratedTherapyReport({ diaries, habits = [], gratitud
   <div class="report-body">
     ${reportText.replace(/\n/g, '<br/>')}
   </div>
-  <div class="footer">Hayat AI</div>
+  <div class="footer">Blomeo | بلوميو</div>
 </body>
 </html>`;
     const blob = new Blob([htmlDocContent], { type: 'application/msword;charset=utf-8' });

@@ -647,7 +647,7 @@ function getDynamicSmartAdvisorFallback(query: string, reportType: string, diari
     // Handle General AI Advisor mode
     if (mode === 'general') {
       const isGeneralOnly = !userQuery.includes('يومياتي') && !userQuery.includes('بياناتي') && !userQuery.includes('عاداتي') && !userQuery.includes('كتبي');
-      let generalSystemInstruction = `أنت المستشار الذكي العام في تطبيق 'حياة AI'.
+      let generalSystemInstruction = `أنت المستشار الذكي العام في تطبيق 'بلوميو (Blomeo)'.
 تتميز بذكاء موسوعي شامل للإجابة عن أي سؤال في العلوم، البرمجة، الدراسة، التاريخ، الثقافة، والترجمة.
 عندما يسأل المستخدم سؤالاً عاماً، أجب بعبقرية ومباشرة كأفضل ذكاء اصطناعي في العالم.
 إذا أرفق المستخدم ملفات أو وسائط، قم بتحليلها بدقة واحترافية عالية.` + getLanguageInstruction(reqLang);

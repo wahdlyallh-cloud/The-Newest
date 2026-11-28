@@ -14,7 +14,9 @@ import {
   ChevronRight,
   BookOpen,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Compass,
+  Sparkles
 } from 'lucide-react';
 import { DiaryEntry, TaskItem, Habit, GratitudeCard, AppReminder, AuthUser } from '../types';
 import { AppLanguage, getLanguageInfo, getTranslation } from '../lib/languages';
@@ -48,6 +50,7 @@ export interface BlomeoSideNavProps {
   reminders?: AppReminder[];
   consultations?: any[];
   activeItem?: 'tasks' | 'calendar' | 'gratitude' | 'cbt' | null;
+  onOpenDiscover?: () => void;
 }
 
 export default function BlomeoSideNav({
@@ -68,7 +71,8 @@ export default function BlomeoSideNav({
   gratitudeCards = [],
   reminders = [],
   consultations = [],
-  activeItem = null
+  activeItem = null,
+  onOpenDiscover
 }: BlomeoSideNavProps) {
   // --- 1. React Hooks (unconditionally at top before any early return) ---
   const [isHighLoad, setIsHighLoad] = useState<boolean>(true);
@@ -457,6 +461,47 @@ export default function BlomeoSideNav({
               aria-label={t.sideNavGlobalSearch || 'Search'}
             >
               <Search className="w-5 h-5" />
+            </button>
+          )}
+
+          {/* Quick-Access Highlight: Discover Blomeo ✨ */}
+          {isHighLoad ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenDiscover?.();
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer relative group ${
+                isDarkMode
+                  ? 'bg-gradient-to-r from-emerald-950/80 to-amber-950/40 hover:from-emerald-900/80 hover:to-amber-900/50 text-amber-200 border border-amber-400/35 shadow-md'
+                  : 'bg-gradient-to-r from-emerald-50 to-amber-50 hover:from-emerald-100 hover:to-amber-100 text-[#113B2D] border border-amber-300 shadow-xs'
+              }`}
+            >
+              <div className={`p-1.5 rounded-xl shrink-0 ${isDarkMode ? 'bg-amber-400/20 text-amber-300' : 'bg-amber-100 text-amber-800'}`}>
+                <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+              </div>
+              <span className="truncate tracking-wide flex-1 text-start">
+                {t.interactiveTourTitle || (isRtl ? 'اكتشف بلوميو ✨' : 'Discover Blomeo ✨')}
+              </span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenDiscover?.();
+              }}
+              className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center transition-all cursor-pointer relative group ${
+                isDarkMode
+                  ? 'bg-emerald-950/80 hover:bg-emerald-900/80 text-amber-300 border border-amber-400/35 shadow-md'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-amber-800 border border-amber-300 shadow-xs'
+              }`}
+              title={t.interactiveTourTitle || (isRtl ? 'اكتشف بلوميو ✨' : 'Discover Blomeo ✨')}
+              aria-label="Discover Blomeo"
+            >
+              <Compass className="w-5 h-5 text-amber-300 group-hover:rotate-45 transition-transform" />
             </button>
           )}
 

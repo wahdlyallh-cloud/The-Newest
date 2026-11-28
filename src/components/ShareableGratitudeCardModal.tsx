@@ -220,7 +220,7 @@ export default function ShareableGratitudeCardModal({
       ctx.font = '30px sans-serif';
       ctx.textAlign = isRtl ? 'left' : 'right';
       const wmX = isRtl ? 100 : width - 100;
-      ctx.fillText('حياة AI App 🌿', wmX, height - 120);
+      ctx.fillText('Blomeo • بلوميو 🌿', wmX, height - 120);
     }
 
     const dataUrl = canvas.toDataURL('image/png');
@@ -634,7 +634,7 @@ export default function ShareableGratitudeCardModal({
 
                 {showWatermark && (
                   <span className="text-[9px] font-mono opacity-70 tracking-tight">
-                    حياة AI App 🌿
+                    Blomeo • بلوميو 🌿
                   </span>
                 )}
               </div>
