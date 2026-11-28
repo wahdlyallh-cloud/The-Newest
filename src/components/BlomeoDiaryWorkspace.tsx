@@ -1,38 +1,44 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { Archive, BookOpen, ChevronLeft, FileText, Heart, Paperclip, Plus, Search, Sparkles } from 'lucide-react';
 import { DiaryEntry, AppLanguage, JournalEntryType } from '../types';
+import { ALL_JOURNAL_TYPES, getJournalTypeLabel } from '../lib/journalTypes';
+import BlomeoDayCard from './BlomeoDayCard';
+import BlomeoNoteEditor from './BlomeoNoteEditor';
 
 export interface BlomeoDiaryWorkspaceProps {
-  diaries: DiaryEntry[];
-  filteredDiariesList: DiaryEntry[];
-  memoizedGroupedDiaries: {
-    sortedDays: string[];
-    groups: { [dayKey: string]: { dayEntries: DiaryEntry[]; formattedDayLabel: string } };
-  };
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  diaries: DiaryEntry[]; filteredDiariesList: DiaryEntry[];
+  memoizedGroupedDiaries: { sortedDays: string[]; groups: { [dayKey: string]: { dayEntries: DiaryEntry[]; formattedDayLabel: string } } };
+  searchQuery: string; setSearchQuery: (query: string) => void;
   diaryTypeFilter: 'all' | JournalEntryType | 'favorites' | 'with_media' | 'archived';
   setDiaryTypeFilter: (filter: 'all' | JournalEntryType | 'favorites' | 'with_media' | 'archived') => void;
-  selectedTagFilter: string;
-  setSelectedTagFilter: (tag: string) => void;
-  allUniqueTags: string[];
-  appLanguage: AppLanguage;
-  isRtl: boolean;
-  t: any;
-  onStartNewDiary: (type?: JournalEntryType) => void;
-  onSelectDiary: (diary: DiaryEntry) => void;
-  onDeleteDiary: (diaryId: string) => void;
-  onToggleFavorite: (diaryId: string) => void;
-  onToggleArchive: (diaryId: string) => void;
-  onOpenDayRating: (dayKey: string) => void;
-  onOpenProsCons: (dayKey: string, formattedDayLabel: string, entries: DiaryEntry[]) => void;
-  onOpenProsConsHistory: () => void;
-  onOpenAttachmentsPage: () => void;
-  onRefreshDayAIMood?: (dayKey: string) => void;
-  onUpdateDiaryImportance?: (diaryId: string, importance: number) => void;
-  editingDiary: DiaryEntry | null;
-  editorProps: Record<string, unknown>;
+  selectedTagFilter: string; setSelectedTagFilter: (tag: string) => void; allUniqueTags: string[];
+  appLanguage: AppLanguage; isRtl: boolean; t: any;
+  onStartNewDiary: (type?: JournalEntryType) => void; onSelectDiary: (diary: DiaryEntry) => void;
+  onDeleteDiary: (diaryId: string) => void; onToggleFavorite: (diaryId: string) => void; onToggleArchive: (diaryId: string) => void;
+  onOpenDayRating: (dayKey: string) => void; onOpenProsCons: (dayKey: string, formattedDayLabel: string, entries: DiaryEntry[]) => void;
+  onOpenProsConsHistory: () => void; onOpenAttachmentsPage: () => void; onRefreshDayAIMood?: (dayKey: string) => void;
+  onUpdateDiaryImportance?: (diaryId: string, importance: number) => void; editingDiary: DiaryEntry | null; editorProps: Record<string, unknown>;
 }
 
-export const BlomeoDiaryWorkspace: React.FC<BlomeoDiaryWorkspaceProps> = () => {
-  return <div className="min-h-[60vh] w-full" aria-label="Diary blank workspace" />;
+export const BlomeoDiaryWorkspace: React.FC<BlomeoDiaryWorkspaceProps> = (props) => {
+  const [vaultOpen, setVaultOpen] = useState(true);
+  const [focusMode, setFocusMode] = useState(false);
+  const { isRtl, t, editingDiary } = props;
+  const filteredGroups = useMemo(() => props.memoizedGroupedDiaries.sortedDays.map((dayKey) => ({ dayKey, ...props.memoizedGroupedDiaries.groups[dayKey] })).filter((group) => group?.dayEntries?.length), [props.memoizedGroupedDiaries]);
+  const filterItems: Array<{ value: BlomeoDiaryWorkspaceProps['diaryTypeFilter']; label: string }> = [
+    { value: 'all', label: isRtl ? 'الكل' : 'All' },
+    ...ALL_JOURNAL_TYPES.slice(0, 5).map((type) => ({ value: type, label: getJournalTypeLabel(type, t) })),
+    { value: 'favorites', label: isRtl ? 'المفضلة' : 'Favorites' }, { value: 'with_media', label: isRtl ? 'بها وسائط' : 'Media' }, { value: 'archived', label: isRtl ? 'الأرشيف' : 'Archive' }
+  ];
+  const dayCards = <div className="space-y-3">{filteredGroups.map((group) => <BlomeoDayCard key={group.dayKey} dayKey={group.dayKey} formattedDayLabel={group.formattedDayLabel} entries={group.dayEntries} t={t} isRtl={isRtl} onSelectDiary={props.onSelectDiary} onToggleFavorite={props.onToggleFavorite} onToggleArchive={props.onToggleArchive} onOpenDayRating={props.onOpenDayRating} onOpenProsCons={props.onOpenProsCons} onRefreshDayAIMood={props.onRefreshDayAIMood} onUpdateDiaryImportance={props.onUpdateDiaryImportance} />)}</div>;
+
+  if (editingDiary) return <div className={`flex w-full ${focusMode ? 'min-h-[100dvh]' : 'min-h-[calc(100dvh-6rem)]'}`}><div className="hidden w-80 shrink-0 border-e border-black/10 bg-[var(--blomeo-surface-nested)] p-3 lg:block dark:border-white/10" aria-label={isRtl ? 'خزنة اليوميات' : 'Diary vault'}>{dayCards}</div><div className="min-w-0 flex-1"><BlomeoNoteEditor diary={editingDiary} editorProps={props.editorProps as Record<string, any>} isRtl={isRtl} t={t} onCancel={() => (props.editorProps as any).onCancel?.()} /></div></div>;
+
+  return <div className="blomeo-topographic-canvas min-h-[calc(100dvh-6rem)] w-full px-3 py-3 pb-nav-safe sm:px-5" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="mx-auto flex max-w-[1500px] gap-4">
+      <aside className={`${vaultOpen ? 'block' : 'hidden'} w-full shrink-0 lg:block lg:w-80 xl:w-[22rem]`}><div className="sticky top-3 space-y-3"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--blomeo-text-muted)]">blomeo / diary</p><h1 className="text-xl font-black text-[var(--blomeo-text)]">{isRtl ? 'خزنة اليوميات' : 'Diary vault'}</h1></div><button type="button" onClick={() => setVaultOpen(false)} className="rounded-full bg-[var(--blomeo-surface)] p-2 text-[var(--blomeo-text-secondary)] lg:hidden"><ChevronLeft className={isRtl ? 'h-4 w-4 rotate-180' : 'h-4 w-4'} /></button></div><div className="rounded-[24px] border border-black/10 bg-[var(--blomeo-surface)] p-3 shadow-sm dark:border-white/10"><div className="relative"><Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--blomeo-text-muted)]" /><input value={props.searchQuery} onChange={(event) => props.setSearchQuery(event.target.value)} placeholder={isRtl ? 'ابحث في يومياتك…' : 'Search your diaries…'} className="h-11 w-full rounded-2xl border border-black/10 bg-[var(--blomeo-surface-nested)] ps-9 pe-3 text-sm text-[var(--blomeo-text)] outline-none focus:border-[var(--blomeo-accent)] dark:border-white/10" /></div><div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">{filterItems.map((item) => <button type="button" key={item.value} onClick={() => props.setDiaryTypeFilter(item.value)} className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-2 text-[10px] font-bold ${props.diaryTypeFilter === item.value ? 'border-[var(--blomeo-accent)] bg-[var(--blomeo-accent)] text-white' : 'border-black/10 bg-[var(--blomeo-surface)] text-[var(--blomeo-text-secondary)]'}`}>{item.label}</button>)}</div>{props.allUniqueTags.length > 0 && <div className="mt-2 flex gap-1.5 overflow-x-auto scrollbar-none">{props.allUniqueTags.slice(0, 8).map((tag) => <button type="button" key={tag} onClick={() => props.setSelectedTagFilter(props.selectedTagFilter === tag ? '' : tag)} className={`shrink-0 whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-bold ${props.selectedTagFilter === tag ? 'bg-[var(--blomeo-gold)] text-white' : 'bg-[var(--blomeo-surface-nested)] text-[var(--blomeo-text-muted)]'}`}>#{tag}</button>)}</div>}<button type="button" onClick={() => props.onStartNewDiary()} className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--blomeo-accent)] text-xs font-black text-white shadow-lg shadow-emerald-950/15"><Plus className="h-4 w-4" />{isRtl ? 'تدوينة جديدة' : 'New diary'}</button></div>{dayCards}</div></aside>
+      <main className="hidden min-w-0 flex-1 lg:block"><div className="mx-auto max-w-4xl"><div className="mb-4 rounded-[28px] border border-black/10 bg-[var(--blomeo-surface)] p-5 shadow-sm dark:border-white/10"><div className="flex items-start justify-between gap-4"><div><span className="inline-flex items-center gap-1 rounded-full bg-[var(--blomeo-gold)]/15 px-2.5 py-1 text-[10px] font-black text-[var(--blomeo-text)]"><Sparkles className="h-3 w-3 text-[var(--blomeo-gold)]" />{isRtl ? 'مساحة كتابة هادئة' : 'A calm writing space'}</span><h2 className="mt-3 text-3xl font-black text-[var(--blomeo-text)]">{isRtl ? 'ماذا تريد أن تتذكر من اليوم؟' : 'What do you want to remember from today?'}</h2><p className="mt-2 max-w-xl text-sm leading-6 text-[var(--blomeo-text-secondary)]">{isRtl ? 'اكتب دون أحكام. ستبقى أفكارك مرتبة، قابلة للبحث، ومتصلة بمزاجك اليومي.' : 'Write without judgement. Your thoughts stay organized, searchable, and connected to your daily mood.'}</p></div><BookOpen className="hidden h-12 w-12 text-[var(--blomeo-accent)]/30 sm:block" /></div><button type="button" onClick={() => props.onStartNewDiary()} className="mt-5 flex items-center gap-2 rounded-2xl bg-[var(--blomeo-accent)] px-5 py-3 text-sm font-black text-white"><Plus className="h-4 w-4" />{isRtl ? 'كتابة تدوينة جديدة' : 'Write a new diary'}</button></div><div className="grid grid-cols-2 gap-3 xl:grid-cols-3">{props.filteredDiariesList.slice(0, 6).map((diary) => <button type="button" key={diary.id} onClick={() => props.onSelectDiary(diary)} className="rounded-[22px] border border-black/10 bg-[var(--blomeo-surface)] p-4 text-start shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10"><div className="mb-3 flex items-center justify-between"><span className="text-[10px] font-bold text-[var(--blomeo-text-muted)]">{new Date(diary.updatedAt).toLocaleDateString(isRtl ? 'ar' : 'en', { day: 'numeric', month: 'short' })}</span><Heart className={diary.isFavorite ? 'h-4 w-4 fill-rose-500 text-rose-500' : 'h-4 w-4 text-[var(--blomeo-text-muted)]'} /></div><h3 className="line-clamp-2 text-sm font-black text-[var(--blomeo-text)]">{diary.title}</h3><p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--blomeo-text-secondary)]">{diary.content.replace(/<[^>]*>/g, ' ')}</p></button>)}</div></div></main>
+      <div className="w-full lg:hidden"><div className="mb-3 flex gap-2 overflow-x-auto scrollbar-none"><button type="button" onClick={() => props.onOpenProsConsHistory()} className="flex shrink-0 items-center gap-2 rounded-2xl bg-[var(--blomeo-surface)] px-3 py-2.5 text-[10px] font-black text-[var(--blomeo-text)]"><span>⚖️</span>{isRtl ? 'سجل الإيجابيات والسلبيات' : 'Pros & cons history'}</button><button type="button" onClick={props.onOpenAttachmentsPage} className="flex shrink-0 items-center gap-2 rounded-2xl bg-[var(--blomeo-surface)] px-3 py-2.5 text-[10px] font-black text-[var(--blomeo-text)]"><Paperclip className="h-3.5 w-3.5" />{isRtl ? 'المرفقات' : 'Attachments'}</button></div><div className="mb-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">{filterItems.map((item) => <button type="button" key={item.value} onClick={() => props.setDiaryTypeFilter(item.value)} className={`shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-[10px] font-bold ${props.diaryTypeFilter === item.value ? 'bg-[var(--blomeo-accent)] text-white' : 'bg-[var(--blomeo-surface)] text-[var(--blomeo-text-secondary)]'}`}>{item.label}</button>)}</div>{dayCards}<button type="button" onClick={() => props.onStartNewDiary()} className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] end-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--blomeo-accent)] text-white shadow-2xl"><Plus className="h-6 w-6" /></button></div>
+    </div>
+  </div>;
 };
