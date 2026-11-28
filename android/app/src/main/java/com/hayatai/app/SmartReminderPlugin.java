@@ -60,11 +60,11 @@ public class SmartReminderPlugin extends Plugin {
         try {
             boolean enabled = call.getBoolean("enabled", false);
             PersistentNotificationHelper.setEnabled(getContext(), enabled,
-                    call.getString("title", "حياة AI — وصول سريع"),
-                    call.getString("writeLabel", "كتابة"),
-                    call.getString("voiceLabel", "تسجيل صوتي"),
-                    call.getString("moodLabel", "مزاج"),
-                    call.getString("advisorLabel", "مستشار"));
+                    call.getString("title", "Blomeo — وصول سريع"),
+                    call.getString("writeLabel", "تدوين سريع"),
+                    call.getString("voiceLabel", "فضفضة صوتية"),
+                    call.getString("moodLabel", "تسجيل سريع"),
+                    call.getString("advisorLabel", "المستشار"));
             JSObject ret = new JSObject(); ret.put("enabled", enabled); call.resolve(ret);
         } catch (Exception error) { call.reject("Failed to update lock-screen notification", error); }
     }

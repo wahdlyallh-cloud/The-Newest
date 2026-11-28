@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="10dp"
+    android:background="@drawable/bg_blomeo_lockscreen_card">
+    <TextView android:id="@+id/quick_notif_title" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:paddingStart="6dp" android:paddingEnd="6dp"
+        android:paddingBottom="8dp" android:text="Blomeo" android:textColor="#F1EFE7"
+        android:textSize="13sp" android:textStyle="bold" android:singleLine="true" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center">
+        <LinearLayout android:id="@+id/btn_quick_write" style="@style/BlomeoShortcutButton">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_quick_write" android:contentDescription="Quick note" />
+            <TextView android:id="@+id/txt_quick_write" style="@style/BlomeoShortcutLabel" android:text="تدوين سريع" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/btn_quick_voice" style="@style/BlomeoShortcutButton">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_quick_voice" android:contentDescription="Voice chat" />
+            <TextView android:id="@+id/txt_quick_voice" style="@style/BlomeoShortcutLabel" android:text="فضفضة صوتية" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/btn_quick_advisor" style="@style/BlomeoShortcutButton">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_quick_advisor" android:contentDescription="Advisor" />
+            <TextView android:id="@+id/txt_quick_advisor" style="@style/BlomeoShortcutLabel" android:text="المستشار" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/btn_quick_mood" style="@style/BlomeoShortcutButton">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_quick_mood" android:contentDescription="Check-in" />
+            <TextView android:id="@+id/txt_quick_mood" style="@style/BlomeoShortcutLabel" android:text="تسجيل سريع" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

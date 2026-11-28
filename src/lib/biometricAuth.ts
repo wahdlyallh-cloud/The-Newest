@@ -1,7 +1,7 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 
 export interface BiometricAuthPlugin {
-  checkAvailability(): Promise<{ available: boolean; hasFingerprint: boolean; hasFace: boolean; status: number }>;
+  checkAvailability(): Promise<{ available: boolean; enrolled: boolean; biometryType: string; reason: string; hasFingerprint: boolean; hasFace: boolean; status: number }>;
   authenticate(options: { title: string; subtitle: string; negativeButtonText: string }): Promise<{ authenticated: boolean; error?: string }>;
 }
 
@@ -9,7 +9,7 @@ export const NativeBiometricAuth = registerPlugin<BiometricAuthPlugin>('Biometri
 
 export async function checkNativeBiometricAvailability() {
   if (!(Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android')) {
-    return { available: false, hasFingerprint: false, hasFace: false, status: -1 };
+    return { available: false, enrolled: false, biometryType: 'none', reason: 'NATIVE_ANDROID_ONLY', hasFingerprint: false, hasFace: false, status: -1 };
   }
   return NativeBiometricAuth.checkAvailability();
 }

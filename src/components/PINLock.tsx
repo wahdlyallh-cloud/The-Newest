@@ -12,13 +12,14 @@ interface PINLockProps {
   biometricCredentialId?: string;
   appLanguage?: AppLanguage;
   onUnlocked: () => void;
-  onQuickAction?: (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes') => void;
-  initialQuickAction?: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | null;
+  onQuickAction?: (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin') => void;
+  initialQuickAction?: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin' | null;
   appPasswordHash?: string;
   appLockMethod?: 'pin' | 'password';
+  biometricEnabled?: boolean;
 }
 
-export default function PINLock({ correctPin, biometricCredentialId, appLanguage = 'ar', onUnlocked, onQuickAction, initialQuickAction = null, appPasswordHash, appLockMethod = 'pin' }: PINLockProps) {
+export default function PINLock({ correctPin, biometricCredentialId, appLanguage = 'ar', onUnlocked, onQuickAction, initialQuickAction = null, appPasswordHash, appLockMethod = 'pin', biometricEnabled = false }: PINLockProps) {
   const langInfo = getLanguageInfo(appLanguage);
   const t = getTranslation(appLanguage);
 
@@ -28,7 +29,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
   const [error, setError] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
   const [isScreenOff, setIsScreenOff] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | null>(null);
+  const [pendingAction, setPendingAction] = useState<'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin' | null>(null);
 
   // Biometric Modal State (Fingerprint & Face ID)
   const [showBiometricModal, setShowBiometricModal] = useState(false);
@@ -62,7 +63,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
     return () => clearInterval(timer);
   }, [appLanguage]);
 
-  const executeUnlock = (action: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | null) => {
+  const executeUnlock = (action: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin' | null) => {
     setSuccess(true);
     if (action && onQuickAction) {
       onQuickAction(action);
@@ -100,7 +101,7 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
   };
 
   // Real Hardware Biometric Trigger (Fingerprint & Face ID)
-  const handleTriggerBiometrics = async (type: 'fingerprint' | 'faceid' = 'fingerprint', actionToPerform: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | null = null) => {
+  const handleTriggerBiometrics = async (type: 'fingerprint' | 'faceid' = 'fingerprint', actionToPerform: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin' | null = null) => {
     const targetAction = actionToPerform || pendingAction;
     if (actionToPerform) {
       setPendingAction(actionToPerform);
@@ -115,6 +116,11 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
       return;
     }
 
+    if (nativeResult.error === 'NONE_ENROLLED') {
+      setShowUnenrolledModal(true);
+      setBiometricErrorMessage(t.nativeBiometricEnrollNote || 'Add a fingerprint or face in device security settings.');
+      return;
+    }
     // 2. Check if biometric credential exists in props or localStorage for WebAuthn fallback
     const savedCredId = biometricCredentialId || (typeof window !== 'undefined' ? localStorage.getItem('yawmiyati_biometric_cred_id') : null);
 
@@ -140,14 +146,13 @@ export default function PINLock({ correctPin, biometricCredentialId, appLanguage
 
   // Auto prompt biometrics when lockscreen loads if available
   useEffect(() => {
-    const timer = setTimeout(() => {
-      handleTriggerBiometrics('fingerprint');
-    }, 400);
+    if (!biometricEnabled || (!biometricCredentialId && !localStorage.getItem('yawmiyati_biometric_cred_id'))) return;
+    const timer = setTimeout(() => { handleTriggerBiometrics('fingerprint'); }, 400);
     return () => clearTimeout(timer);
   }, []);
 
   // When clicking notification shortcuts, require unlock
-  const handleNotificationActionClick = (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes') => {
+  const handleNotificationActionClick = (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin') => {
     setPendingAction(actionType);
     handleTriggerBiometrics('fingerprint', actionType);
   };

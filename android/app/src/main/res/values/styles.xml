@@ -16,7 +16,23 @@
     </style>
 
 
+    <style name="BlomeoShortcutButton">
+        <item name="android:layout_width">0dp</item><item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item><item name="android:layout_margin">2dp</item>
+        <item name="android:paddingTop">8dp</item><item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingStart">2dp</item><item name="android:paddingEnd">2dp</item>
+        <item name="android:orientation">vertical</item><item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_quick_action_btn</item>
+    </style>
+    <style name="BlomeoShortcutLabel">
+        <item name="android:layout_width">wrap_content</item><item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item><item name="android:textColor">#F1EFE7</item>
+        <item name="android:textSize">9sp</item><item name="android:textStyle">bold</item>
+        <item name="android:singleLine">true</item>
+    </style>
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowBackground">@color/splash_background</item>
         <item name="android:background">@drawable/splash</item>
     </style>
 </resources>

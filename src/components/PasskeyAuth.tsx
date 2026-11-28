@@ -11,6 +11,7 @@ interface PasskeyAuthProps {
   appPinCode?: string;
   appPasswordHash?: string;
   appLockMethod?: 'pin' | 'password';
+  isBiometricEnabled?: boolean;
   onUpdateSecuritySettings: (newSettings: {
     biometricCredentialId?: string;
     isBiometricEnabled?: boolean;
@@ -28,6 +29,7 @@ export default function PasskeyAuth({
   appPinCode = '1234',
   appPasswordHash,
   appLockMethod = 'pin',
+  isBiometricEnabled = false,
   onUpdateSecuritySettings
 }: PasskeyAuthProps) {
   const t = getTranslation(appLanguage);
@@ -41,6 +43,7 @@ export default function PasskeyAuth({
   const [biometricStatus, setBiometricStatus] = useState<{
     checked: boolean;
     supported: boolean;
+    enrolled?: boolean;
     reason?: string;
   }>({ checked: false, supported: false });
 
@@ -51,10 +54,7 @@ export default function PasskeyAuth({
         const { checkNativeBiometricAvailability } = await import('../lib/biometricAuth');
         const nativeCheck = await checkNativeBiometricAvailability();
         if (nativeCheck.available) {
-          setBiometricStatus({
-            checked: true,
-            supported: true
-          });
+          setBiometricStatus({ checked: true, supported: true, enrolled: nativeCheck.enrolled, reason: nativeCheck.reason });
           return;
         }
       } catch {}
@@ -309,6 +309,12 @@ export default function PasskeyAuth({
             : 'Link your official device biometrics to unlock the app with a single touch.'}
         </p>
 
+        <p className="text-[11px] text-gray-500 font-bold leading-relaxed">{t.nativeBiometricOptionDescription || (appLanguage === 'ar' ? 'استخدم بصمة الإصبع أو ميزة التعرّف على الوجه المسجّلة في جهازك.' : 'Unlock with a fingerprint or face enrolled on your device.')}</p>
+        {biometricStatus.checked && biometricStatus.supported && biometricStatus.enrolled === false && <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-800" role="status">{t.nativeBiometricEnrollNote || 'No biometric is enrolled. Add a fingerprint or face in device security settings.'}</div>}
+        {biometricStatus.supported && <label className="flex items-center justify-between gap-3 rounded-xl bg-[#F3F7F4] px-3 py-2.5 text-xs font-black text-[#214E3A]">
+          <span>{t.nativeBiometricOptionTitle || 'Fingerprint & Face Unlock'}</span>
+          <input type="checkbox" checked={Boolean(isBiometricEnabled)} onChange={(e) => { if (!e.target.checked) onUpdateSecuritySettings({ isBiometricEnabled: false }); else void handleLinkBiometrics(); }} aria-label={t.nativeBiometricOptionTitle || 'Fingerprint & Face Unlock'} className="h-5 w-5 accent-[#2D6A4F]" />
+        </label>}
         <button
           type="button"
           onClick={handleLinkBiometrics}

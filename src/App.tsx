@@ -1625,7 +1625,8 @@ export default function App() {
   const [editingDrawingIndex, setEditingDrawingIndex] = useState<number | null>(null);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
-  const [pendingNativeQuickAction, setPendingNativeQuickAction] = useState<'new_note' | 'voice' | 'mood' | 'ai' | 'notes' | null>(null);
+  const [pendingNativeQuickAction, setPendingNativeQuickAction] = useState<'new_note' | 'voice' | 'mood' | 'ai' | 'notes' | 'quick_checkin' | null>(null);
+  const lastNativeShortcutRef = useRef<{ action: string; at: number }>({ action: '', at: 0 });
   const [showGratitudeImportModal, setShowGratitudeImportModal] = useState<boolean>(false);
   const [globalCopyToast, setGlobalCopyToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -2132,12 +2133,12 @@ export default function App() {
     if (isNativeAndroid) {
       await SmartReminder.setLockScreenNotification({
         enabled: true,
-        title: t.lockScreenNotificationTitle || 'بلوميو — وصول سريع',
+        title: t.lockscreenShortcutsTitle || 'شريط اختصارات شاشة القفل',
         body: t.lockScreenPermanentDesc || 'كتابة وفضفضة سريعة من شاشة القفل',
-        writeLabel: t.write || 'كتابة',
-        voiceLabel: t.voiceRecord || 'تسجيل صوتي',
-        moodLabel: t.mood || 'مزاج',
-        advisorLabel: t.smartAdvisorTab || 'مستشار'
+        writeLabel: t.lockscreenQuickNote || 'تدوين سريع',
+        voiceLabel: t.lockscreenVoiceChat || 'فضفضة صوتية',
+        moodLabel: t.lockscreenCheckin || 'تسجيل سريع',
+        advisorLabel: t.lockscreenAdvisor || 'المستشار'
       });
       return;
     }
@@ -3666,7 +3667,7 @@ export default function App() {
   };
 
   // --- Action triggers for Simulated Notification Drawer & Floating Ball ---
-  const handleQuickAction = (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes') => {
+  const handleQuickAction = (actionType: 'new_note' | 'voice' | 'mood' | 'ai' | 'task' | 'photo' | 'notes' | 'quick_checkin') => {
     if (actionType === 'new_note') {
       startNewDiary();
     } else if (actionType === 'voice') {
@@ -3676,6 +3677,9 @@ export default function App() {
       setTimeout(() => {
         document.getElementById('diary-mood-picker')?.scrollIntoView({ behavior: 'smooth' });
       }, 300);
+    } else if (actionType === 'quick_checkin') {
+      setActiveTab('dashboard');
+      setTimeout(() => document.getElementById('home-quick-checkin')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
     } else if (actionType === 'ai') {
       setActiveTab('advisor');
     } else if (actionType === 'task') {
@@ -3693,33 +3697,34 @@ export default function App() {
 
   // Consume native lock-screen actions on launch/resume; PINLock executes them only after unlock.
   useEffect(() => {
+    const processShortcut = (raw: string) => {
+      const now = Date.now();
+      if (lastNativeShortcutRef.current.action === raw && now - lastNativeShortcutRef.current.at < 1800) return;
+      lastNativeShortcutRef.current = { action: raw, at: now };
+      let mappedAction: 'new_note' | 'voice' | 'mood' | 'ai' | 'quick_checkin' | null = null;
+      if (raw === 'new_diary' || raw === 'write' || raw === 'new_note') mappedAction = 'new_note';
+      else if (raw === 'voice') mappedAction = 'voice';
+      else if (raw === 'advisor' || raw === 'ai') mappedAction = 'ai';
+      else if (raw === 'quick_checkin' || raw === 'mood') mappedAction = 'quick_checkin';
+      if (!mappedAction) return;
+      const isLocked = (settings.appLockEnabled ?? false) && settings.isAppLocked;
+      if (isLocked) setPendingNativeQuickAction(mappedAction);
+      else handleQuickAction(mappedAction);
+    };
+    const onShortcut = (event: Event) => {
+      const action = (event as CustomEvent<{ action?: string }>).detail?.action;
+      if (action) { processShortcut(action); (window as any).__BLOMEO_PENDING_SHORTCUT__ = null; SmartReminder.getPendingQuickAction().catch(() => {}); }
+    };
+    const globalAction = (window as any).__BLOMEO_PENDING_SHORTCUT__;
+    if (typeof globalAction === 'string' && globalAction) { processShortcut(globalAction); (window as any).__BLOMEO_PENDING_SHORTCUT__ = null; }
     const consumeQuickAction = async () => {
-      try {
-        const result = await SmartReminder.getPendingQuickAction();
-        if (result.action) {
-          let mappedAction: 'new_note' | 'voice' | 'mood' | 'ai' | null = null;
-          if (result.action === 'write') mappedAction = 'new_note';
-          else if (result.action === 'voice') mappedAction = 'voice';
-          else if (result.action === 'mood') mappedAction = 'mood';
-          else if (result.action === 'advisor') mappedAction = 'ai';
-
-          if (mappedAction) {
-            const isLocked = (settings.appLockEnabled ?? false) && settings.isAppLocked;
-            if (isLocked) {
-              setPendingNativeQuickAction(mappedAction);
-            } else {
-              handleQuickAction(mappedAction);
-            }
-          }
-        }
-      } catch {}
+      try { const result = await SmartReminder.getPendingQuickAction(); if (result.action) processShortcut(result.action); } catch {}
     };
     consumeQuickAction();
-    const onResume = () => consumeQuickAction();
-    window.addEventListener('resume', onResume);
-    return () => window.removeEventListener('resume', onResume);
+    window.addEventListener('blomeo-shortcut', onShortcut);
+    window.addEventListener('resume', consumeQuickAction);
+    return () => { window.removeEventListener('blomeo-shortcut', onShortcut); window.removeEventListener('resume', consumeQuickAction); };
   }, [settings.isAppLocked, settings.appLockEnabled]);
-
   // --- Initialize blank or default diary entry ---
   const startNewDiary = (initialType: JournalEntryType = 'diary') => {
     const todayStr = new Date().toISOString();
@@ -6394,6 +6399,7 @@ export default function App() {
           biometricCredentialId={settings.biometricCredentialId}
           appPasswordHash={settings.appPasswordHash}
           appLockMethod={settings.appLockMethod || 'pin'}
+          biometricEnabled={Boolean(settings.isBiometricEnabled)}
           appLanguage={settings?.appLanguage || 'ar'}
           initialQuickAction={pendingNativeQuickAction}
           onUnlocked={() => {

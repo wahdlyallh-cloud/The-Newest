@@ -3206,6 +3206,15 @@ export const AR_DICT: Record<string, any> = {
   "microphoneStartFailed": "تعذر بدء التسجيل. تحقق من الميكروفون وحاول مجددًا.",
   "transcriptionFailed": "تعذر تحويل التسجيل إلى نص. حاول مجددًا.",
   "timestamp": "الوقت",
+  "nativeBiometricOptionTitle": "القفل ببصمة الإصبع وبصمة الوجه",
+  "nativeBiometricOptionDescription": "استخدم بصمة الإصبع أو ميزة التعرّف على الوجه المسجّلة في جهازك.",
+  "nativeBiometricEnrollNote": "لم تُسجّل أي بصمة أو وجه بعد. أضف بصمة أو وجهًا من إعدادات أمان الجهاز.",
+  "lockscreenShortcutsTitle": "شريط اختصارات شاشة القفل",
+  "lockscreenShortcutsDescription": "أربع طرق وصول سريعة إلى ميزات بلوميو.",
+  "lockscreenQuickNote": "تدوين سريع",
+  "lockscreenVoiceChat": "فضفضة صوتية",
+  "lockscreenAdvisor": "المستشار",
+  "lockscreenCheckin": "تسجيل سريع",
 };
 
 export const EN_DICT: Record<string, any> = {
@@ -6008,6 +6017,15 @@ export const EN_DICT: Record<string, any> = {
   "microphoneStartFailed": "Could not start recording. Check your microphone and try again.",
   "transcriptionFailed": "Could not transcribe the recording. Please try again.",
   "timestamp": "Time",
+  "nativeBiometricOptionTitle": "Fingerprint & Face Unlock",
+  "nativeBiometricOptionDescription": "Unlock with a fingerprint or face enrolled on your device.",
+  "nativeBiometricEnrollNote": "No fingerprint or face is enrolled yet. Add one in your device security settings.",
+  "lockscreenShortcutsTitle": "Lock-screen shortcut bar",
+  "lockscreenShortcutsDescription": "Four quick ways to open Blomeo features.",
+  "lockscreenQuickNote": "Quick Note",
+  "lockscreenVoiceChat": "Voice Chat",
+  "lockscreenAdvisor": "Advisor",
+  "lockscreenCheckin": "Check-in",
 };
 
 export const FR_DICT: Record<string, any> = {
@@ -8810,6 +8828,15 @@ export const FR_DICT: Record<string, any> = {
   "microphoneStartFailed": "Impossible de démarrer l’enregistrement. Vérifiez le microphone et réessayez.",
   "transcriptionFailed": "Impossible de transcrire l’enregistrement. Veuillez réessayer.",
   "timestamp": "Heure",
+  "nativeBiometricOptionTitle": "Déverrouillage par empreinte et visage",
+  "nativeBiometricOptionDescription": "Déverrouillez avec une empreinte ou un visage enregistré sur votre appareil.",
+  "nativeBiometricEnrollNote": "Aucune empreinte ni aucun visage enregistré. Ajoutez-en dans les paramètres de sécurité.",
+  "lockscreenShortcutsTitle": "Barre de raccourcis de l’écran verrouillé",
+  "lockscreenShortcutsDescription": "Quatre accès rapides aux fonctions de Blomeo.",
+  "lockscreenQuickNote": "Note rapide",
+  "lockscreenVoiceChat": "Discussion vocale",
+  "lockscreenAdvisor": "Conseiller",
+  "lockscreenCheckin": "Point rapide",
 };
 
 export const DE_DICT: Record<string, any> = {
@@ -11612,6 +11639,15 @@ export const DE_DICT: Record<string, any> = {
   "microphoneStartFailed": "Die Aufnahme konnte nicht gestartet werden. Prüfen Sie das Mikrofon und versuchen Sie es erneut.",
   "transcriptionFailed": "Die Aufnahme konnte nicht transkribiert werden. Bitte versuchen Sie es erneut.",
   "timestamp": "Uhrzeit",
+  "nativeBiometricOptionTitle": "Entsperren per Fingerabdruck und Gesicht",
+  "nativeBiometricOptionDescription": "Entsperre mit einem auf deinem Gerät gespeicherten Fingerabdruck oder Gesicht.",
+  "nativeBiometricEnrollNote": "Noch kein Fingerabdruck oder Gesicht gespeichert. Füge eines in den Gerätesicherheitseinstellungen hinzu.",
+  "lockscreenShortcutsTitle": "Sperrbildschirm-Schnellzugriffsleiste",
+  "lockscreenShortcutsDescription": "Vier schnelle Zugänge zu Blomeo-Funktionen.",
+  "lockscreenQuickNote": "Schnelle Notiz",
+  "lockscreenVoiceChat": "Sprachchat",
+  "lockscreenAdvisor": "Berater",
+  "lockscreenCheckin": "Kurzer Check-in",
 };
 
 export const ES_DICT: Record<string, any> = {
@@ -14414,6 +14450,15 @@ export const ES_DICT: Record<string, any> = {
   "microphoneStartFailed": "No se pudo iniciar la grabación. Comprueba el micrófono e inténtalo de nuevo.",
   "transcriptionFailed": "No se pudo transcribir la grabación. Inténtalo de nuevo.",
   "timestamp": "Hora",
+  "nativeBiometricOptionTitle": "Desbloqueo con huella y rostro",
+  "nativeBiometricOptionDescription": "Desbloquea con una huella o rostro registrado en tu dispositivo.",
+  "nativeBiometricEnrollNote": "Aún no hay huellas ni rostros registrados. Añade uno en los ajustes de seguridad del dispositivo.",
+  "lockscreenShortcutsTitle": "Barra de accesos de la pantalla de bloqueo",
+  "lockscreenShortcutsDescription": "Cuatro accesos rápidos a funciones de Blomeo.",
+  "lockscreenQuickNote": "Nota rápida",
+  "lockscreenVoiceChat": "Chat de voz",
+  "lockscreenAdvisor": "Asesor",
+  "lockscreenCheckin": "Registro rápido",
 };
 
 export const IT_DICT: Record<string, any> = {
@@ -17216,6 +17261,15 @@ export const IT_DICT: Record<string, any> = {
   "microphoneStartFailed": "Impossibile avviare la registrazione. Controlla il microfono e riprova.",
   "transcriptionFailed": "Impossibile trascrivere la registrazione. Riprova.",
   "timestamp": "Ora",
+  "nativeBiometricOptionTitle": "Sblocco con impronta e volto",
+  "nativeBiometricOptionDescription": "Sblocca con un’impronta o un volto registrato sul dispositivo.",
+  "nativeBiometricEnrollNote": "Non è ancora registrata alcuna impronta o volto. Aggiungine uno nelle impostazioni di sicurezza.",
+  "lockscreenShortcutsTitle": "Barra scorciatoie schermata di blocco",
+  "lockscreenShortcutsDescription": "Quattro accessi rapidi alle funzioni di Blomeo.",
+  "lockscreenQuickNote": "Nota rapida",
+  "lockscreenVoiceChat": "Chat vocale",
+  "lockscreenAdvisor": "Consulente",
+  "lockscreenCheckin": "Check-in rapido",
 };
 
 export const TR_DICT: Record<string, any> = {
@@ -20018,6 +20072,15 @@ export const TR_DICT: Record<string, any> = {
   "microphoneStartFailed": "Kayıt başlatılamadı. Mikrofonu kontrol edip tekrar deneyin.",
   "transcriptionFailed": "Kayıt yazıya dökülemedi. Lütfen tekrar deneyin.",
   "timestamp": "Saat",
+  "nativeBiometricOptionTitle": "Parmak izi ve yüz ile kilit açma",
+  "nativeBiometricOptionDescription": "Cihazınızda kayıtlı parmak izi veya yüz ile kilidi açın.",
+  "nativeBiometricEnrollNote": "Henüz parmak izi veya yüz kaydedilmemiş. Cihaz güvenlik ayarlarından ekleyin.",
+  "lockscreenShortcutsTitle": "Kilit ekranı kısayol çubuğu",
+  "lockscreenShortcutsDescription": "Blomeo özelliklerine dört hızlı erişim.",
+  "lockscreenQuickNote": "Hızlı not",
+  "lockscreenVoiceChat": "Sesli sohbet",
+  "lockscreenAdvisor": "Danışman",
+  "lockscreenCheckin": "Hızlı kontrol",
 };
 
 export const PT_DICT: Record<string, any> = {
@@ -22820,6 +22883,15 @@ export const PT_DICT: Record<string, any> = {
   "microphoneStartFailed": "Não foi possível iniciar a gravação. Verifique o microfone e tente novamente.",
   "transcriptionFailed": "Não foi possível transcrever a gravação. Tente novamente.",
   "timestamp": "Hora",
+  "nativeBiometricOptionTitle": "Desbloqueio por impressão digital e rosto",
+  "nativeBiometricOptionDescription": "Desbloqueie com uma impressão digital ou rosto registado no dispositivo.",
+  "nativeBiometricEnrollNote": "Ainda não há impressão digital ou rosto registado. Adicione um nas definições de segurança.",
+  "lockscreenShortcutsTitle": "Barra de atalhos do ecrã bloqueado",
+  "lockscreenShortcutsDescription": "Quatro acessos rápidos às funcionalidades do Blomeo.",
+  "lockscreenQuickNote": "Nota rápida",
+  "lockscreenVoiceChat": "Conversa por voz",
+  "lockscreenAdvisor": "Conselheiro",
+  "lockscreenCheckin": "Check-in rápido",
 };
 
 export const RU_DICT: Record<string, any> = {
@@ -25622,6 +25694,15 @@ export const RU_DICT: Record<string, any> = {
   "microphoneStartFailed": "Не удалось начать запись. Проверьте микрофон и попробуйте снова.",
   "transcriptionFailed": "Не удалось расшифровать запись. Попробуйте снова.",
   "timestamp": "Время",
+  "nativeBiometricOptionTitle": "Разблокировка отпечатком и лицом",
+  "nativeBiometricOptionDescription": "Разблокируйте устройство отпечатком или лицом, зарегистрированным на нём.",
+  "nativeBiometricEnrollNote": "Отпечаток или лицо ещё не зарегистрированы. Добавьте их в настройках безопасности устройства.",
+  "lockscreenShortcutsTitle": "Панель быстрого доступа на экране блокировки",
+  "lockscreenShortcutsDescription": "Четыре быстрых перехода к функциям Blomeo.",
+  "lockscreenQuickNote": "Быстрая заметка",
+  "lockscreenVoiceChat": "Голосовой чат",
+  "lockscreenAdvisor": "Советник",
+  "lockscreenCheckin": "Быстрая отметка",
 };
 
 export const JA_DICT: Record<string, any> = {
@@ -28424,6 +28505,15 @@ export const JA_DICT: Record<string, any> = {
   "microphoneStartFailed": "録音を開始できませんでした。マイクを確認して再試行してください。",
   "transcriptionFailed": "録音を文字起こしできませんでした。もう一度お試しください。",
   "timestamp": "時刻",
+  "nativeBiometricOptionTitle": "指紋・顔認証でロック解除",
+  "nativeBiometricOptionDescription": "端末に登録した指紋または顔でロックを解除します。",
+  "nativeBiometricEnrollNote": "指紋または顔が未登録です。端末のセキュリティ設定から登録してください。",
+  "lockscreenShortcutsTitle": "ロック画面ショートカットバー",
+  "lockscreenShortcutsDescription": "Blomeoの機能へすばやくアクセスできます。",
+  "lockscreenQuickNote": "クイックメモ",
+  "lockscreenVoiceChat": "ボイスチャット",
+  "lockscreenAdvisor": "アドバイザー",
+  "lockscreenCheckin": "クイックチェックイン",
 };
 
 export const ZH_DICT: Record<string, any> = {
@@ -31226,6 +31316,15 @@ export const ZH_DICT: Record<string, any> = {
   "microphoneStartFailed": "无法开始录音。请检查麦克风后重试。",
   "transcriptionFailed": "无法转写这段录音，请重试。",
   "timestamp": "时间",
+  "nativeBiometricOptionTitle": "指纹与面部解锁",
+  "nativeBiometricOptionDescription": "使用设备中已录入的指纹或面部解锁。",
+  "nativeBiometricEnrollNote": "尚未录入指纹或面部信息，请在设备安全设置中添加。",
+  "lockscreenShortcutsTitle": "锁屏快捷栏",
+  "lockscreenShortcutsDescription": "快速进入 Blomeo 的四项功能。",
+  "lockscreenQuickNote": "快速记事",
+  "lockscreenVoiceChat": "语音聊天",
+  "lockscreenAdvisor": "顾问",
+  "lockscreenCheckin": "快速打卡",
 };
 
 export const HI_DICT: Record<string, any> = {
@@ -34028,6 +34127,15 @@ export const HI_DICT: Record<string, any> = {
   "microphoneStartFailed": "रिकॉर्डिंग शुरू नहीं हो सकी। माइक्रोफ़ोन जाँचकर फिर प्रयास करें।",
   "transcriptionFailed": "रिकॉर्डिंग का लिप्यंतरण नहीं हो सका। कृपया फिर प्रयास करें।",
   "timestamp": "समय",
+  "nativeBiometricOptionTitle": "फ़िंगरप्रिंट और फ़ेस अनलॉक",
+  "nativeBiometricOptionDescription": "अपने डिवाइस पर दर्ज फ़िंगरप्रिंट या चेहरे से अनलॉक करें।",
+  "nativeBiometricEnrollNote": "अभी कोई फ़िंगरप्रिंट या चेहरा दर्ज नहीं है। डिवाइस की सुरक्षा सेटिंग में जोड़ें।",
+  "lockscreenShortcutsTitle": "लॉक स्क्रीन शॉर्टकट बार",
+  "lockscreenShortcutsDescription": "Blomeo सुविधाओं तक पहुँचने के चार त्वरित तरीके।",
+  "lockscreenQuickNote": "त्वरित नोट",
+  "lockscreenVoiceChat": "वॉइस चैट",
+  "lockscreenAdvisor": "सलाहकार",
+  "lockscreenCheckin": "त्वरित चेक-इन",
 };
 
 Object.assign(AR_DICT, {

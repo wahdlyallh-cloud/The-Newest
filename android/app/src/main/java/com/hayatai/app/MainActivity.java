@@ -3,19 +3,31 @@ package com.hayatai.app;
 import android.os.Bundle;
 import android.content.Intent;
 import android.webkit.ValueCallback;
+import org.json.JSONObject;
 import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     private static String pendingQuickAction;
-
     private static void captureQuickAction(Intent intent) {
-        if (intent != null && intent.hasExtra("hayat_quick_action")) {
-            pendingQuickAction = intent.getStringExtra("hayat_quick_action");
+        if (intent == null) return;
+        String action = intent.getStringExtra("blomeo_shortcut_action");
+        if (action == null) action = intent.getStringExtra("hayat_quick_action");
+        if (action != null && !action.isEmpty()) {
+            synchronized (MainActivity.class) { pendingQuickAction = action; }
+            intent.removeExtra("blomeo_shortcut_action");
             intent.removeExtra("hayat_quick_action");
         }
     }
-
+    private void dispatchPendingShortcut() {
+        final String action;
+        synchronized (MainActivity.class) { action = pendingQuickAction; }
+        if (action == null || getBridge() == null || getBridge().getWebView() == null) return;
+        final String safeAction = JSONObject.quote(action);
+        getBridge().getWebView().postDelayed(() -> getBridge().getWebView().evaluateJavascript(
+                "window.__BLOMEO_PENDING_SHORTCUT__ = " + safeAction + ";" +
+                "window.dispatchEvent(new CustomEvent('blomeo-shortcut',{detail:{action:" + safeAction + "}}));", null), 500);
+    }
     public static synchronized String consumePendingQuickAction() {
         String action = pendingQuickAction;
         pendingQuickAction = null;
@@ -31,6 +43,7 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         // Native step-by-step Android Back Button handling (Android 8 - 15)
+        dispatchPendingShortcut();
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -75,11 +88,13 @@ public class MainActivity extends BridgeActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         captureQuickAction(intent);
+        dispatchPendingShortcut();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         PersistentNotificationHelper.restoreIfEnabled(this);
+        dispatchPendingShortcut();
     }
 }

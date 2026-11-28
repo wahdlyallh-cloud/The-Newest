@@ -49,7 +49,7 @@ export interface SmartReminderPluginInterface {
     moodLabel?: string;
     advisorLabel?: string;
   }): Promise<{ enabled: boolean }>;
-  getPendingQuickAction(): Promise<{ action: '' | 'write' | 'voice' | 'mood' | 'advisor' }>;
+  getPendingQuickAction(): Promise<{ action: string }>;
 }
 
 let previewAudioEl: HTMLAudioElement | null = null;
