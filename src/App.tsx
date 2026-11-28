@@ -3167,6 +3167,27 @@ export default function App() {
     document.documentElement.setAttribute('dir', info.dir);
     document.documentElement.setAttribute('lang', info.code);
   }, [settings?.appLanguage || 'ar']);
+
+  // Recover the page scroll if a modal/fullscreen layer left an inline lock behind.
+  useEffect(() => {
+    const hasFullscreenOverlay = showBlomeoSplash || showOnboardingTour || isSideNavOpen ||
+      isDiaryEditorFullscreen || isSketchboardFullscreen || isWritingBoxFullscreen ||
+      isConsultationFullscreen || showVoiceVentModal || isLiveVoiceChatActive;
+    if (hasFullscreenOverlay) return;
+    document.body.style.removeProperty('overflow');
+    document.documentElement.style.removeProperty('overflow');
+  }, [
+    showBlomeoSplash,
+    showOnboardingTour,
+    isSideNavOpen,
+    isDiaryEditorFullscreen,
+    isSketchboardFullscreen,
+    isWritingBoxFullscreen,
+    isConsultationFullscreen,
+    showVoiceVentModal,
+    isLiveVoiceChatActive,
+  ]);
+
   const [showLockScreenWidgetInfoModal, setShowLockScreenWidgetInfoModal] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
