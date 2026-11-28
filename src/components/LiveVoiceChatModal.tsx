@@ -4,6 +4,7 @@ import { useRegisterBackStep } from '../lib/navigationStack';
 export interface HistoryItem {
   sender: 'user' | 'ai';
   text: string;
+  timestamp?: string;
 }
 
 export interface LiveVoiceChatLabels {
@@ -20,6 +21,14 @@ export interface LiveVoiceChatLabels {
   speaking?: string;
   idle?: string;
   error?: string;
+  user?: string;
+  assistant?: string;
+  microphonePermissionDenied?: string;
+  microphoneUnavailable?: string;
+  microphoneStartFailed?: string;
+  transcriptionFailed?: string;
+  noSpeechDetected?: string;
+  timestamp?: string;
 }
 
 export interface LiveVoiceChatModalProps {
@@ -68,13 +77,19 @@ function getFallbackLabels(language: string): LiveVoiceChatLabels {
     return {
       status: 'الحالة', listen: 'استمع', stop: 'إيقاف', send: 'إرسال',
       interrupt: 'مقاطعة والرد الآن', autoBargeIn: 'مقاطعة تلقائية بالصوت',
-      close: 'إغلاق', transcribing: 'جارٍ تحويل الصوت إلى نص…'
+      close: 'إغلاق', transcribing: 'جارٍ تحويل الصوت إلى نص…', user: 'أنت', assistant: 'حياة AI',
+      microphonePermissionDenied: 'يرجى السماح باستخدام الميكروفون.', microphoneUnavailable: 'الميكروفون غير متاح على هذا الجهاز أو المتصفح.',
+      microphoneStartFailed: 'تعذر بدء التسجيل. تحقق من الميكروفون وحاول مرة أخرى.', transcriptionFailed: 'تعذر تحويل التسجيل إلى نص. حاول مرة أخرى.',
+      noSpeechDetected: 'لم يتم اكتشاف كلام. حاول مرة أخرى.', timestamp: 'الوقت'
     };
   }
   return {
     status: 'Status', listen: 'Listen', stop: 'Stop', send: 'Send',
     interrupt: 'Interrupt and reply now', autoBargeIn: 'Auto barge-in',
-    close: 'Close', transcribing: 'Transcribing…'
+    close: 'Close', transcribing: 'Transcribing…', user: 'You', assistant: 'Hayat AI',
+    microphonePermissionDenied: 'Please allow microphone access.', microphoneUnavailable: 'Microphone is unavailable in this browser or device.',
+    microphoneStartFailed: 'Could not start recording. Check your microphone and try again.', transcriptionFailed: 'Could not transcribe the recording. Please try again.',
+    noSpeechDetected: 'No speech was detected. Please try again.', timestamp: 'Time'
   };
 }
 
@@ -112,7 +127,7 @@ export default function LiveVoiceChatModal({
   const [transcript, setTranscript] = useState('');
   const [liveResponse, setLiveResponse] = useState('');
   const [autoBargeIn, setAutoBargeIn] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const autoBargeInRef = useRef(false);
 
   const streamRef = useRef<MediaStream | null>(null);
@@ -128,6 +143,9 @@ export default function LiveVoiceChatModal({
   const spokenPointRef = useRef('');
   const interruptionNoteRef = useRef<string | undefined>(undefined);
   const sessionHistoryRef = useRef<HistoryItem[]>([]);
+  const captureGenerationRef = useRef(0);
+  const sendingRef = useRef(false);
+  const allowWebRecognitionRef = useRef(true);
   const sendTurnRef = useRef<(value: string) => Promise<void>>(async () => undefined);
   const startCaptureRef = useRef<() => Promise<void>>(async () => undefined);
   const discardRecordingRef = useRef(false);
@@ -175,6 +193,7 @@ export default function LiveVoiceChatModal({
   }, [stopMonitor]);
 
   const cleanupResources = useCallback(() => {
+    captureGenerationRef.current += 1;
     discardRecordingRef.current = true;
     cancelSpeech();
     const recognition = recognitionRef.current;
@@ -214,7 +233,7 @@ export default function LiveVoiceChatModal({
     setMode('idle');
     setTranscript('');
     setLiveResponse('');
-    setError(false);
+    setError('');
     responseRef.current = '';
     interruptionNoteRef.current = undefined;
     return () => cleanupResources();
@@ -226,12 +245,13 @@ export default function LiveVoiceChatModal({
 
   const startCapture = useCallback(async () => {
     if (!open || mode === 'processing') return;
-    setError(false);
+    const captureGeneration = ++captureGenerationRef.current;
+    setError('');
     setTranscript('');
     recognitionFinalRef.current = '';
     discardRecordingRef.current = false;
 
-    if (useWebRecognition && SpeechRecognitionClass) {
+    if (useWebRecognition && SpeechRecognitionClass && allowWebRecognitionRef.current) {
       try {
         const recognition = new SpeechRecognitionClass();
         recognition.lang = languageTag(language);
@@ -248,7 +268,13 @@ export default function LiveVoiceChatModal({
           }
           setTranscript(`${recognitionFinalRef.current} ${interim}`.trim());
         };
-        recognition.onerror = () => setError(true);
+        recognition.onerror = (event: any) => {
+          if (recognitionRef.current !== recognition) return;
+          recognitionRef.current = null;
+          try { recognition.abort(); } catch { /* already stopped */ }
+          if (event?.error === 'not-allowed' || event?.error === 'service-not-allowed') setError('microphonePermissionDenied');
+          else { allowWebRecognitionRef.current = false; setError(''); void startCaptureRef.current(); }
+        };
         recognition.onend = () => {
           if (recognitionRef.current === recognition) recognitionRef.current = null;
           setMode((current) => current === 'listening' ? 'idle' : current);
@@ -261,19 +287,20 @@ export default function LiveVoiceChatModal({
         recognition.start();
         setMode('listening');
       } catch {
-        setError(true);
+        setError('transcriptionFailed');
         setMode('idle');
       }
       return;
     }
 
+    allowWebRecognitionRef.current = true;
     try {
       if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-        setError(true);
+        setError('microphoneUnavailable');
         return;
       }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!open) {
+      if (!open || captureGenerationRef.current !== captureGeneration) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
@@ -297,17 +324,20 @@ export default function LiveVoiceChatModal({
           const audioBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
           const text = await propsRef.current.onTranscribeAudio(makeAudioFile(audioBlob));
           setTranscript(text.trim());
-          setError(false);
+          setError('');
         } catch {
-          setError(true);
+          setError('transcriptionFailed');
         } finally {
           setMode('idle');
         }
       };
       recorder.start();
       setMode('recording');
-    } catch {
-      setError(true);
+    } catch (captureError: any) {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      recorderRef.current = null;
+      setError(captureError?.name === 'NotAllowedError' || captureError?.name === 'PermissionDeniedError' ? 'microphonePermissionDenied' : 'microphoneStartFailed');
       setMode('idle');
     }
   }, [open, mode, useWebRecognition, SpeechRecognitionClass, language]);
@@ -421,11 +451,14 @@ export default function LiveVoiceChatModal({
 
   const sendTurn = useCallback(async (value: string) => {
     const text = value.trim();
-    if (!text || mode === 'processing') return;
+    if (!text || mode === 'processing' || sendingRef.current) return;
+    sendingRef.current = true;
     discardRecordingRef.current = true;
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch { /* already stopped */ }
+      const activeRecognition = recognitionRef.current;
       recognitionRef.current = null;
+      activeRecognition.onend = null;
+      try { activeRecognition.abort(); } catch { /* already stopped */ }
     }
     const recorder = recorderRef.current;
     if (recorder && recorder.state !== 'inactive') {
@@ -435,11 +468,11 @@ export default function LiveVoiceChatModal({
     const interruptionNote = interruptionNoteRef.current;
     interruptionNoteRef.current = undefined;
     setTranscript('');
-    setError(false);
+    setError('');
     setMode('processing');
     const currentProps = propsRef.current;
-    const userItem: HistoryItem = { sender: 'user', text };
-    const contextHistory = [...sessionHistoryRef.current, userItem].map((item) => ({ sender: item.sender, text: item.text }));
+    const userItem: HistoryItem = { sender: 'user', text, timestamp: new Date().toISOString() };
+    const contextHistory = [...sessionHistoryRef.current, userItem].map((item) => ({ ...item }));
     sessionHistoryRef.current = [...sessionHistoryRef.current, userItem];
     try {
       const answer = await currentProps.onSubmitTurn(text, {
@@ -449,11 +482,13 @@ export default function LiveVoiceChatModal({
         ...(interruptionNote ? { interruptionNote } : {})
       });
       const response = String(answer || '').trim();
-      sessionHistoryRef.current = [...sessionHistoryRef.current, { sender: 'ai', text: response }];
+      sessionHistoryRef.current = [...sessionHistoryRef.current, { sender: 'ai', text: response, timestamp: new Date().toISOString() }];
       speakResponse(response);
     } catch {
-      setError(true);
+      setError('transcriptionFailed');
       setMode('idle');
+    } finally {
+      sendingRef.current = false;
     }
   }, [mode, speakResponse]);
 
@@ -512,7 +547,16 @@ export default function LiveVoiceChatModal({
           <div className="min-h-24 rounded-2xl border border-[#2D6A4F]/15 dark:border-[#48B89F]/20 bg-white dark:bg-[#0E2320] p-4 shadow-3xs">
             <p className="min-h-12 whitespace-pre-wrap text-sm leading-6 text-[#12261D] dark:text-[#EBF5F2]">{transcript}</p>
           </div>
-          {error && <p role="status" className="text-sm font-bold text-amber-700 dark:text-amber-400">{labels.error || label('status')}</p>}
+          {sessionHistoryRef.current.map((item, index) => (
+            <article key={`${item.timestamp || 'turn'}-${index}`} className="rounded-2xl border border-[#2D6A4F]/15 dark:border-[#48B89F]/20 bg-white dark:bg-[#14302B] p-4">
+              <div className="mb-1 flex items-center justify-between gap-2 text-xs font-bold text-[#4A6357] dark:text-[#9EC2B8]">
+                <span>{item.sender === 'user' ? label('user') : label('assistant')}</span>
+                {item.timestamp && <time dateTime={item.timestamp}>{new Date(item.timestamp).toLocaleTimeString(languageTag(language), { hour: '2-digit', minute: '2-digit' })}</time>}
+              </div>
+              <p className="whitespace-pre-wrap leading-6">{item.text}</p>
+            </article>
+          ))}
+          {error && <p role="status" className="text-sm font-bold text-amber-700 dark:text-amber-400">{labels[error as LabelKey] || fallbackLabels[error as LabelKey] || labels.error || label('status')}</p>}
         </div>
 
         <footer className="space-y-4 border-t border-[#2D6A4F]/10 dark:border-[#48B89F]/15 bg-white dark:bg-[#0E2320] p-5">

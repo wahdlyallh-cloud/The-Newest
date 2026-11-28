@@ -16,6 +16,14 @@ export interface DiscoveredGeminiModel {
   version?: string;
 }
 
+/** The three task-aware routing tiers used when ranking discovered models. */
+export type GeminiModelTier = 'fast-utility' | 'audio-multimodal' | 'deep-reflection';
+export function getGeminiModelTier(task: GeminiTask): GeminiModelTier {
+  if (['deep', 'reasoning', 'report', 'pdf'].includes(task)) return 'deep-reflection';
+  if (['multimodal', 'audio', 'voice', 'video', 'image'].includes(task)) return 'audio-multimodal';
+  return 'fast-utility';
+}
+
 interface CacheEntry { timestamp: number; models: DiscoveredGeminiModel[]; }
 
 function storage(): Storage | null {
@@ -108,10 +116,19 @@ export async function selectModelsForTask(task: GeminiTask = 'chat', key?: strin
   const mode = modeOverride || getSelectedModelMode();
   const models = getDiscoveredModels(key);
   const discovered = models.length ? models.map(m => m.id) : FALLBACK_MODELS;
-  const heavy = ['multimodal', 'deep', 'reasoning', 'audio', 'voice', 'video', 'image', 'pdf', 'report'].includes(task);
+  const tier = getGeminiModelTier(task);
   if (mode !== 'auto' && mode !== 'fast' && mode !== 'precision') return [clean(mode), ...discovered.filter(m => m !== clean(mode))];
   const sorted = [...discovered].sort((a, b) => mode === 'fast' ? latencyScore(b) - latencyScore(a) : accuracyScore(b) - accuracyScore(a));
-  if (mode === 'auto' && !heavy) sorted.sort((a, b) => latencyScore(b) - latencyScore(a));
+  if (mode === 'auto' && tier === 'fast-utility') sorted.sort((a, b) => latencyScore(b) - latencyScore(a));
+  if (mode === 'auto' && tier === 'audio-multimodal') {
+    const flash = sorted.filter(id => id.toLowerCase().includes('flash'));
+    const candidates = flash.length ? flash : sorted;
+    candidates.sort((a, b) => accuracyScore(b) - accuracyScore(a));
+    return Array.from(new Set(candidates));
+  }
+  if (mode === 'auto' && tier === 'deep-reflection') {
+    sorted.sort((a, b) => Number(b.toLowerCase().includes('pro')) - Number(a.toLowerCase().includes('pro')) || accuracyScore(b) - accuracyScore(a));
+  }
   return Array.from(new Set(sorted));
 }
 

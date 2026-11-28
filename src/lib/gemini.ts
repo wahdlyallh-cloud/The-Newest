@@ -262,7 +262,7 @@ function getLocalizedError(key: string, lang: string, rawMsg?: string): string {
 export async function callGeminiApiSafely(
   endpoint: string,
   payload: any,
-  options?: { customKey?: string; activeLanguage?: string }
+  options?: { customKey?: string; activeLanguage?: string; task?: AITaskType }
 ): Promise<{ success: boolean; answer?: string; error?: string; source?: string; requiresApiKey?: boolean }> {
   const key = getGeminiApiKey(options?.customKey);
   const lang = options?.activeLanguage || payload?.appLanguage || payload?.langCode || getCurrentAppLanguage();
@@ -292,6 +292,23 @@ export async function callGeminiApiSafely(
       }),
     });
 
+    // On model-not-found, quota, or transient upstream failure, make one
+    // task-aware direct request; generateGeminiContentDirect steps down its model list.
+    if ([404, 429, 503].includes(response.status)) {
+      const prompt = payload?.prompt || payload?.newMessage || payload?.userPromptWithContext || payload?.content || payload?.query || '';
+      if (prompt) {
+        const fallbackAnswer = await generateGeminiContentDirect(
+          prompt,
+          payload?.systemInstruction || payload?.systemPrompt,
+          options?.customKey,
+          undefined,
+          lang,
+          options?.task || 'multimodal'
+        );
+        return { success: true, answer: fallbackAnswer, source: 'client-fallback' };
+      }
+    }
+
     // ── 429 Rate-limit guard ──────────────────────────────────────
     if (response.status === 429) {
       return {
@@ -317,7 +334,7 @@ export async function callGeminiApiSafely(
     const prompt = payload?.prompt || payload?.newMessage || payload?.userPromptWithContext || payload?.content || payload?.query || '';
     const system = payload?.systemInstruction || payload?.systemPrompt;
     if (prompt) {
-      const fallbackAnswer = await generateGeminiContentDirect(prompt, system, options?.customKey, undefined, lang);
+      const fallbackAnswer = await generateGeminiContentDirect(prompt, system, options?.customKey, undefined, lang, options?.task || 'multimodal');
       return {
         success: true,
         answer: fallbackAnswer,
@@ -667,4 +684,25 @@ export async function transcribeAudioWithGemini(
   }
 
   return getLocalizedAIError('connection', appLanguage, lastAudioError);
+}
+
+/** Convert recorded audio to base64 and transcribe it via the shared Gemini API path. */
+export async function transcribeAudioBlobWithGemini(
+  audio: Blob,
+  customKey?: string,
+  appLanguage = 'ar'
+): Promise<string> {
+  if (!audio || audio.size === 0) throw new Error('Audio recording is empty');
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read audio recording'));
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      const separator = result.indexOf(',');
+      if (separator < 0) reject(new Error('Could not encode audio recording'));
+      else resolve(result.slice(separator + 1));
+    };
+    reader.readAsDataURL(audio);
+  });
+  return transcribeAudioWithGemini(base64, audio.type || 'audio/webm', customKey, appLanguage);
 }

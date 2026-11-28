@@ -8,6 +8,7 @@ import { getLanguageInfo, getTranslation } from '../lib/languages';
 import { copyTextSafe } from '../lib/clipboard';
 import { formatMessageFullDate } from '../lib/formatters';
 import { SpeechRecognitionManager } from '../lib/speechRecognition';
+import { startHybridAudioCapture, stopHybridAudioCapture, transcribeHybridAudio } from '../lib/hybridDictation';
 import { useRegisterBackStep } from '../lib/navigationStack';
 import MarkdownMessage from './MarkdownMessage';
 import LiveVoiceChatModal from './LiveVoiceChatModal';
@@ -210,6 +211,7 @@ export default function SmartAdvisor({
 
   // Dictation State
   const [isDictating, setIsDictating] = useState(false);
+  const advisorDictationRecorderRef = useRef<MediaRecorder | null>(null);
 
   // Copied Feedback State
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
@@ -219,6 +221,7 @@ export default function SmartAdvisor({
 
   // Drawer State
   const [showDrawer, setShowDrawer] = useState(false);
+  const [historyCollapsed, setHistoryCollapsed] = useState(false);
 
   // Personal Scope Modal State
   const [showScopeModal, setShowScopeModal] = useState(false);
@@ -639,15 +642,20 @@ export default function SmartAdvisor({
     if (isDictating) {
       const finalRecorded = manager.finalize();
       setIsDictating(false);
-      if (finalRecorded) {
-        if (activeWorkspace === 'general') {
-          setGeneralInput(prev => `${prev ? prev.trim() + ' ' : ''}${finalRecorded}`);
-        } else {
-          setPersonalInput(prev => `${prev ? prev.trim() + ' ' : ''}${finalRecorded}`);
+      void stopHybridAudioCapture(advisorDictationRecorderRef.current).then(async blob => {
+        advisorDictationRecorderRef.current = null;
+        const geminiText = await transcribeHybridAudio(blob, userApiKey, appLanguage || 'ar');
+        const finalText = geminiText || finalRecorded;
+        if (finalText) {
+          const setter = activeWorkspace === 'general' ? setGeneralInput : setPersonalInput;
+          setter(prev => `${prev ? prev.trim() + ' ' : ''}${finalText}`);
         }
-      }
+      });
     } else {
       setIsDictating(true);
+      void startHybridAudioCapture().then(recorder => { advisorDictationRecorderRef.current = recorder; }).catch(error => {
+        console.warn('[SmartAdvisor] Audio capture unavailable; continuing with Web Speech.', error);
+      });
       manager.startSession({
         lang: langInfo.speechLang,
         continuous: false,
@@ -946,8 +954,17 @@ export default function SmartAdvisor({
               <button
                 type="button"
                 onClick={() => setShowDrawer(true)}
-                className="p-2 rounded-xl hover:bg-[#2D6A4F]/10 dark:hover:bg-[#48B89F]/10 text-[#4A6357] dark:text-[#9EC2B8] transition-colors cursor-pointer shrink-0"
+                className="lg:hidden p-2 rounded-xl hover:bg-[#2D6A4F]/10 dark:hover:bg-[#48B89F]/10 text-[#4A6357] dark:text-[#9EC2B8] transition-colors cursor-pointer shrink-0"
                 title={t.advisorConversations || 'سجل المحادثات'}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setHistoryCollapsed(prev => !prev)}
+                className="hidden lg:inline-flex p-2 rounded-xl hover:bg-[#2D6A4F]/10 dark:hover:bg-[#48B89F]/10 text-[#4A6357] dark:text-[#9EC2B8] transition-colors cursor-pointer shrink-0"
+                title={historyCollapsed ? (t.advisorConversations || 'سجل المحادثات') : (t.close || 'طي سجل المحادثات')}
+                aria-label={historyCollapsed ? (t.advisorConversations || 'سجل المحادثات') : (t.close || 'طي سجل المحادثات')}
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -1050,6 +1067,56 @@ export default function SmartAdvisor({
             </div>
           )}
 
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+            {/* Persistent desktop conversation history */}
+            <aside className={`${historyCollapsed ? 'lg:hidden' : 'hidden lg:flex'} w-72 xl:w-80 shrink-0 flex-col border-e border-[#2D6A4F]/15 dark:border-[#48B89F]/15 bg-white dark:bg-[#0E2320]`}>
+              <div className="p-4 border-b border-[#2D6A4F]/10 dark:border-[#48B89F]/15 flex items-center justify-between bg-[#F3F8F5] dark:bg-[#14302B]">
+                <h3 className="font-black text-sm text-[#12261D] dark:text-[#EBF5F2]">{t.advisorConversations || 'سجل المحادثات'}</h3>
+                <button type="button" onClick={() => setHistoryCollapsed(true)} className="p-1.5 rounded-lg text-[#4A6357] dark:text-[#9EC2B8] hover:bg-[#2D6A4F]/10 dark:hover:bg-[#48B89F]/10" aria-label={t.close || 'طي سجل المحادثات'}>
+                  {langInfo.dir === 'rtl' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="p-3">
+                <button type="button" onClick={handleNewConversation} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#2D6A4F] dark:bg-[#48B89F] text-white dark:text-[#071614] text-xs font-black shadow-xs hover:bg-[#214E3A] transition-colors cursor-pointer">
+                  <Plus className="w-4 h-4" /><span>{t.newConversation || 'محادثة جديدة'}</span>
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                {(activeWorkspace === 'general' ? generalThreads : personalThreads).map(thread => {
+                  const isActive = thread.id === (activeWorkspace === 'general' ? activeGeneralThreadId : activePersonalThreadId);
+                  return (
+                    <div key={thread.id} className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-2 ${isActive ? 'bg-[#2D6A4F]/10 dark:bg-[#48B89F]/15 border-[#2D6A4F] dark:border-[#48B89F]' : 'bg-[#F3F8F5] dark:bg-[#14302B] border-transparent hover:border-[#2D6A4F]/20'}`}>
+                      <button type="button" onClick={() => {
+                        if (activeWorkspace === 'general') { setActiveGeneralThreadId(thread.id); setGeneralMessages(thread.messages); }
+                        else { setActivePersonalThreadId(thread.id); setPersonalMessages(thread.messages); }
+                      }} className="flex-1 text-start min-w-0">
+                        <div className="font-bold text-xs text-[#12261D] dark:text-[#EBF5F2] truncate">{thread.title}</div>
+                        <div className="text-[10px] text-[#718A7D] dark:text-[#6C9187] mt-0.5">{formatMessageFullDate(thread.createdAt, appLanguage)}</div>
+                      </button>
+                      <button type="button" onClick={() => {
+                        if (!window.confirm(t.deleteConversationConfirm || 'حذف هذه المحادثة؟')) return;
+                        if (activeWorkspace === 'general') {
+                          const next = generalThreads.filter(item => item.id !== thread.id);
+                          setGeneralThreads(next);
+                          try { localStorage.setItem('yawmiyati_general_chat_threads', JSON.stringify(next)); } catch {}
+                          if (isActive && next[0]) { setActiveGeneralThreadId(next[0].id); setGeneralMessages(next[0].messages); }
+                          else if (isActive) { setActiveGeneralThreadId(`general-${Date.now()}`); setGeneralMessages([]); }
+                        } else {
+                          const next = personalThreads.filter(item => item.id !== thread.id);
+                          setPersonalThreads(next);
+                          try { localStorage.setItem('yawmiyati_personal_advisor_threads', JSON.stringify(next)); } catch {}
+                          if (isActive && next[0]) { setActivePersonalThreadId(next[0].id); setPersonalMessages(next[0].messages); }
+                          else if (isActive) { setActivePersonalThreadId(`personal-${Date.now()}`); setPersonalMessages([]); }
+                        }
+                      }} className="p-1 rounded-lg text-gray-400 hover:text-red-500 cursor-pointer shrink-0" title={t.deleteConversation || 'حذف'}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </aside>
+            <main className="flex flex-1 min-w-0 min-h-0 flex-col overflow-hidden">
           {/* Chat Messages Box */}
           <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 bg-[#EFF4F1]/60 dark:bg-[#071614]/60">
             {(activeWorkspace === 'general' ? generalMessages : personalMessages).map(msg => {
@@ -1193,6 +1260,8 @@ export default function SmartAdvisor({
             appLanguage={appLanguage}
             accentTheme={activeWorkspace === 'general' ? 'aquatic' : 'emerald'}
           />
+            </main>
+          </div>
 
           {/* =========================================================================
               MODALS & DRAWERS
@@ -1201,7 +1270,7 @@ export default function SmartAdvisor({
           {/* Side Drawer: Dated Multi-Conversation History */}
           {showDrawer && (
             <div
-              className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs flex animate-in fade-in duration-200"
+              className="lg:hidden fixed inset-0 z-[10000] bg-black/60 backdrop-blur-xs flex animate-in fade-in duration-200"
               onClick={() => setShowDrawer(false)}
             >
               <aside

@@ -398,3 +398,8 @@ npm run build
 
 
 
+
+## 30. Task-Aware Gemini Routing, Hybrid Voice Dictation & Responsive Workspaces (2026-11-28)
+- **Task-aware AI model routing:** Unified `fast-utility`, `audio-multimodal`, and `deep-reflection` tiers discover active Gemini models for the user's API key and apply a healthy fallback on transient/model availability errors while retaining explicit Advisor overrides.
+- **Voice reliability:** Hybrid Gemini Audio transcription and locale-aware Web Speech fallback support verbatim Arabic/Egyptian colloquial and English dictation; recording UI, microphone errors, resource cleanup, Live Voice turn-taking, interruption, and timestamped Advisor exchange persistence are covered.
+- **Responsive architecture:** Mobile-first layouts adapt across tablets, desktop browsers, and resized Windows windows, with dockable navigation, centered bottom navigation/content grids, desktop Advisor conversation panes, and Blomeo theme tokens for both light and Aquatic-Emerald dark modes.

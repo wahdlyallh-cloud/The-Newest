@@ -574,3 +574,77 @@ button[role="switch"],
   .blomeo-splash__wordmark { max-width: 300px; margin-left: 3px; opacity: 1; animation: none; }
   .blomeo-splash__wordmark span { opacity: 1; transform: none; animation: none; }
 }
+
+/* Responsive layout safeguards: constrain long content without blocking vertical scrolling. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+main,
+section,
+article,
+aside,
+header,
+footer,
+[role="dialog"] {
+  min-width: 0;
+}
+
+main :where(.grid, .flex) > * {
+  min-width: 0;
+}
+
+main :where(p, h1, h2, h3, h4, h5, h6, button, a, label) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  main .grid-cols-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  main .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  main .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  main :where(.overflow-x-auto, .overflow-x-scroll) {
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+  }
+}
+
+@media (min-width: 768px) {
+  main > :where(.grid, section > .grid) {
+    justify-items: stretch;
+  }
+
+  main > :where(.space-y-6 > .grid, .space-y-6 > section) {
+    margin-inline: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal-sheet-content {
+    max-width: min(92vw, 72rem);
+  }
+}

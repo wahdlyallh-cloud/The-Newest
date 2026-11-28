@@ -68,7 +68,7 @@ export const aiService = {
       title,
       content,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'light' });
   },
 
   /**
@@ -80,7 +80,7 @@ export const aiService = {
       period,
       overallCompliance,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'reasoning' });
   },
 
   /**
@@ -100,7 +100,8 @@ export const aiService = {
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/smart-advisor', payload, {
       customKey,
-      activeLanguage: payload.appLanguage || getCurrentAppLanguage()
+      activeLanguage: payload.appLanguage || getCurrentAppLanguage(),
+      task: 'reasoning'
     });
   },
 
@@ -113,7 +114,7 @@ export const aiService = {
       content,
       promptType,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'reasoning' });
   },
 
   /**
@@ -133,7 +134,8 @@ export const aiService = {
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/diary-chat', payload, {
       customKey,
-      activeLanguage: payload.appLanguage || getCurrentAppLanguage()
+      activeLanguage: payload.appLanguage || getCurrentAppLanguage(),
+      task: 'reasoning'
     });
   },
 
@@ -150,7 +152,8 @@ export const aiService = {
   }, customKey?: string) {
     return callGeminiApiSafely('/api/gemini/gratitude-advisor', payload, {
       customKey,
-      activeLanguage: payload.appLanguage || getCurrentAppLanguage()
+      activeLanguage: payload.appLanguage || getCurrentAppLanguage(),
+      task: 'light'
     });
   },
 
@@ -163,7 +166,7 @@ export const aiService = {
       negativeThought,
       cognitiveDistortion,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'reasoning' });
   },
 
   /**
@@ -173,7 +176,7 @@ export const aiService = {
     return callGeminiApiSafely('/api/gemini/daily-inspiration', {
       moods,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'light' });
   },
 
   /**
@@ -183,7 +186,7 @@ export const aiService = {
     return callGeminiApiSafely('/api/gemini/generate-note', {
       topic,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'light' });
   },
 
   /**
@@ -194,14 +197,14 @@ export const aiService = {
       audioBase64,
       mimeType,
       appLanguage
-    }, { customKey, activeLanguage: appLanguage });
+    }, { customKey, activeLanguage: appLanguage, task: 'multimodal' });
   },
 
   /**
    * 12. Direct Fail-Safe Generation (Client-Side REST Fallback)
    */
-  async generateDirect(prompt: string, systemInstruction?: string, customKey?: string) {
-    return generateGeminiContentDirect(prompt, systemInstruction, customKey);
+  async generateDirect(prompt: string, systemInstruction?: string, customKey?: string, task: 'light' | 'multimodal' | 'deep' | 'reasoning' = 'multimodal') {
+    return generateGeminiContentDirect(prompt, systemInstruction, customKey, undefined, undefined, task);
   }
 };
 

@@ -301,7 +301,7 @@ export default function BlomeoSideNav({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch select-none"
+      className="fixed inset-0 z-50 flex items-stretch md:justify-start select-none"
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       {/* Dim backdrop to dismiss on outside click */}
@@ -313,7 +313,7 @@ export default function BlomeoSideNav({
 
       {/* Floating Glassmorphic Emerald Side Rail */}
       <aside
-        className={`relative z-10 my-3 sm:my-4 mx-3 sm:mx-4 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 backdrop-blur-2xl ${
+        className={`relative z-10 my-3 sm:my-4 mx-3 sm:mx-4 md:my-0 md:mx-0 md:h-full flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 backdrop-blur-2xl ${
           isDarkMode
             ? 'border border-[rgba(72,184,159,0.3)] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)]'
             : 'border border-white/20'

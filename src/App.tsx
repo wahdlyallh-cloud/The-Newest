@@ -100,6 +100,7 @@ import GratitudeImportModal from './components/GratitudeImportModal';
 import { copyTextSafe } from './lib/clipboard';
 import { compressImageFile } from './lib/mediaStorage';
 import { SpeechRecognitionManager } from './lib/speechRecognition';
+import { startHybridAudioCapture, transcribeHybridAudio } from './lib/hybridDictation';
 import { formatDate, formatTime, formatDateTime, formatNumber } from './lib/formatters';
 
 // Dynamic Mood & Tag Localization Helpers
@@ -5428,6 +5429,11 @@ export default function App() {
     setRecordingIntervalId(intId);
 
     // Start centralized speech recognition with separate final and interim transcripts
+    audioChunksRef.current = [];
+    void startHybridAudioCapture().then(recorder => {
+      mediaRecorderRef.current = recorder;
+      recorder.addEventListener('dataavailable', event => { if (event.data?.size) audioChunksRef.current.push(event.data); });
+    }).catch(error => console.warn('[Diary dictation] Audio capture unavailable; Web Speech remains active.', error));
     const manager = SpeechRecognitionManager.getInstance();
     if (manager.isSupported()) {
       manager.startSession({
@@ -5481,19 +5487,21 @@ export default function App() {
       const rec = mediaRecorderRef.current;
       rec.onstop = () => {
         const hasChunks = audioChunksRef.current.length > 0;
-        const audioBlob = hasChunks ? new Blob(audioChunksRef.current, { type: 'audio/webm' }) : null;
+        const audioBlob = hasChunks ? new Blob(audioChunksRef.current, { type: rec.mimeType || audioChunksRef.current[0]?.type || 'audio/webm' }) : null;
         const blobUrl = audioBlob ? URL.createObjectURL(audioBlob) : undefined;
         if (audioBlob) {
           const reader = new FileReader();
           reader.onloadend = async () => {
             const dataUrl = (typeof reader.result === 'string' && reader.result.startsWith('data:')) ? reader.result : (blobUrl || createFallbackAudioWav(finalSecs));
+            void transcribeHybridAudio(audioBlob, settings?.userApiKey, settings?.appLanguage || 'ar').then(geminiText => {
             processAudioRecordingOrFile({
               dataUrl,
               blobUrl,
-              mimeType: 'audio/webm',
+              mimeType: audioBlob.type || 'audio/webm',
               fileName: `${t.voiceJournalTab} ${new Date().toLocaleTimeString(langInfo?.bcp47 || (settings?.appLanguage === 'ar' ? 'ar-SA' : 'en-US'), { hour: '2-digit', minute: '2-digit' })}.webm`,
               duration: finalSecs,
-              liveSpeechText: combinedTranscript
+              liveSpeechText: geminiText || combinedTranscript
+            });
             });
           };
           reader.readAsDataURL(audioBlob);
@@ -6809,7 +6817,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className={`max-w-4xl mx-auto px-0 md:px-6 pb-nav-safe md:pb-12 space-y-6 transition-all w-full max-w-full overflow-x-hidden ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
+      <main className={`w-full max-w-full xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pb-nav-safe md:pb-24 space-y-6 transition-all overflow-x-clip min-w-0 ${isHeaderCollapsedOnMobile ? 'pt-10 sm:pt-6' : 'pt-6'}`}>
 
         {/* Offline & Cloud Background Sync Status Banner */}
         <OfflineSyncBanner appLanguage={settings?.appLanguage || 'ar'} />
@@ -11576,16 +11584,16 @@ export default function App() {
 
       {/* 🧭 Facebook-Style Bottom Navigation Bar (5 Icons Only + Scroll-Aware Hide/Show) */}
       <nav
-        className={`fixed bottom-0 inset-x-0 z-[35] bg-white/90 dark:bg-[#11211A]/90 backdrop-blur-xl border-t border-[#DCE7E0] dark:border-[rgba(116,198,157,0.18)] shadow-lg transition-all duration-300 transform ${
+        className={`fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-[35] w-[min(28rem,calc(100%-1.5rem))] rounded-3xl bg-white/90 dark:bg-[#11211A]/90 backdrop-blur-xl border border-[#DCE7E0] dark:border-[rgba(116,198,157,0.18)] shadow-xl transition-all duration-300 transform ${
           isKeyboardOpen || isDiaryEditorFullscreen || isWritingBoxFullscreen || isConsultationFullscreen || showVoiceVentModal || isLiveVoiceChatActive || isBottomNavHidden
             ? 'translate-y-[120%] opacity-0 pointer-events-none'
             : 'translate-y-0 opacity-100 pointer-events-auto'
         }`}
-        style={{ paddingBottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
+        style={{ paddingBottom: 'max(0.35rem, env(safe-area-inset-bottom, 0.35rem))' }}
         dir={isRtl ? 'rtl' : 'ltr'}
         aria-label="Bottom Navigation"
       >
-        <div className="max-w-md mx-auto px-4 py-2 flex items-center justify-around">
+        <div className="w-full px-3 py-1.5 flex items-center justify-around">
 
           {/* 1. الرئيسية (Home) */}
           <button

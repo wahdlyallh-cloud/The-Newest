@@ -3199,6 +3199,13 @@ export const AR_DICT: Record<string, any> = {
   dailyMediaAudio: "الصوتيات",
   dailyMediaFiles: "المستندات/الملفات",
   dailyReportPreviewBadge: "معاينة مؤقتة — التقرير الرسمي يُحفظ تلقائيًا الساعة 12:00 ص",
+  "user": "أنت",
+  "assistant": "المساعد",
+  "microphonePermissionDenied": "يرجى السماح باستخدام الميكروفون.",
+  "microphoneUnavailable": "الميكروفون غير متاح على هذا الجهاز أو المتصفح.",
+  "microphoneStartFailed": "تعذر بدء التسجيل. تحقق من الميكروفون وحاول مجددًا.",
+  "transcriptionFailed": "تعذر تحويل التسجيل إلى نص. حاول مجددًا.",
+  "timestamp": "الوقت",
 };
 
 export const EN_DICT: Record<string, any> = {
@@ -5994,6 +6001,13 @@ export const EN_DICT: Record<string, any> = {
   dailyMediaAudio: "Audio",
   dailyMediaFiles: "Documents/files",
   dailyReportPreviewBadge: "Temporary preview — the official report is saved automatically at 12:00 AM",
+  "user": "You",
+  "assistant": "Assistant",
+  "microphonePermissionDenied": "Please allow microphone access.",
+  "microphoneUnavailable": "Microphone is unavailable on this device or browser.",
+  "microphoneStartFailed": "Could not start recording. Check your microphone and try again.",
+  "transcriptionFailed": "Could not transcribe the recording. Please try again.",
+  "timestamp": "Time",
 };
 
 export const FR_DICT: Record<string, any> = {
@@ -8789,6 +8803,13 @@ export const FR_DICT: Record<string, any> = {
   dailyMediaAudio: "Son",
   dailyMediaFiles: "Documents/fichiers",
   dailyReportPreviewBadge: "Aperçu temporaire — le rapport officiel est enregistré automatiquement à minuit",
+  "user": "Vous",
+  "assistant": "Conseiller",
+  "microphonePermissionDenied": "Veuillez autoriser l’accès au microphone.",
+  "microphoneUnavailable": "Le microphone est indisponible sur cet appareil ou navigateur.",
+  "microphoneStartFailed": "Impossible de démarrer l’enregistrement. Vérifiez le microphone et réessayez.",
+  "transcriptionFailed": "Impossible de transcrire l’enregistrement. Veuillez réessayer.",
+  "timestamp": "Heure",
 };
 
 export const DE_DICT: Record<string, any> = {
@@ -11584,6 +11605,13 @@ export const DE_DICT: Record<string, any> = {
   dailyMediaAudio: "Audiodateien",
   dailyMediaFiles: "Dokumente/Dateien",
   dailyReportPreviewBadge: "Temporäre Vorschau — der offizielle Bericht wird automatisch um Mitternacht gespeichert",
+  "user": "Du",
+  "assistant": "Assistent",
+  "microphonePermissionDenied": "Bitte erlauben Sie den Zugriff auf das Mikrofon.",
+  "microphoneUnavailable": "Das Mikrofon ist auf diesem Gerät oder in diesem Browser nicht verfügbar.",
+  "microphoneStartFailed": "Die Aufnahme konnte nicht gestartet werden. Prüfen Sie das Mikrofon und versuchen Sie es erneut.",
+  "transcriptionFailed": "Die Aufnahme konnte nicht transkribiert werden. Bitte versuchen Sie es erneut.",
+  "timestamp": "Uhrzeit",
 };
 
 export const ES_DICT: Record<string, any> = {
@@ -14379,6 +14407,13 @@ export const ES_DICT: Record<string, any> = {
   dailyMediaAudio: "Audio",
   dailyMediaFiles: "Documentos/archivos",
   dailyReportPreviewBadge: "Vista previa temporal — el informe oficial se guarda automáticamente a medianoche",
+  "user": "Tú",
+  "assistant": "Asistente",
+  "microphonePermissionDenied": "Permite el acceso al micrófono.",
+  "microphoneUnavailable": "El micrófono no está disponible en este dispositivo o navegador.",
+  "microphoneStartFailed": "No se pudo iniciar la grabación. Comprueba el micrófono e inténtalo de nuevo.",
+  "transcriptionFailed": "No se pudo transcribir la grabación. Inténtalo de nuevo.",
+  "timestamp": "Hora",
 };
 
 export const IT_DICT: Record<string, any> = {
@@ -17174,6 +17209,13 @@ export const IT_DICT: Record<string, any> = {
   dailyMediaAudio: "Audio",
   dailyMediaFiles: "Documenti/file",
   dailyReportPreviewBadge: "Anteprima temporanea — il rapporto ufficiale viene salvato automaticamente a mezzanotte",
+  "user": "Tu",
+  "assistant": "Assistente",
+  "microphonePermissionDenied": "Consenti l’accesso al microfono.",
+  "microphoneUnavailable": "Il microfono non è disponibile su questo dispositivo o browser.",
+  "microphoneStartFailed": "Impossibile avviare la registrazione. Controlla il microfono e riprova.",
+  "transcriptionFailed": "Impossibile trascrivere la registrazione. Riprova.",
+  "timestamp": "Ora",
 };
 
 export const TR_DICT: Record<string, any> = {
@@ -19969,6 +20011,13 @@ export const TR_DICT: Record<string, any> = {
   dailyMediaAudio: "Ses",
   dailyMediaFiles: "Belgeler/dosyalar",
   dailyReportPreviewBadge: "Geçici önizleme — resmi rapor gece yarısı otomatik kaydedilir",
+  "user": "Sen",
+  "assistant": "Asistan",
+  "microphonePermissionDenied": "Lütfen mikrofon erişimine izin verin.",
+  "microphoneUnavailable": "Mikrofon bu cihazda veya tarayıcıda kullanılamıyor.",
+  "microphoneStartFailed": "Kayıt başlatılamadı. Mikrofonu kontrol edip tekrar deneyin.",
+  "transcriptionFailed": "Kayıt yazıya dökülemedi. Lütfen tekrar deneyin.",
+  "timestamp": "Saat",
 };
 
 export const PT_DICT: Record<string, any> = {
@@ -22764,6 +22813,13 @@ export const PT_DICT: Record<string, any> = {
   dailyMediaAudio: "Áudio",
   dailyMediaFiles: "Documentos/arquivos",
   dailyReportPreviewBadge: "Prévia temporária — o relatório oficial é salvo automaticamente à meia-noite",
+  "user": "Você",
+  "assistant": "Assistente",
+  "microphonePermissionDenied": "Permita o acesso ao microfone.",
+  "microphoneUnavailable": "O microfone não está disponível neste dispositivo ou navegador.",
+  "microphoneStartFailed": "Não foi possível iniciar a gravação. Verifique o microfone e tente novamente.",
+  "transcriptionFailed": "Não foi possível transcrever a gravação. Tente novamente.",
+  "timestamp": "Hora",
 };
 
 export const RU_DICT: Record<string, any> = {
@@ -25559,6 +25615,13 @@ export const RU_DICT: Record<string, any> = {
   dailyMediaAudio: "Аудио",
   dailyMediaFiles: "Документы/файлы",
   dailyReportPreviewBadge: "Временный просмотр — официальный отчёт сохранится автоматически в полночь",
+  "user": "Вы",
+  "assistant": "Ассистент",
+  "microphonePermissionDenied": "Разрешите доступ к микрофону.",
+  "microphoneUnavailable": "Микрофон недоступен на этом устройстве или в этом браузере.",
+  "microphoneStartFailed": "Не удалось начать запись. Проверьте микрофон и попробуйте снова.",
+  "transcriptionFailed": "Не удалось расшифровать запись. Попробуйте снова.",
+  "timestamp": "Время",
 };
 
 export const JA_DICT: Record<string, any> = {
@@ -28354,6 +28417,13 @@ export const JA_DICT: Record<string, any> = {
   dailyMediaAudio: "音声",
   dailyMediaFiles: "書類/ファイル",
   dailyReportPreviewBadge: "一時プレビュー — 公式レポートは午前0時に自動保存されます",
+  "user": "あなた",
+  "assistant": "アシスタント",
+  "microphonePermissionDenied": "マイクの使用を許可してください。",
+  "microphoneUnavailable": "この端末またはブラウザーではマイクを利用できません。",
+  "microphoneStartFailed": "録音を開始できませんでした。マイクを確認して再試行してください。",
+  "transcriptionFailed": "録音を文字起こしできませんでした。もう一度お試しください。",
+  "timestamp": "時刻",
 };
 
 export const ZH_DICT: Record<string, any> = {
@@ -31149,6 +31219,13 @@ export const ZH_DICT: Record<string, any> = {
   dailyMediaAudio: "音频",
   dailyMediaFiles: "文档/文件",
   dailyReportPreviewBadge: "临时预览 — 正式报告将在午夜自动保存",
+  "user": "你",
+  "assistant": "助手",
+  "microphonePermissionDenied": "请允许使用麦克风。",
+  "microphoneUnavailable": "此设备或浏览器无法使用麦克风。",
+  "microphoneStartFailed": "无法开始录音。请检查麦克风后重试。",
+  "transcriptionFailed": "无法转写这段录音，请重试。",
+  "timestamp": "时间",
 };
 
 export const HI_DICT: Record<string, any> = {
@@ -33944,6 +34021,13 @@ export const HI_DICT: Record<string, any> = {
   dailyMediaAudio: "ऑडियो",
   dailyMediaFiles: "दस्तावेज़/फ़ाइलें",
   dailyReportPreviewBadge: "अस्थायी पूर्वावलोकन — आधिकारिक रिपोर्ट आधी रात को अपने-आप सहेजी जाएगी",
+  "user": "आप",
+  "assistant": "सहायक",
+  "microphonePermissionDenied": "कृपया माइक्रोफ़ोन की अनुमति दें।",
+  "microphoneUnavailable": "इस डिवाइस या ब्राउज़र में माइक्रोफ़ोन उपलब्ध नहीं है।",
+  "microphoneStartFailed": "रिकॉर्डिंग शुरू नहीं हो सकी। माइक्रोफ़ोन जाँचकर फिर प्रयास करें।",
+  "transcriptionFailed": "रिकॉर्डिंग का लिप्यंतरण नहीं हो सका। कृपया फिर प्रयास करें।",
+  "timestamp": "समय",
 };
 
 Object.assign(AR_DICT, {
