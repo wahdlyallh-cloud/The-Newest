@@ -170,3 +170,34 @@ export function formatDuration(totalSeconds: number): string {
   const seconds = Math.floor(totalSeconds % 60);
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
+
+/**
+ * Full message timestamp: Day name + full Date + Time (e.g., السبت، 28 نوفمبر 2026 • 10:45 ص)
+ */
+export function formatMessageFullDate(
+  dateInput: Date | string | number | null | undefined,
+  lang?: AppLanguage | string | null
+): string {
+  const date = parseDateInput(dateInput);
+  if (!date) return '';
+
+  const locale = getValidBcp47Locale(lang);
+  try {
+    const dayAndDate = new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
+
+    const time = new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+
+    return `${dayAndDate} • ${time}`;
+  } catch {
+    return date.toLocaleString(locale);
+  }
+}
+

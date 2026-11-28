@@ -483,40 +483,40 @@ export default function LiveVoiceChatModal({
           : (labels.idle || label('status'));
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-3 sm:p-5" dir={isArabic ? 'rtl' : 'ltr'}>
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-5" dir={isArabic ? 'rtl' : 'ltr'}>
       <section
         role="dialog"
         aria-modal="true"
         aria-label={label('status')}
-        className="flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl"
+        className="flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-[#2D6A4F]/20 dark:border-[#48B89F]/20 bg-white dark:bg-[#0E2320] text-[#12261D] dark:text-[#EBF5F2] shadow-2xl transition-colors"
       >
-        <header className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <header className="flex items-center justify-between border-b border-[#2D6A4F]/10 dark:border-[#48B89F]/15 px-5 py-4 bg-[#F3F8F5] dark:bg-[#14302B]">
           <div className="min-w-0">
-            <h2 className="text-lg font-bold text-slate-800">{label('status')}</h2>
-            <p className="mt-1 text-sm text-slate-500" aria-live="polite">{statusText}</p>
+            <h2 className="text-lg font-black text-[#12261D] dark:text-[#EBF5F2]">{label('status')}</h2>
+            <p className="mt-1 text-sm text-[#4A6357] dark:text-[#9EC2B8]" aria-live="polite">{statusText}</p>
           </div>
-          <button type="button" onClick={closeModal} aria-label={label('close')} className="rounded-full px-3 py-2 text-slate-500 hover:bg-slate-100">
+          <button type="button" onClick={closeModal} aria-label={label('close')} className="rounded-full px-3 py-1.5 text-sm font-bold text-[#4A6357] dark:text-[#9EC2B8] hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
             {label('close')}
           </button>
         </header>
 
-        <div className="flex-1 space-y-4 overflow-y-auto p-5">
-          <div className={`flex h-20 items-end justify-center gap-2 rounded-2xl border border-slate-200 bg-gradient-to-b from-indigo-50 to-white p-4 ${mode === 'speaking' || mode === 'listening' || mode === 'recording' ? 'animate-pulse' : ''}`} aria-hidden="true">
-            {[24, 42, 30, 52, 34, 46, 22].map((height, index) => <span key={index} className="w-2 rounded-full bg-indigo-500 transition-all duration-300" style={{ height: `${mode === 'speaking' ? height + (index % 2 ? 10 : 0) : height}px`, animationDelay: `${index * 70}ms` }} />)}
+        <div className="flex-1 space-y-4 overflow-y-auto p-5 bg-[#EFF4F1]/60 dark:bg-[#071614]/60">
+          <div className={`flex h-20 items-end justify-center gap-2 rounded-2xl border border-[#2D6A4F]/15 dark:border-[#48B89F]/20 bg-gradient-to-b from-[#2D6A4F]/10 to-white dark:from-[#48B89F]/15 dark:to-[#0E2320] p-4 ${mode === 'speaking' || mode === 'listening' || mode === 'recording' ? 'animate-pulse' : ''}`} aria-hidden="true">
+            {[24, 42, 30, 52, 34, 46, 22].map((height, index) => <span key={index} className="w-2 rounded-full bg-[#2D6A4F] dark:bg-[#48B89F] transition-all duration-300" style={{ height: `${mode === 'speaking' ? height + (index % 2 ? 10 : 0) : height}px`, animationDelay: `${index * 70}ms` }} />)}
           </div>
           {liveResponse && (
-            <article className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-slate-800" aria-live="polite">
+            <article className="rounded-2xl border border-[#2D6A4F]/20 dark:border-[#48B89F]/25 bg-white dark:bg-[#14302B] p-4 text-[#12261D] dark:text-[#EBF5F2] shadow-xs" aria-live="polite">
               <p className="whitespace-pre-wrap leading-7">{liveResponse}</p>
             </article>
           )}
-          <div className="min-h-24 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="min-h-12 whitespace-pre-wrap text-sm leading-6 text-slate-700">{transcript}</p>
+          <div className="min-h-24 rounded-2xl border border-[#2D6A4F]/15 dark:border-[#48B89F]/20 bg-white dark:bg-[#0E2320] p-4 shadow-3xs">
+            <p className="min-h-12 whitespace-pre-wrap text-sm leading-6 text-[#12261D] dark:text-[#EBF5F2]">{transcript}</p>
           </div>
-          {error && <p role="status" className="text-sm text-amber-700">{labels.error || label('status')}</p>}
+          {error && <p role="status" className="text-sm font-bold text-amber-700 dark:text-amber-400">{labels.error || label('status')}</p>}
         </div>
 
-        <footer className="space-y-4 border-t border-slate-100 bg-white p-5">
-          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+        <footer className="space-y-4 border-t border-[#2D6A4F]/10 dark:border-[#48B89F]/15 bg-white dark:bg-[#0E2320] p-5">
+          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-[#F3F8F5] dark:bg-[#14302B] px-4 py-3 text-sm font-bold text-[#12261D] dark:text-[#EBF5F2]">
             <span>{label('autoBargeIn')}</span>
             <input
               type="checkbox"
@@ -525,24 +525,24 @@ export default function LiveVoiceChatModal({
                 setAutoBargeIn(event.target.checked);
                 if (!event.target.checked) stopMonitor();
               }}
-              className="h-4 w-4 accent-indigo-600"
+              className="h-4 w-4 accent-[#2D6A4F] dark:accent-[#48B89F]"
             />
           </label>
           <div className="flex flex-wrap items-center gap-2">
             {canStop ? (
-              <button type="button" onClick={stopCapture} className="rounded-xl bg-slate-700 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+              <button type="button" onClick={stopCapture} className="rounded-xl bg-slate-700 dark:bg-slate-600 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 transition-colors">
                 {label('stop')}
               </button>
             ) : (
-              <button type="button" onClick={() => void startCapture()} disabled={busy || mode === 'speaking'} className="rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" onClick={() => void startCapture()} disabled={busy || mode === 'speaking'} className="rounded-xl bg-[#2D6A4F] dark:bg-[#2D8C76] px-4 py-3 text-sm font-bold text-white hover:bg-[#214E3A] disabled:cursor-not-allowed disabled:opacity-50 transition-colors">
                 {label('listen')}
               </button>
             )}
-            <button type="button" onClick={() => void sendTurn(transcript)} disabled={!transcript.trim() || busy} className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" onClick={() => void sendTurn(transcript)} disabled={!transcript.trim() || busy} className="rounded-xl bg-[#2D6A4F] dark:bg-[#48B89F] px-4 py-3 text-sm font-bold text-white dark:text-[#071614] hover:bg-[#214E3A] disabled:cursor-not-allowed disabled:opacity-50 transition-colors">
               {label('send')}
             </button>
             {mode === 'speaking' && (
-              <button type="button" onClick={interruptAndListen} className="rounded-xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-700">
+              <button type="button" onClick={interruptAndListen} className="rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold text-white hover:bg-rose-700 transition-colors">
                 {label('interrupt')}
               </button>
             )}

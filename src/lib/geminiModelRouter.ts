@@ -84,12 +84,24 @@ export async function refreshDiscoveredModels(key?: string): Promise<DiscoveredG
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanKey)}`);
       if (!res.ok) continue;
-      const models = normalizeModels(await res.json());
-      if (models.length) { saveCache(cleanKey, models); all.push(...models); }
+      const data = await res.json();
+      const models = normalizeModels(data);
+      if (models.length) {
+        saveCache(cleanKey, models);
+        // Also save to generic key for instant retrieval
+        saveCache('default', models);
+        all.push(...models);
+      }
     } catch { /* try the next configured key */ }
   }
   const unique = new Map(all.map(model => [model.id, model]));
-  return Array.from(unique.values()).sort((a, b) => versionScore(b.id) - versionScore(a.id) || accuracyScore(b.id) - accuracyScore(a.id));
+  const result = Array.from(unique.values()).sort((a, b) => versionScore(b.id) - versionScore(a.id) || accuracyScore(b.id) - accuracyScore(a.id));
+  if (result.length > 0 && typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('yawmiyati_gemini_active_models_list', JSON.stringify(result));
+    } catch {}
+  }
+  return result;
 }
 
 export async function selectModelsForTask(task: GeminiTask = 'chat', key?: string, modeOverride?: GeminiModelMode): Promise<string[]> {

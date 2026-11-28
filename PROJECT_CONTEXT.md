@@ -147,7 +147,31 @@ npm run build
 
 ---
 
-## 11. Native Android File Export Plugin (`FileExportPlugin.java`) & Bulletproof Diary Exporter
+## 13. Blomeo Flagship Advisor Overhaul & True Full-Screen Experience
+
+1. **Dual-Card Selection Hub (`Landing Mode`)**:
+   - Replaced the cramped dual-tab header with an elegant Blomeo-styled landing screen presenting two interactive cards:
+     1. **`مستشاري الشخصي (Personal Journal Advisor)`**: Analyzes diaries, mood logs, habits, tasks, assessments, and selected media strictly within the user's chosen time range and access permissions.
+     2. **`المستشار الذكي العام (General AI — Gemini-Style)`**: Dedicated Gemini-style general assistant for knowledge, study, programming, ideation, and direct device attachments with zero diary clutter.
+2. **True Full-Screen Workspaces**:
+   - Tapping either card transitions into a dedicated full-screen workspace (`fixed inset-0 z-[9990]`, 100% viewport width/height, safe-area padding).
+   - Smooth navigation with Back button wired to `useRegisterBackStep` returning to the Selection Hub.
+3. **Dynamic Live Gemini API Model Discovery**:
+   - Removed spinning refresh icon from top headers.
+   - Upgraded to a two-section Model Picker modal:
+     - **Section 1 (Routing Modes)**: `متكيف تلقائي` (Auto-adaptive), `سريع` (Fastest Flash), `دقة عالية Pro` (Highest-tier Pro).
+     - **Section 2 (Live Available Models)**: Dynamically queries `GET /v1beta/models`, filters `generateContent` endpoints, sorts newest/highest-tier first, caches in localStorage with timestamp, and supports mid-chat switching with `تحديث القائمة من الـ API ↻`.
+4. **Time-Range Limit & Media Scope (`AdvisorScopeModal`)**:
+   - Strictly inside Personal Advisor: Time-range presets (`1d`, `7d`, `1m`, `3m`, `6m`, `1y`, `custom` single date or range).
+   - Scopes all entries, moods, habits, and media.
+   - Three media modes: `text-only` (default token saver), `by-category` (with green `✓ النصوص مدمجة تلقائيًا دائمًا` badge and checkboxes for photos/videos/audio/docs), and `manual` (checkboxes for media within range). Real-time count chip & wide-range quota warning.
+5. **Dated Multi-Conversation Drawers**:
+   - Completely separate multi-conversation drawers for Personal Advisor and General AI.
+   - Each conversation displays title, full date of creation/start, and clean delete action.
+6. **Message Full Date+Day Stamps & Gemini-Style Bottom Composer**:
+   - Every single message displays localized Day name + full Date + Time (e.g. `السبت، 28 نوفمبر 2026 • 10:45 ص`), copy message button with `تم النسخ ✓` feedback, and TTS on AI replies with `select-text` enabled.
+   - Clean Gemini-style bottom composer with auto-expanding textarea, 4 native device pickers (`صور`, `فيديو`, `مستندات`, `صوتيات`), voice dictation, and Gemini-style Live Voice trigger opening `LiveVoiceChatModal` in Blomeo emerald/aquatic dark mode tokens.
+
 
 - Capacitor native plugin (`FileExportPlugin.java`) registered in `MainActivity.java` and wired in `exportUtils.ts`.
 - **Corrupted File Error Root-Cause Resolution:**
