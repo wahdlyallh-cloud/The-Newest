@@ -32,6 +32,8 @@ interface VoiceVentModalProps {
   appLanguage: AppLanguage;
   onSaveAudioRecording: (rec: AudioRecording) => void;
   onAppendTextToContent: (text: string) => void;
+  initialAudioFile?: File | Blob | null;
+  onClearInitialFile?: () => void;
 }
 
 /**
@@ -85,7 +87,9 @@ export default function VoiceVentModal({
   onClose,
   appLanguage = 'ar',
   onSaveAudioRecording,
-  onAppendTextToContent
+  onAppendTextToContent,
+  initialAudioFile,
+  onClearInitialFile
 }: VoiceVentModalProps) {
   const t = getTranslation(appLanguage);
   const langInfo = getLanguageInfo(appLanguage);
@@ -146,8 +150,14 @@ export default function VoiceVentModal({
 
   useEffect(() => {
     if (isOpen) {
-      resetModalState();
-      startRecording();
+      if (initialAudioFile) {
+        resetModalState();
+        void processIncomingAudioFile(initialAudioFile);
+        onClearInitialFile?.();
+      } else {
+        resetModalState();
+        startRecording();
+      }
     } else {
       stopRecordingInternal();
       cleanupBlobUrl();
@@ -156,7 +166,7 @@ export default function VoiceVentModal({
       stopRecordingInternal();
       cleanupBlobUrl();
     };
-  }, [isOpen]);
+  }, [isOpen, initialAudioFile]);
 
   const cleanupBlobUrl = () => {
     if (audioBlobUrl) {
@@ -693,12 +703,10 @@ export default function VoiceVentModal({
   };
 
   /**
-   * Fallback file picker for restricted environments
+   * Universal audio processor for both uploaded files and manual file selection.
+   * Auto-transcribes verbatim and triggers Speech Emotion Recognition (SER).
    */
-  const handleAudioFileFallbackChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processIncomingAudioFile = async (file: File | Blob) => {
     try {
       stopRecordingInternal();
       const detectedMime = inferAudioMimeType(file);
@@ -722,10 +730,97 @@ export default function VoiceVentModal({
       if (aiTranscription && !aiTranscription.includes('__AI_CHECK_API_KEY__')) {
         setEditableTranscript(aiTranscription.trim());
       }
+
+      // Also trigger Speech Emotion Recognition (SER)
+      try {
+        const res = await fetch('/api/gemini/analyze-audio-tone', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-language': appLanguage
+          },
+          body: JSON.stringify({
+            audioData: base64Audio,
+            mimeType: detectedMime,
+            fileName: 'name' in file ? (file as any).name : 'uploaded-audio.webm',
+            appLanguage: appLanguage
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.speechEmotion) {
+            setVocalTone(data.speechEmotion);
+          }
+        }
+      } catch (toneErr) {
+        console.warn('[VoiceVent] Audio file tone analysis endpoint fallback:', toneErr);
+      }
     } catch (fallbackErr) {
-      console.error('[VoiceVent] File fallback failed:', fallbackErr);
+      console.error('[VoiceVent] File processing failed:', fallbackErr);
     } finally {
       setIsTranscribing(false);
+    }
+  };
+
+  /**
+   * Action: Polish & Organize Voice Vent with Gemini
+   */
+  const handlePolishWithGemini = async () => {
+    if (!editableTranscript.trim() || isTranscribing) return;
+    setIsTranscribing(true);
+    try {
+      const res = await fetch('/api/gemini/diary-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-app-language': appLanguage },
+        body: JSON.stringify({
+          task: 'polish_voice_vent',
+          userText: editableTranscript.trim(),
+          appLanguage
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.refinedText) {
+          setEditableTranscript(data.refinedText.trim());
+        }
+      }
+    } catch (err) {
+      console.warn('[VoiceVent] Polish error:', err);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  /**
+   * Action: Change SER theme background manually
+   */
+  const handleSelectSerTheme = (themeKey: 'anxiety' | 'joy' | 'sadness' | 'anger' | 'calm') => {
+    const themeMap: Record<string, { label: string; color: string }> = {
+      anxiety: { label: isAr ? 'قلق وتوتر' : 'Anxious', color: 'amber' },
+      joy: { label: isAr ? 'فرح وسعادة' : 'Joyful', color: 'emerald' },
+      sadness: { label: isAr ? 'حزن وهدوء' : 'Sadness', color: 'blue' },
+      anger: { label: isAr ? 'غضب وانفعال' : 'Anger', color: 'red' },
+      calm: { label: isAr ? 'هدوء وسكينة' : 'Calm', color: 'teal' }
+    };
+    const target = themeMap[themeKey];
+    setVocalTone(prev => ({
+      primaryEmotion: target.label,
+      intensity: prev?.intensity || (isAr ? 'متوسطة' : 'medium'),
+      intensityScore: prev?.intensityScore || 75,
+      vocalToneDetails: prev?.vocalToneDetails || (isAr ? `نبرة ${target.label}` : `${target.label} vocal tone`),
+      recommendedColor: target.color
+    }));
+  };
+
+  /**
+   * Fallback file picker for restricted environments
+   */
+  const handleAudioFileFallbackChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await processIncomingAudioFile(file);
+    } finally {
       e.target.value = '';
     }
   };
@@ -862,17 +957,29 @@ export default function VoiceVentModal({
 
               {/* Editable Transcript Editor */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-1">
                   <span className="font-extrabold text-xs text-[#5A5A40] flex items-center gap-1.5">
                     <Edit3 className="w-3.5 h-3.5 text-[#8B9D83]" />
                     <span>{isAr ? 'النص المفرغ (يمكنك تعديله قبل الحفظ):' : 'Transcript (editable):'}</span>
                   </span>
-                  {isTranscribing && (
-                    <span className="text-[10px] text-[#8B9D83] font-bold flex items-center gap-1 animate-pulse">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      <span>{isAr ? 'جاري تحسين النص عبر Gemini...' : 'Refining via Gemini...'}</span>
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={isTranscribing || !editableTranscript.trim()}
+                      onClick={handlePolishWithGemini}
+                      className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg font-bold text-[10.5px] transition-all cursor-pointer flex items-center gap-1 shadow-3xs disabled:opacity-50"
+                      title={isAr ? 'ترتيب وتوضيح الفضفضة بـ Gemini' : 'Polish & organize with Gemini'}
+                    >
+                      <Sparkles className="w-3 h-3 text-amber-600" />
+                      <span>{isAr ? '✨ ترتيب وتوضيح الفضفضة بـ Gemini' : '✨ Polish with Gemini'}</span>
+                    </button>
+                    {isTranscribing && (
+                      <span className="text-[10px] text-[#8B9D83] font-bold flex items-center gap-1 animate-pulse">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>{isAr ? 'جاري المعالجة...' : 'Processing...'}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <textarea
@@ -884,25 +991,41 @@ export default function VoiceVentModal({
                 />
               </div>
 
-              {/* Vocal Tone & Emotion Analysis Card */}
-              {vocalTone && (
-                <div className="p-3.5 bg-gradient-to-r from-teal-50/80 to-emerald-50/80 border border-teal-200 rounded-2xl space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-teal-900 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                      <span>{t.voiceVentToneAnalysisTitle || (isAr ? 'تحليل نبرة الصوت والمشاعر (Gemini AI):' : 'Vocal Tone Analysis (Gemini AI):')}</span>
-                    </span>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
-                      {vocalTone.primaryEmotion || (isAr ? 'طبيعي' : 'Normal')} ({vocalTone.intensityScore || 70}%)
-                    </span>
-                  </div>
-                  {vocalTone.vocalToneDetails && (
-                    <p className="text-[11px] text-teal-800 font-medium leading-relaxed">
-                      {vocalTone.vocalToneDetails}
-                    </p>
-                  )}
+              {/* Vocal Tone & Emotion Analysis Card with 5 Selectable Theme Colors */}
+              <div className="p-3.5 bg-gradient-to-r from-teal-50/80 to-emerald-50/80 border border-teal-200 rounded-2xl space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <span className="font-black text-xs text-teal-900 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                    <span>{t.voiceVentToneAnalysisTitle || (isAr ? 'تحليل نبرة الصوت والمشاعر (Gemini AI):' : 'Vocal Tone Analysis (Gemini AI):')}</span>
+                  </span>
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
+                    {(vocalTone?.primaryEmotion) || (isAr ? 'طبيعي' : 'Normal')} ({vocalTone?.intensityScore || 70}%)
+                  </span>
                 </div>
-              )}
+                {vocalTone?.vocalToneDetails && (
+                  <p className="text-[11px] text-teal-800 font-medium leading-relaxed">
+                    {vocalTone.vocalToneDetails}
+                  </p>
+                )}
+                <div className="pt-1 border-t border-teal-200/60 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-bold text-teal-900">{isAr ? 'لون السمة المشاعرية:' : 'Emotion Theme:'}</span>
+                  <button type="button" onClick={() => handleSelectSerTheme('anxiety')} className="px-2 py-0.5 rounded-lg text-[9.5px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 cursor-pointer">
+                    😰 {isAr ? 'قلق' : 'Anxiety'}
+                  </button>
+                  <button type="button" onClick={() => handleSelectSerTheme('joy')} className="px-2 py-0.5 rounded-lg text-[9.5px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 cursor-pointer">
+                    🎉 {isAr ? 'فرح' : 'Joy'}
+                  </button>
+                  <button type="button" onClick={() => handleSelectSerTheme('sadness')} className="px-2 py-0.5 rounded-lg text-[9.5px] font-bold bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300 cursor-pointer">
+                    😔 {isAr ? 'حزن' : 'Sadness'}
+                  </button>
+                  <button type="button" onClick={() => handleSelectSerTheme('anger')} className="px-2 py-0.5 rounded-lg text-[9.5px] font-bold bg-rose-100 hover:bg-rose-200 text-rose-900 border border-rose-300 cursor-pointer">
+                    😡 {isAr ? 'غضب' : 'Anger'}
+                  </button>
+                  <button type="button" onClick={() => handleSelectSerTheme('calm')} className="px-2 py-0.5 rounded-lg text-[9.5px] font-bold bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300 cursor-pointer">
+                    🧘 {isAr ? 'هدوء' : 'Calm'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

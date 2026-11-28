@@ -78,6 +78,8 @@ export interface DiaryEntry {
   isEdited?: boolean;
   edits?: DiaryEdit[];
   moods: string[]; // Manual selected emojis/mood tags (e.g. "happy", "anxious")
+  preMoods?: string[]; // Multi-select pre-writing mood pills (synced with moods)
+  mood?: string; // Legacy singular mood compatibility
   aiMoodAnalysis?: { mood: string; percentage: number }[]; // Predicted by Gemini
   importance: number; // Importance rating (1 to 5 stars)
   color: string; // Theme/background color for this note (e.g. bg-amber-50)

@@ -136,3 +136,21 @@ export function getJournalTypeDescription(type?: JournalEntryType, langOrT?: any
   const t = typeof langOrT === 'object' && langOrT !== null ? langOrT : getTranslation(langOrT);
   return t[cfg.key + '_desc'] || '';
 }
+
+/**
+ * Extracts and normalizes pre-writing moods from any DiaryEntry,
+ * seamlessly supporting both modern `preMoods`, standard `moods`, and legacy singular `mood`.
+ */
+export function extractEntryPreMoods(entry?: Partial<{ preMoods?: string[]; moods?: string[]; mood?: string }>): string[] {
+  if (!entry) return [];
+  if (Array.isArray(entry.preMoods) && entry.preMoods.length > 0) {
+    return entry.preMoods.filter(Boolean);
+  }
+  if (Array.isArray(entry.moods) && entry.moods.length > 0) {
+    return entry.moods.filter(Boolean);
+  }
+  if (typeof entry.mood === 'string' && entry.mood.trim()) {
+    return [entry.mood.trim()];
+  }
+  return [];
+}

@@ -892,6 +892,17 @@ ${t.generatedByHayatAiNotice}`;
 
         {isTodayPreview && <div className="mx-4 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900" role="status">{t.dailyReportPreviewBadge}</div>}
 
+        {/* 12:00 AM Text-Only Automatic Daily Report Banner */}
+        <div className="mx-4 mt-2.5 rounded-xl border border-[#2D6A4F]/20 bg-[#2D6A4F]/10 px-3.5 py-2 text-xs font-bold text-[#1B4332] flex items-center justify-between flex-wrap gap-1.5 shadow-3xs">
+          <span className="flex items-center gap-1.5">
+            <span>⏰</span>
+            <span>{isAr ? 'التقرير الرسمي يُحفظ تلقائياً الساعة 12:00 ص (وضع تلقائي: نص فقط — توفير)' : 'Official report auto-saves at 12:00 AM (automatic mode: text-only — saver)'}</span>
+          </span>
+          <span className="text-[10px] font-black bg-[#2D6A4F] text-white px-2 py-0.5 rounded-full">
+            {isAr ? '12:00 ص تلقائي' : '12:00 AM Auto'}
+          </span>
+        </div>
+
         {/* Modal Middle Content Scrollable Area */}
         <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 text-gray-800">
 
@@ -1186,13 +1197,13 @@ ${t.generatedByHayatAiNotice}`;
         </div>
 
         {/* Modal Bottom Footer Actions & Exports */}
-        <div className="p-4 bg-[#F0EDE4] border-t border-[#E2DCC8] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 no-print-capture">
+        <div className="p-3 sm:p-4 bg-[#F0EDE4] border-t border-[#E2DCC8] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0 no-print-capture">
           
-          {/* Quick Exports */}
-          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+          {/* Quick Exports - Responsive Flex-Wrap with Min-Width to Prevent Squishing */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               onClick={handleCopy}
-              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all active:scale-95"
+              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs transition-all active:scale-95 min-h-[38px] min-w-[70px]"
             >
               {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copySuccess ? (t.copied) : (t.copyText)}</span>
@@ -1200,7 +1211,7 @@ ${t.generatedByHayatAiNotice}`;
 
             <button
               onClick={handleDownloadWord}
-              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-800 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all active:scale-95"
+              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs transition-all active:scale-95 min-h-[38px] min-w-[70px]"
             >
               <FileText className="w-3.5 h-3.5 text-blue-600" />
               <span>Word (.doc)</span>
@@ -1208,7 +1219,7 @@ ${t.generatedByHayatAiNotice}`;
 
             <button
               onClick={handlePrintPdf}
-              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-800 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-3xs transition-all active:scale-95"
+              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs transition-all active:scale-95 min-h-[38px] min-w-[70px]"
             >
               <Printer className="w-3.5 h-3.5 text-[#5A5A40]" />
               <span>{t.printSavePDF}</span>
@@ -1217,7 +1228,7 @@ ${t.generatedByHayatAiNotice}`;
             <button
               onClick={handleSaveAsImage}
               disabled={isCapturingImage}
-              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-800 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-3xs disabled:opacity-50 transition-all active:scale-95"
+              className="px-3 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs disabled:opacity-50 transition-all active:scale-95 min-h-[38px] min-w-[70px]"
               title={t.saveReportAsPngTooltip}
             >
               {isCapturingImage ? (
@@ -1230,17 +1241,17 @@ ${t.generatedByHayatAiNotice}`;
           </div>
 
           {/* Main Action Buttons */}
-          <div className="flex items-center space-x-2 space-x-reverse w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-1 sm:pt-0 border-t sm:border-t-0 border-[#E2DCC8]/50">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#E2DCC8] hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl cursor-pointer min-h-[38px]"
             >
               {t.close}
             </button>
 
             <button
               onClick={handleSave}
-              className="px-5 py-2 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap active:scale-95 transition-all"
+              className="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-tr from-[#5A5A40] to-[#8B9D83] hover:from-[#5A5A40]/90 hover:to-[#8B9D83]/90 text-white text-xs font-black rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap active:scale-95 transition-all min-h-[38px]"
             >
               <Save className="w-4 h-4 text-[#FEFAE0] shrink-0" />
               <span className="whitespace-nowrap">{t.saveToProsCons}</span>

@@ -673,13 +673,13 @@ export default function ExportDiaryModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="pt-3 border-t border-[#E2DCC8]/70 flex flex-col sm:flex-row gap-2.5">
+          {/* Action Buttons - Responsive Anti-Squish Grid */}
+          <div className="pt-3 border-t border-[#E2DCC8]/70 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               type="button"
               disabled={isExportingImage || isExportingPdf}
               onClick={handleExportAsImage}
-              className="flex-1 py-3 px-4 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50"
+              className="w-full py-3 px-4 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50 min-h-[44px]"
             >
               {isExportingImage ? (
                 <>
@@ -698,7 +698,7 @@ export default function ExportDiaryModal({
               type="button"
               disabled={isExportingImage || isExportingPdf}
               onClick={handleExportAsPdf}
-              className="flex-1 py-3 px-4 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50"
+              className="w-full py-3 px-4 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50 min-h-[44px]"
             >
               {isExportingPdf ? (
                 <>

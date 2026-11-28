@@ -131,12 +131,14 @@ export async function generateOfficialProsConsForDate(dateKey: string, userApiKe
   if (!userApiKey?.trim()) return false;
   inFlightDates.add(dateKey);
   try {
-    const gathered = await collectDailyContextForDate(dateKey, loadProsConsMediaPreference(dateKey), appLanguage);
+    // Strict 12:00 AM / Catch-up automation ALWAYS runs in 'text-only' (توفير) mode
+    const textOnlyMediaPref: AIMediaAccessPermission = { ...DEFAULT_AI_MEDIA_ACCESS, mode: 'text-only' };
+    const gathered = await collectDailyContextForDate(dateKey, textOnlyMediaPref, appLanguage);
     if (!gathered.hasActivity) return false;
     const response = await fetch('/api/gemini/pros-cons-report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-gemini-key': userApiKey, 'x-app-language': appLanguage },
-      body: JSON.stringify({ fullCompiledContext: gathered.context, displayDate: dateKey, appLanguage, mediaAccessPermission: gathered.mediaPreference, mediaParts: gathered.mediaParts })
+      body: JSON.stringify({ fullCompiledContext: gathered.context, displayDate: dateKey, appLanguage, mediaAccessPermission: textOnlyMediaPref, mediaParts: [] })
     });
     if (!response.ok) return false;
     const data = await response.json().catch(() => ({}));

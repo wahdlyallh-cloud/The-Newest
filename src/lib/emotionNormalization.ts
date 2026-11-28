@@ -55,7 +55,7 @@ export function canonicalizeMoodLabel(rawMood: string, preferredLang: 'ar' | 'en
  * summing strictly to 100% using Largest Remainder Rounding (Hare-Niemeyer).
  */
 export function normalizeMoodDistribution(
-  input: Array<{ mood: string; percentage?: number; count?: number }> | Record<string, number> | string[],
+  input: Array<{ mood: string; percentage?: number; count?: number } | { preMoods?: string[]; moods?: string[]; mood?: string }> | Record<string, number> | string[],
   preferredLang: 'ar' | 'en' = 'ar'
 ): MoodPercentageEntry[] {
   const aggregatedMap = new Map<string, number>();
@@ -66,12 +66,29 @@ export function normalizeMoodDistribution(
         const canonical = canonicalizeMoodLabel(item, preferredLang);
         aggregatedMap.set(canonical, (aggregatedMap.get(canonical) || 0) + 1);
       } else if (item && typeof item === 'object') {
-        const rawMood = String(item.mood || '').trim();
+        const anyObj = item as any;
+        if (Array.isArray(anyObj.preMoods) || Array.isArray(anyObj.moods) || typeof anyObj.mood === 'string') {
+          const list = Array.isArray(anyObj.preMoods) && anyObj.preMoods.length > 0
+            ? anyObj.preMoods
+            : Array.isArray(anyObj.moods) && anyObj.moods.length > 0
+            ? anyObj.moods
+            : typeof anyObj.mood === 'string' && anyObj.mood.trim()
+            ? [anyObj.mood.trim()]
+            : [];
+          for (const m of list) {
+            if (m && typeof m === 'string') {
+              const canonical = canonicalizeMoodLabel(m, preferredLang);
+              aggregatedMap.set(canonical, (aggregatedMap.get(canonical) || 0) + 1);
+            }
+          }
+          continue;
+        }
+        const rawMood = String(anyObj.mood || '').trim();
         if (!rawMood) continue;
         const canonical = canonicalizeMoodLabel(rawMood, preferredLang);
-        const val = typeof item.percentage === 'number'
-          ? item.percentage
-          : (typeof item.count === 'number' ? item.count : 1);
+        const val = typeof anyObj.percentage === 'number'
+          ? anyObj.percentage
+          : (typeof anyObj.count === 'number' ? anyObj.count : 1);
 
         if (Number.isFinite(val) && val > 0) {
           aggregatedMap.set(canonical, (aggregatedMap.get(canonical) || 0) + val);

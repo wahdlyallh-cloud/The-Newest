@@ -5,8 +5,10 @@ import { DiaryEntry, JournalEntryType } from '../src/types';
 import {
   JOURNAL_TYPES_CONFIG,
   ALL_JOURNAL_TYPES,
-  getJournalTypeConfig
+  getJournalTypeConfig,
+  extractEntryPreMoods
 } from '../src/lib/journalTypes';
+import { normalizeMoodDistribution } from '../src/lib/emotionNormalization';
 import {
   buildUnifiedKnowledgeIndex,
   analyzeQueryIntent
@@ -114,6 +116,18 @@ export function runUnifiedJournalTests() {
 
   const ideaIntent = analyzeQueryIntent('كان عندي فكرة مشروع جديدة كتبتها قبل كده');
   assert(ideaIntent.targetSources.includes('idea'), 'Query Intent correctly targets "idea" for brainstorm/idea queries', ideaIntent.targetSources.includes('idea'), true);
+
+  // Test 22: Multi-select preMoods backward compatibility and extraction
+  const legacySingularEntry = { mood: 'متحمس' };
+  const legacyMultiMoodsEntry = { moods: ['متحمس', 'ممتن'] };
+  const modernPreMoodsEntry = { preMoods: ['متحمس', 'ممتن', 'متوتر'], mood: 'متحمس' };
+  assert(extractEntryPreMoods(legacySingularEntry)[0] === 'متحمس', 'extractEntryPreMoods correctly extracts legacy singular mood');
+  assert(extractEntryPreMoods(legacyMultiMoodsEntry).length === 2, 'extractEntryPreMoods correctly extracts legacy moods array');
+  assert(extractEntryPreMoods(modernPreMoodsEntry).length === 3, 'extractEntryPreMoods correctly prioritizes modern preMoods array');
+
+  // Test 23: Emotion normalization with preMoods
+  const normalizedFromPreMoods = normalizeMoodDistribution([modernPreMoodsEntry as any], 'ar');
+  assert(normalizedFromPreMoods.length > 0 && normalizedFromPreMoods.reduce((sum, item) => sum + item.percentage, 0) === 100, 'normalizeMoodDistribution safely distributes multi-select preMoods to 100%');
 
   console.log(`\n========================================`);
   console.log(`Unified Journal Tests: ${passed} PASSED, ${failed} FAILED`);

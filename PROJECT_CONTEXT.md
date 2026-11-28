@@ -408,3 +408,14 @@ npm run build
 ## Prompt 3 — Blomeo Android branding, biometrics, and lock-screen shortcuts
 
 Android launcher naming now resolves to **بلوميو** for Arabic and **Blomeo** otherwise, while retaining the existing application ID. The pen-nib `b` master artwork supplies legacy and adaptive launcher assets and emerald splash art. Native Android biometrics use `BIOMETRIC_STRONG | BIOMETRIC_WEAK` and expose enrollment status for face/fingerprint guidance. A quiet, persistent four-shortcut lock-screen bar routes quick diary, voice, advisor, and check-in actions through the app, deferring pending actions until app unlock; all new UI strings are localized across the 12 supported languages.
+
+
+## 31. Adaptive Blomeo Diary Workspace & Multi-Device Obsidian/Samsung Notes Overhaul (2026-11-28)
+- **Adaptive Workspace Architecture:** Multi-device diary experience adapting across Mobile (< 768px, Samsung Notes ergonomics) and Tablet/Desktop (>= 768px, Obsidian multi-pane style).
+- **Day-Grouped Feed (`BlomeoDayCard.tsx`):** Chronological day-card grouping with normalized 100% daily mood breakdown bar, day star rating, scoped Daily Pros & Cons trigger (`DailyProsConsModal`), and rich entry cards with pre-writing mood pills, AI sentiment badges, and attachment indicators.
+- **Multi-Select Pre-Writing Moods:** Added `preMoods?: string[]` to `DiaryEntry` with backwards-compatible fallback chain (`preMoods` -> `moods` -> `mood`), verified via `extractEntryPreMoods()` and `normalizeMoodDistribution()`.
+- **Enhanced Voice Vent & SER Processing:** Added universal audio file routing (`initialAudioFile`), Gemini transcription, Speech Emotion Recognition (SER) with manual theme overrides, and AI vent polish via Gemini assistant.
+- **Strict 12:00 AM Daily Pros/Cons Scheduler:** Enforced `text-only` quota-saver mode (`AIMediaAccessPermission`) for automated midnight catch-up reports.
+- **Responsive Modal Footers:** Anti-squish responsive layouts for `ExportDiaryModal` and `DailyProsConsModal`.
+- **Quality Gates:** Passed TypeScript compilation (`tsc --noEmit`), i18n audit (`i18nAudit.cjs`), schema validation (`validate-localization.mjs`), and production build (`npm run build`).
+
