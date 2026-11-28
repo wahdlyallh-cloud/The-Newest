@@ -44,67 +44,147 @@ main {
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
 
-  /* 🌿 Blomeo Topographic Light Theme Tokens */
-  --blomeo-canvas: #F3F7F4;
+  /* 🌿 Exact Blomeo Topographic Light Mode Palette */
+  --blomeo-bg: #EFF4F1;
+  --blomeo-surface: #FFFFFF;
+  --blomeo-surface-nested: #F3F8F5;
+  --blomeo-hero-gradient: linear-gradient(135deg, #1E4D3B 0%, #15382B 55%, #0F291F 100%);
+  --blomeo-accent: #2D6A4F;
+  --blomeo-accent-hover: #214E3A;
+  --blomeo-teal: #3A8E7D;
+  --blomeo-sand: #EDE6D6;
+  --blomeo-gold: #D4A359;
+  --blomeo-text: #12261D;
+  --blomeo-text-secondary: #4A6357;
+  --blomeo-text-muted: #718A7D;
+
+  /* Backward Compatibility Aliases */
+  --blomeo-canvas: #EFF4F1;
   --blomeo-card: #FFFFFF;
-  --blomeo-card-nested: #F8FAF9;
-  --blomeo-border: #DCE7E0;
-  --blomeo-text-primary: #214E3A;
-  --blomeo-text-secondary: #526B5D;
-  --blomeo-emerald-primary: #214E3A;
-  --blomeo-emerald-vibrant: #2D6A4F;
+  --blomeo-card-nested: #F3F8F5;
+  --blomeo-border: rgba(45, 106, 79, 0.14);
+  --blomeo-text-primary: #12261D;
+  --blomeo-emerald-primary: #2D6A4F;
+  --blomeo-emerald-vibrant: #3A8E7D;
   --blomeo-accent-gold: #D4A359;
 }
 
 .dark, :root[class~="dark"], html.dark {
-  /* 🌲 Blomeo Topographic Dark Theme Tokens */
-  --blomeo-canvas: #0B1611;
-  --blomeo-card: #11211A;
-  --blomeo-card-nested: #172B22;
-  --blomeo-card-elevated: #1E362B;
-  --blomeo-border: rgba(116, 198, 157, 0.16);
-  --blomeo-text-primary: #ECF3EE;
-  --blomeo-text-secondary: #98B3A4;
-  --blomeo-emerald-primary: #40916C;
-  --blomeo-emerald-vibrant: #52B788;
+  /* 🌲 Exact Blomeo Topographic Dark Mode Palette (Deep Aquatic-Emerald / Forest-Teal) */
+  --blomeo-bg: linear-gradient(180deg, #071614 0%, #0A1D1A 52%, #071412 100%);
+  --blomeo-surface: linear-gradient(160deg, rgba(16, 40, 36, 0.94), rgba(10, 26, 23, 0.98));
+  --blomeo-surface-nested: #14302B;
+  --blomeo-hero-gradient: linear-gradient(135deg, #16443A 0%, #0E2F29 55%, #091E1A 100%);
+  --blomeo-accent: #48B89F;
+  --blomeo-accent-strong: #2D8C76;
+  --blomeo-gold: #E9C46A;
+  --blomeo-text: #EBF5F2;
+  --blomeo-text-secondary: #9EC2B8;
+  --blomeo-text-muted: #6C9187;
+
+  /* Backward Compatibility Aliases */
+  --blomeo-canvas: #071614;
+  --blomeo-card: #0E2320;
+  --blomeo-card-nested: #14302B;
+  --blomeo-card-elevated: #16443A;
+  --blomeo-border: rgba(72, 184, 159, 0.18);
+  --blomeo-text-primary: #EBF5F2;
+  --blomeo-emerald-primary: #48B89F;
+  --blomeo-emerald-vibrant: #2D8C76;
   --blomeo-accent-gold: #E9C46A;
 }
 
 /* Blomeo Unified Topographic Canvas & Components */
 .blomeo-topographic-canvas {
-  background-color: var(--blomeo-canvas);
-  background-image: radial-gradient(circle at 50% 15%, rgba(45, 106, 79, 0.05) 0%, transparent 65%),
-    repeating-radial-gradient(circle at 100% 0%, rgba(45, 106, 79, 0.02) 0px, rgba(45, 106, 79, 0.02) 2px, transparent 3px, transparent 40px);
+  background-color: #EFF4F1;
+  background-image: linear-gradient(180deg, #F2F7F4 0%, #E7F0EB 100%),
+    radial-gradient(circle at 50% 15%, rgba(45, 106, 79, 0.08) 0%, transparent 65%),
+    repeating-radial-gradient(circle at 100% 0%, rgba(45, 106, 79, 0.04) 0px, rgba(45, 106, 79, 0.04) 2px, transparent 3px, transparent 40px);
 }
 
-.dark .blomeo-topographic-canvas {
-  background-color: #0B1611;
-  background-image: radial-gradient(circle at 50% 15%, rgba(64, 145, 108, 0.08) 0%, transparent 70%),
-    repeating-radial-gradient(circle at 100% 0%, rgba(64, 145, 108, 0.03) 0px, rgba(64, 145, 108, 0.03) 2px, transparent 3px, transparent 40px);
+.dark .blomeo-topographic-canvas,
+html.dark .blomeo-topographic-canvas {
+  background-color: #071614;
+  background-image: linear-gradient(180deg, #071614 0%, #0A1D1A 52%, #071412 100%),
+    radial-gradient(circle at 50% 15%, rgba(72, 184, 159, 0.09) 0%, transparent 70%),
+    repeating-radial-gradient(circle at 100% 0%, rgba(72, 184, 159, 0.03) 0px, rgba(72, 184, 159, 0.03) 2px, transparent 3px, transparent 40px);
 }
 
 .blomeo-card {
-  background-color: #FFFFFF;
-  border: 1px solid #DCE7E0;
-  color: #214E3A;
-  box-shadow: 0 1px 3px 0 rgba(33, 78, 58, 0.04);
+  background-color: var(--blomeo-surface, #FFFFFF);
+  border: 1px solid rgba(45, 106, 79, 0.14);
+  color: var(--blomeo-text, #12261D);
+  box-shadow: 0 8px 24px -8px rgba(17, 38, 28, 0.08);
 }
 
-.dark .blomeo-card {
-  background-color: #11211A;
-  border: 1px solid rgba(116, 198, 157, 0.16);
-  color: #ECF3EE;
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.35);
+.dark .blomeo-card,
+html.dark .blomeo-card {
+  background: var(--blomeo-surface, #0E2320);
+  background-color: #0E2320;
+  border: 1px solid rgba(72, 184, 159, 0.18);
+  color: var(--blomeo-text, #EBF5F2);
+  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.45);
 }
 
 .blomeo-tile {
-  background-color: #F8FAF9;
-  border: 1px solid #E5EDE8;
+  background-color: var(--blomeo-surface-nested, #F3F8F5);
+  border: 1px solid rgba(45, 106, 79, 0.12);
+  color: var(--blomeo-text, #12261D);
 }
 
-.dark .blomeo-tile {
-  background-color: #172B22;
-  border: 1px solid rgba(116, 198, 157, 0.14);
+.dark .blomeo-tile,
+html.dark .blomeo-tile {
+  background-color: var(--blomeo-surface-nested, #14302B);
+  border: 1px solid rgba(72, 184, 159, 0.16);
+  color: var(--blomeo-text, #EBF5F2);
+}
+
+/* Zero-leak Dark Mode Enforcements across generic elements */
+html.dark body {
+  background-color: #071614;
+  color: #EBF5F2;
+}
+
+html.dark .bg-white {
+  background-color: #0E2320 !important;
+  color: #EBF5F2;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-slate-50,
+html.dark .bg-stone-50 {
+  background-color: #14302B !important;
+  color: #EBF5F2;
+}
+
+html.dark .text-gray-900,
+html.dark .text-slate-800,
+html.dark .text-stone-900 {
+  color: #EBF5F2 !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-500,
+html.dark .text-slate-600 {
+  color: #9EC2B8 !important;
+}
+
+html.dark .border-gray-200,
+html.dark .border-slate-200 {
+  border-color: rgba(72, 184, 159, 0.18) !important;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.dark textarea,
+html.dark select {
+  background-color: #14302B !important;
+  border-color: rgba(72, 184, 159, 0.22) !important;
+  color: #EBF5F2 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #6C9187 !important;
 }
 
 @theme {

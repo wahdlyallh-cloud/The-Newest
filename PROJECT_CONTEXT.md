@@ -329,3 +329,23 @@ npm run build
   - 36 new keys fully localized across all 12 locales (`ar, en, fr, de, es, it, tr, pt, ru, ja, zh, hi`).
   - Passed all 4 quality gates: TypeScript, strict 12-locale i18n audit (2665/2665 keys), localization validator, and production Vite build. Zero modifications to `.github/` or `android/`.
 
+## 28. Blomeo Unified Topographic Color System, Home Mind-Map Architecture & Zero-Default Clean Slate
+- **Unified Design Tokens (`src/index.css`):**
+  - **Light Mode Palette:** Soft sage/teal/warm sand topographic system (`--blomeo-bg: #EFF4F1` canvas gradient with fixed SVG contour lines, `--blomeo-surface: #FFFFFF` cards with `rgba(45, 106, 79, 0.14)` border, `--blomeo-surface-nested: #F3F8F5`, `--blomeo-hero-gradient: linear-gradient(135deg, #1E4D3B 0%, #15382B 55%, #0F291F 100%)`, accents `#2D6A4F`, `#3A8E7D`, `#EDE6D6`, `#D4A359`, text `#12261D`, secondary `#4A6357`, muted `#718A7D`).
+  - **Dark Mode Palette:** Deep Aquatic-Emerald / Forest-Teal luminous system (`--blomeo-bg: linear-gradient(180deg, #071614 0%, #0A1D1A 52%, #071412 100%)` with faint aquatic-teal contour lines, `--blomeo-surface: linear-gradient(160deg, rgba(16, 40, 36, 0.94), rgba(10, 26, 23, 0.98))` with `rgba(72, 184, 159, 0.18)` border, `--blomeo-surface-nested: #14302B`, accents `#48B89F`, `#2D8C76`, `#E9C46A`, text `#EBF5F2`, secondary `#9EC2B8`, muted `#6C9187`).
+  - **Zero-Leak Enforcement:** Authoritative CSS rules preventing unstyled white cards or hardcoded light borders from leaking in dark mode.
+- **Global Header Bar & Navigation Enhancements:**
+  - Header end-side actions: One-Click Reset button (`RotateCcw`), Smart Reminders bell (`Bell`), and global Dark/Light toggle (`Sun`/`Moon`).
+  - Reset confirmation modal cleanly wipes all default/demo entries (`yawmiyati_diaries`, `yawmiyati_habits`, `yawmiyati_gratitude_cards`, `yawmiyati_daily_metrics_touched`, `yawmiyati_medications_list`) to guarantee a pristine 0-streak, untouched clean slate.
+  - Side Nav rail updated with aquatic-emerald dark theme styling (`#0A2923 -> #061815` with luminous `#48B89F` border).
+- **Home Screen Interactive Mind-Map & Show All View:**
+  - Top wisdom quote card badge refined to `إلهام ✨` exclusively (removed "الذكاء الاصطناعي").
+  - Segmented pill switcher: **الخريطة الذهنية (Mind-Map View)** featuring 4 connected organic capsule nodes (`01` Commitment & Mood, `02` Self-Care & Meds, `03` Daily Life Map, `04` Chronological Timeline) with smooth in-place expansions vs **عرض الكل (Show All View)** displaying stacked cards.
+  - Week strip in streak card updated with high-contrast day names and active day indicators.
+  - Unlimited interactive animated water cup with rising aquatic-teal wave levels and custom amount addition input (`+ إضافة عدد مخصص`).
+  - Upgraded Medication & Vitamins Schedule manager with entry addition (name, dose, time), per-date taken checkboxes, and deletion.
+- **Quality Gates & i18n:**
+  - 35 new translation keys fully localized across all 12 locales (`ar, en, fr, de, es, it, tr, pt, ru, ja, zh, hi`).
+  - Passes all 4 quality gates: `npx tsc --noEmit`, `node scripts/i18nAudit.cjs` (2700/2700 keys, 0 leaks), `node scripts/validate-localization.mjs`, and `npm run build`. Zero modifications to `.github/` or `android/`.
+
+

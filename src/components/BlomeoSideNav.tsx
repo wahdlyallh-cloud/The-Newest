@@ -309,14 +309,22 @@ export default function BlomeoSideNav({
 
       {/* Floating Glassmorphic Emerald Side Rail */}
       <aside
-        className={`relative z-10 my-3 sm:my-4 mx-3 sm:mx-4 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 border border-white/20 backdrop-blur-2xl ${
+        className={`relative z-10 my-3 sm:my-4 mx-3 sm:mx-4 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-300 backdrop-blur-2xl ${
+          isDarkMode
+            ? 'border border-[rgba(72,184,159,0.3)] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)]'
+            : 'border border-white/20'
+        } ${
           isHighLoad
             ? 'w-[290px] sm:w-[320px] rounded-[32px] p-4 sm:p-5'
             : 'w-[74px] sm:w-[82px] rounded-[36px] p-2.5 sm:p-3 items-center'
         }`}
         style={{
-          background: 'linear-gradient(180deg, #1E5F48 0%, #113B2D 55%, #0A221A 100%)',
-          boxShadow: '0 25px 50px -12px rgba(10, 34, 26, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.25)'
+          background: isDarkMode
+            ? 'linear-gradient(180deg, #0A2923 0%, #061815 100%)'
+            : 'linear-gradient(180deg, #1E5F48 0%, #113B2D 55%, #0A221A 100%)',
+          boxShadow: isDarkMode
+            ? '0 25px 50px -12px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(72, 184, 159, 0.3)'
+            : '0 25px 50px -12px rgba(10, 34, 26, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.25)'
         }}
         aria-label={t.sideNavDailyTasks || 'Side Navigation'}
       >
