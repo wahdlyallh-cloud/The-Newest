@@ -34,6 +34,7 @@ interface BlomeoDayCardProps {
   onToggleArchive: (diaryId: string) => void;
   onOpenDayRating: (dayKey: string) => void;
   onRefreshDayAIMood?: (dayKey: string) => void;
+  onUpdateDiaryImportance?: (diaryId: string, importance: number) => void;
 }
 
 export const BlomeoDayCard: React.FC<BlomeoDayCardProps> = ({
@@ -49,7 +50,8 @@ export const BlomeoDayCard: React.FC<BlomeoDayCardProps> = ({
   onToggleFavorite,
   onToggleArchive,
   onOpenDayRating,
-  onRefreshDayAIMood
+  onRefreshDayAIMood,
+  onUpdateDiaryImportance
 }) => {
   // Compute normalized 100% daily mood breakdown across entries
   const moodInputs: Array<{ mood: string; count?: number; percentage?: number }> = [];
@@ -206,13 +208,25 @@ export const BlomeoDayCard: React.FC<BlomeoDayCardProps> = ({
                   <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 border ${typeCfg.pillBadgeClass}`}>
                     {typeCfg.icon} {getJournalTypeLabel(diary.diaryType, t)}
                   </span>
-                  {/* Star Rating indicator */}
+                  {/* Interactive 5-Star Rating */}
                   <div className="flex items-center gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star
+                      <button
                         key={s}
-                        className={`w-3 h-3 ${s <= (diary.importance || 1) ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
-                      />
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onUpdateDiaryImportance) {
+                            onUpdateDiaryImportance(diary.id, s);
+                          }
+                        }}
+                        className="cursor-pointer p-0.5 hover:scale-120 transition-transform"
+                        title={`${s} ${isRtl ? 'نجوم' : 'stars'}`}
+                      >
+                        <Star
+                          className={`w-3 h-3 ${s <= (diary.importance || 1) ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
+                        />
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -258,6 +272,15 @@ export const BlomeoDayCard: React.FC<BlomeoDayCardProps> = ({
                 <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
                   {cleanDiaryText(diary.content) || <em className="text-gray-400 font-light text-[11px]">{t?.audioDrawingsOnly || (isRtl ? 'ملحقات وتسجيلات صوتية' : 'Attachments only')}</em>}
                 </p>
+                {/* Edit Count and Time */}
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 font-bold pt-0.5">
+                  <span>{new Date(diary.updatedAt || diary.createdAt).toLocaleTimeString(isRtl ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                  {(diary.isEdited || (diary.edits && diary.edits.length > 0)) && (
+                    <span className="bg-[#2D6A4F]/10 dark:bg-[#74C69D]/20 text-[#214E3A] dark:text-[#74C69D] px-1.5 py-0.2 rounded-md font-extrabold text-[9px]">
+                      {isRtl ? 'معدلة' : 'edited'} {diary.edits?.length ? `(${diary.edits.length})` : ''}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Compact Media Badges */}

@@ -135,3 +135,5 @@ export function runUnifiedJournalTests() {
 
   return { passed, failed };
 }
+
+runUnifiedJournalTests();

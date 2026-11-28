@@ -1,7 +1,8 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
-import { X, Image as ImageIcon, FileText, Calendar, Clock, Tag, Smile, User, Sparkles, RefreshCw, CheckSquare, Check, Circle } from 'lucide-react';
+import { X, Image as ImageIcon, FileText, Calendar, Clock, Tag, Smile, User, Sparkles, RefreshCw, CheckSquare, Check, Circle, Copy, Printer } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { exportBlobSafe, captureElementToCanvas } from '../lib/exportUtils';
+import { copyTextSafe } from '../lib/clipboard';
 import { DiaryEntry, AppLanguage, TaskItem } from '../types';
 import { getTranslation, getLanguageInfo } from '../lib/languages';
 import { getAttachmentBlob } from '../lib/attachmentStore';
@@ -147,6 +148,7 @@ export default function ExportDiaryModal({
 
   const [isExportingImage, setIsExportingImage] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const exportContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -439,6 +441,45 @@ export default function ExportDiaryModal({
     }
   };
 
+  const handleCopyText = async () => {
+    if (!diary) return;
+    const cleanBody = (diary.content || '').replace(/<[^>]+>/g, '').trim();
+    const tasksText = (diary.tasks || []).map(t => `${t.completed ? '[✓]' : '[ ]'} ${t.text}`).join('\n');
+    const textToCopy = [
+      diary.title || (isAr ? 'تدوينة' : 'Diary Note'),
+      `📅 ${dateStr} ${timeStr}`,
+      `🏷️ ${categoryLabel}`,
+      `✨ ${manualMoods}`,
+      '',
+      cleanBody,
+      tasksText ? `\n📋 ${isAr ? 'المهام:' : 'Tasks:'}\n${tasksText}` : ''
+    ].filter(Boolean).join('\n');
+
+    const copied = await copyTextSafe(textToCopy);
+    if (copied) {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
+  };
+
+  const handleExportWord = async () => {
+    if (!diary) return;
+    const esc = (value: string) => value.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
+    const cleanBody = (diary.content || '').replace(/<[^>]+>/g, '<br/>');
+    const tasksHtml = (diary.tasks || []).map(t => `<li>${t.completed ? '☑' : '☐'} ${esc(t.text)}</li>`).join('');
+    const html = `<!DOCTYPE html><html dir="${langInfo.dir}" lang="${langInfo.code}"><head><meta charset="utf-8"><title>${esc(diary.title || 'Diary Note')}</title></head><body style="font-family:Arial,sans-serif;direction:${langInfo.dir};text-align:${isAr ? 'right' : 'left'};padding:24px"><h1>${esc(diary.title || (isAr ? 'تدوينة' : 'Diary Note'))}</h1><p><strong>${dateStr} - ${timeStr}</strong></p><p><em>${esc(categoryLabel)} | ${esc(manualMoods)}</em></p><hr/><div style="line-height:1.8">${cleanBody}</div>${tasksHtml ? `<h3>${isAr ? 'المهام:' : 'Tasks:'}</h3><ul>${tasksHtml}</ul>` : ''}</body></html>`;
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+    const fileName = `HayatAI_Diary_${diary.createdAt.split('T')[0]}.doc`;
+    await exportBlobSafe({
+      blob,
+      filename: fileName,
+      title: diary.title || 'Blomeo Diary Word Doc',
+      mimeType: 'application/msword',
+      onSuccess: () => onClose(),
+      onError: (err) => alert(err?.message || (isAr ? 'تعذر تصدير Word' : 'Word export failed'))
+    });
+  };
+
   const dateMetaParts: string[] = [
     showDay ? `📅 ${dayStr}` : '',
     showDate ? `🗓️ ${dateStr}` : '',
@@ -673,44 +714,65 @@ export default function ExportDiaryModal({
             </div>
           </div>
 
-          {/* Action Buttons - Responsive Anti-Squish Grid */}
-          <div className="pt-3 border-t border-[#E2DCC8]/70 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {/* Action Buttons - Responsive Anti-Squish Flex/Grid Bar */}
+          <div className="pt-3 border-t border-[#E2DCC8]/70 flex flex-wrap items-center gap-2">
+            {/* Copy Button */}
             <button
               type="button"
-              disabled={isExportingImage || isExportingPdf}
-              onClick={handleExportAsImage}
-              className="w-full py-3 px-4 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50 min-h-[44px]"
+              onClick={handleCopyText}
+              className="flex-1 min-w-[70px] py-2.5 px-3 bg-white border border-[#E2DCC8] hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1.5 active:scale-95 min-h-[40px]"
             >
-              {isExportingImage ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>{isAr ? 'جاري تجهيز الصورة...' : 'Generating Image...'}</span>
-                </>
-              ) : (
-                <>
-                  <ImageIcon className="w-4 h-4" />
-                  <span>{t.downloadAsImage || (isAr ? 'تحميل كصورة واحدة' : 'Download as Single Image')}</span>
-                </>
-              )}
+              {copySuccess ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#5A5A40]" />}
+              <span>{copySuccess ? (isAr ? 'تم النسخ' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}</span>
             </button>
 
+            {/* Word (.doc) Button */}
+            <button
+              type="button"
+              onClick={handleExportWord}
+              className="flex-1 min-w-[85px] py-2.5 px-3 bg-white border border-[#E2DCC8] hover:bg-gray-50 text-blue-700 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1.5 active:scale-95 min-h-[40px]"
+            >
+              <FileText className="w-3.5 h-3.5 text-blue-600" />
+              <span>Word (.doc)</span>
+            </button>
+
+            {/* PDF Button */}
             <button
               type="button"
               disabled={isExportingImage || isExportingPdf}
               onClick={handleExportAsPdf}
-              className="w-full py-3 px-4 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50 min-h-[44px]"
+              className="flex-1 min-w-[80px] py-2.5 px-3 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95 min-h-[40px]"
             >
               {isExportingPdf ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>{isAr ? 'جاري تصدير PDF...' : 'Generating PDF...'}</span>
-                </>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <>
-                  <FileText className="w-4 h-4" />
-                  <span>{t.downloadAsPdf || (isAr ? 'تحميل كـ PDF' : 'Download as PDF')}</span>
-                </>
+                <FileText className="w-3.5 h-3.5" />
               )}
+              <span>PDF</span>
+            </button>
+
+            {/* Image Button */}
+            <button
+              type="button"
+              disabled={isExportingImage || isExportingPdf}
+              onClick={handleExportAsImage}
+              className="flex-1 min-w-[80px] py-2.5 px-3 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95 min-h-[40px]"
+            >
+              {isExportingImage ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ImageIcon className="w-3.5 h-3.5" />
+              )}
+              <span>{isAr ? 'صورة' : 'Image'}</span>
+            </button>
+
+            {/* Close / Cancel Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer min-h-[40px]"
+            >
+              {isAr ? 'إلغاء' : 'Close'}
             </button>
           </div>
         </div>
