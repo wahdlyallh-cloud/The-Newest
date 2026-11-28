@@ -96,6 +96,7 @@ import OnboardingTourModal from './components/OnboardingTourModal';
 import ExportDiaryModal from './components/ExportDiaryModal';
 import AttachmentsPage from './components/AttachmentsPage';
 import VoiceVentModal from './components/VoiceVentModal';
+import { BlomeoDiaryWorkspace } from './components/BlomeoDiaryWorkspace';
 import GratitudeImportModal from './components/GratitudeImportModal';
 import { copyTextSafe } from './lib/clipboard';
 import { compressImageFile } from './lib/mediaStorage';
@@ -1208,7 +1209,7 @@ export default function App() {
 
   const [activeDiariesSubTab, setActiveDiariesSubTab] = useState<'journal' | 'gratitude' | 'cbt' | 'tasks'>('journal');
   const [analyticsSubTab, setAnalyticsSubTab] = useState<'report' | 'charts' | 'pros_cons'>('report');
-  const [diaryTypeFilter, setDiaryTypeFilter] = useState<'all' | JournalEntryType | 'favorites'>('all');
+  const [diaryTypeFilter, setDiaryTypeFilter] = useState<'all' | JournalEntryType | 'favorites' | 'with_media' | 'archived'>('all');
   const [diaryChatMessage, setDiaryChatMessage] = useState('');
   const [diaryChatLoading, setDiaryChatLoading] = useState(false);
   const [diaryChatMediaPermission, setDiaryChatMediaPermission] = useState<AIMediaAccessPermission>(DEFAULT_AI_MEDIA_ACCESS);
@@ -1625,6 +1626,11 @@ export default function App() {
   const [editingDrawingIndex, setEditingDrawingIndex] = useState<number | null>(null);
   const [showAttachmentsPage, setShowAttachmentsPage] = useState<boolean>(false);
   const [showVoiceVentModal, setShowVoiceVentModal] = useState<boolean>(false);
+  const [voiceVentInitialAudioFile, setVoiceVentInitialAudioFile] = useState<File | null>(null);
+  const diaryImageInputRef = useRef<HTMLInputElement | null>(null);
+  const diaryVideoInputRef = useRef<HTMLInputElement | null>(null);
+  const diaryPdfInputRef = useRef<HTMLInputElement | null>(null);
+  const diaryGenericFileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingNativeQuickAction, setPendingNativeQuickAction] = useState<'new_note' | 'voice' | 'mood' | 'ai' | 'notes' | 'quick_checkin' | null>(null);
   const lastNativeShortcutRef = useRef<{ action: string; at: number }>({ action: '', at: 0 });
   const [showGratitudeImportModal, setShowGratitudeImportModal] = useState<boolean>(false);
@@ -2640,7 +2646,7 @@ export default function App() {
     activeDiariesSubTab: 'journal' | 'gratitude' | 'cbt' | 'tasks';
     analyticsSubTab: 'report' | 'charts' | 'pros_cons';
     editingDiaryId: string | null;
-    diaryTypeFilter: 'all' | JournalEntryType | 'favorites';
+    diaryTypeFilter: 'all' | JournalEntryType | 'favorites' | 'with_media' | 'archived';
   }
 
   const [navHistory, setNavHistory] = useState<NavState[]>([]);
@@ -3758,6 +3764,8 @@ export default function App() {
       diaryType: initialType,
       isFavorite: false,
       moods: ['طبيعي'],
+      preMoods: ['طبيعي'],
+      mood: 'طبيعي',
       importance: 3,
       color: 'bg-white border-[#E2DCC8]',
       images: [],
@@ -3807,9 +3815,18 @@ export default function App() {
 
     const safeTitle = editingDiary.title.trim() || (isAr ? 'مذكرة يومية بدون عنوان' : 'Untitled Diary');
 
+    const finalPreMoods = (editingDiary.preMoods && editingDiary.preMoods.length > 0)
+      ? editingDiary.preMoods
+      : (editingDiary.moods && editingDiary.moods.length > 0)
+      ? editingDiary.moods
+      : editingDiary.mood ? [editingDiary.mood] : ['طبيعي'];
+
     let updatedEntry: DiaryEntry = {
       ...editingDiary,
       title: safeTitle,
+      preMoods: finalPreMoods,
+      moods: finalPreMoods,
+      mood: finalPreMoods[0] || 'طبيعي',
       updatedAt: new Date().toISOString()
     };
 
@@ -4003,6 +4020,49 @@ export default function App() {
     if (editingDiary?.id === id) {
       setEditingDiary(null);
     }
+  };
+
+  const handleOpenVoiceVentWithFile = (file: File) => {
+    setVoiceVentInitialAudioFile(file);
+    setShowVoiceVentModal(true);
+  };
+
+  const handleRefreshDayAIMood = async (dayKey: string) => {
+    const dayEntries = diaries.filter(d => {
+      if (!d.createdAt) return false;
+      const dKey = d.createdAt.split('T')[0];
+      return dKey === dayKey;
+    });
+    if (dayEntries.length === 0) return;
+    for (const entry of dayEntries) {
+      if (entry.content && (!entry.aiMoodAnalysis || entry.aiMoodAnalysis.length === 0)) {
+        try {
+          fetch('/api/gemini/analyze-mood', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-gemini-key': settings.userApiKey || ''
+            },
+            body: JSON.stringify({
+              title: entry.title,
+              content: entry.content
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success && Array.isArray(data.analysis) && data.analysis.length > 0) {
+                const normalized = normalizeMoodDistribution(data.analysis, isRtl ? 'ar' : 'en');
+                setDiaries(prev => prev.map(d => d.id === entry.id ? { ...d, aiMoodAnalysis: normalized } : d));
+              }
+            })
+            .catch(() => {});
+        } catch (_) {}
+      }
+    }
+  };
+
+  const handleUpdateDiaryImportance = (diaryId: string, importance: number) => {
+    setDiaries(prev => prev.map(d => d.id === diaryId ? { ...d, importance, updatedAt: new Date().toISOString() } : d));
   };
 
   // --- Restore from Trash ---
@@ -6108,7 +6168,18 @@ export default function App() {
     const q = (searchQuery || '').toLowerCase().trim();
     return diaries.filter(d => {
       if (!d) return false;
-      if (d.isArchived || d.isTrash) return false;
+      if (diaryTypeFilter === 'archived') {
+        if (!d.isArchived || d.isTrash) return false;
+      } else {
+        if (d.isArchived || d.isTrash) return false;
+      }
+
+      const hasMedia = (d.audioRecordings && d.audioRecordings.length > 0) ||
+                       (d.images && d.images.length > 0) ||
+                       (d.videos && d.videos.length > 0) ||
+                       (d.files && d.files.length > 0) ||
+                       Boolean(d.drawing || (d.drawings && d.drawings.length > 0));
+      const matchesMedia = diaryTypeFilter === 'with_media' ? hasMedia : true;
 
       const titleStr = typeof d.title === 'string' ? d.title : '';
       const contentStr = typeof d.content === 'string' ? d.content : '';
@@ -6124,11 +6195,11 @@ export default function App() {
       const matchesFavorites = (showFavoritesOnly || diaryTypeFilter === 'favorites') ? isFav : true;
 
       const effectiveType = d.diaryType || 'diary';
-      const matchesType = (diaryTypeFilter === 'all' || diaryTypeFilter === 'favorites')
+      const matchesType = (diaryTypeFilter === 'all' || diaryTypeFilter === 'favorites' || diaryTypeFilter === 'with_media' || diaryTypeFilter === 'archived')
         ? true
         : effectiveType === diaryTypeFilter;
 
-      return matchesSearch && matchesTag && matchesFavorites && matchesType;
+      return matchesSearch && matchesTag && matchesFavorites && matchesMedia && matchesType;
     });
   }, [diaries, searchQuery, selectedTagFilter, showFavoritesOnly, diaryTypeFilter]);
 
@@ -8397,2895 +8468,7 @@ export default function App() {
         {activeTab === 'diaries' && (
           <div className="space-y-6">
 
-            {/* Editor Container if editing or creating a diary */}
-            {editingDiary ? (
-              <div className={`${isDiaryEditorFullscreen ? 'fixed inset-0 z-[9990] h-[100dvh] w-full rounded-none p-3 sm:p-6 overflow-y-auto' : 'rounded-none sm:rounded-3xl p-3 sm:p-6'} bg-white border-y sm:border border-[#E2DCC8] shadow-xs space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden mx-0`}>
-
-                {/* Minimal Header for Existing Entry only */}
-                {!isNewEntry && (
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E2DCC8]/50 flex-wrap gap-2">
-                    <span className="text-xs font-bold text-gray-500">{t.editJournalHeader}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleArchiveDiary(editingDiary.id);
-                        const nextState = !editingDiary.isArchived;
-                        setEditingDiary(prev => prev ? { ...prev, isArchived: nextState } : null);
-                        if (nextState) {
-                          setEditingDiary(null);
-                        }
-                      }}
-                      className="text-xs font-black text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
-                    >
-                      <Archive className="w-3.5 h-3.5 text-amber-700" />
-                      <span>{editingDiary.isArchived ? t.restoreAction : t.archiveAction}</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Title & Star Rating Input */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.journalTitleLabel}</label>
-                    <input
-                      type="text"
-                      value={editingDiary.title}
-                      onChange={(e) => setEditingDiary(prev => prev ? { ...prev, title: e.target.value } : null)}
-                      placeholder={t.journalTitlePlaceholder}
-                      className="w-full bg-[#F9F7F2] hover:bg-[#F0EDE4] focus:bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-xl px-4 py-2 text-sm text-[#3A3A3A] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.starRatingLabel}</label>
-                    <div className="flex items-center space-x-1.5 space-x-reverse h-9">
-                      {[1, 2, 3, 4, 5].map((stars) => (
-                        <button
-                          key={stars}
-                          type="button"
-                          onClick={() => setEditingDiary(prev => prev ? { ...prev, importance: stars } : null)}
-                          className="focus:outline-none cursor-pointer"
-                        >
-                          <Star
-                            className={`w-6 h-6 transition-transform hover:scale-110 ${
-                              stars <= editingDiary.importance ? 'text-[#D4A373] fill-[#D4A373]' : 'text-gray-300'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                      <span className="text-xs text-gray-400 mr-2">({editingDiary.importance} {t.outOfFiveStars})</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* شريط اختيار نوع التدوينة الموحد (Horizontal Scrollable Type Selector) */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-[#5A5A40]">{t.entryClassificationLabel}</label>
-                    <span className="text-[10px] font-bold text-gray-400">
-                      {isRtl ? (t.scrollHintRtl || 'اسحب لليسار لعرض المزيد') : (t.scrollHintLtr || 'Swipe right for more')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full max-w-full">
-                    {ALL_JOURNAL_TYPES.map((typeKey) => {
-                      const cfg = getJournalTypeConfig(typeKey);
-                      const isSelected = (editingDiary.diaryType || 'diary') === typeKey;
-                      const label = getJournalTypeLabel(typeKey, t);
-
-                      return (
-                        <button
-                          key={typeKey}
-                          type="button"
-                          onClick={() => setEditingDiary(prev => prev ? { ...prev, diaryType: typeKey } : null)}
-                          className={`shrink-0 py-2.5 px-3.5 rounded-2xl text-xs font-black border transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
-                            isSelected
-                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-3xs font-extrabold scale-[1.02]'
-                              : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4] hover:border-[#8B9D83]/50'
-                          }`}
-                        >
-                          <span className="text-sm sm:text-base">{cfg.icon}</span>
-                          <span className="whitespace-nowrap">{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {/* Subtle guidance of the selected type */}
-                  {(() => {
-                    const desc = getJournalTypeDescription(editingDiary.diaryType, t);
-                    return (
-                      <p className="text-[11px] text-[#5A5A40]/80 font-bold bg-[#FBFBFA] border border-[#E2DCC8]/60 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
-                        <span>✨</span>
-                        <span>{desc}</span>
-                      </p>
-                    );
-                  })()}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.behavioralMoodLabel}</label>
-                  <div className="flex flex-nowrap overflow-x-auto gap-2 no-scrollbar scrollbar-none py-1 w-full max-w-full">
-                    {['سعيد', 'متحمس', 'مرتاح', 'طبيعي', 'حزين', 'مكتئب', 'قلق', 'غاضب', 'مرهق', 'ممتن'].map((m) => {
-                      const isSelected = editingDiary.moods.includes(m);
-                      const moodTranslationMap: Record<string, string> = {
-                        'سعيد': t.moodHappy,
-                        'متحمس': t.moodExcited,
-                        'مرتاح': t.moodRelaxed,
-                        'طبيعي': t.moodNormal,
-                        'حزين': t.moodSad,
-                        'مكتئب': t.moodDepressed,
-                        'قلق': t.moodAnxious,
-                        'غاضب': t.moodAngry,
-                        'مرهق': t.moodExhausted,
-                        'ممتن': t.moodGrateful,
-                      };
-                      const displayMood = moodTranslationMap[m] || m;
-                      return (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => {
-                            setEditingDiary(prev => {
-                              if (!prev) return null;
-                              const currentMoods = [...prev.moods];
-                              if (currentMoods.includes(m)) {
-                                return { ...prev, moods: currentMoods.filter(x => x !== m) };
-                              } else {
-                                return { ...prev, moods: [...currentMoods, m] };
-                              }
-                            });
-                          }}
-                          className={`shrink-0 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#8B9D83] text-white border-[#8B9D83] scale-[1.02] font-black shadow-3xs'
-                              : 'bg-[#F9F7F2] text-[#5A5A40] border-[#E2DCC8] hover:bg-[#F0EDE4]'
-                          }`}
-                        >
-                          {displayMood}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {editingDiary.aiMoodAnalysis && editingDiary.aiMoodAnalysis.length > 0 && (
-                  <div className="bg-purple-50/50 border border-purple-100 rounded-2xl p-4 space-y-2">
-                    <span className="block text-xs font-black text-purple-950 flex items-center space-x-1.5 space-x-reverse">
-                      <span>🧠</span>
-                      <span>{t.autoAiMoodAnalysisTitle}</span>
-                    </span>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {normalizeMoodDistribution(editingDiary.aiMoodAnalysis, isRtl ? 'ar' : 'en').map((analysis, idx) => {
-                        const scoreColor = analysis.percentage >= 60 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : analysis.percentage >= 30 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-purple-50 text-purple-700 border-purple-100';
-                        return (
-                          <div
-                            key={idx}
-                            className={`flex items-center space-x-1.5 space-x-reverse px-3 py-1.5 rounded-xl text-xs font-extrabold border shadow-3xs ${scoreColor}`}
-                          >
-                            <span>{analysis.mood}</span>
-                            <span className="opacity-80">|</span>
-                            <span>{analysis.percentage}%</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <p className="text-[10px] text-purple-600/80 font-bold leading-relaxed">
-                      {t.aiMoodAnalysisUpdateNotice}
-                    </p>
-                  </div>
-                )}
-
-                {/* Content text area with Rich Editor Toolbar */}
-                <div className={isWritingBoxFullscreen ? 'fixed inset-0 z-[9995] bg-white h-[100dvh] w-full flex flex-col p-3 sm:p-6 overflow-hidden' : 'overflow-hidden space-y-0 w-full'}>
-                  {isWritingBoxFullscreen ? (
-                    <div className="flex items-center justify-between pb-2.5 border-b border-[#E2DCC8] mb-2 shrink-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-[#3A3A3A] truncate max-w-[200px] sm:max-w-md">
-                          {editingDiary.title || (isAr ? 'كتابة اليومية' : 'Writing Journal')}
-                        </span>
-                        {autoSavedTime && (
-                          <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                            {t.autoSavedCheck || (isAr ? 'تم الحفظ تلقائيًا ✓' : 'Auto-saved ✓')}
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsWritingBoxFullscreen(false)}
-                        className="p-1.5 bg-[#EEF1EB] hover:bg-[#E2E9DF] text-[#2D6A4F] rounded-xl border border-[#DCE4D8] flex items-center gap-1 text-xs font-bold cursor-pointer"
-                        title={t.editorRestoreWriting || (isAr ? 'استعادة الحجم الطبيعي' : 'Exit fullscreen')}
-                      >
-                        <Minimize2 className="w-4 h-4" />
-                        <span className="text-[11px] hidden sm:inline">{t.editorRestoreWriting || (isAr ? 'تصغير' : 'Collapse')}</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex justify-between items-center mb-1.5">
-                      <label className="block text-xs font-bold text-[#5A5A40]">{t.writeFeelingsLabel}</label>
-                      {gratitudeCards.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setShowGratitudeImportModal(true)}
-                          className="text-[10px] text-[#8B9D83] hover:text-[#5A5A40] font-extrabold flex items-center space-x-1 space-x-reverse cursor-pointer bg-[#8B9D83]/8 px-2.5 py-1 rounded-lg transition-colors border border-[#8B9D83]/20 animate-pulse"
-                        >
-                          <span>🌸</span>
-                          <span>{t.importGratitudeBtn}</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Rich Text Editor Toolbar (Organized, Fullscreen Toggle & Complete Rich Tools) */}
-                  <div className="bg-[#F4F1EA] border border-[#E2DCC8] border-b-0 rounded-t-2xl p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 text-xs overflow-x-auto scrollbar-none shrink-0">
-                    {/* Fullscreen Writing Mode Toggle */}
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => setIsWritingBoxFullscreen(v => !v)}
-                      className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#2D6A4F] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px] shrink-0"
-                      title={isWritingBoxFullscreen ? (t.editorRestoreWriting || 'استعادة الحجم الطبيعي') : (t.editorFullscreenWriting || 'ملء الشاشة')}
-                    >
-                      {isWritingBoxFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                    </button>
-
-                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
-
-                    {/* Undo / Redo */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        title={t.undoTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={handleUndo}
-                        className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px]"
-                      >
-                        ↩️
-                      </button>
-                      <button
-                        type="button"
-                        title={t.redoTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={handleRedo}
-                        className="p-2 sm:p-2.5 bg-white hover:bg-[#EAE5D9] active:bg-[#D0C8B0] border border-[#E2DCC8] rounded-xl font-bold text-[#3A3A3A] cursor-pointer transition-all flex items-center justify-center text-sm shadow-3xs min-w-[38px] min-h-[38px]"
-                      >
-                        ↪️
-                      </button>
-                    </div>
-
-                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
-
-                    {/* Inline Text Styles: B, I, U, S */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        title={t.boldTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('**', '**')}
-                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-black text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
-                      >
-                        B
-                      </button>
-                      <button
-                        type="button"
-                        title={t.italicTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('*', '*')}
-                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] italic font-serif font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
-                      >
-                        I
-                      </button>
-                      <button
-                        type="button"
-                        title={t.underlineTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('<u>', '</u>')}
-                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] underline font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
-                      >
-                        U
-                      </button>
-                      <button
-                        type="button"
-                        title={t.strikethroughTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('~~', '~~')}
-                        className="px-3 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] line-through font-bold text-[#3A3A3A] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px]"
-                      >
-                        S
-                      </button>
-                    </div>
-
-                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
-
-                    {/* Headings & Blocks & Lists */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        title={t.h1Tooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('\n# ')}
-                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-black text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
-                      >
-                        H1
-                      </button>
-                      <button
-                        type="button"
-                        title={t.h2Tooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('\n## ')}
-                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
-                      >
-                        H2
-                      </button>
-                      <button
-                        type="button"
-                        title={t.quoteTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('\n> ')}
-                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px]"
-                      >
-                        💬
-                      </button>
-                      <button
-                        type="button"
-                        title={t.bulletListTooltip}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => insertFormatting('\n- ')}
-                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px] whitespace-nowrap"
-                      >
-                        • {t.bulletListLabel}
-                      </button>
-                      <button
-                        type="button"
-                        title={t.toolbarNumberedList || 'قائمة مرقمة'}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyRichFormat('insertOrderedList')}
-                        className="px-2.5 py-1.5 sm:py-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-h-[36px] whitespace-nowrap"
-                      >
-                        1. {t.numberedListLabel || 'مرقمة'}
-                      </button>
-                    </div>
-
-                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
-
-                    {/* Text Alignment */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        title={t.alignRightBtn || 'محاذاة لليمين'}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyRichFormat('justifyRight')}
-                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      >
-                        <AlignRight className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title={t.alignCenterBtn || 'توسيط'}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyRichFormat('justifyCenter')}
-                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      >
-                        <AlignCenter className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title={t.alignLeftBtn || 'محاذاة لليسار'}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyRichFormat('justifyLeft')}
-                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      >
-                        <AlignLeft className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
-
-                    {/* Highlighter Pen & Clear Formatting */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        title={t.highlighterBtn || 'قلم التظليل'}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyRichFormat('hiliteColor', '#FEF08A')}
-                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      >
-                        <Highlighter className="w-4 h-4 text-amber-500" />
-                      </button>
-                      <button
-                        type="button"
-                        title={t.clearFormattingBtn || 'إزالة التنسيق'}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyRichFormat('removeFormat')}
-                        className="p-2 bg-white hover:bg-[#EAE5D9] rounded-xl border border-[#E2DCC8] font-bold text-[#5A5A40] cursor-pointer shadow-3xs min-w-[36px] min-h-[36px] flex items-center justify-center"
-                      >
-                        <RemoveFormatting className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </div>
-
-                    <div className="h-5 w-px bg-[#E2DCC8] mx-0.5 shrink-0" />
-
-                    {/* Font Colors Trigger Button */}
-                    <button
-                      type="button"
-                      title={t.fontColorsTooltip}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => setShowColorPalette(!showColorPalette)}
-                      className={`px-3 py-1.5 sm:py-2 rounded-xl border transition-all font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs shrink-0 whitespace-nowrap min-h-[36px] ${
-                        showColorPalette
-                          ? 'bg-amber-100 text-amber-950 border-amber-300'
-                          : 'bg-white hover:bg-[#EAE5D9] text-amber-800 border-[#E2DCC8]'
-                      }`}
-                    >
-                      <span>🎨</span>
-                      <span>{t.fontColorsBtn}</span>
-                    </button>
-                  </div>
-
-                  {/* Dedicated Inline Font Colors Swatches Row (Natural anchored placement) */}
-                  {showColorPalette && (
-                    <div className="bg-[#FAF8F5] border-x border-[#E2DCC8] px-3.5 py-2 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-1 duration-150 shrink-0">
-                      <span className="text-[11px] font-black text-amber-950 shrink-0 flex items-center gap-1">
-                        <span>🎨</span>
-                        <span>{t.fontColorsBtn}:</span>
-                      </span>
-                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#D97706">', '</span>')} className="w-5 h-5 rounded-full bg-amber-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorOrange} />
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#059669">', '</span>')} className="w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorGreen} />
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#2563EB">', '</span>')} className="w-5 h-5 rounded-full bg-blue-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorBlue} />
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#DC2626">', '</span>')} className="w-5 h-5 rounded-full bg-red-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorRed} />
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#7C3AED">', '</span>')} className="w-5 h-5 rounded-full bg-purple-600 border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title={t.colorPurple} />
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#2B3E50">', '</span>')} className="w-5 h-5 rounded-full bg-[#2B3E50] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="كحلي" />
-                        <button data-compact-control="true" type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertFormatting('<span style="color:#3A3A3A">', '</span>')} className="w-5 h-5 rounded-full bg-[#3A3A3A] border border-white shadow-3xs hover:scale-125 transition-transform cursor-pointer" title="افتراضي" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Primary Writing Canvas (Generously sized, comfortable >= 16px typography, clearly framed) */}
-                  <div
-                    ref={editorRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    data-placeholder={t.editorTextareaPlaceholder}
-                    onKeyUp={saveEditorSelection}
-                    onMouseUp={saveEditorSelection}
-                    onTouchEnd={saveEditorSelection}
-                    onSelect={saveEditorSelection}
-                    onInput={(e) => {
-                      saveEditorSelection();
-                      const html = e.currentTarget.innerHTML;
-                      const prevRecorded = lastRecordedHtmlRef.current || '';
-                      if (Math.abs(html.length - prevRecorded.length) > 5 || html.endsWith(' ') || html.endsWith('&nbsp;')) {
-                        recordUndoSnapshot(prevRecorded);
-                      }
-                      setEditingDiary(prev => {
-                        if (!prev) return null;
-                        const updated = { ...prev, content: html };
-                        saveDraftSynchronously(updated);
-                        return updated;
-                      });
-                    }}
-                    onBlur={(e) => {
-                      saveEditorSelection();
-                      const html = e.currentTarget.innerHTML;
-                      setEditingDiary(prev => {
-                        if (!prev) return null;
-                        const updated = { ...prev, content: html };
-                        saveDraftSynchronously(updated);
-                        return updated;
-                      });
-                    }}
-                    style={{
-                      backgroundColor: editingDiary.color || '#F9F7F2',
-                      fontSize: `${Math.max(16, fontDrawerSize)}px`,
-                      minHeight: isWritingBoxFullscreen ? '200px' : '280px',
-                      lineHeight: '1.85'
-                    }}
-                    className={`w-full max-w-full border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-b-none px-3 py-3 sm:p-5 text-[#3A3A3A] leading-relaxed transition-all outline-none ${
-                      isWritingBoxFullscreen ? 'flex-1 min-h-0' : 'max-h-[600px]'
-                    } overflow-y-auto overflow-x-hidden shadow-inner select-text selectable-text whitespace-pre-wrap ${fontDrawerFamily}`}
-                  />
-
-                  {/* Attachment & Features Toolbar directly attached to textarea (Image 4 format) */}
-                  <div className="bg-[#EAE5D9] border border-t-0 border-[#E2DCC8] rounded-b-xl sm:rounded-b-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 text-xs w-full max-w-full overflow-x-hidden">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {/* Font Effect Toggle (Aa) */}
-                      <button
-                        type="button"
-                        onClick={() => setShowFontDrawer(true)}
-                        className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                        title={t.fontEffectTitle}
-                      >
-                        <span className="font-serif">Aa</span>
-                        <span className="hidden sm:inline">{t.fontTitle}</span>
-                      </button>
-
-                      {/* Background Color Picker Palette (🎨) */}
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setShowBgColorPicker(!showBgColorPicker)}
-                          className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                          title={t.backgroundColorTitle}
-                        >
-                          <span>🎨</span>
-                          <span className="hidden sm:inline">{t.colorTitle}</span>
-                        </button>
-                        {showBgColorPicker && (
-                          <div className="absolute right-0 sm:right-auto left-auto sm:left-0 bottom-full mb-2 flex flex-wrap items-center gap-2 p-2.5 bg-white border border-[#E2DCC8] rounded-2xl shadow-2xl z-50 animate-fadeIn max-w-[92vw] sm:max-w-none">
-                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgDefault} />
-                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgWarmYellow} />
-                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSkyBlue} />
-                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgSoftGreen} />
-                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgLavender} />
-                            <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowBgColorPicker(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer hover:scale-110 transition-all shadow-xs" title={t.bgPink} />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Draw / Sketch (✏️) */}
-                      <button
-                        type="button"
-                        onClick={() => setShowSketchboard(true)}
-                        className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse"
-                        title={t.drawTitle}
-                      >
-                        <span>✏️</span>
-                        <span className="hidden sm:inline">{t.drawTitle}</span>
-                      </button>
-
-                      {/* Attach File (📎) */}
-                      <label onClick={markFilePickerActive} className="p-2 bg-white hover:bg-[#F4F1EA] rounded-xl border border-[#E2DCC8] text-[#5A5A40] cursor-pointer font-bold flex items-center space-x-1 space-x-reverse" title={t.attachFileTitle}>
-                        <span>📎</span>
-                        <span className="hidden sm:inline">{t.attachFileTitle}</span>
-                        <input type="file" multiple
-                          accept="application/pdf,.doc,.docx,.txt,.rtf,.odt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onChange={async (e) => {
-                            markFilePickerActive();
-                            const files = Array.from(e.target.files || []);
-                            if (files.length > 0) {
-                              await handleGenericFileUpload(files);
-                            }
-                            resetFilePickerGuard();
-                            e.target.value = '';
-                          }}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-
-                    {/* Checklist Task Add Button (Matching Image 3 & 4) */}
-                    <button
-                      type="button"
-                      onClick={handleAddTaskItem}
-                      className="px-3 py-1.5 bg-[#8B9D83] text-white hover:bg-[#6E8066] rounded-xl font-bold flex items-center space-x-1 space-x-reverse cursor-pointer shadow-3xs text-xs"
-                    >
-                      <span>☑️</span>
-                      <span>+ {t.addChecklistItemBtn}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Embedded Checklist Tasks inside Note (Image 3 & 4 format) */}
-                {(editingDiary.tasks || []).length > 0 && (
-                  <div className="p-4 bg-white border border-[#E2DCC8] rounded-2xl space-y-2.5">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                      <span className="text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                        <span>☑️</span>
-                        <span>{t.checklistSectionTitle}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleAddTaskItem}
-                        className="text-[11px] text-[#8B9D83] font-black hover:underline cursor-pointer"
-                      >
-                        + {t.addChecklistItemBtn}
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {editingDiary.tasks.map((task) => (
-                        <div key={task.id} className="flex items-center space-x-2 space-x-reverse">
-                          <input
-                            type="checkbox"
-                            checked={task.completed}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setEditingDiary(prev => {
-                                if (!prev) return null;
-                                return {
-                                  ...prev,
-                                  tasks: prev.tasks.map(taskItem => taskItem.id === task.id ? { ...taskItem, completed: checked } : taskItem)
-                                };
-                              });
-                            }}
-                            className="w-4 h-4 rounded text-[#8B9D83] focus:ring-[#8B9D83] cursor-pointer"
-                          />
-                          <input
-                            type="text"
-                            value={task.text}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setEditingDiary(prev => {
-                                if (!prev) return null;
-                                return {
-                                  ...prev,
-                                  tasks: prev.tasks.map(taskItem => taskItem.id === task.id ? { ...taskItem, text: val } : taskItem)
-                                };
-                              });
-                            }}
-                            placeholder={t.taskInputPlaceholder}
-                            className={`flex-1 text-xs border-b border-transparent focus:border-[#8B9D83] focus:outline-none bg-transparent py-1 ${task.completed ? 'line-through text-gray-400' : 'text-[#3A3A3A] font-medium'}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingDiary(prev => {
-                                if (!prev) return null;
-                                return {
-                                  ...prev,
-                                  tasks: prev.tasks.filter(taskItem => taskItem.id !== task.id)
-                                };
-                              });
-                            }}
-                            className="text-red-400 hover:text-red-600 font-bold text-xs px-1.5 cursor-pointer"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Adding modifications / subsequent additions (التعديلات والإضافات اللاحقة) */}
-                {!isNewEntry && (
-                  <div className="space-y-3 bg-[#FAEDCD]/20 border border-[#D4A373]/30 rounded-2xl p-4">
-                    <span className="block text-xs font-extrabold text-[#D4A373] flex items-center space-x-1.5 space-x-reverse">
-                      <span>✍️</span>
-                      <span>{t.subsequentAdditionsTitle}</span>
-                    </span>
-                    <textarea
-                      rows={3}
-                      value={newEditAddition}
-                      onChange={(e) => setNewEditAddition(e.target.value)}
-                      placeholder={t.subsequentAdditionsPlaceholder}
-                      className="w-full bg-white focus:bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#D4A373] focus:border-[#D4A373] focus:outline-none rounded-xl p-3 text-xs text-[#3A3A3A] leading-relaxed transition-all"
-                    />
-                    <p className="text-[10px] text-gray-400 font-medium leading-relaxed">
-                      {t.subsequentAdditionsNotice}
-                    </p>
-                  </div>
-                )}
-
-                {/* Render previous modifications (الإضافات اللاحقة المسجلة) */}
-                {editingDiary.edits && editingDiary.edits.length > 0 && (
-                  <div className="space-y-3">
-                    <span className="block text-xs font-extrabold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <span>📜</span>
-                      <span>{t.historicalEditsTitle}</span>
-                    </span>
-                    <div className="space-y-3">
-                      {editingDiary.edits.map((edit) => (
-                        <div key={edit.id} className="bg-[#F9F7F2] border-s-4 border-[#8B9D83] p-4 rounded-s-xl rounded-e-sm space-y-1">
-                          <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold">
-                            <span className="flex items-center space-x-1 space-x-reverse">
-                              <span>📆</span>
-                              <span>{edit.timestamp}</span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingDiary(prev => {
-                                  if (!prev) return null;
-                                  return {
-                                    ...prev,
-                                    edits: (prev.edits || []).filter(e => e.id !== edit.id)
-                                  };
-                                });
-                              }}
-                              className="text-red-500 hover:text-red-700 cursor-pointer text-[10px] font-bold"
-                            >
-                              {t.deleteAdditionBtn}
-                            </button>
-                          </div>
-                          <p className="text-xs text-[#3A3A3A] leading-relaxed font-normal">
-                            {edit.content}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tags input bar */}
-                <div className="w-full max-w-full overflow-x-hidden">
-                  <label className="block text-xs font-bold text-[#5A5A40] mb-1.5">{t.tagsLabel}</label>
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl w-full max-w-full overflow-x-hidden">
-                    {editingDiary.tags.map((tag, idx) => (
-                      <span key={idx} className="bg-[#F0EDE4] text-[#5A5A40] text-xs py-1 px-2.5 rounded-lg border border-[#E2DCC8] flex items-center space-x-1 space-x-reverse">
-                        <span>#{tag}</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditingDiary(prev => prev ? { ...prev, tags: prev.tags.filter(x => x !== tag) } : null)}
-                          className="text-[10px] text-[#5A5A40]/70 hover:text-[#3A3A3A] cursor-pointer"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                    <input
-                      type="text"
-                      placeholder={t.addTagPlaceholder}
-                      onKeyDown={(e) => {
-                        if (e.key === ' ' || e.key === ',') {
-                          e.preventDefault();
-                          const val = e.currentTarget.value.trim().replace('#', '');
-                          if (val && !editingDiary.tags.includes(val)) {
-                            setEditingDiary(prev => prev ? { ...prev, tags: [...prev.tags, val] } : null);
-                            e.currentTarget.value = '';
-                          }
-                        }
-                      }}
-                      className="bg-transparent border-0 focus:ring-0 text-xs px-2 focus:outline-none py-1 flex-grow"
-                    />
-                  </div>
-                </div>
-
-                {/* Drawing / Image thumbnail Display inside editor */}
-                {(editingDiary.images.length > 0 || editingDiary.drawing) && (
-                  <div className="space-y-2">
-                    <span className="block text-xs font-bold text-[#5A5A40]">{t.attachedImagesDrawings}</span>
-                    <div className="flex flex-wrap gap-3">
-                      {editingDiary.images.map((img, idx) => (
-                        <div key={idx} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-gray-50 flex flex-col justify-between p-1">
-                          <img
-                            src={img}
-                            className="w-full h-full object-cover rounded-xl cursor-pointer hover:scale-105 transition-transform"
-                            onClick={() => handleOpenDiaryImage(img, idx)}
-                            onError={async (e) => {
-                              const attId = editingDiary?.imageAttachmentIds?.[idx];
-                              if (attId) {
-                                const fresh = await getAttachmentObjectUrl(attId);
-                                if (fresh) (e.target as HTMLImageElement).src = fresh;
-                              }
-                            }}
-                            alt={t.attachedImage || 'Image'}
-                            title={settings?.appLanguage === 'ar' ? 'انقر للمعاينة والفتح' : 'Click to preview / open'}
-                          />
-                          {/* Dedicated Action Buttons Overlay */}
-                          <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenDiaryImage(img, idx);
-                              }}
-                              className="w-6 h-6 bg-[#2B3E50]/90 hover:bg-[#2B3E50] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
-                              title={settings?.appLanguage === 'ar' ? 'معاينة الصورة' : 'Preview Image'}
-                            >
-                              <Eye className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteDiaryImage(idx);
-                              }}
-                              className="w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
-                              title={t.deleteMediaBtn || 'Delete'}
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Drawings Thumbnail Grid (Unlimited Multi-Drawing Support) */}
-                      {(() => {
-                        const currentDrawings = (Array.isArray(editingDiary.drawings) && editingDiary.drawings.length > 0)
-                          ? editingDiary.drawings
-                          : (editingDiary.drawing ? [editingDiary.drawing] : []);
-
-                        return currentDrawings.map((drawDataUrl, dIdx) => (
-                          <div key={`draw-${dIdx}`} className="relative w-28 h-24 rounded-2xl overflow-hidden border border-[#E2DCC8] shadow-xs group bg-white flex flex-col justify-between p-1">
-                            <img
-                              src={drawDataUrl}
-                              className="w-full h-full object-contain rounded-xl cursor-pointer hover:scale-105 transition-transform"
-                              onClick={() => {
-                                setEditingDrawingIndex(dIdx);
-                                setShowSketchboard(true);
-                              }}
-                              alt={`${t.drawing || 'رسمة'} ${dIdx + 1}`}
-                              title={settings?.appLanguage === 'ar' ? 'انقر لتعديل أو معاينة الرسمة' : 'Click to edit or preview drawing'}
-                            />
-                            <div className="absolute top-1.5 left-1.5 bg-[#8B9D83] text-white text-[9px] px-1.5 py-0.5 rounded-md font-bold shadow-3xs pointer-events-none">
-                              {t.drawing || 'رسمة'} {currentDrawings.length > 1 ? `#${dIdx + 1}` : ''}
-                            </div>
-                            {/* Dedicated Action Buttons for Drawing: Edit & Delete */}
-                            <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingDrawingIndex(dIdx);
-                                  setShowSketchboard(true);
-                                }}
-                                className="w-6 h-6 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
-                                title={t.editDrawing || 'تعديل الرسمة'}
-                              >
-                                <span className="text-[10px]">✏️</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const attId = editingDiary.drawingAttachmentIds?.[dIdx] || (dIdx === 0 ? editingDiary.drawingAttachmentId : undefined);
-                                  if (attId) {
-                                    deleteAttachmentBlob(attId);
-                                  }
-                                  const updatedDrawings = currentDrawings.filter((_, i) => i !== dIdx);
-                                  const updatedIds = (editingDiary.drawingAttachmentIds || []).filter((_, i) => i !== dIdx);
-                                  setEditingDiary(prev => prev ? {
-                                    ...prev,
-                                    drawings: updatedDrawings,
-                                    drawingAttachmentIds: updatedIds,
-                                    drawing: updatedDrawings[0] || undefined,
-                                    drawingAttachmentId: updatedIds[0] || undefined
-                                  } : null);
-                                }}
-                                className="w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-110"
-                                title={t.deleteDrawing || 'حذف الرسمة'}
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  </div>
-                )}
-
-                {/* 🎥 Attached Videos Display inside editor */}
-                {editingDiary.videos && editingDiary.videos.length > 0 && (
-                  <div className="space-y-2 mt-4">
-                    <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <span>🎥</span>
-                      <span>{t.attachedVideos}</span>
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {editingDiary.videos.map((vid, idx) => (
-                        <div key={idx} className="relative bg-[#F9F7F2] p-3 border border-[#E2DCC8] rounded-xl flex flex-col space-y-2">
-                          {vid.startsWith('data:video/') || vid.startsWith('blob:') || vid.includes('mp4') || vid.startsWith('data:application/octet-stream') ? (
-                            <video
-                              src={vid}
-                              controls
-                              className="w-full h-32 rounded-lg bg-black object-cover cursor-pointer"
-                              onClick={() => handleOpenDiaryVideo(vid, idx)}
-                              onError={async (e) => {
-                                const attId = editingDiary?.videoAttachmentIds?.[idx];
-                                if (attId) {
-                                  const fresh = await getAttachmentObjectUrl(attId);
-                                  if (fresh) (e.target as HTMLVideoElement).src = fresh;
-                                }
-                              }}
-                            />
-                          ) : (
-                            <div className="bg-white p-2.5 rounded-lg border border-[#E2DCC8]/60 text-xs text-[#5A5A40] truncate flex items-center space-x-2 space-x-reverse">
-                              <span className="font-semibold shrink-0">{t.videoLink}</span>
-                              <a href={vid} target="_blank" rel="noopener noreferrer" className="text-[#8B9D83] underline truncate flex-grow">
-                                {vid}
-                              </a>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between pt-1">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenDiaryVideo(vid, idx)}
-                              className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10.5px] cursor-pointer flex items-center gap-1 shadow-3xs"
-                            >
-                              <Eye className="w-3 h-3" />
-                              <span>{settings?.appLanguage === 'ar' ? 'معاينة' : 'Preview'}</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteDiaryVideo(idx)}
-                              className="text-xs text-red-600 hover:text-red-700 font-bold cursor-pointer"
-                            >
-                              {settings?.appLanguage === 'ar' ? 'حذف الفيديو' : 'Delete'}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 📁 Attached Files Display inside editor */}
-                {editingDiary.files && editingDiary.files.length > 0 && (
-                  <div className="space-y-2 mt-4">
-                    <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <span>📁</span>
-                      <span>{t.attachedFiles}</span>
-                    </span>
-                    <div className="space-y-2">
-                      {editingDiary.files.map((file) => {
-                        const name = (file.name || '').toLowerCase();
-                        const type = (file.type || '').toLowerCase();
-                        let badgeLabel = '📁 ملف';
-                        let badgeStyle = 'bg-gray-100 text-gray-700 border-gray-200';
-
-                        if (type.includes('video') || /\.(mp4|webm|mov|avi|mkv)$/i.test(name)) {
-                          badgeLabel = '🎬 فيديو';
-                          badgeStyle = 'bg-purple-100 text-purple-700 border-purple-200';
-                        } else if (type.includes('audio') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(name)) {
-                          badgeLabel = '🎙️ صوت';
-                          badgeStyle = 'bg-emerald-100 text-emerald-700 border-emerald-200';
-                        } else if (type.includes('pdf') || name.endsWith('.pdf')) {
-                          badgeLabel = '📄 PDF';
-                          badgeStyle = 'bg-red-100 text-red-700 border-red-200';
-                        } else if (type.includes('image') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
-                          badgeLabel = '🖼️ صورة';
-                          badgeStyle = 'bg-amber-100 text-amber-700 border-amber-200';
-                        } else if (type.includes('word') || /\.(doc|docx)$/i.test(name)) {
-                          badgeLabel = '📝 DOC';
-                          badgeStyle = 'bg-blue-100 text-blue-700 border-blue-200';
-                        } else if (/\.(zip|rar|7z|gz|tar)$/i.test(name)) {
-                          badgeLabel = '📦 أرشيف';
-                          badgeStyle = 'bg-amber-100 text-amber-700 border-amber-200';
-                        }
-
-                        return (
-                          <div key={file.id} className="p-3 bg-[#F9F7F2] border border-[#E2DCC8] rounded-xl flex items-center justify-between text-xs gap-2">
-                            <div className="flex items-center space-x-2 space-x-reverse min-w-0 flex-1">
-                              <div className={`px-2 py-1 border rounded-lg font-bold text-[10px] shrink-0 ${badgeStyle}`}>
-                                {badgeLabel}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <span className="font-semibold block text-[#3A3A3A] truncate max-w-[140px] sm:max-w-xs">{file.name}</span>
-                                <span className="text-[10px] text-gray-400">{t.fileSize}: {file.size}</span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center space-x-1.5 space-x-reverse shrink-0">
-                              {/* 👁️ Preview / Open Button */}
-                              <button
-                                type="button"
-                                onClick={() => handleOpenAttachment(file)}
-                                className="bg-[#2B3E50] hover:bg-[#1E2B38] text-white text-[10.5px] px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer shadow-3xs"
-                                title={settings?.appLanguage === 'ar' ? 'معاينة / فتح' : 'Preview / Open'}
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>{settings?.appLanguage === 'ar' ? 'معاينة' : 'Preview'}</span>
-                              </button>
-
-                              {/* ⬇️ Download Button */}
-                              {file.dataUrl && (
-                                <a
-                                  href={file.dataUrl}
-                                  download={file.name}
-                                  className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-[10.5px] px-2 py-1 rounded-lg font-bold flex items-center gap-1 cursor-pointer shadow-3xs"
-                                  title={settings?.appLanguage === 'ar' ? 'تحميل' : 'Download'}
-                                >
-                                  <Download className="w-3 h-3" />
-                                </a>
-                              )}
-
-                              {/* 🗑️ Delete Button */}
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteFileAttachment(file.id)}
-                                className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg font-bold cursor-pointer transition-colors"
-                                title={settings?.appLanguage === 'ar' ? 'حذف المرفق' : 'Delete'}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* 🔗 Attached Web Links Display inside editor */}
-                {editingDiary.links && editingDiary.links.length > 0 && (
-                  <div className="space-y-2 mt-4">
-                    <span className="block text-xs font-bold text-[#5A5A40] flex items-center space-x-1.5 space-x-reverse">
-                      <span>🔗</span>
-                      <span>{t.attachedLinksRefs}</span>
-                    </span>
-                    <div className="space-y-1.5">
-                      {editingDiary.links.map((link, idx) => (
-                        <div key={idx} className="p-3 bg-blue-50/30 border border-blue-200/50 rounded-xl flex items-center justify-between text-xs">
-                          <div className="flex items-center space-x-2 space-x-reverse min-w-0">
-                            <span className="text-blue-500 font-bold">🌐</span>
-                            <a
-                              href={link}
-                              target="_blank"
-                              referrerPolicy="no-referrer"
-                              className="text-blue-700 hover:underline truncate font-medium"
-                            >
-                              {link}
-                            </a>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingDiary(prev => prev ? { ...prev, links: (prev.links || []).filter((_, i) => i !== idx) } : null);
-                            }}
-                            className="text-red-600 hover:text-red-700 font-bold px-2 cursor-pointer text-xs shrink-0"
-                          >
-                            حذف
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Media & Attachments Grid (Clean Symmetrical 2-col/4-col Responsive Grid) */}
-                <div className="bg-[#F9F7F2] p-4 sm:p-5 rounded-3xl border border-[#E2DCC8]/70 space-y-3">
-                  <span className="text-xs font-black text-[#5A5A40] block">{t.addMediaAttachments}</span>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 w-full">
-
-                    {/* 1. Add Photo / Screenshot */}
-                    <label
-                      onClick={markFilePickerActive}
-                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-xs font-bold text-[#5A5A40] cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
-                    >
-                      <Image className="w-4 h-4 text-[#D4A373] shrink-0" />
-                      <span className="truncate">{t.addPhotoScreenshot}</span>
-                      <input
-                        id="image-upload-trigger"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </label>
-
-                    {/* 2. Draw Mind Map / Sketch (Multi-drawing support) */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingDrawingIndex(null);
-                        setShowSketchboard(true);
-                      }}
-                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-xs font-bold text-[#5A5A40] cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
-                    >
-                      <span className="text-base text-[#8B9D83] shrink-0">🎨</span>
-                      <span className="truncate">{t.drawMindmap}</span>
-                    </button>
-
-                    {/* 3. Quick Voice Vent Modal (Single Voice Vent Action) */}
-                    <button
-                      type="button"
-                      onClick={() => setShowVoiceVentModal(true)}
-                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-2xl text-xs font-black cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
-                      title={t.voiceQuickVent || (isAr ? 'فضفضة صوتية سريعة' : 'Quick Voice Vent')}
-                    >
-                      <span className="text-base shrink-0">🎙️</span>
-                      <span className="truncate">{t.voiceQuickVent || (isAr ? 'فضفضة صوتية سريعة' : 'Quick Voice Vent')}</span>
-                    </button>
-
-                    {/* 4. Add Audio File */}
-                    <label
-                      htmlFor="audio-file-input"
-                      onClick={handleAudioPickerClick}
-                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl text-xs font-bold text-[#5A5A40] cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
-                      title={t.chooseAudioFileTooltip}
-                    >
-                      <span className="text-base shrink-0">🎵</span>
-                      <span className="truncate">{t.addAudioFile}</span>
-                      <input
-                        id="audio-file-input"
-                        type="file"
-                        accept="audio/*"
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={handleAudioFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-
-                    {/* 5. Attachments Page */}
-                    <button
-                      type="button"
-                      onClick={() => setShowAttachmentsPage(true)}
-                      className="flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12"
-                      title={t.attachmentsPageTitle}
-                    >
-                      <span className="text-base shrink-0">📁</span>
-                      <span className="truncate">{t.attachmentsPageTitle}</span>
-                      <span className="text-[10px] bg-[#8B9D83] text-white px-1.5 py-0.2 rounded-full font-bold shrink-0">
-                        {(editingDiary.images || []).length + (editingDiary.videos || []).length + (editingDiary.audioRecordings || []).length + (editingDiary.files || []).length + ((editingDiary.drawings && editingDiary.drawings.length > 0) ? editingDiary.drawings.length : (editingDiary.drawing ? 1 : 0))}
-                      </span>
-                    </button>
-
-                    {/* 6. Web Link */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveInputSection(activeInputSection === 'link' ? 'none' : 'link')}
-                      className={`flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12 ${
-                        activeInputSection === 'link'
-                          ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
-                          : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
-                      }`}
-                    >
-                      <span className="text-base shrink-0">🌐</span>
-                      <span className="truncate">{t.webLink}</span>
-                    </button>
-
-                    {/* 7. Video Link / File */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveInputSection(activeInputSection === 'video' ? 'none' : 'video')}
-                      className={`flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12 ${
-                        activeInputSection === 'video'
-                          ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
-                          : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
-                      }`}
-                    >
-                      <span className="text-base shrink-0">🎥</span>
-                      <span className="truncate">{t.videoLabel}</span>
-                    </button>
-
-                    {/* 8. PDF File */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveInputSection(activeInputSection === 'pdf' ? 'none' : 'pdf')}
-                      className={`flex items-center justify-center space-x-1.5 space-x-reverse px-3 py-2.5 border rounded-2xl text-xs font-bold cursor-pointer transition-all shadow-3xs hover:scale-[1.01] active:scale-95 h-12 ${
-                        activeInputSection === 'pdf'
-                          ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
-                          : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
-                      }`}
-                    >
-                      <span className="text-base shrink-0">📄</span>
-                      <span className="truncate">{t.pdfLabel}</span>
-                    </button>
-                  </div>
-
-                  {/* Audio Upload Loading Banner */}
-                  {audioUploadLoading && (
-                    <div className="w-full p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center gap-2.5 text-xs text-emerald-900 font-bold animate-pulse shadow-sm" dir={langInfo.dir}>
-                      <RefreshCw className="w-4 h-4 animate-spin text-emerald-700 shrink-0" />
-                      <span>⏳ {t.aiTranscriptionLoading}</span>
-                    </div>
-                  )}
-
-                  {/* Interactive Real-Time Live Recording Card */}
-                  {isRecording && (
-                    <div className="w-full mt-2 p-3.5 sm:p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300/80 rounded-2xl flex flex-col space-y-3 shadow-md animate-fadeIn text-xs" dir={langInfo.dir}>
-                      <div className="flex items-center justify-between gap-2 border-b border-red-200/60 pb-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-                          </span>
-                          <span className="font-black text-red-800 text-xs flex items-center gap-1">
-                            <Mic className="w-3.5 h-3.5 text-red-600 animate-bounce" />
-                            <span>{t.listeningTranscribing}</span>
-                          </span>
-                        </div>
-                        <span className="font-mono font-black text-red-700 bg-white/90 border border-red-200 px-2.5 py-0.5 rounded-full text-[11px] shadow-3xs">
-                          ⏱️ {Math.floor(recordingSeconds / 60).toString().padStart(2, '0')}:{(recordingSeconds % 60).toString().padStart(2, '0')}
-                        </span>
-                      </div>
-
-                      {/* Live Transcript Area with Final / Interim Separation */}
-                      <div
-                        className="bg-white/95 p-3.5 rounded-xl border border-red-100 min-h-[75px] max-h-48 overflow-y-auto space-y-1.5 shadow-inner"
-                        style={{ direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.9 }}
-                      >
-                        {speechTranscript ? (
-                          <p className="text-xs sm:text-sm text-[#2B3E50] leading-[1.9] font-medium">
-                            {speechTranscript}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-gray-400 italic text-center py-3 font-semibold">
-                            🎙️ جاري الاستماع والكتابة لحظياً... تحدث الآن بوضوح وسيظهر كلامك هنا فوراً
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Control Action Buttons */}
-                      <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center justify-end pt-1">
-                        <button
-                          type="button"
-                          onClick={handleCancelRecording}
-                          className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all cursor-pointer shadow-3xs flex items-center justify-center gap-1"
-                        >
-                          <span>{t.cancelAction}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleStopAndInsertRecording}
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
-                        >
-                          <span>{t.finishInsertText}</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Expandable Extra Attachment Sections */}
-                {activeInputSection !== 'none' && (
-                  <div className="bg-[#F9F7F2] p-4 rounded-2xl border border-[#E2DCC8]/60 space-y-3">
-                    {activeInputSection === 'link' && (
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-[#5A5A40]">{t.enterWebLinkRef}</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={tempWebUrl}
-                            onChange={(e) => setTempWebUrl(e.target.value)}
-                            placeholder="https://example.com"
-                            className="flex-grow bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-xl px-3.5 py-2 text-xs text-[#3A3A3A]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleAddWebLink(tempWebUrl)}
-                            className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs px-4 py-2 rounded-xl font-bold transition-all cursor-pointer shrink-0"
-                          >
-                            إضافة الرابط
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeInputSection === 'video' && (
-                      <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addVideoToEntry}</span>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Option 1: File upload */}
-                          <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalVideo}</span>
-                            <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>{t.chooseVideoFromDevice}</span>
-                              <input type="file" multiple
-                                accept="video/*" onChange={handleVideoUpload}
-                                className="hidden"
-                              />
-                            </label>
-                          </div>
-
-                          {/* Option 2: Enter URL */}
-                          <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option2VideoLink}</span>
-                            <div className="flex gap-1.5">
-                              <input
-                                type="text"
-                                value={tempVideoUrl}
-                                onChange={(e) => setTempVideoUrl(e.target.value)}
-                                placeholder="https://youtube.com/..."
-                                className="flex-grow bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2.5 py-1 text-xs"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleAddVideoLink(tempVideoUrl)}
-                                className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs px-3 py-1 rounded-lg font-bold transition-all cursor-pointer shrink-0"
-                              >
-                                إضافة
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeInputSection === 'pdf' && (
-                      <div className="space-y-3">
-                        <span className="block text-xs font-bold text-[#5A5A40]">{t.addPdfToEntry}</span>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Option 1: PDF File upload */}
-                          <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option1LocalFile}</span>
-                            <label onClick={markFilePickerActive} className="flex items-center justify-center space-x-1.5 space-x-reverse py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-lg text-xs font-semibold text-[#5A5A40] cursor-pointer transition-colors shadow-xs">
-                              <span>{t.chooseFileFromDevice}</span>
-                              <input type="file" multiple
-                                accept="application/pdf" onChange={handlePdfUpload}
-                                className="hidden"
-                              />
-                            </label>
-                          </div>
-
-                          {/* Option 2: Simulated PDF addition */}
-                          <div className="p-3 bg-white border border-[#E2DCC8] rounded-xl flex flex-col justify-between space-y-2">
-                            <span className="text-[11px] font-bold text-gray-500">{t.option2PdfLink}</span>
-                            <div className="flex gap-1.5">
-                              <input
-                                id="manual-pdf-name"
-                                type="text"
-                                placeholder={t.pdfFileNamePlaceholder}
-                                className="w-1/2 bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2 py-1 text-xs"
-                              />
-                              <input
-                                id="manual-pdf-url"
-                                type="text"
-                                placeholder={t.fileLinkPlaceholder}
-                                className="w-1/2 bg-[#F9F7F2] border border-[#E2DCC8] focus:outline-none rounded-lg px-2 py-1 text-xs"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const nameEl = document.getElementById('manual-pdf-name') as HTMLInputElement;
-                                  const urlEl = document.getElementById('manual-pdf-url') as HTMLInputElement;
-                                  if (nameEl && urlEl && nameEl.value.trim()) {
-                                    const newFile: FileAttachment = {
-                                      id: `file-${Date.now()}`,
-                                      name: nameEl.value.trim().endsWith('.pdf') ? nameEl.value.trim() : nameEl.value.trim() + '.pdf',
-                                      size: 'رابط خارجي',
-                                      type: 'application/pdf',
-                                      dataUrl: urlEl.value.trim() || '#'
-                                    };
-                                    setEditingDiary(prev => prev ? { ...prev, files: [...(prev.files || []), newFile] } : null);
-                                    nameEl.value = '';
-                                    urlEl.value = '';
-                                    setActiveInputSection('none');
-                                  }
-                                }}
-                                className="bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs px-3 py-1 rounded-lg font-bold transition-all cursor-pointer shrink-0"
-                              >
-                                إضافة
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* 🎙️ Attached Audio Recordings & Speech Emotion Recognition (SER) Panel */}
-                {editingDiary.audioRecordings.length > 0 && (
-                  <div className="space-y-3">
-                    <span className="block text-xs font-bold text-[#5A5A40]">
-                      🎙️ التسجيلات الصوتية المرفقة (مع تحليل نبرة المشاعر SER):
-                    </span>
-                    <div className="space-y-3">
-                      {editingDiary.audioRecordings.map((rec) => {
-                        const emoStyle = getSpeechEmotionStyles(rec.speechEmotion);
-                        return (
-                          <div key={rec.id} className="p-3.5 bg-[#F9F7F2] border border-[#E2DCC8] rounded-2xl space-y-2.5 text-xs">
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <div className="flex items-center space-x-2 space-x-reverse">
-                                <div className="p-2 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl">
-                                  <Mic className="w-4 h-4" />
-                                </div>
-                                <div>
-                                  <span className="font-bold block text-[#3A3A3A]">{rec.name}</span>
-                                  <span className="text-[10px] text-gray-500">{t.durationLabel}: {rec.duration}s</span>
-                                </div>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteAudioRecording(rec.id)}
-                                className="text-red-600 hover:text-red-700 font-bold px-2.5 py-1 bg-white border border-red-100 rounded-lg cursor-pointer text-xs transition-colors flex items-center gap-1"
-                                title={settings?.appLanguage === 'ar' ? 'حذف التسجيل الصوتي' : 'Delete Audio Recording'}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>{settings?.appLanguage === 'ar' ? 'حذف' : 'Delete'}</span>
-                              </button>
-                            </div>
-
-                            {/* Prominent Audio Player Component */}
-                            <AudioPlayerWithIndexedDBFallback rec={rec} onToggleRecording={handleToggleRecording} />
-
-                            {/* Transcription & Dynamic Colored Background Container for SER */}
-                            <div className={`p-3.5 rounded-2xl border transition-all duration-300 space-y-2.5 ${emoStyle.containerBg}`}>
-                              <div className="flex items-center justify-between border-b border-black/10 pb-2 flex-wrap gap-1.5">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-black flex items-center gap-1 text-[11px]">
-                                    <Sparkles className="w-3.5 h-3.5 text-[#D4A373]" />
-                                    <span>{emoStyle.headerText}:</span>
-                                  </span>
-
-                                  {/* Speech Emotion Badge */}
-                                  <span className={`px-2 py-0.5 rounded-full border text-[10px] flex items-center gap-1 shadow-3xs ${emoStyle.badgeBg}`}>
-                                    <span>{emoStyle.emoji}</span>
-                                    <span>{emoStyle.emotionText}</span>
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <button
-                                    type="button"
-                                    disabled={transcribingAudioId === rec.id}
-                                    onClick={() => handleTranscribeAudioItem(rec)}
-                                    className="px-2.5 py-1 bg-white/90 hover:bg-white text-[#4E685B] border border-black/10 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 disabled:opacity-50 shadow-3xs"
-                                  >
-                                    {transcribingAudioId === rec.id ? (
-                                      <>
-                                        <RefreshCw className="w-3 h-3 animate-spin text-[#4E685B]" />
-                                        <span>{t.analyzing}</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Sparkles className="w-3 h-3 text-[#D4A373]" />
-                                        <span>{t.transcribeAndToneAnalysis}</span>
-                                      </>
-                                    )}
-                                  </button>
-
-                                  {/* Manual Edit Button */}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingTranscriptId(rec.id);
-                                      const existing = rec.transcription && !rec.transcription.includes('انقر على زر') ? rec.transcription : '';
-                                      setEditingTranscriptText(existing);
-                                    }}
-                                    className="px-2.5 py-1 bg-white/90 hover:bg-white text-indigo-800 border border-black/10 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 shadow-3xs"
-                                    title={t.editTranscriptTitle}
-                                  >
-                                    <Edit3 className="w-3 h-3 text-indigo-600" />
-                                    <span>{t.editTranscriptBtn}</span>
-                                  </button>
-
-                                  {rec.transcription && rec.transcription.trim() && !rec.transcription.includes('جاري') && !rec.transcription.includes('انقر على زر') && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAppendTranscriptToContent(rec)}
-                                      className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex items-center gap-1 shadow-3xs ${
-                                        rec.isAppendedToContent
-                                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                          : 'bg-white/90 hover:bg-white text-[#8C661D] border border-black/10'
-                                      }`}
-                                      title={rec.isAppendedToContent ? (t.transcriptionAppendedTooltip) : (t.appendToDiaryTextTooltip)}
-                                    >
-                                      <span>{rec.isAppendedToContent ? '✓' : '✍️'}</span>
-                                      <span>{rec.isAppendedToContent ? (t.transcriptionAppended) : (t.appendToDiaryText)}</span>
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Transcription text body / Inline Editor */}
-                              {transcribingAudioId === rec.id ? (
-                                <div className="py-2.5 text-center text-xs text-amber-900 font-bold animate-pulse flex items-center justify-center gap-2">
-                                  <RefreshCw className="w-4 h-4 animate-spin text-amber-700" />
-                                  <span>{t.transcribingAnalyzingToneStatus}</span>
-                                </div>
-                              ) : editingTranscriptId === rec.id ? (
-                                <div className="space-y-2 bg-white/90 p-3 rounded-xl border border-indigo-200 shadow-sm animate-fadeIn">
-                                  <div className="flex items-center justify-between text-[11px] font-bold text-[#3A3A3A]">
-                                    <span className="flex items-center gap-1.5 text-indigo-900">
-                                      <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
-                                      <span>{t.editTranscriptManualHeader}</span>
-                                    </span>
-                                    <span className="text-[10px] text-gray-500 font-medium">{t.editTranscriptManualHint}</span>
-                                  </div>
-                                  <textarea
-                                    value={editingTranscriptText}
-                                    onChange={(e) => setEditingTranscriptText(e.target.value)}
-                                    rows={3}
-                                    placeholder={t.typeVoiceTranscriptPlaceholder}
-                                    className="w-full bg-white border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-xl p-2.5 text-xs text-[#3A3A3A] leading-relaxed resize-y font-medium shadow-2xs"
-                                    dir={langInfo.dir}
-                                    autoFocus
-                                  />
-                                  <div className="flex items-center justify-end gap-2 pt-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => setEditingTranscriptId(null)}
-                                      className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[11px] font-bold cursor-pointer transition-colors"
-                                    >
-                                      {t.cancelBtn}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        updateAudioTranscriptionAtomic(rec.id, editingTranscriptText.trim());
-                                        setEditingTranscriptId(null);
-                                      }}
-                                      className="px-3.5 py-1 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-lg text-[11px] font-bold cursor-pointer transition-all shadow-xs flex items-center gap-1"
-                                    >
-                                      <span>💾</span>
-                                      <span>{t.saveEditBtn}</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="space-y-2">
-                                  <div
-                                    onClick={() => {
-                                      setEditingTranscriptId(rec.id);
-                                      const existing = rec.transcription && !rec.transcription.includes('انقر على زر') ? rec.transcription : '';
-                                      setEditingTranscriptText(existing);
-                                    }}
-                                    className={`relative group rounded-xl p-2.5 transition-all cursor-pointer hover:bg-black/5 border border-dashed border-black/10 hover:border-indigo-300 ${emoStyle.textColor}`}
-                                    title={t.clickToEditTranscriptTooltip}
-                                  >
-                                    <p className="whitespace-pre-wrap leading-relaxed text-xs">
-                                      {rec.transcription || (t.clickToTypeOrTranscribeHint)}
-                                    </p>
-                                    <span className="opacity-80 group-hover:opacity-100 transition-opacity absolute top-1.5 left-1.5 text-[10px] font-bold bg-white/95 text-[#3A3A3A] px-2 py-0.5 rounded-md border border-gray-200 shadow-2xs flex items-center gap-1">
-                                      <Edit3 className="w-2.5 h-2.5 text-indigo-600" />
-                                      <span>{t.edit}</span>
-                                    </span>
-                                  </div>
-
-                                  {/* SER Vocal Tone Details */}
-                                  {rec.speechEmotion?.vocalToneDetails && (
-                                    <div className="text-[10px] pt-1.5 border-t border-black/10 flex items-start gap-1.5 font-bold opacity-90">
-                                      <span className="shrink-0">{t.vocalToneSerNotice}</span>
-                                      <span className="leading-normal">{rec.speechEmotion.vocalToneDetails}</span>
-                                    </div>
-                                  )}
-
-                                  {/* Quick Mood Color Palette Override Selector */}
-                                  <div className="pt-2 border-t border-black/5 flex items-center justify-between flex-wrap gap-1 text-[10px] font-bold">
-                                    <span className="opacity-75">{t.changeTextBgByMoodTone}</span>
-                                    <div className="flex items-center gap-1 flex-wrap">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetSpeechEmotion(rec.id, 'قلق', 'amber')}
-                                        className="px-1.5 py-0.5 bg-amber-200/90 hover:bg-amber-300 text-amber-950 border border-amber-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightAmber}
-                                      >
-                                        😰 قلق
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetSpeechEmotion(rec.id, 'فرح', 'emerald')}
-                                        className="px-1.5 py-0.5 bg-emerald-200/90 hover:bg-emerald-300 text-emerald-950 border border-emerald-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightEmerald}
-                                      >
-                                        🎉 فرح
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetSpeechEmotion(rec.id, 'حزن', 'blue')}
-                                        className="px-1.5 py-0.5 bg-blue-200/90 hover:bg-blue-300 text-blue-950 border border-blue-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightBlue}
-                                      >
-                                        😔 حزن
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetSpeechEmotion(rec.id, 'غضب', 'red')}
-                                        className="px-1.5 py-0.5 bg-red-200/90 hover:bg-red-300 text-red-950 border border-red-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightRed}
-                                      >
-                                        😡 غضب
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSetSpeechEmotion(rec.id, 'هدوء', 'teal')}
-                                        className="px-1.5 py-0.5 bg-teal-200/90 hover:bg-teal-300 text-teal-950 border border-teal-400 rounded-md transition-all cursor-pointer"
-                                        title={t.moodHighlightTeal}
-                                      >
-                                        🧘 هدوء
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Custom Drawing Board Canvas Modal (Multi-Drawing Support) */}
-                {showSketchboard && (
-                  <div className={`${isSketchboardFullscreen ? 'fixed inset-0 p-0' : 'fixed inset-0 p-4'} bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center`}>
-                    <div className={`${isSketchboardFullscreen ? 'w-full h-[100dvh]' : 'w-full max-w-2xl h-[450px]'} relative`}>
-                      <button type="button" data-compact-control="true" onClick={() => setIsSketchboardFullscreen(v => !v)} className="absolute top-2 end-2 z-20 inline-flex items-center justify-center w-9 h-9 min-h-0 min-w-0 rounded-lg bg-white/90 text-[#2D6A4F] border border-[#DCE4D8]" aria-label={isSketchboardFullscreen ? (isAr ? 'استعادة لوحة الرسم' : 'Restore drawing pad') : (isAr ? 'ملء شاشة لوحة الرسم' : 'Fullscreen drawing pad')}>
-                        {isSketchboardFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                      </button>
-                      <DrawingCanvas
-                        initialDataUrl={editingDrawingIndex !== null ? (editingDiary.drawings?.[editingDrawingIndex] || editingDiary.drawing || '') : ''}
-                        appLanguage={settings?.appLanguage || 'ar'}
-                        onSave={async (dataUrl) => {
-                          const attachmentId = `att-draw-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-                          await saveAttachmentBlob(attachmentId, dataUrl, 'image/png');
-                          setEditingDiary(prev => {
-                            if (!prev) return null;
-                            const prevDrawings = (Array.isArray(prev.drawings) && prev.drawings.length > 0)
-                              ? [...prev.drawings]
-                              : (prev.drawing ? [prev.drawing] : []);
-                            const prevAttIds = (Array.isArray(prev.drawingAttachmentIds) && prev.drawingAttachmentIds.length > 0)
-                              ? [...prev.drawingAttachmentIds]
-                              : (prev.drawingAttachmentId ? [prev.drawingAttachmentId] : []);
-
-                            let nextDrawings;
-                            let nextAttIds;
-                            if (editingDrawingIndex !== null && editingDrawingIndex >= 0 && editingDrawingIndex < prevDrawings.length) {
-                              nextDrawings = [...prevDrawings];
-                              nextDrawings[editingDrawingIndex] = dataUrl;
-                              nextAttIds = [...prevAttIds];
-                              nextAttIds[editingDrawingIndex] = attachmentId;
-                            } else {
-                              nextDrawings = [...prevDrawings, dataUrl];
-                              nextAttIds = [...prevAttIds, attachmentId];
-                            }
-                            return {
-                              ...prev,
-                              drawings: nextDrawings,
-                              drawingAttachmentIds: nextAttIds,
-                              drawing: nextDrawings[0],
-                              drawingAttachmentId: nextAttIds[0]
-                            };
-                          });
-                          setEditingDrawingIndex(null);
-                          setShowSketchboard(false);
-                        }}
-                        onCancel={() => {
-                          setEditingDrawingIndex(null);
-                          setShowSketchboard(false);
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 'مزيد من الميزات' Bottom Sheet / Modal (Image 3 format) */}
-                {showMoreFeaturesSheet && (
-                  <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-end justify-center sm:items-center p-0 sm:p-4 animate-fadeIn">
-                    <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-6 shadow-2xl border border-[#E2DCC8]">
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                        <h3 className="text-base font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                          <span>✨</span>
-                          <span>{t.moreFeaturesBtn || t.moreFeatures}</span>
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => setShowMoreFeaturesSheet(false)}
-                          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {/* 6 Circular Feature Grid Items (Image 3) */}
-                      <div className="grid grid-cols-3 gap-4">
-                        {/* 1. الرسم (Draw) */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowMoreFeaturesSheet(false);
-                            setShowSketchboard(true);
-                          }}
-                          className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
-                        >
-                          <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
-                            🖌️
-                          </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.drawing || t.sketchIcon}</span>
-                        </button>
-
-                        {/* 2. أضف صورة (Add Image) */}
-                        <label
-                          onClick={markFilePickerActive}
-                          className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
-                        >
-                          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
-                            🖼️
-                          </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.addImageIcon}</span>
-                          <input type="file" multiple
-                            accept="image/*" onChange={(e) => {
-                              handleImageUpload(e);
-                              setShowMoreFeaturesSheet(false);
-                            }}
-                            className="hidden"
-                          />
-                        </label>
-
-                        {/* 3. لون الخلفية (Background Color) */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowMoreFeaturesSheet(false);
-                            setShowColorPalette(!showColorPalette);
-                          }}
-                          className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
-                        >
-                          <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
-                            🎨
-                          </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.bgColorIcon}</span>
-                        </button>
-
-                        {/* 4. إرفاق ملف (Attach File) */}
-                        <label
-                          onClick={markFilePickerActive}
-                          className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
-                        >
-                          <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
-                            📎
-                          </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.attachFileIcon}</span>
-                          <input type="file" multiple
-                            accept="application/pdf,.doc,.docx,.txt,.rtf,.odt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onChange={async (e) => {
-                              markFilePickerActive();
-                              const files = Array.from(e.target.files || []);
-                              if (files.length > 0) {
-                                await handleGenericFileUpload(files);
-                              }
-                              e.target.value = '';
-                              resetFilePickerGuard();
-                              setShowMoreFeaturesSheet(false);
-                            }}
-                            className="hidden"
-                          />
-                        </label>
-
-                        {/* 5. أضف صوت (Add Audio / Voice) */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowMoreFeaturesSheet(false);
-                            handleToggleRecording();
-                          }}
-                          className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
-                        >
-                          <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
-                            🎙️
-                          </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.addAudioIcon}</span>
-                        </button>
-
-                        {/* 6. تأثير الخط (Font Style) - Video 0:48 */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowMoreFeaturesSheet(false);
-                            setShowFontDrawer(true);
-                          }}
-                          className="flex flex-col items-center justify-center space-y-2 p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] rounded-2xl border border-[#E2DCC8] transition-all cursor-pointer group"
-                        >
-                          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center text-lg font-serif font-bold shadow-xs group-hover:scale-105 transition-transform">
-                            Aa
-                          </div>
-                          <span className="text-xs font-bold text-[#3A3A3A]">{t.fontStyleIcon}</span>
-                        </button>
-                      </div>
-
-                      {/* Color Palette Selector Inside Features Sheet */}
-                      <div className="pt-2 border-t border-gray-100 space-y-2">
-                        <span className="text-xs font-extrabold text-[#5A5A40]">{t.chooseBgColor}</span>
-                        <div className="flex items-center justify-around p-2 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]">
-                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F9F7F2' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F9F7F2] border-2 border-gray-400 cursor-pointer shadow-xs" title="افتراضي" />
-                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FFFDF5' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FFFDF5] border-2 border-amber-300 cursor-pointer shadow-xs" title="أصفر دافئ" />
-                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F2F7FB' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F2F7FB] border-2 border-blue-300 cursor-pointer shadow-xs" title="أزرق سماوي" />
-                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#F4F7F2' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#F4F7F2] border-2 border-emerald-300 cursor-pointer shadow-xs" title="أخضر ناعم" />
-                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FBF7FF' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FBF7FF] border-2 border-purple-300 cursor-pointer shadow-xs" title="لافندر" />
-                          <button data-color-swatch="true" type="button" onClick={() => { setEditingDiary(prev => prev ? { ...prev, color: '#FCF2F4' } : null); setShowMoreFeaturesSheet(false); }} className="w-7 h-7 rounded-full bg-[#FCF2F4] border-2 border-rose-300 cursor-pointer shadow-xs" title="وردي" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Font Styling Drawer (Aa) matching video 0:48 */}
-                {showFontDrawer && (
-                  <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-end justify-center sm:items-center p-0 sm:p-4 animate-fadeIn">
-                    <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-5 shadow-2xl border border-[#E2DCC8]" dir={isRtl ? 'rtl' : 'ltr'}>
-                      {/* Header */}
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowFontDrawer(false)}
-                          className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-emerald-100"
-                        >
-                          ✓
-                        </button>
-                        <h3 className="text-base font-extrabold text-[#3A3A3A]">{t.fontDrawerTitle}</h3>
-                        <button
-                          type="button"
-                          onClick={() => setShowFontDrawer(false)}
-                          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {/* Font Formatting Icons Toolbar */}
-                      <div className="flex items-center justify-around p-2.5 bg-[#F9F7F2] rounded-2xl border border-[#E2DCC8]">
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('- ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarBulletList}>
-                          •≡
-                        </button>
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('1. ')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarNumberedList}>
-                          1≡
-                        </button>
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('<u>', '</u>')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold underline text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarUnderline}>
-                          U
-                        </button>
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('~~', '~~')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-bold line-through text-sm text-[#3A3A3A] cursor-pointer" title={t.toolbarStrikethrough}>
-                          S
-                        </button>
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('*', '*')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl italic font-bold text-sm text-[#3A3A3A] cursor-pointer" title={t.formatItalic}>
-                          I
-                        </button>
-                        <button data-compact-control="true" type="button" onClick={() => insertFormatting('**', '**')} className="p-2 hover:bg-[#E2DCC8]/50 rounded-xl font-black text-sm text-[#3A3A3A] cursor-pointer" title={t.formatBold}>
-                          B
-                        </button>
-                      </div>
-
-                      {/* Font Size Slider */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-[#5A5A40]">
-                          <span className="text-xs">Aa</span>
-                          <span>{t.fontSizeLabel} ({fontDrawerSize}px)</span>
-                          <span className="text-base font-extrabold">Aa</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="12"
-                          max="32"
-                          value={fontDrawerSize}
-                          onChange={(e) => setFontDrawerSize(parseInt(e.target.value))}
-                          className="w-full h-2 bg-[#E2DCC8] rounded-lg appearance-none cursor-pointer accent-[#8B9D83]"
-                        />
-                      </div>
-
-                      {/* Choose Font Style Grid (اختر نمط الخط) */}
-                      <div className="space-y-2">
-                        <span className="text-xs font-extrabold text-[#5A5A40] block">{t.chooseFontStyle}</span>
-                        <div className="grid grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
-                          {[
-                            { id: 'font-sans', name: t.fontPreviewNotes, style: 'font-sans' },
-                            { id: 'font-serif', name: t.fontPreviewNotes, style: 'font-serif italic' },
-                            { id: 'font-mono', name: t.fontPreviewNotes, style: 'font-mono' },
-                            { id: 'font-bold', name: t.fontPreviewNotes, style: 'font-sans font-black' },
-                            { id: 'font-cairo', name: t.fontPreviewNotes, style: 'font-serif font-bold' },
-                            { id: 'font-uppercase', name: t.fontPreviewNotesUpper, style: 'uppercase font-black' },
-                            { id: 'font-normal', name: t.fontPreviewNotes, style: 'font-sans font-medium' },
-                            { id: 'font-light', name: t.fontPreviewNotes, style: 'font-sans font-light' },
-                            { id: 'font-tracking', name: t.fontPreviewNotesSpaced, style: 'tracking-widest' },
-                          ].map((f) => (
-                            <button
-                              key={f.id}
-                              type="button"
-                              onClick={() => setFontDrawerFamily(f.style)}
-                              className={`p-3 rounded-2xl border text-center text-sm transition-all cursor-pointer ${
-                                fontDrawerFamily === f.style
-                                  ? 'bg-[#8B9D83] text-white border-[#8B9D83] shadow-md scale-102'
-                                  : 'bg-[#F9F7F2] hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#3A3A3A]'
-                              } ${f.style}`}
-                            >
-                              {f.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* AI Assistant Note Writer Bottom Sheet matching video 0:56 */}
-                {showAiWriterSheet && (
-                  <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-end justify-center sm:items-center p-0 sm:p-4 animate-fadeIn">
-                    <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-4 shadow-2xl border border-[#E2DCC8] max-h-[90vh] flex flex-col" dir={isRtl ? 'rtl' : 'ltr'}>
-                      {/* Header */}
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3 shrink-0">
-                        <h3 className="text-sm font-extrabold text-[#3A3A3A] flex items-center space-x-2 space-x-reverse">
-                          <span className="text-amber-500">✨</span>
-                          <span>{t.askAiWriterHeader}</span>
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowAiWriterSheet(false);
-                            setAiWriterResult(null);
-                          }}
-                          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {/* Input Prompt Box with Search Icon */}
-                      <div className="relative shrink-0">
-                        <input
-                          type="text"
-                          value={aiWriterTopicInput}
-                          onChange={(e) => setAiWriterTopicInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleAiGenerateNote();
-                            }
-                          }}
-                          placeholder={t.aiWriterTopicPlaceholder}
-                          className="w-full bg-[#F9F7F2] border border-[#E2DCC8] focus:ring-2 focus:ring-[#8B9D83] focus:outline-none rounded-2xl py-3 pr-10 pl-24 text-xs text-[#3A3A3A]"
-                        />
-                        <div className="absolute right-3 top-3.5 text-gray-400 text-xs">
-                          🔍
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleAiGenerateNote()}
-                          disabled={aiWriterLoading}
-                          className="absolute left-1.5 top-1.5 bottom-1.5 px-3 bg-[#8B9D83] hover:bg-[#72856A] text-white text-xs font-bold rounded-xl flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          {aiWriterLoading ? (t.generatingAiText) : (t.sendPromptBtn)}
-                        </button>
-                      </div>
-
-                      {/* Content Body: Loading OR Result OR Suggestions */}
-                      <div className="overflow-y-auto space-y-3 flex-1 pr-0.5">
-                        {aiWriterLoading ? (
-                          <div className="py-8 px-4 text-center space-y-3 bg-[#FDF8EC] rounded-2xl border border-[#E9E1C4] animate-pulse">
-                            <div className="w-10 h-10 mx-auto bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-xl animate-spin">
-                              ✨
-                            </div>
-                            <div className="space-y-1">
-                              <p className="font-extrabold text-xs text-[#4E685B]">{t.aiGeneratingTitle}</p>
-                              <p className="text-[10px] text-gray-500">{t.aiModelDraftingDesc}</p>
-                            </div>
-                          </div>
-                        ) : aiWriterResult ? (
-                          <div className="space-y-3 animate-fadeIn">
-                            <div className="bg-[#F9F7F2] p-3.5 rounded-2xl border border-[#E2DCC8] space-y-2">
-                              <div className="flex items-center justify-between border-b border-[#E2DCC8]/60 pb-2">
-                                <span className="font-extrabold text-xs text-[#2B3E50] flex items-center gap-1.5">
-                                  <span>💡</span>
-                                  <span>{aiWriterResult.title}</span>
-                                </span>
-                                <span className="text-[9px] bg-[#8B9D83]/20 text-[#4E685B] px-2 py-0.5 rounded-md font-bold">{t.readyToInsertBadge}</span>
-                              </div>
-                              <div className="max-h-48 overflow-y-auto text-xs text-[#3A3A3A] leading-relaxed whitespace-pre-wrap font-medium p-1">
-                                {aiWriterResult.content}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-2 pt-1">
-                              <button
-                                type="button"
-                                onClick={handleApplyAiGeneratedNoteToCurrentEntry}
-                                className="w-full py-2.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl font-bold text-xs cursor-pointer shadow-xs transition-all flex items-center justify-center gap-2"
-                              >
-                                <span>✍️</span>
-                                <span>{t.insertInCurrentEntry}</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={handleCreateNewDiaryFromAiResult}
-                                className="w-full py-2 bg-[#F9F7F2] hover:bg-[#F0EDE4] text-[#4E685B] border border-[#DCE4D8] rounded-xl font-bold text-xs cursor-pointer transition-all flex items-center justify-center gap-2"
-                              >
-                                <span>📝</span>
-                                <span>{t.createNewDiaryWithText}</span>
-                              </button>
-
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={handleCopyAiNote}
-                                  className="flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-[11px] cursor-pointer transition-all text-center"
-                                >
-                                  {copiedAiText ? (t.copiedTextSuccess) : (t.copyTextBtn)}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setAiWriterResult(null)}
-                                  className="py-1.5 px-3 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl font-medium text-[11px] cursor-pointer transition-all"
-                                >
-                                  {t.suggestAnotherTopic}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            <span className="text-[11px] font-extrabold text-gray-400 block">{t.quickPromptSuggestionsTitle}</span>
-                            <div className="space-y-2">
-                              {[
-                                { id: 'health', icon: '💡', title: t.promptHealthTitle, prompt: t.promptHealthText },
-                                { id: 'article', icon: '📝', title: t.promptArticleTitle, prompt: t.promptArticleText },
-                                { id: 'future', icon: '🚀', title: t.promptFutureTitle, prompt: t.promptFutureText },
-                                { id: 'marketing', icon: '🎧', title: t.promptMarketingTitle, prompt: t.promptMarketingText },
-                                { id: 'projects', icon: '🎯', title: t.promptProjectsTitle, prompt: t.promptProjectsText },
-                              ].map((item) => (
-                                <button
-                                  key={item.id}
-                                  type="button"
-                                  onClick={() => handleAiGenerateNote(item.prompt)}
-                                  disabled={aiWriterLoading}
-                                  className="w-full flex items-center justify-between p-3 bg-[#F9F7F2] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-2xl transition-all cursor-pointer group text-start"
-                                >
-                                  <div className="flex items-center space-x-3 space-x-reverse">
-                                    <span className="text-base p-1.5 bg-amber-50 rounded-xl">{item.icon}</span>
-                                    <span className="text-xs font-bold text-[#3A3A3A] group-hover:text-[#8B9D83] transition-colors">{item.title}</span>
-                                  </div>
-                                  <span className="text-xs text-[#8B9D83] font-bold group-hover:translate-x-1 transition-transform">{t.generateAction}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 🧠 Flagship AI Assistant Panel - Real-time Psychological Chat */}
-                <div className={isConsultationFullscreen ? 'fixed inset-0 z-[9995] bg-[#F9F7F2] h-[100dvh] w-full flex flex-col p-3 sm:p-6 overflow-hidden' : 'border border-[#E2DCC8] bg-[#F9F7F2] rounded-3xl p-3.5 sm:p-5 space-y-3.5 flex flex-col shadow-xs'}>
-                  <div className="flex flex-wrap items-center justify-between border-b border-[#E2DCC8]/60 pb-3 gap-2 shrink-0">
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <span className="p-2 bg-[#8B9D83]/15 text-[#8B9D83] rounded-xl text-base">🧠</span>
-                      <div>
-                        <span className="text-xs font-black text-[#5A5A40] block">
-                          {t.aiChatSessionTitle}
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-medium">
-                          {(editingDiary.chatLogs || []).length} {t.messagesCount || (settings?.appLanguage === 'ar' ? 'رسائل' : 'messages')}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Chat Actions Toolbar */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {/* Fullscreen Consultation Toggle */}
-                      <button
-                        type="button"
-                        onClick={() => setIsConsultationFullscreen(v => !v)}
-                        className="p-1.5 bg-[#EEF1EB] hover:bg-[#E2E9DF] text-[#2D6A4F] rounded-xl border border-[#DCE4D8] flex items-center gap-1 text-xs font-bold cursor-pointer"
-                        title={isConsultationFullscreen ? (t.consultationRestore || (isAr ? 'استعادة الحجم الطبيعي' : 'Exit fullscreen')) : (t.consultationFullscreen || (isAr ? 'ملء الشاشة' : 'Fullscreen'))}
-                      >
-                        {isConsultationFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                        <span className="text-[11px] hidden sm:inline">{isConsultationFullscreen ? (t.consultationRestore || (isAr ? 'تصغير' : 'Collapse')) : (t.consultationFullscreen || (isAr ? 'ملء الشاشة' : 'Fullscreen'))}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCopyDiaryChat}
-                        disabled={(editingDiary.chatLogs || []).length === 0}
-                        className="px-2.5 py-1 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 disabled:opacity-40 shadow-3xs"
-                        title={t.copyChatBtn || (settings?.appLanguage === 'ar' ? 'نسخ المحادثة' : 'Copy Chat')}
-                      >
-                        <Copy className="w-3 h-3 text-[#8B9D83]" />
-                        <span className="hidden sm:inline">{t.copyChatBtn || (settings?.appLanguage === 'ar' ? 'نسخ المحادثة' : 'Copy Chat')}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleExportDiaryChatPdf}
-                        disabled={(editingDiary.chatLogs || []).length === 0}
-                        className="px-2.5 py-1 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 disabled:opacity-40 shadow-3xs"
-                        title={t.exportChatPdf || (settings?.appLanguage === 'ar' ? 'تصدير كـ PDF' : 'Export Chat PDF')}
-                      >
-                        <Download className="w-3 h-3 text-[#D4A373]" />
-                        <span className="hidden sm:inline">{t.exportChatPdf || (settings?.appLanguage === 'ar' ? 'تصدير PDF' : 'Export PDF')}</span>
-                      </button>
-
-                      {(editingDiary.chatLogs || []).length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsChatSelectMode(!isChatSelectMode);
-                            setSelectedChatIndices([]);
-                          }}
-                          className={`px-2.5 py-1 border rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-3xs ${
-                            isChatSelectMode
-                              ? 'bg-[#8B9D83] text-white border-[#8B9D83]'
-                              : 'bg-white hover:bg-[#F0EDE4] border-[#E2DCC8] text-[#5A5A40]'
-                          }`}
-                        >
-                          <CheckSquare className="w-3 h-3" />
-                          <span>{isChatSelectMode ? (t.cancelBtn || 'إلغاء') : (t.selectMessages || (settings?.appLanguage === 'ar' ? 'تحديد' : 'Select'))}</span>
-                        </button>
-                      )}
-
-                      {isChatSelectMode && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (selectedChatIndices.length === (editingDiary.chatLogs || []).length) {
-                                setSelectedChatIndices([]);
-                              } else {
-                                setSelectedChatIndices((editingDiary.chatLogs || []).map((_, idx) => idx));
-                              }
-                            }}
-                            className="px-2 py-1 bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-[10px] font-bold cursor-pointer"
-                          >
-                            {selectedChatIndices.length === (editingDiary.chatLogs || []).length ? (settings?.appLanguage === 'ar' ? 'إلغاء الكل' : 'Deselect') : (t.selectAll || (settings?.appLanguage === 'ar' ? 'تحديد الكل' : 'Select All'))}
-                          </button>
-
-                          {selectedChatIndices.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={handleDeleteSelectedChatMessages}
-                              className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold cursor-pointer flex items-center gap-1 shadow-xs"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>{t.deleteSelected || (settings?.appLanguage === 'ar' ? `حذف المحدد (${selectedChatIndices.length})` : `Delete (${selectedChatIndices.length})`)}</span>
-                            </button>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={handleDeleteAllChatMessages}
-                            className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-[10px] font-bold cursor-pointer"
-                          >
-                            {t.deleteAll || (settings?.appLanguage === 'ar' ? 'حذف الكل' : 'Delete All')}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* AIMediaAccessSelector: Moved to TOP directly below consultation header */}
-                  <div className="shrink-0">
-                    <AIMediaAccessSelector
-                      permission={diaryChatMediaPermission}
-                      onChange={setDiaryChatMediaPermission}
-                      availableAttachments={editingDiary ? extractAvailableAttachments([editingDiary]) : []}
-                      appLanguage={settings?.appLanguage || 'ar'}
-                      compact={true}
-                    />
-                  </div>
-
-                  {/* Chat Messages Log Box */}
-                  <div className={`flex-1 min-h-[300px] ${isConsultationFullscreen ? 'h-full max-h-none' : 'max-h-[60vh]'} overflow-y-auto space-y-3.5 p-4 bg-white border border-[#E2DCC8]/80 rounded-2xl scroll-smooth shadow-inner`} id="diary-chat-log-box">
-                    {(editingDiary.chatLogs || []).length === 0 ? (
-                      <div className="text-center py-12 px-4 space-y-2.5">
-                        <span className="text-4xl block">💬</span>
-                        <p className="text-xs font-black text-[#5A5A40]">{t.welcomeSafeSpace}</p>
-                        <p className="text-[11px] text-gray-500 leading-relaxed max-w-md mx-auto font-medium">
-                          {t.safeSpaceDesc}
-                        </p>
-                      </div>
-                    ) : (
-                      (editingDiary.chatLogs || []).map((msg, idx) => {
-                        const isSelected = selectedChatIndices.includes(idx);
-                        return (
-                          <div
-                            key={idx}
-                            onClick={() => {
-                              if (isChatSelectMode) {
-                                setSelectedChatIndices(prev =>
-                                  prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
-                                );
-                              }
-                            }}
-                            className={`flex flex-col max-w-[92%] sm:max-w-[85%] transition-all ${
-                              msg.sender === 'user' ? 'mr-auto items-start' : 'ml-auto items-end'
-                            } ${isChatSelectMode ? 'cursor-pointer p-1 rounded-2xl' : ''} ${
-                              isSelected ? 'ring-2 ring-red-400 bg-red-50/40 rounded-2xl' : ''
-                            }`}
-                          >
-                            <div className="flex items-start gap-2 w-full">
-                              {isChatSelectMode && (
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => {}}
-                                  className="mt-2.5 rounded text-red-600 focus:ring-red-500 w-4 h-4 cursor-pointer"
-                                />
-                              )}
-                              <div
-                                className={`p-3.5 rounded-2xl text-xs leading-relaxed font-medium break-words flex-1 shadow-3xs select-text ${
-                                  msg.sender === 'user'
-                                    ? 'bg-[#FAF6EC] text-[#5A5A40] rounded-tr-none border border-[#E2DCC8]/50 whitespace-pre-wrap'
-                                    : 'bg-[#EEF1EB] text-[#4E685B] rounded-tl-none border border-[#DCE4D8]'
-                                }`}
-                              >
-                                {msg.sender === 'user' ? msg.text : (
-                                  <MarkdownMessage
-                                    content={
-                                      msg.text.includes('__AI_QUOTA_EXCEEDED__') || msg.text.includes('RESOURCE_EXHAUSTED')
-                                        ? getLocalizedAIError('quota-exhausted', settings?.appLanguage)
-                                        : (msg.text.includes('__AI_CHECK_API_KEY__') || msg.text.includes('API_KEY_INVALID') ? getLocalizedAIError('key-missing', settings?.appLanguage) : msg.text)
-                                    }
-                                    isAi={true}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between w-full mt-1 px-1 gap-2">
-                              <span className="text-[9px] text-gray-400 font-medium">
-                                {msg.sender === 'user' ? (t.meLabel) : (t.aiPsychAdvisor)} • {formatDateTime(msg.createdAt, settings?.appLanguage || 'ar')}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  const ok = await copyTextSafe(msg.text);
-                                  if (ok) {
-                                    showGlobalCopyToast(t.copySuccessToast || (settings?.appLanguage === 'ar' ? 'تم النسخ إلى الحافظة بنجاح 📋' : 'Copied!'), 'success');
-                                  } else {
-                                    showGlobalCopyToast(t.copyFailedToast || (settings?.appLanguage === 'ar' ? 'تعذر النسخ إلى الحافظة' : 'Failed to copy'), 'error');
-                                  }
-                                }}
-                                className="p-0.5 text-gray-400 hover:text-[#8B9D83] rounded transition-colors cursor-pointer"
-                                title={t.copyTextBtn || (settings?.appLanguage === 'ar' ? 'نسخ الرسالة' : 'Copy Message')}
-                              >
-                                <Copy className="w-2.5 h-2.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-
-                    {/* Chat Loading Indicator */}
-                    {diaryChatLoading && (
-                      <div className="flex items-center space-x-2 space-x-reverse ml-auto bg-[#EEF1EB] border border-[#DCE4D8] p-3 rounded-2xl rounded-tl-none text-xs text-[#4E685B] max-w-[85%] animate-pulse shadow-3xs">
-                        <span className="w-2 h-2 bg-[#8B9D83] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-[#8B9D83] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-[#8B9D83] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                        <span className="text-[10px] font-bold">{t.writingTherapeuticResponse}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Gemini-Style Multiline Auto-Expanding Composer Bar with Circular Up-Arrow Button */}
-                  <div className="bg-white border border-[#E2DCC8] rounded-2xl p-2 sm:p-2.5 flex items-end gap-2 shadow-xs transition-all focus-within:ring-2 focus-within:ring-[#2D6A4F] focus-within:border-[#2D6A4F] shrink-0">
-                    <textarea
-                      ref={diaryChatTextareaRef}
-                      rows={1}
-                      value={diaryChatMessage}
-                      onChange={(e) => {
-                        setDiaryChatMessage(e.target.value);
-                        e.target.style.height = 'auto';
-                        e.target.style.height = `${Math.min(e.target.scrollHeight, 140)}px`;
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendDiaryChatMessage();
-                          if (diaryChatTextareaRef.current) {
-                            diaryChatTextareaRef.current.style.height = 'auto';
-                          }
-                        }
-                      }}
-                      placeholder={t.expressMindPlaceholder}
-                      className="flex-1 min-w-0 w-full bg-transparent resize-none border-none outline-none text-xs sm:text-sm text-[#3A3A3A] font-medium placeholder:text-gray-400 max-h-[140px] py-1 px-1.5 leading-relaxed"
-                    />
-                    <button
-                      type="button"
-                      disabled={diaryChatLoading || !diaryChatMessage.trim()}
-                      onClick={() => {
-                        handleSendDiaryChatMessage();
-                        if (diaryChatTextareaRef.current) {
-                          diaryChatTextareaRef.current.style.height = 'auto';
-                        }
-                      }}
-                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-xs ${
-                        diaryChatLoading
-                          ? 'bg-amber-100 text-amber-700 animate-pulse'
-                          : diaryChatMessage.trim()
-                          ? 'bg-[#2D6A4F] hover:bg-[#1E4D38] text-white active:scale-95'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={t.sendBtnLabel || 'إرسال'}
-                    >
-                      {diaryChatLoading ? (
-                        <span className="w-3.5 h-3.5 border-2 border-[#2D6A4F] border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Single Horizontal Row of 8 Rich Localized Psychologist Suggestions */}
-                  <div className="space-y-1.5 pt-0.5 shrink-0">
-                    <p className="text-[10px] text-gray-400 font-extrabold">{t('quickOneClickActions')}</p>
-                    <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
-                      {/* 1. تلخيص التدوينة */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptSummarizeEntry'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>📝</span>
-                        <span>{t('summarizeEntryBtn')}</span>
-                      </button>
-
-                      {/* 2. استخراج الأخطاء المعرفية */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptExtractCognitiveErrors'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>💡</span>
-                        <span>{t('extractCognitiveErrorsBtn')}</span>
-                      </button>
-
-                      {/* 3. خطة عملية ليوم الغد */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptPracticalPlanTomorrow'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>🎯</span>
-                        <span>{t('practicalPlanTomorrowBtn')}</span>
-                      </button>
-
-                      {/* 4. تحليل المشاعر العميقة */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptAnalyzeDeepFeelings'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>🌊</span>
-                        <span>{t('promptAnalyzeDeepFeelingsBtn')}</span>
-                      </button>
-
-                      {/* 5. استخراج نقاط القوة */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptExtractStrengths'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>⭐</span>
-                        <span>{t('promptExtractStrengthsBtn')}</span>
-                      </button>
-
-                      {/* 6. إعادة صياغة الأفكار السلبية */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptReframeNegativeThoughts'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>🔄</span>
-                        <span>{t('promptReframeNegativeThoughtsBtn')}</span>
-                      </button>
-
-                      {/* 7. خطوات سريعة لتهدئة التوتر */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptQuickCalmStress'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>🌿</span>
-                        <span>{t('promptQuickCalmStressBtn')}</span>
-                      </button>
-
-                      {/* 8. 3 أسئلة عميقة للتأمل */}
-                      <button
-                        type="button"
-                        onClick={() => handleSendDiaryChatMessage(t('promptThreeDeepQuestions'))}
-                        className="px-3 py-1.5 bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/70 rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-3xs whitespace-nowrap shrink-0 flex items-center gap-1"
-                      >
-                        <span>🔍</span>
-                        <span>{t('promptThreeDeepQuestionsBtn')}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Editor Bottom Actions */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 pb-safe border-t border-[#E2DCC8]/55">
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteDiary(editingDiary.id)}
-                    className="flex items-center justify-center space-x-1 space-x-reverse px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer border border-red-200 sm:border-transparent"
-                  >
-                    <Trash className="w-4 h-4" />
-                    <span>{t.deleteDiaryPermanently}</span>
-                  </button>
-
-                  <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
-                    {!isNewEntry && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          toggleArchiveDiary(editingDiary.id);
-                          const nextState = !editingDiary.isArchived;
-                          setEditingDiary(prev => prev ? { ...prev, isArchived: nextState } : null);
-                          if (nextState) {
-                            setEditingDiary(null);
-                          }
-                        }}
-                        className="flex-1 sm:flex-initial px-3.5 py-2 text-xs font-black text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5 space-x-reverse"
-                      >
-                        <Archive className="w-4 h-4 text-amber-700" />
-                        <span>{editingDiary.isArchived ? (t.restoreAction) : (t.archiveAction)}</span>
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingDiary(null);
-                        setIsNewEntry(false);
-                        setDiaryAiAnswer('');
-                      }}
-                      className="flex-1 sm:flex-initial px-4 py-2 text-xs font-bold text-[#5A5A40] hover:bg-[#F0EDE4] border border-[#E2DCC8] rounded-xl transition-colors cursor-pointer text-center"
-                    >
-                      {t.cancelBtn}
-                    </button>
-
-                    {/* Attachments Page trigger button */}
-                    <button
-                      type="button"
-                      onClick={() => setShowAttachmentsPage(true)}
-                      className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 space-x-reverse px-3.5 py-2 bg-white hover:bg-[#F0EDE4] border border-[#E2DCC8] text-[#5A5A40] rounded-xl text-xs font-bold shadow-3xs transition-all cursor-pointer"
-                      title={t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'الملحقات والوسائط' : 'Attachments')}
-                    >
-                      <Folder className="w-4 h-4 text-[#8B9D83]" />
-                      <span>{t.attachmentsPageTitle || (settings?.appLanguage === 'ar' ? 'الملحقات' : 'Attachments')}</span>
-                      <span className="text-[10px] bg-[#8B9D83] text-white px-1.5 py-0.2 rounded-full font-bold">
-                        {(editingDiary.images || []).length + (editingDiary.videos || []).length + (editingDiary.audioRecordings || []).length + (editingDiary.files || []).length + (editingDiary.drawing ? 1 : 0)}
-                      </span>
-                    </button>
-
-                    {/* Export as Single Image / PDF Modal trigger */}
-                    <button
-                      type="button"
-                      onClick={() => setShowExportDiaryModal(true)}
-                      className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 space-x-reverse px-4 py-2 bg-[#D4A373] hover:bg-[#B58554] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
-                      title={t.exportDiary || (settings?.appLanguage === 'ar' ? 'تصدير التدوينة (صورة / PDF)' : 'Export Diary')}
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>{t.exportDiary || (settings?.appLanguage === 'ar' ? 'تصدير التدوينة' : 'Export')}</span>
-                    </button>
-
-                    {autoSavedTime && (
-                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-3xs">
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{t.autoSavedCheck || (isAr ? 'تم الحفظ تلقائيًا ✓' : 'Auto-saved ✓')} ({autoSavedTime})</span>
-                      </span>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleSaveDiary}
-                      disabled={isSavingDiary}
-                      className={`w-full sm:w-auto flex items-center justify-center space-x-1.5 space-x-reverse px-5 py-2 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer ${
-                        isSavingDiary ? 'opacity-75 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      {isSavingDiary ? (
-                        <span>⏳ {settings?.appLanguage === 'ar' ? 'جاري الحفظ...' : 'Saving...'}</span>
-                      ) : (
-                        <span>{t.saveDiarySuccessBtn}</span>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            ) : (
-              <div className="space-y-6">
-
-
-
-
-
-                {activeDiariesSubTab === 'journal' ? (
-                  <div className="space-y-4">
-
-                    {/* Horizontal Scrollable Filter Bar (All Types + Favorites) */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E2DCC8]/40 scrollbar-none w-full max-w-full">
-                      {/* All Button */}
-                      <button
-                        onClick={() => setDiaryTypeFilter('all')}
-                        className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
-                          diaryTypeFilter === 'all'
-                            ? 'bg-[#5A5A40] text-white shadow-3xs font-extrabold scale-[1.02]'
-                            : 'bg-white text-gray-500 hover:text-[#5A5A40] border border-[#E2DCC8]/80 hover:bg-[#F0EDE4]'
-                        }`}
-                      >
-                        <span>🌐</span>
-                        <span>{t.allFilterTab}</span>
-                      </button>
-
-                      {/* 7 Journal Types */}
-                      {ALL_JOURNAL_TYPES.map((typeKey) => {
-                        const cfg = getJournalTypeConfig(typeKey);
-                        const isSelected = diaryTypeFilter === typeKey;
-                        const label = getJournalTypeLabel(typeKey, t);
-
-                        return (
-                          <button
-                            key={typeKey}
-                            onClick={() => setDiaryTypeFilter(typeKey)}
-                            className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
-                              isSelected
-                                ? 'bg-[#8B9D83] text-white shadow-3xs font-extrabold scale-[1.02]'
-                                : 'bg-white text-gray-500 hover:text-[#5A5A40] border border-[#E2DCC8]/80 hover:bg-[#F0EDE4]'
-                            }`}
-                          >
-                            <span>{cfg.icon}</span>
-                            <span className="whitespace-nowrap">{label}</span>
-                          </button>
-                        );
-                      })}
-
-                      {/* Favorites Button */}
-                      <button
-                        onClick={() => setDiaryTypeFilter('favorites')}
-                        className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse ${
-                          diaryTypeFilter === 'favorites'
-                            ? 'bg-amber-600 text-white shadow-3xs font-extrabold scale-[1.02]'
-                            : 'bg-amber-50/70 text-amber-800 border border-amber-200/80 hover:bg-amber-100'
-                        }`}
-                      >
-                        <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                        <span className="whitespace-nowrap">{t.favoritesLabel}</span>
-                      </button>
-                    </div>
-
-                    {/* Search Bar - Enhanced floating input with instant clear button */}
-                    <div className="relative w-full">
-                      <Search className="absolute right-4 top-3.5 w-4 h-4 text-[#8B9D83]" />
-                      <input
-                        id="diaries-search-input"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={t.searchDiariesPlaceholder}
-                        className="w-full bg-[#FBFBFA] hover:bg-[#F3F2F0] focus:bg-white border border-[#E2DCC8]/85 focus:ring-2 focus:ring-[#8B9D83] focus:border-[#8B9D83] focus:outline-none rounded-2xl pr-11 pl-10 py-3.5 text-xs text-[#3A3A3A] transition-all placeholder-gray-400 font-bold shadow-3xs"
-                      />
-                      {searchQuery && (
-                        <button
-                          type="button"
-                          onClick={() => setSearchQuery('')}
-                          className="absolute left-3 top-3 p-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 transition-all cursor-pointer"
-                          title={t.clearSearchTitle}
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Active Search Query Status Banner */}
-                    {searchQuery.trim() !== '' && (
-                      <div className="flex items-center justify-between bg-[#8B9D83]/10 border border-[#8B9D83]/25 px-4 py-2.5 rounded-2xl text-xs font-bold text-[#4E685B] animate-fadeIn">
-                        <div className="flex items-center space-x-2 space-x-reverse truncate">
-                          <Search className="w-3.5 h-3.5 shrink-0 text-[#8B9D83]" />
-                          <span className="truncate">
-                            {t.searchResultsFor} <strong className="text-[#3A3A3A]">"{searchQuery}"</strong> ({filteredDiariesList.length} {t.resultsCountSuffix})
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => setSearchQuery('')}
-                          className="text-[10px] font-black text-[#8B9D83] hover:text-[#5A5A40] underline shrink-0 cursor-pointer mr-2"
-                        >
-                          {t.cancelSearchBtn}
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Write New Note Button - Separate floating button */}
-                    <button
-                      onClick={() => startNewDiary()}
-                      className="w-full flex items-center justify-center space-x-2 space-x-reverse py-3.5 bg-[#8B9D83] hover:bg-[#72856A] text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-3xs hover:scale-[1.01] active:scale-95"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>{t.writeNewNoteBtn}</span>
-                    </button>
-
-                    {/* Filter Pills of tags if they exist */}
-                    {allUniqueTags.length > 0 && (
-                      <div className="flex items-center space-x-2 space-x-reverse overflow-x-auto pb-1 mt-1 scrollbar-none">
-                        <span className="text-[10px] font-black text-gray-400 whitespace-nowrap shrink-0">{t.filterTagsLabel}</span>
-                        <button
-                          onClick={() => setSelectedTagFilter('')}
-                          className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer shrink-0 ${
-                            selectedTagFilter === ''
-                              ? 'bg-[#8B9D83] text-white font-bold shadow-3xs'
-                              : 'bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/85'
-                          }`}
-                        >
-                          الكل
-                        </button>
-                        {allUniqueTags.map((tag) => (
-                          <button
-                            key={tag}
-                            onClick={() => setSelectedTagFilter(tag)}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer shrink-0 ${
-                              selectedTagFilter === tag
-                                ? 'bg-[#8B9D83] text-white font-bold shadow-3xs'
-                                : 'bg-white hover:bg-[#F0EDE4] text-[#5A5A40] border border-[#E2DCC8]/85'
-                            }`}
-                          >
-                            #{tag}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                {/* Grouped Day-by-Day representation of entries */}
-                {(() => {
-                  const { sortedDays, groups } = memoizedGroupedDiaries;
-
-                  if (sortedDays.length === 0) {
-                    return (
-                      <div className="bg-white border border-[#E2DCC8] rounded-3xl p-10 text-center text-gray-400 text-sm space-y-3">
-                        <div className="w-14 h-14 mx-auto rounded-full bg-[#F0EDE4] flex items-center justify-center text-[#8B9D83]">
-                          <Search className="w-7 h-7" />
-                        </div>
-                        {searchQuery ? (
-                          <>
-                            <p className="font-extrabold text-[#3A3A3A] text-sm">
-                              {t.noMatchFoundFor} "{searchQuery}"
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {t.checkSpellingOrFilter}
-                            </p>
-                            <button
-                              onClick={() => setSearchQuery('')}
-                              className="px-4 py-2 bg-[#8B9D83] text-white rounded-xl text-xs font-extrabold shadow-3xs hover:bg-[#72856A] transition-all cursor-pointer"
-                            >
-                              {t.clearSearchWordBtn}
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-bold text-[#3A3A3A]">{t.noMatchingDiariesNow}</p>
-                            <p className="text-xs mt-1 text-gray-400">{t.clickWriteNewNotePrompt}</p>
-                          </>
-                        )}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div className="space-y-8">
-                      {sortedDays.map((dayKey) => {
-                        const dayData = groups[dayKey] || { dayEntries: [], formattedDayLabel: dayKey };
-                        const dayEntries = dayData.dayEntries;
-                        const formattedDayLabel = dayData.formattedDayLabel;
-
-                        return (
-                          <div key={dayKey} className="bg-white border border-[#E2DCC8] rounded-3xl p-6 shadow-xs space-y-5">
-                            {/* Large parent Day header */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E2DCC8]/50 pb-3 gap-2">
-                              <div className="flex items-center space-x-2.5 space-x-reverse flex-wrap gap-2">
-                                <div className="p-2 bg-[#8B9D83]/10 text-[#8B9D83] rounded-2xl shrink-0">
-                                  <Calendar className="w-5 h-5" />
-                                </div>
-                                <h3 className="font-extrabold text-[#3A3A3A] text-sm md:text-base">
-                                  {formattedDayLabel}
-                                </h3>
-
-                                {/* NEW: Pros & Cons Button (الإيجابيات والسلبيات) */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenProsConsForDay(dayKey, formattedDayLabel, dayEntries)}
-                                  className="px-3 py-1.5 bg-gradient-to-r from-[#2B3E50] via-[#3B5066] to-[#5A5A40] hover:from-[#3B5066] hover:to-[#8B9D83] text-white rounded-xl text-xs font-black shadow-3xs flex items-center gap-1.5 cursor-pointer transition-all hover:scale-103 active:scale-97 border border-white/20 shrink-0"
-                                  title={t.reviewProsConsTitle}
-                                >
-                                  <Scale className="w-3.5 h-3.5 text-[#FEFAE0]" />
-                                  <span>⚖️ {t.prosConsBtnLabel}</span>
-                                </button>
-                                <DailyProsConsMediaSelector dateKey={dayKey} diaries={dayEntries} appLanguage={settings?.appLanguage || 'ar'} />
-
-                                {/* Side-by-Side: Full-Day Mood Percentage Breakdown (Strictly 100% Normalized) */}
-                                {(() => {
-                                  // Compute day mood distribution across entry moods and AI analysis
-                                  const moodInputs: Array<{ mood: string; count?: number; percentage?: number }> = [];
-                                  dayEntries.forEach(d => {
-                                    if (d.moods && Array.isArray(d.moods)) {
-                                      d.moods.forEach(m => moodInputs.push({ mood: m, count: 1 }));
-                                    }
-                                    if (d.aiMoodAnalysis && Array.isArray(d.aiMoodAnalysis)) {
-                                      d.aiMoodAnalysis.forEach(item => {
-                                        if (item && item.mood) {
-                                          moodInputs.push({ mood: item.mood, percentage: item.percentage });
-                                        }
-                                      });
-                                    }
-                                  });
-                                  const dayBreakdown = normalizeMoodDistribution(moodInputs, (settings?.appLanguage || 'ar') === 'ar' ? 'ar' : 'en');
-                                  const pillColors = [
-                                    'bg-emerald-50 text-emerald-800 border-emerald-200',
-                                    'bg-blue-50 text-blue-800 border-blue-200',
-                                    'bg-purple-50 text-purple-800 border-purple-200',
-                                    'bg-amber-50 text-amber-800 border-amber-200',
-                                    'bg-rose-50 text-rose-800 border-rose-200'
-                                  ];
-                                  const barColors = [
-                                    'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 'bg-amber-500', 'bg-rose-500'
-                                  ];
-                                  return (
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      {/* Slim proportional color bar */}
-                                      <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden flex shadow-inner border border-gray-200 shrink-0 hidden sm:flex">
-                                        {dayBreakdown.map((item, idx) => (
-                                          <div
-                                            key={item.mood}
-                                            style={{ width: `${item.percentage}%` }}
-                                            className={`${barColors[idx % barColors.length]} h-full`}
-                                            title={`${item.mood}: ${item.percentage}%`}
-                                          />
-                                        ))}
-                                      </div>
-                                      {/* Pills */}
-                                      {dayBreakdown.map((item, idx) => (
-                                        <span
-                                          key={item.mood}
-                                          className={`px-2 py-0.5 rounded-lg text-[10.5px] font-black border flex items-center gap-1 shadow-3xs ${pillColors[idx % pillColors.length]}`}
-                                        >
-                                          <span>{item.percentage}%</span>
-                                          <span>{item.mood}</span>
-                                        </span>
-                                      ))}
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              <span className="text-[10px] md:text-xs font-bold text-[#5A5A40] bg-[#F9F7F2] border border-[#E2DCC8]/60 px-3 py-1 rounded-xl self-start sm:self-auto">
-                                <span>{dayEntries.length} {t.subNotesCount}</span>
-                              </span>
-                            </div>
-
-                            {/* Grid of smaller sub-notes on that day */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {dayEntries.map((diary) => {
-                                // Format the precise entry time safely
-                                const preciseTime = formatTime(diary.createdAt, settings?.appLanguage || 'ar');
-
-                                return (
-                                  <div
-                                    key={diary.id}
-                                    onClick={() => {
-                                      setEditingDiary(diary);
-                                      setIsNewEntry(false);
-                                      setDiaryAiAnswer('');
-                                      setNewEditAddition('');
-                                    }}
-                                    className={`relative group border border-[#E2DCC8]/65 rounded-2xl p-4 sm:p-5 hover:border-[#8B9D83] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4 max-w-full overflow-hidden ${
-                                      diary.color || 'bg-[#F9F7F2]/45'
-                                    }`}
-                                  >
-                                    {/* Top Corner: precise entry time, edit flag, and ratings */}
-                                    <div className="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-gray-500 w-full max-w-full" dir={langInfo.dir}>
-                                      {/* Star Ratings & Actions on the Right in RTL */}
-                                      <div className="flex flex-wrap items-center gap-1.5 max-w-full">
-                                        {/* Direct Favorite Toggle Button */}
-                                        <button
-                                          type="button"
-                                          title={diary.isFavorite ? (t.removeFromFavorites) : (t.addToFavorites)}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleFavoriteDiary(diary.id);
-                                          }}
-                                          className={`p-1.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center shrink-0 hover:scale-110 active:scale-95 shadow-3xs ${
-                                            (diary.isFavorite === true || (diary.isFavorite === undefined && (diary.importance || 0) >= 4))
-                                              ? 'bg-amber-100/95 text-amber-600 border-amber-300 font-bold'
-                                              : 'bg-white/90 text-gray-400 border-gray-200 hover:text-amber-500 hover:border-amber-300'
-                                          }`}
-                                        >
-                                          <Star className={`w-3.5 h-3.5 ${
-                                            (diary.isFavorite === true || (diary.isFavorite === undefined && (diary.importance || 0) >= 4))
-                                              ? 'fill-amber-500 text-amber-500'
-                                              : 'text-gray-400'
-                                          }`} />
-                                        </button>
-
-                                        {/* Importance Rating Stars */}
-                                        <div className="flex items-center space-x-0.5 space-x-reverse shrink-0">
-                                          {[1, 2, 3, 4, 5].map((s) => (
-                                            <Star
-                                              key={s}
-                                              className={`w-3.5 h-3.5 ${
-                                                s <= diary.importance ? 'text-[#D4A373] fill-[#D4A373]' : 'text-gray-200'
-                                              }`}
-                                            />
-                                          ))}
-                                        </div>
-
-                                        {/* Archive Button */}
-                                        <button
-                                          type="button"
-                                          title={t.archiveAction}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleArchiveDiary(diary.id);
-                                          }}
-                                          className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-50/90 hover:bg-amber-100/90 text-amber-800 border border-amber-200/80 rounded-xl text-[10px] font-black shadow-3xs hover:shadow-2xs transition-all cursor-pointer flex items-center space-x-1 space-x-reverse group/arch hover:scale-105 active:scale-95 shrink-0"
-                                        >
-                                          <Archive className="w-3 h-3 text-amber-700 group-hover/arch:rotate-12 transition-transform" />
-                                          <span>{t.archiveBtnLabel}</span>
-                                        </button>
-
-                                        {/* Move to Trash Button */}
-                                        <button
-                                          type="button"
-                                          title={t.moveToTrash}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteDiary(diary.id);
-                                          }}
-                                          className="p-1 bg-white/90 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-lg border border-gray-100/50 hover:shadow-2xs transition-all cursor-pointer shrink-0"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </button>
-
-                                        {/* Edited Flag */}
-                                        {(diary.isEdited || (diary.edits && diary.edits.length > 0)) && (
-                                          <span className="bg-[#D4A373] text-white text-[9px] font-extrabold px-2 py-0.5 rounded-lg shadow-2xs shrink-0">
-                                            {t.editedBadge}
-                                          </span>
-                                        )}
-                                      </div>
-
-                                      {/* Time Pill on the Left in RTL */}
-                                      <span className="font-bold flex items-center space-x-1 space-x-reverse bg-white/85 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl border border-[#E2DCC8]/50 shadow-3xs shrink-0 text-[10px]">
-                                        <span>⏰</span>
-                                        <span>{preciseTime}</span>
-                                      </span>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                      {/* Title with dynamic type badge */}
-                                      <div className="flex items-center space-x-1.5 space-x-reverse">
-                                        {(() => {
-                                          const typeCfg = getJournalTypeConfig(diary.diaryType);
-                                          return (
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 border ${typeCfg.pillBadgeClass}`}>
-                                              {typeCfg.icon} {getJournalTypeLabel(diary.diaryType, t)}
-                                            </span>
-                                          );
-                                        })()}
-                                        <h4 className="font-extrabold text-[#3A3A3A] text-xs md:text-sm line-clamp-1">
-                                          {diary.title || t.subNoteDefaultTitle}
-                                        </h4>
-                                      </div>
-
-                                      {/* Content Snippet */}
-                                      <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
-                                        {cleanDiaryText(diary.content) || <em className="text-gray-400 font-light text-[11px]">{t.audioDrawingsOnly}</em>}
-                                      </p>
-
-                                      {/* Appended Edits Count / Snippet Preview */}
-                                      {diary.edits && diary.edits.length > 0 && (
-                                        <div className="text-[10px] text-[#8B9D83] font-bold flex items-center space-x-1 space-x-reverse">
-                                          <span>💬</span>
-                                          <span>{t.containsEditsPrefix} {diary.edits.length} {t.appendedEditsSuffix}</span>
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {/* Footer with Moods and Tags matching the layout of the screenshots */}
-                                    <div className="pt-2 border-t border-[#E2DCC8]/40 flex flex-wrap items-center justify-between gap-1.5 w-full max-w-full overflow-hidden">
-                                      {/* Tags on the right in RTL */}
-                                      <div className="shrink-0">
-                                        {diary.tags && diary.tags.length > 0 ? (
-                                          <span className="text-[9px] text-[#8B9D83] font-black">
-                                            #{getTranslatedTag(diary.tags[0], t)}
-                                          </span>
-                                        ) : (
-                                          <span className="text-[9px] text-gray-300 font-bold">#{t.generalTag}</span>
-                                        )}
-                                      </div>
-
-                                      {/* Mood badge on the left in RTL - showing both manual and AI analyzed mood percentages */}
-                                      <div className="flex flex-col items-end gap-1 justify-end max-w-full overflow-hidden">
-                                        {/* Manual moods */}
-                                        {diary.moods && diary.moods.length > 0 && <div className="flex flex-wrap items-center gap-1 justify-end"><span className="text-[9px] font-bold text-[#5A5A40]">{t.moodBeforeWritingLabel}:</span>{diary.moods.slice(0, 2).map((m, idx) => (
-                                          <span key={idx} className="bg-[#8B9D83]/15 text-[#4E685B] text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg font-black border border-[#8B9D83]/20 shadow-3xs max-w-full truncate">{m}</span>
-                                        ))}</div>}
-
-                                        {/* AI Mood percentages */}
-                                        {diary.aiMoodAnalysis && diary.aiMoodAnalysis.length > 0 && (
-                                          <div className="flex flex-wrap gap-1 max-w-full overflow-hidden items-center">
-                                            <span className="text-[9px] font-bold text-fuchsia-700">{t.aiWritingAnalysisLabel}:</span>
-                                            {normalizeMoodDistribution(diary.aiMoodAnalysis, isRtl ? 'ar' : 'en').slice(0, 2).map((analysis, idx) => (
-                                              <span
-                                                key={idx}
-                                                className="bg-purple-50 text-purple-700 text-[9px] sm:text-[10px] px-2 py-0.5 rounded-lg font-black border border-purple-100 shadow-3xs flex items-center space-x-1 space-x-reverse max-w-full overflow-hidden"
-                                                title={t.aiMoodAnalysisTitle}
-                                              >
-                                                <span>🧠</span>
-                                                <span className="truncate">{analysis.mood} ({analysis.percentage}%)</span>
-                                              </span>
-                                            ))}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-                  </div>
-                ) : activeDiariesSubTab === 'gratitude' ? (
+            {activeDiariesSubTab === 'gratitude' && !editingDiary ? (
                   <div className="space-y-4 animate-in fade-in duration-200">
                     {/* 1-Tap Return to Journals Banner */}
                     <div className="flex items-center justify-between bg-white border border-[#E2DCC8] p-3 rounded-2xl shadow-3xs">
@@ -11325,7 +8508,8 @@ export default function App() {
                       }}
                     />
                   </div>
-                ) : activeDiariesSubTab === 'cbt' ? (
+                
+            ) : activeDiariesSubTab === 'cbt' && !editingDiary ? (
                   <div className="space-y-4 animate-in fade-in duration-200">
                     {/* 1-Tap Return to Journals Banner */}
                     <div className="flex items-center justify-between bg-white border border-[#E2DCC8] p-3 rounded-2xl shadow-3xs">
@@ -11350,7 +8534,8 @@ export default function App() {
                       appLanguage={settings?.appLanguage || 'ar'}
                     />
                   </div>
-                ) : (
+                
+            ) : activeDiariesSubTab === 'tasks' && !editingDiary ? (
                   <div className="space-y-4 animate-in fade-in duration-200">
                     {/* 1-Tap Return to Journals Banner */}
                     <div className="flex items-center justify-between bg-white border border-[#E2DCC8] p-3 rounded-2xl shadow-3xs">
@@ -11391,9 +8576,112 @@ export default function App() {
                       appLanguage={settings?.appLanguage || 'ar'}
                     />
                   </div>
-                )}
-
-              </div>
+                
+            ) : (
+              <BlomeoDiaryWorkspace
+                diaries={diaries}
+                filteredDiariesList={filteredDiariesList}
+                memoizedGroupedDiaries={memoizedGroupedDiaries}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                diaryTypeFilter={diaryTypeFilter}
+                setDiaryTypeFilter={setDiaryTypeFilter}
+                selectedTagFilter={selectedTagFilter}
+                setSelectedTagFilter={setSelectedTagFilter}
+                allUniqueTags={allUniqueTags}
+                appLanguage={settings?.appLanguage || 'ar'}
+                isRtl={isRtl}
+                t={t}
+                onStartNewDiary={startNewDiary}
+                onSelectDiary={(diary) => {
+                  setEditingDiary(diary);
+                  setIsNewEntry(false);
+                  setDiaryAiAnswer('');
+                  setIsDiaryEditorFullscreen(false);
+                }}
+                onDeleteDiary={handleDeleteDiary}
+                onToggleFavorite={toggleFavoriteDiary}
+                onToggleArchive={toggleArchiveDiary}
+                onOpenDayRating={() => setShowRatingModal(true)}
+                onOpenProsCons={(dayKey, formattedDayLabel, entries) => handleOpenProsConsForDay(dayKey, formattedDayLabel, entries)}
+                onOpenProsConsHistory={() => {
+                  setActiveTab('analytics');
+                  setAnalyticsSubTab('pros_cons');
+                }}
+                onOpenAttachmentsPage={() => setShowAttachmentsPage(true)}
+                onRefreshDayAIMood={handleRefreshDayAIMood}
+                onUpdateDiaryImportance={handleUpdateDiaryImportance}
+                editingDiary={editingDiary}
+                editorProps={{
+                  setEditingDiary,
+                  isNewEntry,
+                  isSavingDiary,
+                  autoSavedTime,
+                  appLanguage: settings?.appLanguage || 'ar',
+                  isRtl,
+                  t,
+                  onSave: handleSaveDiary,
+                  onCancel: () => {
+                    setEditingDiary(null);
+                    setIsNewEntry(false);
+                    setDiaryAiAnswer('');
+                  },
+                  onDelete: (id: string) => handleDeleteDiary(id),
+                  onToggleArchive: (id: string) => {
+                    toggleArchiveDiary(id);
+                    if (editingDiary) {
+                      setEditingDiary(prev => prev ? { ...prev, isArchived: !prev.isArchived } : null);
+                    }
+                  },
+                  onOpenAttachmentsPage: () => setShowAttachmentsPage(true),
+                  onOpenExportModal: () => setShowExportDiaryModal(true),
+                  onOpenGratitudeImport: () => setShowGratitudeImportModal(true),
+                  onOpenVoiceVent: () => setShowVoiceVentModal(true),
+                  onOpenVoiceVentWithFile: handleOpenVoiceVentWithFile,
+                  onOpenAIVoiceJournal: () => setShowVoiceJournalModal(true),
+                  onOpenDrawingCanvas: (index?: number | null) => {
+                    setEditingDrawingIndex(index ?? null);
+                    setShowSketchboard(true);
+                  },
+                  onOpenWriteDiaryImport: () => setShowWriteDiaryImporter(true),
+                  onTriggerPhotoUpload: () => diaryImageInputRef.current?.click(),
+                  onTriggerVideoUpload: () => diaryVideoInputRef.current?.click(),
+                  onTriggerPdfUpload: () => diaryPdfInputRef.current?.click(),
+                  onTriggerGenericFileUpload: () => diaryGenericFileInputRef.current?.click(),
+                  editorRef,
+                  onSaveSelection: saveEditorSelection,
+                  onRecordUndo: recordUndoSnapshot,
+                  onApplyRichFormat: applyRichFormat,
+                  onInsertFormatting: insertFormatting,
+                  onUndo: handleUndo,
+                  onRedo: handleRedo,
+                  fontDrawerSize,
+                  setFontDrawerSize,
+                  fontDrawerFamily,
+                  setFontDrawerFamily,
+                  diaryChatMediaPermission,
+                  setDiaryChatMediaPermission,
+                  diaryChatLoading,
+                  onSendDiaryChatMessage: handleSendDiaryChatMessage,
+                  onExportDiaryChatPdf: handleExportDiaryChatPdf,
+                  onDeleteAllChatMessages: handleDeleteAllChatMessages,
+                  onDeleteSelectedChatMessages: handleDeleteSelectedChatMessages,
+                  selectedChatIndices,
+                  setSelectedChatIndices,
+                  isChatSelectMode,
+                  setIsChatSelectMode,
+                  diaryChatMessage,
+                  setDiaryChatMessage,
+                  diaryChatTextareaRef,
+                  showGlobalCopyToast,
+                  allDiariesVault: diaries,
+                  onSelectVaultEntry: (entry) => {
+                    setEditingDiary(entry);
+                    setIsNewEntry(false);
+                    setDiaryAiAnswer('');
+                  }
+                }}
+              />
             )}
 
           </div>
@@ -11901,11 +9189,109 @@ export default function App() {
         }}
       />
 
+      {/* Diary File Upload Hidden Inputs */}
+      <input
+        ref={diaryImageInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
+      <input
+        ref={diaryVideoInputRef}
+        type="file"
+        multiple
+        accept="video/*"
+        className="hidden"
+        onChange={handleVideoUpload}
+      />
+      <input
+        ref={diaryPdfInputRef}
+        type="file"
+        multiple
+        accept="application/pdf"
+        className="hidden"
+        onChange={handlePdfUpload}
+      />
+      <input
+        ref={diaryGenericFileInputRef}
+        type="file"
+        multiple
+        accept="application/pdf,.doc,.docx,.txt,.rtf,.odt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+        className="hidden"
+        onChange={async (e) => {
+          const files = Array.from(e.target.files || []);
+          if (files.length > 0) {
+            await handleGenericFileUpload(files);
+          }
+          e.target.value = '';
+        }}
+      />
+
+      {/* Custom Drawing Board Canvas Modal (Multi-Drawing Support) */}
+      {showSketchboard && (
+        <div className={`${isSketchboardFullscreen ? 'fixed inset-0 p-0' : 'fixed inset-0 p-4'} bg-[#5A5A40]/45 backdrop-blur-xs z-50 flex items-center justify-center`}>
+          <div className={`${isSketchboardFullscreen ? 'w-full h-[100dvh]' : 'w-full max-w-2xl h-[450px]'} relative`}>
+            <button type="button" data-compact-control="true" onClick={() => setIsSketchboardFullscreen(v => !v)} className="absolute top-2 end-2 z-20 inline-flex items-center justify-center w-9 h-9 min-h-0 min-w-0 rounded-lg bg-white/90 text-[#2D6A4F] border border-[#DCE4D8]" aria-label={isSketchboardFullscreen ? (isAr ? 'استعادة لوحة الرسم' : 'Restore drawing pad') : (isAr ? 'ملء شاشة لوحة الرسم' : 'Fullscreen drawing pad')}>
+              {isSketchboardFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+            <DrawingCanvas
+              initialDataUrl={editingDrawingIndex !== null ? (editingDiary?.drawings?.[editingDrawingIndex] || editingDiary?.drawing || '') : ''}
+              appLanguage={settings?.appLanguage || 'ar'}
+              onSave={async (dataUrl) => {
+                const attachmentId = `att-draw-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+                await saveAttachmentBlob(attachmentId, dataUrl, 'image/png');
+                setEditingDiary(prev => {
+                  if (!prev) return null;
+                  const prevDrawings = (Array.isArray(prev.drawings) && prev.drawings.length > 0)
+                    ? [...prev.drawings]
+                    : (prev.drawing ? [prev.drawing] : []);
+                  const prevAttIds = (Array.isArray(prev.drawingAttachmentIds) && prev.drawingAttachmentIds.length > 0)
+                    ? [...prev.drawingAttachmentIds]
+                    : (prev.drawingAttachmentId ? [prev.drawingAttachmentId] : []);
+
+                  let nextDrawings;
+                  let nextAttIds;
+                  if (editingDrawingIndex !== null && editingDrawingIndex >= 0 && editingDrawingIndex < prevDrawings.length) {
+                    nextDrawings = [...prevDrawings];
+                    nextDrawings[editingDrawingIndex] = dataUrl;
+                    nextAttIds = [...prevAttIds];
+                    nextAttIds[editingDrawingIndex] = attachmentId;
+                  } else {
+                    nextDrawings = [...prevDrawings, dataUrl];
+                    nextAttIds = [...prevAttIds, attachmentId];
+                  }
+                  return {
+                    ...prev,
+                    drawings: nextDrawings,
+                    drawingAttachmentIds: nextAttIds,
+                    drawing: nextDrawings[0],
+                    drawingAttachmentId: nextAttIds[0]
+                  };
+                });
+                setEditingDrawingIndex(null);
+                setShowSketchboard(false);
+              }}
+              onCancel={() => {
+                setEditingDrawingIndex(null);
+                setShowSketchboard(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* 🎙️ Quick Continuous Voice Vent Modal */}
       <VoiceVentModal
         isOpen={showVoiceVentModal}
-        onClose={() => setShowVoiceVentModal(false)}
+        onClose={() => {
+          setShowVoiceVentModal(false);
+          setVoiceVentInitialAudioFile(null);
+        }}
         appLanguage={settings?.appLanguage || 'ar'}
+        initialAudioFile={voiceVentInitialAudioFile}
+        onClearInitialFile={() => setVoiceVentInitialAudioFile(null)}
         onSaveAudioRecording={(rec) => {
           addAudioToDiaryAtomic(rec);
           // Only transcribe if not already successfully transcribed by Gemini in modal
