@@ -141,6 +141,18 @@ html.dark .blomeo-tile {
   color: var(--blomeo-text, #EBF5F2);
 }
 
+/* Theme-aware surfaces. `background` is used instead of `background-color`
+   because the dark tokens are layered gradients while light tokens are flat
+   colours. This keeps light cards pure white and dark cards forest-emerald
+   with zero white leaks. */
+.blomeo-surface {
+  background: var(--blomeo-surface, #FFFFFF);
+}
+
+.blomeo-surface-nested {
+  background: var(--blomeo-surface-nested, #F3F8F5);
+}
+
 /* Zero-leak Dark Mode Enforcements across generic elements */
 html.dark body {
   background-color: #071614;
